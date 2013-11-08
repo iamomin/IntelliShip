@@ -1,0 +1,399 @@
+*{
+    margin:0;
+    padding:0;
+}
+
+body{
+    font: 12px Verdana, Arial, sans-serif, Helvetica;
+    margin-top: 20px;
+    color: #4B4B4B;
+}
+
+#wrapper {
+}
+
+/* CSS3 radius */
+
+.rounded10 {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+}
+
+.rounded5 {
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.rounded3 {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+.margin20 {
+    margin: 20px 0px;
+}
+/* Header */
+
+#header {
+    width: 850px;
+    height: 50px;
+    margin: 0 auto;
+    border: 1px solid #6F8DB0;
+    //opacity: 0.8;
+    //background: #1875ba;
+}
+
+/* LOGO */
+
+#logo {
+    padding-top: 10px;
+    background: #1875ba url(/static/customer/images/company-logo.png) no-repeat;
+    //opacity:0.6;
+}
+
+/* Menu */
+
+#menu {
+    width: 850px;
+    height: 25px;
+    margin: 0 auto;
+    border: solid 1px #ddd;
+    border-top: none;
+    font: bold 12px Arial, Helvetica;
+}
+
+#menu ul {
+    margin: 0;
+    padding: 0;
+    float: right;
+    list-style: none;
+}
+
+#menu li {
+    display: inline;
+}
+
+#menu a {
+    text-decoration: none;
+    padding: 0 8px;
+    color: #1875ba;
+    float: left;
+}
+
+#menu a:hover {
+    text-decoration: underline;
+    color: #aaa;
+}
+
+/* Page */
+
+#page {
+    width: 780px;
+    margin: 10px auto;
+    border: solid 1px #ddd;
+}
+
+#content {
+    margin: 0 auto;
+   *width: 775px;
+}
+
+/* Post */
+
+#post {
+    margin: 0 auto;
+    width: 770px;
+   }
+
+/* Footer */
+
+#footer {
+    width: 850px;
+    margin: 10px auto;
+    color: #909090;
+/*    border: solid 1px #ddd;*/
+}
+
+html>body #footer {
+    height: auto;
+}
+
+/* Dashboard */
+
+#dashboard {
+    width: auto;
+    height: auto;
+}
+
+#legal {
+    clear: both;
+    padding: 10px;
+    text-align: center;
+    border: #aaa solid 1px;
+}
+
+#legal a {
+    color: #333333;
+}
+
+h1, h2, h3 {
+    margin: 0;
+    font: bold;
+    color: #1875ba;
+}
+
+h1 {
+    padding: 5px;
+    font-size: 22px;
+    margin-bottom: 5px;
+    border-bottom: solid 1px;
+}
+
+h2 {
+    padding: 5px;
+    font-size: 18px;
+    margin-bottom: 5px;
+    border-bottom: solid 1px;
+}
+
+h3 {
+    font-size: 14px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table caption {
+    margin: 0 auto;
+    padding: 5px;
+    font-weight: bold;
+    color: #fff;
+    background: #1875ba;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+table th {
+    color: #fff;
+    padding: 0 5px;
+    font-weight: bold;
+    background: #1875ba;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+    vertical-align: top;
+    border: 1px #fff solid;
+}
+
+table td {
+    padding: 2px;
+}
+
+table.app {
+    width: 100%;
+    margin: 10px 0px;
+    background: #e9e9e9;
+    text-align: left;
+    font-size: 11px;
+    border-collapse: collapse;
+}
+
+.small_title {
+    font: 12px;
+    color: #1875ba;
+    font-weight: bold;
+}
+
+.light_grey {
+    background: #AFAFAF;
+}
+
+.light_blue {
+    background: #1875ba;
+}
+
+.require {
+    border: solid 1px #c45649;
+}
+
+.require_text {
+    color: #c45649;
+}
+
+.button-small{
+    color: #fff !important;
+    text-transform: uppercase;
+    border : none;
+    line-height: 22px;
+    padding: 13px 5px 11px;
+    display: inline-block;
+    margin-top: 5px;
+    margin-bottom: 18px;
+    text-decoration: none;
+}
+.active {
+    padding: 5px 5px;
+    color: #fff;
+    font: bold 14px;
+    width: 250px;
+    background: #1875ba;
+    text-align: center;
+}
+.inactive {
+    padding: 5px 5px;
+    color: #fff;
+    font: bold 14px;
+    width: 250px;
+    background: #AFAFAF;
+    text-align: center;
+}
+
+.bold_text {
+    font-weight: bold;
+}
+
+.solid_line {
+    height: 5px;
+    width: 100%;
+    margin: 10px 0px;
+    background-color: #1875ba;
+}
+
+input  {
+    width: auto;
+    margin: 3px;
+    padding: 0 3px;
+    border: solid 1px #afafaf;
+
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+/*
+    -webkit-box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
+    -moz-box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
+    box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
+*/
+}
+
+input.checkbox  {
+    border: solid 1px #afafaf;
+
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+/*
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance:none;
+*/
+}
+
+input.text {
+    width: 160px;
+}
+
+input.auto_width {
+    width: auto;
+}
+
+/* Buttons */
+
+input.rounded5 {
+    border-radius: 5px;
+    width: auto;
+    padding: 0px 3px;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+input.submit {
+    color: #fff;
+    background: #afafaf;
+    border: 1px solid #afafaf;
+}
+
+input.cancel {
+    color: #fff;
+    background: #afafaf;
+    border: 1px solid #afafaf;
+}
+
+input.delete {
+    color: #fff;
+    background: #ee4f3c;
+    border: 1px solid #ee4f3c;
+}
+
+input.review {
+    color: #fff;
+    background: #2f62a3;
+    border: 1px solid #2f62a3;
+}
+
+input.create {
+    color: #fff;
+    background: #4fbd4a;
+    border: 1px solid #4fbd4a;
+}
+
+.float_right {
+    float: right;
+}
+
+/* The CSS3 select control */
+select {
+    margin: 0;
+    margin: 3px;
+    border: solid 1px #afafaf;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    cursor: pointer;
+/* 
+    -webkit-box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
+    -moz-box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
+    box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
+    outline: none;
+    display: inline-block;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance:none;
+*/
+}
+
+/* Targetting Webkit browsers only. FF will show the dropdown arrow with so much padding. 
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    select { padding-right:18px }
+}
+
+label { position: relative }
+
+label:after {
+    content: '<>';
+    font: 11px "Consolas", monospace;
+    color: #aaa;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+    right: 8px; top:2px;
+    padding: 0 0 2px;
+    border-bottom: 1px solid #ddd;
+    position: absolute;
+    pointer-events: none;
+}
+
+label:before {
+    content: '';
+    right: 6px; top:0px;
+    width: 20px; height:20px;
+    background: #f8f8f8;
+    position: absolute;
+    pointer-events: none;
+    display: block;
+}*/

@@ -1,0 +1,171 @@
+
+	<h1>SHIP PACKAGES</h1>
+
+	<table class="margin20">
+		<tr><td class="active rounded3 bold_text">ADDRESS</td><td class="inactive rounded3 bold_text">SHIPMENT DETAILS</td><td class="inactive rounded3 bold_text">FINAL REVIEW</td></tr>
+	</table>
+
+	<hr class="solid_line rounded5"/>
+
+	<form id="frm_address" name="frm_address" method="post" action="/customer/order/address">
+	<input type="hidden" name="do" value="add"/>
+
+	<table>
+		<tr>
+			<td>
+			<label for="ordernumber" class="small_title">Order Number:</label><input type="text" id="ordernumber" name="ordernumber" class="auto_width" size="8"/><input type="button" class="submit rounded5" value="CONSOLIDATE"/><input type="checkbox" class="checkbox" id="combine" value="combine"/><label for="combine">Combine</label>
+			</td>
+			<td>
+			<input type="checkbox" class="checkbox" id="freightch" value="freightch"/><label for="freightch">Freight Charges</label>
+			<input type="checkbox" class="checkbox" id="cod" value="cod"/><label for="cod">COD</label>
+			<input type="checkbox" class="checkbox" id="collect" value="collect"/><label for="collect">Collect</label>
+			<input type="checkbox" class="checkbox" id="thirdp" value="thirdp"/><label for="thirdp">3rd Party</label>
+			</td>
+		<tr>
+		<tr>
+			<td>
+			<table class="app">
+				<caption>SHIP FROM:</caption>
+				<tr>
+					<td><label for="fromname">Company or Name:</label></br><input type="text" class="text" name="fromname" id="fromname"/></td>
+					<td><label for="fromcontact">Contact number:</label></br><input type="text" class="text" name="fromcontact" id="fromcontact"/></td>
+				</tr>
+				<tr>
+					<td><label for="fromaddress1">Address 1:</label></br><input type="text" class="text" name="fromaddress1" id="fromaddress1"/></td>
+					<td><label for="fromaddress2">Address 2:</label></br><input type="text" class="text" name="fromaddress2" id="fromaddress2"/></td>
+				</tr>
+				<tr>
+					<td><label for="fromcity">City:</label></br><input type="text" class="text" name="fromcity" id="fromcity"/></td>
+					<td><label for="fromstate">State:</label>
+					<label>
+					<select name="fromstate" id="fromstate">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</br>
+					<label for="fromzip">Zipcode:</label><input type="text" name="fromzip" id="fromzip" size="6" maxlength="5"/></td>
+				</tr>
+				<tr>
+					<td><label for="fromcountry">Country:</label></br>
+					<label>
+					<select name="fromcountry" id="fromcountry"/>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]
+						[% END %]
+					</select>
+					</label></td>
+					<td><label for="fromphone">Telephone:</label></br><input type="text" class="text" name="fromphone" id="fromphone"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><label for="fromemail">Email:</label></br><input type="text" class="text" name="fromemail" id="fromemail"/></td>
+				</tr>
+			</table>
+			</td>
+			<td>
+			<table class="app">
+				<caption>SHIP TO:</caption>
+				<tr>
+					<td><label for="toname">Company or Name: </label></br><input type="text" name="toname" id="toname"/></td>
+					<td><label for="tocontact">Contact number:</label></br><input type="text" class="text" name="tocontact" id="tocontact"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress1">Address 1:</label></br><input type="text" class="text" name="toaddress1" id="toaddress1"/></td>
+					<td><label for="toaddress2">Address 2:</label></br><input type="text" class="text" name="toaddress2" id="toaddress2"/></td>
+				</tr>
+				<tr>
+					<td><label for="tocity">City:</label></br><input type="text" class="text" name="tocity" id="tocity"/></br></td>
+					<td><label for="tostate">State:</label>
+					<label>
+					<select name="tostate" id="tostate">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</br>
+					<label for="tozip">Zipcode:</label><input type="text" name="tozip" id="tozip" size="6" maxlength="5"/>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tocountry">Country:</label></br>
+					<label>
+					<select name="tocountry" id="tocountry"/>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</td>
+					<td><label for="tophone">Telephne:</label></br><input type="text" name="tophone" id="tophone"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><label for="toemail">Email:</label></br><input type="text" name="toemail" id="toemail"/></td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+
+	<br/>
+
+	<div id="submit"><input type="submit" class="create rounded5 float_right" value="NEXT STEP"/></div>
+
+	</form>
+
+<script>
+$(document).ready(function(){
+
+	//alert("Document is ready");
+
+	$("#fromcontact").mask("(999) 999 9999");
+	$("#tocontact").mask("(999) 999 9999");
+	$("#fromphone").mask("(999) 999 9999");
+	$("#tophone").mask("(999) 999 9999");
+
+	$("#fromzip").mask("99999");
+	$("#tozip").mask("99999");
+
+	var availableCustomers = [
+		[% FOREACH item IN customerlist_loop %]
+			"[% item.name %]",
+		[% END %]
+		];
+
+	$( "#fromname" ).autocomplete({
+		source: availableCustomers
+		});
+
+	$( "#toname" ).autocomplete({
+		source: availableCustomers
+		});
+
+	$("#frm_address").submit(function() {
+		//alert("Submit frm_address");
+		var requireHash = {
+				fromname     : { minlength: 2 },
+				fromaddress1 : { minlength: 2 },
+				fromcity     : { minlength: 2 },
+				fromstate    : { minlength: 2 },
+				fromzip      : { minlength: 5 },
+				fromcountry  : { minlength: 2 },
+				fromcontact  : { phone: true },
+				fromemail    : { email: true },
+				toname       : { minlength: 2 },
+				toaddress1   : { minlength: 2 },
+				tocity       : { minlength: 2 },
+				tostate      : { minlength: 2 },
+				tozip        : { minlength: 5 },
+				tocountry    : { minlength: 2 },
+				tocontact    : { phone: true },
+				toemail      : { email: true }
+				};
+
+		return validateForm(requireHash);
+		});
+	});
+
+</script>
