@@ -580,7 +580,20 @@ Related object: L<IntelliShip::SchemaClass::Result::Producttype>
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1yH/WM6bTe43n+aMkRzvCA
 
+__PACKAGE__->belongs_to(
+	address =>
+		'IntelliShip::SchemaClass::Result::Address',
+		'addressid'
+	);
+
 __PACKAGE__->has_many(contact => 'IntelliShip::Schema::Result::Contact', 'customerid');
+
+__PACKAGE__->has_many(
+  "producttypes",
+  "IntelliShip::SchemaClass::Result::Producttype",
+  { "foreign.customerid" => "self.customerid" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
