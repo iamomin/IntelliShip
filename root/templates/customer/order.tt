@@ -1,0 +1,500 @@
+
+	<h1>ORDER INFORMATION</h1>
+
+	<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
+	<input type="hidden" name="do" value="save"/>
+
+	<table>
+		<tr>
+			<td>
+			<label for="ordernumber" class="small_title">Order Number:</label><input type="text" id="ordernumber" name="ordernumber" class="auto_width" size="8"/><input type="button" class="submit rounded5" value="CONSOLIDATE"/><input type="checkbox" class="checkbox" id="combine" value="combine"/><label for="combine">Combine</label>
+			</td>
+			<td>
+			<input type="checkbox" class="checkbox" id="freightch" value="freightch"/><label for="freightch">Freight Charges</label>
+			<input type="checkbox" class="checkbox" id="cod" value="cod"/><label for="cod">COD</label>
+			<input type="checkbox" class="checkbox" id="collect" value="collect"/><label for="collect">Collect</label>
+			<input type="checkbox" class="checkbox" id="thirdp" value="thirdp"/><label for="thirdp">3rd Party</label>
+			</td>
+		<tr>
+	</table>
+
+	<table>
+		<tr>
+			<td>
+			<table class="app">
+				<caption>SHIP FROM</caption>
+				<tr>
+					<td><label for="fromname" class="float_right">Company:</label></td><td><input type="text" class="text" name="fromname" id="fromname"/></td>
+				</tr>
+				<tr>
+					<td><label for="fromaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="text" name="fromaddress1" id="fromaddress1"/></td>
+				</tr>
+				<tr>
+					<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="text" name="fromaddress2" id="fromaddress2"/></td>
+				</tr>
+				<tr>
+					<td><label for="fromcity" class="float_right">City:</label></td><td>[%fromcity%]</td>
+				</tr>
+				<tr>
+					<td><label for="fromstate" class="float_right">State:</label></td><td>[%fromstate%]</td>
+				</tr>
+				<tr>
+					<td><label for="fromzip" class="float_right">Zipcode:</label></td><td>[%fromzip%]</td>
+				</tr>
+				<tr>
+					<td><label for="fromcountry" class="float_right">Country:</label></td><td>
+					<label>
+					<select name="fromcountry" id="fromcountry"/>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]
+						[% END %]
+					</select>
+					</label></td>
+				</tr>
+				<tr>
+					<td><label for="fromcontact" class="float_right">Contact:</label></td><td><input type="text" class="text" name="fromcontact" id="fromcontact"/></td>
+				</tr>
+				</tr>
+					<td><label for="fromphone" class="float_right">Phone:</label></td><td><input type="text" class="text" name="fromphone" id="fromphone"></td>
+				<tr>
+				</tr>
+					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="text" name="fromdepartment" id="fromdepartment"></td>
+				<tr>
+				<tr>
+					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="text" name="fromemail" id="fromemail"/></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td><td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td><td>&nbsp;</td>
+				</tr>
+			</table>
+			</td>
+			<td>
+			<table class="app">
+				<caption>SHIP TO</caption>
+				<tr>
+					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" name="toname" id="toname"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="text" name="toaddress1" id="toaddress1"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="text" name="toaddress2" id="toaddress2"/></td>
+				</tr>
+				<tr>
+					<td><label for="tocity" class="float_right">City:</label></td><td><input type="text" class="text" name="tocity" id="tocity"/></td><td></td>
+				</tr>
+				<tr>
+					<td><label for="tostate" class="float_right">State:</label></td><td>
+					<label>
+					<select name="tostate" id="tostate">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tozip" class="float_right">Zipcode:</label></td><td><input type="text" name="tozip" id="tozip" size="6" maxlength="5"/></td>
+				</tr>
+				<tr>
+					<td><label for="tocountry" class="float_right">Country:</label></td><td>
+					<label>
+					<select name="tocountry" id="tocountry"/>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tocontact" class="float_right">Contact:</label></td><td><input type="text" class="text" name="tocontact" id="tocontact"/></td>
+				</tr>
+				<tr>
+					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" name="tophone" id="tophone"></td>
+				</tr>
+				<tr>
+					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" name="tocustomernumber" id="tocustomernumber"/></td>
+				</tr>
+				<tr>
+					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" name="toemail" id="toemail"/></td>
+				</tr>
+			</table>
+			</td>
+			<td>
+			<table class="app">
+				<caption>SHIPMENT INFORMATION</caption>
+				<tr>
+					<td><label for="shipon" class="float_right">Ship On:</label></td><td><input type="text" name="shipon" id="shipon"/></td>
+				</tr>
+				<tr>
+					<td><label for="deliverby" class="float_right">Deliver By:</label></td><td><input type="text" class="text" name="deliverby" id="deliverby"/></td>
+				</tr>
+				<tr>
+					<td><label for="comments" class="float_right">Comments:</label></td><td><input type="text" class="text" name="comments" id="comments"/></td>
+				</tr>
+				<tr>
+					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="text" class="text" name="shipmentvalue" id="shipmentvalue" readonly/></td>
+				</tr>
+				<tr>
+					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
+				</tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+
+	<h2>Package Detail</h2>
+	<label>Total Weight:</label><span style="width: 50px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+	<label>Total Packages:</label><span style="width: 50px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+	<label for="insurance">Declared Value:</label><input type="text" name="insurance" id="insurance" value="0.00"/>
+
+	<table class="app">
+		<tr>
+			<th>QTY</th>
+			<th>SKU</th>
+			<th>Description</th>
+			<th>Type</th>
+			<th>Weight</th>
+			<th>Dim Weight</th>
+			<th>Length</th>
+			<th>Width</th>
+			<th>Height</th>
+			<th>Density</th>
+			<th>NMFC</th>
+			<th>Class</th>
+			<th>Declared Val</th>
+			<th>Freight Ins</th>
+		</tr>
+		<tr>
+			<td><input type="text" name="qantity" id="qantity" size="1"/></td>
+			<td><input type="text" name="sku" id="sku" size="1"/></td>
+			<td><input type="text" name="description" id="description"/></td>
+			<td>
+			<label>
+			<select name="unittype" id="unittype"/>
+				<option value="0">-----</option>
+				[% FOREACH item IN countrylist_loop %]
+						<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select></label>
+			</td>
+			<td><input type="text" name="weight" id="weight" size="1"/></td>
+			<td><input type="text" name="dimweight" id="dimweight" size="1"/></td>
+			<td><input type="text" name="dimlength" id="dimlength" size="1"/></td>
+			<td><input type="text" name="dimwidth" id="dimwidth" size="1"/></td>
+			<td><input type="text" name="dimheight" id="dimheight" size="1"/></td>
+			<td><input type="text" name="density" id="density" size="5"/></td>
+			<td><input type="text" name="nmfc" id="nmfc" size="1"/></td>
+			<td><input type="text" name="class1" id="class1" size="1"/></td>
+			<td><input type="text" name="decval" id="decval" size="5"/></td>
+			<td><input type="text" name="frtins" id="frtins" size="1"/></td>
+		</tr>
+		<tr>
+			<td colspan=2><input type="button" class="submit rounded5" value="Add Package"/></td>
+			<td><input type="button" class="submit rounded5" value="Add Product"/></td>
+			<td colspan=3>
+				Multiply Qty X Weight
+				<input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label>
+				<input type="radio" name="quantityxweight" id="quantityxweightn" value="0"/><label for="quantityxweightn">No</label>
+			</td>
+			<td colspan=3><label for="printpackinglist">Print Packing List:</label><input type="checkbox" name="printpackinglist" id="printpackinglist"/></td>
+			<td colspan=5></td>
+		</tr>
+	</table>
+
+	<h2>Special Services Requested</h2>
+	<span class="require_text">Please check the appropriate boxes for any special services needed for this shipment.</span>
+	<table class="app">
+		[% count=0 %]
+		<tr>
+		[% FOREACH item IN specialservice_loop %]
+		[% count=count+1 %]
+			[% IF count == 5 %]
+				</tr><tr>
+			[% count = 0 %]
+			[% ELSE %]
+				<td>
+				<input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">[% item.name %]</label>
+				</td>
+			[% END %]
+		[% END %]
+		</tr>
+	</table>
+
+	<table>
+		<tr>
+			<td>
+			<table class="app">
+				<caption>INTERNATIONAL</caption>
+				<tr>
+					<td><label for="termsofsale">Terms of Sale:</label><br/>
+					<select name="termsofsale" id="termsofsale">
+						<option selected value=1>FOB/FCA</option>
+						<option value=2>CIF/CIP</option>
+						<option value=3>C&F/CPT</option>
+						<option value=4>EXW</option>
+						<option value=5>DDU</option>
+						<option value=6>DDP</option>
+					</select>
+					</td>
+					<td><label for="dutypaytype">Duties Pay Type:</label><br/>
+					<select name="dutypaytype" id="dutypaytype">
+						<option selected value=1>Bill</option>
+						<option value=2>Bill Recipient</option>
+						<option value=3>Bill Third Party</option>
+					</select>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="dutyaccount">Duties Payer Account Number:</label><br/>
+					<input type="text" name="dutyaccount" id="dutyaccount"/>
+					</td>
+					<td><label for="destinationcountry">Ultimate Destination Country:</label><br/>
+					<select name="destinationcountry" id="destinationcountry">
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="manufacturecountry">Country of Manufacture:</label><br/>
+					<select name="manufacturecountry" id="manufacturecountry">
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+					<td>
+					<input type="checkbox" class="checkbox" id="relatedparties" value="1"/><label for="relatedparties">Related Parties</label>
+					<br/>
+					<input type="checkbox" class="checkbox" id="printcominv" value="1"/><label for="printcominv">Print Commercial Invoice</label>
+					</td>
+				</tr>
+			</table>
+			</td>
+			<td>
+			<table class="app">
+				<caption>COMMODITY</caption>
+				<tr>
+					<td><label for="commodityquantity">Piece Count:</label><br/>
+					<select name="commodityquantity" id="commodityquantity">
+						<option selected value=1>----</option>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+					<td><label for="harmonizedcode">Harmonized Code:</label><br/>
+					<select name="harmonizedcode" id="harmonizedcode">
+						<option selected value=1>-----</option>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="commodityunits">Unit of Measure:</label><br/>
+					<select name="commodityunits" id="commodityunits">
+						<option selected value=1>-----</option>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+					<td><label for="commodityunitvalue">Unit Value:</label><br/>
+					<input type="text" name="commodityunitvalue" id="commodityunitvalue"/>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="customscommodityvalue">Customs Value:</label><br/>
+					<input type="text" name="customscommodityvalue" id="customscommodityvalue"/>
+					</td>
+					<td><label for="currencytype">Currency Type:</label><br/>
+					<select name="currencytype" id="currencytype">
+						<option selected value=1>-----</option>
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+	<table>
+		<tr>
+		<td>
+		<table class="app">
+			<caption>Carrier and Service Selection</caption>
+			<tr>
+				<td>
+				<label for="deliverymethod">Delivery Method:</label><br/>
+				<label>
+				<select name="deliverymethod" id="deliverymethod">
+					[% FOREACH item IN statelist_loop %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</label>
+				</td>
+				<td>
+				<label for="freightcharges">Freight Charges:</label><br/>
+				<label>
+				<select name="freightcharges" id="freightcharges">
+					[% FOREACH item IN statelist_loop %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</label>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="account"><U>Account #:<U></label><br/><input type="text" name="account" id="account"/></td>
+				<td><label for="tpcompanyname">Billing Company:</label><br/><input type="text" name="tpcompanyname" id="tpcompanyname"/></td>
+			</tr>
+			<tr>
+				<td><label for="tpaddress1">Billing Address 1:</label><br/><input type="text" name="tpaddress1" id="tpaddress1"/></td>
+				<td><label for="tpaddress2">Billing Address 2:</label><br/><input type="text" name="tpaddress2" id="tpaddress2"/></td>
+			</tr>
+			<tr>
+				<td><label for="tpcity">Billing City:</label><br/><input type="text" name="tpcity" id="tpcity"/></td>
+				<td><label for="tpstate">Billing State:</label><br/>
+				<label>
+				<select name="tpstate" id="tpstate">
+					[% FOREACH item IN statelist_loop %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</label>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="tpzip">Billing Zip:</label><br/><input type="text" name="tpzip" id="tpzip"/></td>
+				<td><label for="tpcountry">Billing Country:</label><br/>
+					<select name="tpcountry" id="tpcountry">
+						[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td><input type="button" class="submit rounded5" value="Route"/></td>
+			</tr>
+		</table>
+		</td>
+		<td>
+		<table class="app">
+			<caption>Estimated Shipment Charges *</caption>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr>
+				<th>
+				<label for="deliverymethod" class="float_right">Customer Quote:</label>
+				</th>
+				<th>
+				<label>
+				<select name="deliverymethod" id="deliverymethod">
+					[% FOREACH item IN statelist_loop %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</label>
+				</th>
+			</tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		</table>
+		</td>
+		</tr>
+	</table>
+
+	<br/>
+
+	<div class="float_right">
+		<input type="button" class="create rounded5" value="Save"/>
+		<input type="button" class="review rounded5" value="Ship"/>
+		<input type="button" class="cancel rounded5" value="Cancel"/>
+	</div>
+
+	</form>
+
+<script>
+$(document).ready(function(){
+
+	//alert("Document is ready");
+
+	$("#fromcontact").mask("(999) 999 9999");
+	$("#tocontact").mask("(999) 999 9999");
+	$("#fromphone").mask("(999) 999 9999");
+	$("#tophone").mask("(999) 999 9999");
+
+	$("#fromzip").mask("99999");
+	$("#tozip").mask("99999");
+
+	var availableCustomers = [
+		[% FOREACH item IN customerlist_loop %]
+			"[% item.name %]",
+		[% END %]
+		];
+
+	$( "#fromname" ).autocomplete({
+		source: availableCustomers
+		});
+
+	$( "#toname" ).autocomplete({
+		source: availableCustomers
+		});
+
+	$("#frm_address").submit(function() {
+		//alert("Submit frm_address");
+		var requireHash = {
+				fromname     : { minlength: 2 },
+				fromaddress1 : { minlength: 2 },
+				fromcity     : { minlength: 2 },
+				fromstate    : { minlength: 2 },
+				fromzip      : { minlength: 5 },
+				fromcountry  : { minlength: 2 },
+				fromcontact  : { phone: true },
+				fromemail    : { email: true },
+				toname       : { minlength: 2 },
+				toaddress1   : { minlength: 2 },
+				tocity       : { minlength: 2 },
+				tostate      : { minlength: 2 },
+				tozip        : { minlength: 5 },
+				tocountry    : { minlength: 2 },
+				tocontact    : { phone: true },
+				toemail      : { email: true }
+				};
+
+		return validateForm(requireHash);
+		});
+	});
+
+</script>

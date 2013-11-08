@@ -1,0 +1,133 @@
+<h1>SHIP PACKAGES</h1>
+
+	<table class="margin20">
+		<tr><td class="inactive rounded3 bold_text">ADDRESS</td><td class="active rounded3 bold_text">SHIPMENT DETAILS</td><td class="inactive rounded3 bold_text">FINAL REVIEW</td></tr>
+	</table>
+
+	<hr class="solid_line rounded5"/>
+
+
+	<table class="app">
+		<caption>  SHIPMENT DETAIL:</caption>
+		<tr>
+			<td class="required">Estimated ship date:</td>
+			<td>Due date:</td>
+			<td>PO Number:</td>
+			<td>Dry Ice Weight:</td>
+			<td>Comments:</td>
+		</tr>
+		<tr>
+			<td><input type="text" name="eshipd" size="10" maxlength="10"/></td>
+			<td><input type="text" name="dued" size="10" maxlength="10"/></td>
+			<td><input type="text" class="text" name="ponum" size="11"/></td>
+			<td><input type="text" class="text" name="dryiwt" size="11"/></td>
+			<td><input type="text" class="text" name="comm" size="11"/></td>
+		</tr>
+	</table>
+
+	<h2>PACKAGES</h2>
+
+	<div>
+	<input type="button" value="ADD" class="rounded5 submit"/>
+	<input type="button" value="DELETE" class="rounded5 delete"/>
+	<input type="checkbox" name="mulqty" id=""/>Multiple Qty X Weight
+	<input type="checkbox" name="ppackl" id="">Print Packing List
+	</div>
+
+	<table class="app">
+		<tr>
+			<th><input type="checkbox"/></th>
+			<th>Qty</th>
+			<th>SKU#</th>
+			<th>Description</th>
+			<th>Type</th>
+			<th>Weight</th>
+			<th>Dim Weight</th>
+			<th>L</th>
+			<th>W</th>
+			<th>H</th>
+			<th>Density</th>
+			<th>NMFC</th>
+			<th>Class</th>
+			<th>Dec. Value</th>
+			<th>Frght Ins</th>
+		</tr>
+		<tr>
+			<td><input type="checkbox"/></td>
+			<td><input type="text" name="qty" id="qty" size="1"/></td>
+			<td><input type="text" name="sku" id="sku" size="1"/></td>
+			<td><input type="text" name="des" id="des" size="7"/></td>
+			<td><label><select name="type" id="type"><option>Select</option></select></label></td>
+			<td><input type="text" name="wt" id="wt" size="1"/></td>
+			<td><input type="text" name="dwt" id="dwt" size="7"/></td>
+			<td><input type="text" name="l" id="l" size="1"/></td>
+			<td><input type="text" name="w" id="w" size="1"/></td>
+			<td><input type="text" name="h" id="h" size="1"/></td>
+			<td><input type="text" name="density" id="density" size="5"/></td>
+			<td><input type="text" name="nmfc" id="nmfc" size="5"/></td>
+			<td><input type="text" name="class" id="class" size="1"/></td>
+			<td><input type="text" name="decv" id="decv" size="1"/></td>
+			<td><input type="text" name="frins" id="frins" size="5"/></td>
+		</tr>
+		<tr>
+			<td colspan="5"></td>
+			<td colspan="5"><div class="float_right"><span class="small_title">TOTAL WEIGHT:</span>&nbsp; xxxx LBS</div></td>
+			<td colspan="5"><div class="float_right"><span class="small_title">DEC VALUE/INSURANCE:</span> $xxxx.xx</div></td>
+		</tr>
+	</table>
+
+	[% IF special_serivce %]
+		<table>
+			<tr>
+				<td>
+				<table class="app">
+					<caption>INTERNATIONAL</caption>
+					<tr>
+						<td>
+							Term of Sale:</br><select name="termsofsale"><option value="1" selected="">FOB/FCA</option><option value="2">CIF/CIP</option><option value="3">C&amp;F/CPT</option><option value="4">EXW</option><option value="5">DDU</option><option value="6">DDP</option></select>
+						</td>
+						<td>
+							Duties Pay Type:</br><select name="dutypaytype" tabindex="6010" class="intl_input"><option value="1" selected="">Bill Sender</option><option value="2">Bill Recipient</option><option value="3">Bill Third Party</option></select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Duties Payer Account Number:</br> <input type="text" name="add1"/>
+						</td>
+						<td>
+							Ultimate Destination Country:</br> <select name="destinationcountry" tabindex="6040" class="intl_input"><option value="0">Select One</option></select>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Country of Manufacture:</br><select name="manufacturecountry" tabindex="6050" class="intl_input"><option value="0">Select One</select>
+						</td>
+						<td>
+							<input type="checkbox" id="">Related Parties</input></br><input type="checkbox" id="">Print Commercial Invoice</input>
+						</td>
+					</tr>
+				</table>
+				</td>
+				<td>
+				<table class="app">
+					<caption>COMMODITY</caption>
+					<tr>
+						<td>Piece Count:</br> <input type="text" name="commodityquantity" value="" size="5" tabindex="6060" onchange="CeilCommodityQuantity()" class="com_input"></td>
+						<td>Harmonised Code:</br> <input type="text" name="harmonizedcode" value="" size="15" tabindex="6070" class="com_input"></td>
+					</tr>
+					<tr>
+						<td>Unit of Measure:</br> <select name="commodityunits" tabindex="6080" class="com_input"><option value="AR">Select</option></select></td>
+						<td>Unit Value:</br> <input type="text" name="commodityunitvalue" value="0.00" size="5" tabindex="6090" class="com_input"></td>
+					</tr>
+					<tr>
+						<td>Customs Value:</br><input type="text" name="commoditycustomsvalue" value="0.00" size="5" tabindex="6100" class="com_input"></td>
+						<td>Currency Type:</br><input type="text" name="currencytype" value="USD" size="5" tabindex="6110" class="com_input"></td>
+					</tr>
+				</table>
+				</td>
+			</tr>
+		</table>
+	[% END %]
+
+	<br/>
+	<div id="submit"><input type="submit" class="submit rounded5" value="PREVEOUS"/><input type="submit" class="create rounded5 float_right" value="NEXT STEP"/></div>
