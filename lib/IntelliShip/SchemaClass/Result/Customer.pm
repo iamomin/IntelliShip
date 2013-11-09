@@ -586,14 +586,14 @@ __PACKAGE__->belongs_to(
 		'addressid'
 	);
 
-__PACKAGE__->has_many(contact => 'IntelliShip::Schema::Result::Contact', 'customerid');
+__PACKAGE__->has_many('contacts', 'IntelliShip::SchemaClass::Result::Contact', 'customerid');
 
 __PACKAGE__->has_many(
-  "producttypes",
-  "IntelliShip::SchemaClass::Result::Producttype",
-  { "foreign.customerid" => "self.customerid" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
+	"producttypes",
+	"IntelliShip::SchemaClass::Result::Producttype",
+	{ "foreign.customerid" => "self.customerid" },
+	{ cascade_copy => 0, cascade_delete => 0 },
+	);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

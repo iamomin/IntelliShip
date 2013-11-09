@@ -193,8 +193,8 @@ __PACKAGE__->set_primary_key("contactid");
 
 __PACKAGE__->has_one(
 	customer =>
-	'IntelliShip::SchemaClass::Result::Customer',
-	'customerid',
+		'IntelliShip::SchemaClass::Result::Customer',
+		'customerid'
 	);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

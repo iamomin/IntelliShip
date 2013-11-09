@@ -35,6 +35,17 @@ body{
 .margin20 {
     margin: 20px 0px;
 }
+
+.ajax-loader {
+    position: fixed;
+    top: 0%;
+    left: 50%;
+    margin-left: -48px; /* image width / 2 */
+    margin-top:   5px;  /* image height / 2 */
+    display: block;
+    cursor: wait;
+}
+
 /* Header */
 
 #header {
@@ -253,6 +264,11 @@ table.app {
 }
 
 .bold_text {
+    font-weight: bold;
+}
+
+.default_text {
+    margin: 3px;
     font-weight: bold;
 }
 

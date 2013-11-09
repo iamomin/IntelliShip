@@ -13,6 +13,7 @@
 		<link rel="stylesheet" href="/static/jquery/jquery-ui-1.10.3/themes/base/jquery.ui.all.css">
 		<script src="/static/jquery/jquery-ui-1.10.3/jquery-1.9.1.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.core.js"></script>
+		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.datepicker.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.widget.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.position.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.menu.js"></script>
@@ -41,10 +42,15 @@
 	</head>
 
 	<body>
+	<!-- ajax loader -->
+	<div id="preload" style="display: none;"><img src="/static/images/loader-dots-blue.GIF" class="ajax-loader"/></div>
+	<!-- ajax loader -->
 
 	<!-- start Dialog -->
 	<div id="dialog-message" title="Message"></div>
 	<!-- end Dialog -->
+
+	<div id="response-content" style="display: none;"></div>
 
 	<div id="wrapper">
 

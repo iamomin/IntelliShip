@@ -13,6 +13,7 @@ BEGIN {
 	has 'context' => ( is => 'rw' );
 	has 'token' => ( is => 'rw' );
 	has 'token' => ( is => 'rw' );
+	has 'contact' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
 
 	}
@@ -132,51 +133,40 @@ sub authenticate_user :Private
 
 	if (my $Contact = $contacts[0])
 		{
-		#my @customers = $Contact->search_related('customers',{username => $Username, password => $Password});
-		my @customers = $c->model('MyDBI::Customer')->search({customerid => $Contact->customerid, username => $Username, password => $Password});
-		my $Customer = $customers[0];
-
-		$c->log->debug("Contact customer: " . $Contact->customer);
+		my $Customer = $Contact->customer;
 
 		$ContactID = $Contact->contactid;
 		$CustomerID = $Customer->customerid;
 		$ActiveUser = ($Contact->firstname ? $Contact->firstname : $Contact->username);
 		$BrandingID = $self->get_branding_id;
+
+		$self->contact($Contact);
+		$self->customer($Customer);
 		}
 
 	my $TokenID = undef;
+	my $myDBI = $c->model("MyDBI");
 
 	if ($ContactID)
 		{
 		$TokenID = $self->generate_new_token;
 
 		$c->log->debug("#### Creating new session for token: " . $TokenID);
-=cut
-		my $tokenData = {
-			datecreated => "timestamp 'now'",
-			dateexpires => "timestamp 'now' + '2 hours'",
-			};
 
-		my $Token = $c->model("MyDBI::Token")->new($tokenData);
-		$Token->tokenid($TokenID);
-		$Token->customerid($ContactID);
-		$Token->active_username($ActiveUser);
-		$Token->brandingid($BrandingID);
-		$Token->ssoid($SSOAuth);
-		#$Token->datecreated(IntelliShip::DateUtils->timestamp);
-		#$Token->dateexpires(IntelliShip::DateUtils->get_timestamp_delta_HMS_from_now(2));
-		$Token->insert;
+		($BrandingID, $SSOUsername, $SSOAuth) = ('','',''); ##**
 
-=cut
 		my $sql = "INSERT INTO token
 					(tokenid, customerid, datecreated, dateexpires,active_username,brandingid,ssoid)
 				VALUES
 					('$TokenID', '$ContactID', timestamp 'now', timestamp 'now' + '2 hours', '$ActiveUser', '$BrandingID', '$SSOAuth')";
 
-		$c->model("MyDBI")->storage->dbh->do($sql);
+		$myDBI->dbh->do($sql);
 
 		$self->token($c->model("MyDBI::Token")->find($TokenID));
 		}
+
+	$c->log->debug("#### FLUSH EXPIRED TOKEN FROM DB");
+	$myDBI->dbh->do("DELETE FROM token WHERE dateexpires <= timestamp 'now'");
 
 	return $TokenID;
 	}
@@ -208,7 +198,17 @@ sub authenticate_token :Private
 		{
 		$NewTokenID = $Token->tokenid;
 		$self->token($Token);
-		#$self->customer($Token->customer);
+
+		my $Customer = $Token->customer;
+
+		my @contacts = $Customer->contacts;
+		my $Contact = $contacts[0];
+
+		$self->contact($Contact);
+		$self->customer($Customer);
+
+		$c->stash->{customer} = $Customer;
+		$c->stash->{contact} = $Contact;
 		}
 
 	return ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
@@ -265,6 +265,9 @@ sub get_branding_id
 	return $c->stash->{branding_id} if $c->stash->{branding_id};
 
 	my $branding_id;
+
+	return unless $ENV{HTTP_HOST};
+	#$c->log->debug("**** ENV: " . Dumper %ENV);
 
 	#override brandingid based on url
  	if ( $ENV{HTTP_HOST} =~ /d?visionship\.*\.*/ )

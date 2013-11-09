@@ -93,8 +93,10 @@ sub auto :Private {
 			{
 			$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
 			$c->response->redirect($c->uri_for('/customer/login'));
+			$c->stash->{template} = undef;
 			return 0;
 			}
+
 		$c->log->debug("**** User Authorized Successfully");
 		}
 
@@ -104,8 +106,7 @@ sub auto :Private {
 sub end : Private {
 	my ($self, $c) = @_;
 
-	my $params = $c->req->params;
-	#$c->log->debug("In end : Private ");
+	$c->log->debug("In end : Private ");
 	#$c->log->debug("\nPARAMS : " . Dumper $c->req->params);
 
 	return unless $c->stash->{template};
@@ -113,9 +114,9 @@ sub end : Private {
 	$c->response->body($c->stash->{template});
 
 	my $Token = $c->controller->token;
-	if ($Token and $params->{'ajax'} == 1)
+	if ($Token and $c->req->param('ajax') == 1)
 		{
-		$c->log->debug("============== Ajax");
+		#$c->log->debug("============== Ajax");
 		$c->forward($c->view('Ajax'));
 		}
 	elsif ($Token)
