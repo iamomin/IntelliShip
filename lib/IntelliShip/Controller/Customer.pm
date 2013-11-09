@@ -351,6 +351,18 @@ sub get_select_list
 			push(@{$list->{list}}, { name => $Country->countryname, value => $Country->countryiso2});
 			}
 		}
+	elsif ($list_name eq 'PACKAGE_UNIT_TYPE')
+		{
+		my $c = $self->context;
+
+		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
+
+		foreach my $UnitType (@records)
+			{
+			my $is_selected = 1 if ($UnitType->unittypename eq 'Envelope');
+			push(@{$list->{list}}, { name => $UnitType->unittypename, value => $UnitType->unittypeid, is_selected => $is_selected });
+			}
+		}
 	elsif ($list_name eq 'US_STATES')
 		{
 		$list = {

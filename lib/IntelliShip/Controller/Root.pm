@@ -104,6 +104,7 @@ sub auto :Private {
 sub end : Private {
 	my ($self, $c) = @_;
 
+	my $params = $c->req->params;
 	#$c->log->debug("In end : Private ");
 	#$c->log->debug("\nPARAMS : " . Dumper $c->req->params);
 
@@ -112,7 +113,12 @@ sub end : Private {
 	$c->response->body($c->stash->{template});
 
 	my $Token = $c->controller->token;
-	if ($Token)
+	if ($Token and $params->{'ajax'} == 1)
+		{
+		$c->log->debug("============== Ajax");
+		$c->forward($c->view('Ajax'));
+		}
+	elsif ($Token)
 		{
 		#$c->log->debug("============== CustomerMaster");
 		$c->stash->{active_username} = $Token->active_username;
