@@ -1,0 +1,107 @@
+[% JSON_DATA %]
+
+[% IF INTERNATIONAL %]
+	<table>
+	<tr>
+		<td>
+		<table class="app">
+			<caption>INTERNATIONAL</caption>
+			<tr>
+				<td><label for="termsofsale">Terms of Sale:</label><br/>
+				<select name="termsofsale" id="termsofsale">
+					<option selected value=1>FOB/FCA</option>
+					<option value=2>CIF/CIP</option>
+					<option value=3>C&F/CPT</option>
+					<option value=4>EXW</option>
+					<option value=5>DDU</option>
+					<option value=6>DDP</option>
+				</select>
+				</td>
+				<td><label for="dutypaytype">Duties Pay Type:</label><br/>
+				<select name="dutypaytype" id="dutypaytype">
+					<option selected value=1>Bill</option>
+					<option value=2>Bill Recipient</option>
+					<option value=3>Bill Third Party</option>
+				</select>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="dutyaccount">Duties Payer Account Number:</label><br/>
+				<input type="text" name="dutyaccount" id="dutyaccount"/>
+				</td>
+				<td><label for="destinationcountry">Ultimate Destination Country:</label><br/>
+				<select name="destinationcountry" id="destinationcountry">
+					[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="manufacturecountry">Country of Manufacture:</label><br/>
+				<select name="manufacturecountry" id="manufacturecountry">
+					[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</td>
+				<td>
+				<input type="checkbox" class="checkbox" id="relatedparties" value="1"/><label for="relatedparties">Related Parties</label>
+				<br/>
+				<input type="checkbox" class="checkbox" id="printcominv" value="1"/><label for="printcominv">Print Commercial Invoice</label>
+				</td>
+			</tr>
+		</table>
+		</td>
+		<td>
+		<table class="app">
+			<caption>COMMODITY</caption>
+			<tr>
+				<td><label for="commodityquantity">Piece Count:</label><br/>
+				<select name="commodityquantity" id="commodityquantity">
+					<option selected value=1>----</option>
+					[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</td>
+				<td><label for="harmonizedcode">Harmonized Code:</label><br/>
+				<select name="harmonizedcode" id="harmonizedcode">
+					<option selected value=1>-----</option>
+					[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="commodityunits">Unit of Measure:</label><br/>
+				<select name="commodityunits" id="commodityunits">
+					<option selected value=1>-----</option>
+					[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</td>
+				<td><label for="commodityunitvalue">Unit Value:</label><br/>
+				<input type="text" name="commodityunitvalue" id="commodityunitvalue"/>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="customscommodityvalue">Customs Value:</label><br/>
+				<input type="text" name="customscommodityvalue" id="customscommodityvalue"/>
+				</td>
+				<td><label for="currencytype">Currency Type:</label><br/>
+				<select name="currencytype" id="currencytype">
+					<option selected value=1>-----</option>
+					[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select>
+				</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+	</table>
+[% END %]

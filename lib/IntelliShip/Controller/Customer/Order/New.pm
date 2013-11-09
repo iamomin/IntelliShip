@@ -23,17 +23,33 @@ Catalyst Controller.
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-
     #$c->response->body('Matched IntelliShip::Controller::Customer::Order::New in Customer::Order::New.');
+
+	if ($c->req->param('do') eq 'add')
+		{
+		$self->add;
+		}
+	else
+		{
+		$self->setup;
+		}
+
+	$c->stash(template => "templates/customer/order.tt");
+}
+
+sub setup :Private
+	{
+    my $self = shift;
+	my $c = $self->context;
+
+	$c->stash->{customer} = $self->customer;
+	$c->stash->{customerAddress} = $self->customer->address;
 	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
 	$c->stash->{packageunittype_loop} = $self->get_select_list('PACKAGE_UNIT_TYPE');
-	$c->stash(template => "templates/customer/order.tt");
-}
-
-
+	}
 
 =encoding utf8
 
