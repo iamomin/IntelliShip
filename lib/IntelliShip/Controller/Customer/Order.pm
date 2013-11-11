@@ -395,6 +395,38 @@ sub save_order
 =cut
 	}
 
+sub get_auto_order_number
+	{
+	my $self = shift;
+	my $OrderNumber = shift || "";
+
+	my $c = $self->context;
+	my $myDBI = $c->model("MyDBI");
+	my $Customer = $self->customer;
+
+	$c->log->debug("\n get_auto_order_number IN ordernumber=$OrderNumber");
+
+	# see if a customer sequence exists for the order number
+	my $SQL = "SELECT count(*) from pg_class where relname = lower('ordernumber_" . $Customer->customerid . "_seq')";
+	$c->log->debug("\n get_auto_order_number SQL=$SQL");
+
+	my $HasAutoOrderNumber = $myDBI->select($SQL)->fetchrow(0)->{'count'};
+
+	if ( $HasAutoOrderNumber == 0 )
+		{
+		$OrderNumber = undef;
+		}
+	elsif ( length $OrderNumber == 0 and $HasAutoOrderNumber == 1 )
+		{
+		my $sql = "SELECT nextval('ordernumber_" . $Customer->customerid . "_seq')";
+		$OrderNumber = "QS" . $myDBI->select($SQL)->fetchrow_array;
+		}
+
+	$c->log->debug("\n get_auto_order_number OUT ordernumber=$OrderNumber");
+
+	return ($OrderNumber,$HasAutoOrderNumber);
+	}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

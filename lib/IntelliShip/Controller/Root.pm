@@ -114,7 +114,8 @@ sub end : Private {
 	$c->response->body($c->stash->{template});
 
 	my $Token = $c->controller->token;
-	if ($Token and $c->req->param('ajax') == 1)
+	my $ajax = $c->req->param('ajax') || 0;
+	if ($Token and $ajax)
 		{
 		#$c->log->debug("============== Ajax");
 		$c->forward($c->view('Ajax'));

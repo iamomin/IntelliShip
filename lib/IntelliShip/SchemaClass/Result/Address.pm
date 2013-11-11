@@ -139,6 +139,13 @@ __PACKAGE__->set_primary_key("addressid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uN5QXmhnfe3ygqqj8Hld/Q
 
+__PACKAGE__->belongs_to(
+	country_details => 
+		"IntelliShip::SchemaClass::Result::Country",
+		{'foreign.countryiso2' => 'self.country'},
+		{ join_type => 'inner' },
+	);
+
 sub set_address_code_details
 	{
 	my $self = shift;
@@ -181,6 +188,13 @@ sub set_address_code_details
 
 	$self->addressnamecode($addressnamecode);
 	$self->addresscode($addresscode);
+	}
+
+sub country_description
+	{
+	my $self = shift;
+	my $CountryObj = $self->country_details;
+	return $CountryObj->countryname;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -2,12 +2,13 @@
 	<h1>ORDER INFORMATION</h1>
 
 	<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
+	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
 	<input type="hidden" name="do" value="save"/>
 
 	<table>
 		<tr>
 			<td>
-			<label for="ordernumber" class="small_title">Order Number:</label><input type="text" id="ordernumber" name="ordernumber" class="auto_width" size="8"/><input type="button" class="submit rounded5" value="CONSOLIDATE"/><input type="checkbox" class="checkbox" id="combine" value="combine"/><label for="combine">Combine</label>
+			<label for="ordernumber" class="small_title">Order Number:</label><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8"/><input type="button" class="submit rounded5" value="CONSOLIDATE"/><input type="checkbox" class="checkbox" id="combine" value="combine"/><label for="combine">Combine</label>
 			</td>
 			<td>
 			<input type="checkbox" class="checkbox" id="freightch" value="freightch"/><label for="freightch">Freight Charges</label>
@@ -39,10 +40,16 @@
 					<td><label for="fromstate" class="float_right">State:</label></td><td><input type="text" name="fromstate" id="fromstate" value="[% customerAddress.state %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="fromzip" class="float_right">Zipcode:</label></td><td><input type="text" name="fromzip" id="fromzip" value="[% customerAddress.zip %]" readonly size="6" maxlength="5"/></td>
+					<td><label for="fromzip" class="float_right">Zipcode:</label></td><td><input type="text" name="fromzip" id="fromzip" value="[% customerAddress.zip %]" readonly size="4" maxlength="5"/></td>
 				</tr>
 				<tr>
-					<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="text" name="fromcountry" id="fromcountry" value="[% customerAddress.country %]" readonly/></td>
+					<td><label for="fromcountry" class="float_right">Country:</label></td><td>
+					<label>
+					<select name="fromcountry" id="fromcountry">
+						<option value="[% customerAddress.country %]">[% customerAddress.country_description %]</option>
+					</select>
+					</label>
+					</td>
 				</tr>
 				<tr>
 					<td><label for="fromcontact" class="float_right">Contact:</label></td><td><input type="text" class="text" name="fromcontact" id="fromcontact" value="[% customer.contact %]" readonly/></td>
@@ -54,7 +61,7 @@
 					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="text" name="fromdepartment" id="fromdepartment"></td>
 				<tr>
 				<tr>
-					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="text" name="fromemail" id="fromemail"/></td>
+					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad" name="fromemail" id="fromemail"/></td>
 				</tr>
 			</table>
 			</td>
@@ -85,14 +92,14 @@
 					</td>
 				</tr>
 				<tr>
-					<td><label for="tozip" class="float_right">Zipcode:</label></td><td><input type="text" name="tozip" id="tozip" size="6" maxlength="5"/></td>
+					<td><label for="tozip" class="float_right">Zipcode:</label></td><td><input type="text" name="tozip" id="tozip" size="4" maxlength="5"/></td>
 				</tr>
 				<tr>
 					<td><label for="tocountry" class="float_right">Country:</label></td><td>
 					<label>
-					<select name="tocountry" id="tocountry"/>
+					<select name="tocountry" id="tocountry">
 						[% FOREACH item IN countrylist_loop %]
-								<option value="[% item.value %]">[% item.name %]</option>
+								<option value="[% item.value %]" [% IF item.value == default_country %] SELECTED [% END %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
@@ -108,7 +115,7 @@
 					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" name="tocustomernumber" id="tocustomernumber"/></td>
 				</tr>
 				<tr>
-					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" name="toemail" id="toemail"/></td>
+					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad" name="toemail" id="toemail"/></td>
 				</tr>
 			</table>
 			</td>
@@ -213,7 +220,7 @@
 		<tr>
 		[% FOREACH item IN specialservice_loop %]
 		[% count=count+1 %]
-			[% IF count == 5 %]
+			[% IF count == 7 %]
 				</tr><tr>
 			[% count = 0 %]
 			[% ELSE %]
@@ -371,47 +378,37 @@ $("#dimheight").blur(function() {
 	CalculateDensity();
 });
 
-$("#sku").blur(function() {
-	var sku_id=$("#sku").val();
-	var dataString = 'ajax=1&do=get_sku_detail&sku_id='+ sku_id;
+function setSkuDetails(sku_id)
+	{
+	var query_param = '&sku_id='+sku_id;
 
-	$.ajax({
-		type: "GET",
-		url: "/customer/order/ajax", 
-		data: dataString,
-		contentType: "application/json; charset=utf-8",
-		dataType: 'json',
-		success: function(data) {
-			if (data.error) {
-				$("#description").val('');
-				$("#weight").val('');
-				$("#dimlength").val('');
-				$("#dimwidth").val('');
-				$("#dimheight").val('');
-				$("#nmfc").val('');
-				$("#class1").val('');
-				$("#density").val('');
-				$("#quantity").val('1');
-			}
-			else {
-				$("#description").val(data.description);
-				$("#weight").val(data.weight);
-				$("#dimlength").val(data.length);
-				$("#dimwidth").val(data.width);
-				$("#dimheight").val(data.height);
-				$("#nmfc").val(data.nmfc);
-				$("#class1").val(data.class);
-				$("#unittype option:selected").val(data.unittypeid);
-			}
-		},
-		error: function(data) {
-			alert("An internal error has occurred, Please contact support." + data);
-		},
-		complete: function(data){
-			CalculateDensity();
+	if(sku_id > 0) {
+		send_ajax_request('', 'JSON', 'order', 'get_sku_detail', query_param, function (){
+			if (JSON_data.error) {
+					$("#description").val('');
+					$("#weight").val('');
+					$("#dimlength").val('');
+					$("#dimwidth").val('');
+					$("#dimheight").val('');
+					$("#nmfc").val('');
+					$("#class1").val('');
+					$("#density").val('');
+					$("#quantity").val('1');
+				}
+				else {
+					$("#description").val(JSON_data.description);
+					$("#weight").val(JSON_data.weight);
+					$("#dimlength").val(JSON_data.length);
+					$("#dimwidth").val(JSON_data.width);
+					$("#dimheight").val(JSON_data.height);
+					$("#nmfc").val(JSON_data.nmfc);
+					$("#class1").val(JSON_data.class);
+					$("#unittype option:selected").val(JSON_data.unittypeid);
+				}
+			});
+		} else {
 		}
-	})
-});
+	}
 
 function checkInternationalSection() {
 	if($("#tocountry").val() != $("#fromcountry").val()) {
@@ -445,6 +442,10 @@ $(document).ready(function(){
 
 	$("#tocountry").change(function() {
 		checkInternationalSection();
+		});
+
+	$("#sku").blur(function() {
+		setSkuDetails($("#sku").val());
 		});
 
 	$("#frm_order").submit(function() {
