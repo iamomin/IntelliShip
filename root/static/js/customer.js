@@ -2,9 +2,9 @@
 /* 2013 Aloha Technology Pvt Ltd. */
 /* Designed by: Imran Momin*/
 
-function afterSuccessCallBack(result_div, call_back_function, responseStatus) {
+function afterSuccessCallBack(response_type, result_div, call_back_function, responseStatus) {
 	var bollIsErrorResponse = false;
-	var content = $('#response-content').html();
+	var content = (response_type == "JSON" ? JSON_data.error : $('#response-content').html());
 
 	if (responseStatus == 'error'){
 		content = "ERROR:::Could not complete request.";
@@ -12,7 +12,7 @@ function afterSuccessCallBack(result_div, call_back_function, responseStatus) {
 
 	var re = new RegExp("(ERROR:::|Please See Errors Below|errors were encountered)","g");
 
-	if (content.match(re))
+	if (content != undefined && content.match(re))
 		{
 		bollIsErrorResponse = true;
 		(content.match(/ERROR:::/) ? showMessage(content.replace(re,""), "Error") : showMessage(content, "Error"));
@@ -20,18 +20,19 @@ function afterSuccessCallBack(result_div, call_back_function, responseStatus) {
 	else
 		{
 		bollIsErrorResponse = false;
-		$('#' + result_div).html($('#response-content').html());
+		if (response_type == "HTML") $('#' + result_div).html($('#response-content').html());
 		}
 
-	$('#response-content').empty();
+	if (response_type == "HTML") $('#response-content').empty();
 
 	// Make call to call back function on demand
 	if (call_back_function != null) {call_back_function();}
 	}
 
+var JSON_data;
 function send_ajax_request(result_div, type_value, section_value, action_value, optional_param, call_back_function) {
 
-	if (type_value == "HTML") $('#preload').show();
+	$('#preload').show();
 
 	var data_string = "ajax=1";
 	if (type_value) data_string += '&type='+ (type_value ? type_value : 'HTML');
@@ -44,18 +45,21 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 	var charPattern = /#/g;
 	if (data_string.match(charPattern)) { data_string = data_string.replace(charPattern,"%23"); }
 
-	var responseData;
 	if (type_value == "JSON") {
+		JSON_data = null;
 		$.ajax({
 			type: "GET",
 			url: request_url, 
-			data: dataString,
+			data: data_string,
 			contentType: "application/json; charset=utf-8",
 			dataType: 'json',
 			success: function(data) {
 				$('#preload').hide();
+
 				if (data.error) showMessage(data.error, "Reseponse Error");
-				else responseData = data;
+				else JSON_data = data;
+
+				afterSuccessCallBack(type_value, "", call_back_function);
 				},
 			error: function(data) {
 				showMessage("An internal error has occurred, Please contact support. " + data, "Internal Server Error");
@@ -68,11 +72,9 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 		} else {
 		$('#response-content').load(encodeURI(request_url+"?"+data_string), function (responseText, textStatus, XMLHttpRequest) {
 			$('#preload').hide();
-			afterSuccessCallBack(result_div, call_back_function, textStatus);
+			afterSuccessCallBack(type_value, result_div, call_back_function, textStatus);
 			});
 		}
-
-	return responseData;
 	}
 
 $(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });

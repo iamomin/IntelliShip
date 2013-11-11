@@ -346,8 +346,8 @@ sub get_select_list
 		{
 		my $c = $self->context;
 
-		#my @records = $c->model('MyDBI::Country')->all;
-		my @records = $c->model('MyDBI::Country')->search({ countryiso2 => 'US' });
+		my @records = $c->model('MyDBI::Country')->all;
+		#my @records = $c->model('MyDBI::Country')->search({ countryiso2 => 'US' });
 
 		foreach my $Country (@records)
 			{

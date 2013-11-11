@@ -49,7 +49,7 @@ body{
 /* Header */
 
 #header {
-    width: 850px;
+    width: 90%;
     height: 50px;
     margin: 0 auto;
     border: 1px solid #6F8DB0;
@@ -68,7 +68,7 @@ body{
 /* Menu */
 
 #menu {
-    width: 850px;
+    width: 90%;
     height: 25px;
     margin: 0 auto;
     border: solid 1px #ddd;
@@ -102,27 +102,27 @@ body{
 /* Page */
 
 #page {
-    width: 780px;
+    width: 90%;
     margin: 10px auto;
     border: solid 1px #ddd;
 }
 
 #content {
     margin: 0 auto;
-   *width: 775px;
+    width: auto;
 }
 
 /* Post */
 
 #post {
     margin: 0 auto;
-    width: 770px;
+    width: auto;
    }
 
 /* Footer */
 
 #footer {
-    width: 850px;
+    width: 90%;
     margin: 10px auto;
     color: #909090;
 /*    border: solid 1px #ddd;*/
@@ -312,6 +312,10 @@ input.text {
     width: 160px;
 }
 
+input.broad {
+    width: 250px;
+}
+
 input.auto_width {
     width: auto;
 }
@@ -363,7 +367,7 @@ input.create {
 
 /* The CSS3 select control */
 select {
-    margin: 0;
+    width: 160px;
     margin: 3px;
     border: solid 1px #afafaf;
     -webkit-border-radius: 3px;
@@ -413,3 +417,18 @@ label:before {
     pointer-events: none;
     display: block;
 }*/
+
+/* jQuery autocomplete scrollable results */
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
+
+ /* IE 6 doesn't support max-height
+  * we use height instead, but this forces the menu to always be this tall
+  */
+ * html .ui-autocomplete {
+    height: 300px;
+}
