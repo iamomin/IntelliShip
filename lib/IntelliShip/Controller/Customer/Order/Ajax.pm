@@ -71,6 +71,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->get_sku_detail;
 		}
+	elsif ($params->{'action'} eq 'adjust_due_date')
+		{
+		$dataHash = $self->adjust_due_date;
+		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_response = $self->jsonify($dataHash);
@@ -109,6 +113,50 @@ sub get_sku_detail :Private
 		}
 
 	return $response_hash;
+	}
+
+sub adjust_due_date
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $ship_date = $params->{shipdate};
+	my $due_date = $params->{duedate};
+	my $equal_offset = $params->{offset};
+	my $less_than_offset = $params->{lessthanoffset};
+
+	$c->log->debug("Ajax : adjust_due_date");
+	$c->log->debug("ship_date : $ship_date");
+	$c->log->debug("due_date : $due_date");
+	$c->log->debug("equal_offset : $equal_offset");
+	$c->log->debug("less_than_offset : $less_than_offset");
+
+	my $offset;
+
+	my $delta_days = IntelliShip::DateUtils->get_delta_days($ship_date,$due_date);
+
+	$c->log->debug("delta_days : $delta_days");
+
+	my $adjusted_datetime;
+	if ( $delta_days == 0 and length $equal_offset )
+		{
+		$offset = $equal_offset;
+		}
+	elsif ( $delta_days < 0 and length $less_than_offset )
+		{
+		$offset = $less_than_offset;
+		}
+	else
+		{
+		$adjusted_datetime = $due_date;
+		}
+
+	$c->log->debug("adjusted_datetime : $adjusted_datetime");
+
+	$adjusted_datetime = IntelliShip::DateUtils->get_future_business_date($ship_date, $offset);
+
+	return { dateneeded => $adjusted_datetime };
 	}
 
 sub jsonify

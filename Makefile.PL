@@ -17,6 +17,10 @@ requires 'Moose';
 requires 'namespace::autoclean';
 requires 'Config::General'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
+requires 'Math::BaseCalc' => '1.011';
+requires 'Date::Business';
+requires 'Date::Calendar';
+requires 'Date::Manip';
 test_requires 'Test::More' => '0.88';
 catalyst;
 

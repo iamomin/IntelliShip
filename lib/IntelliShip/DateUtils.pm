@@ -2,6 +2,9 @@ package IntelliShip::DateUtils;
 
 use strict;
 use DateTime;
+use Date::Business;
+use Date::Calendar;
+use Date::Manip qw(ParseDate UnixDate);
 use Date::Calc qw(check_date Delta_Days Add_Delta_Days Delta_DHMS Add_Delta_DHMS Day_of_Week N_Delta_YMD Add_Delta_YMDHMS Timezone);
 
 =head1 NAME
@@ -179,32 +182,25 @@ sub get_formatted_timestamp
 	return $timestamp;
 	}
 
-=head2 get_delta_days_from_this_date
-
-Get delta days from a given date and the current date.  Given date can be in the future or past.  Value returned is
-positive if given date is in the future, the value is negative if given date is in the past.
-
-=cut
-
-sub get_delta_days_from_this_date
+sub get_delta_days
 	{
 	my $self = shift;
-	my $dateIs = shift; ## 0000-00-00
+	my $date1 = shift;
+	my $date2 = shift || $self->current_date;
 
-	if ($dateIs =~ /\:/g) ## 0000-00-00 00:00:00
+	if ($date1 =~ /\:/g) ## 0000-00-00 00:00:00
 		{
-		my ($date,$time) = split(/\ /,$dateIs);
-		$dateIs = $date ;
+		my ($date,$time) = split(/\ /,$date1);
+		$date1 = $date ;
 		}
 
-	my ($dyy, $dmm, $ddd) = split(/-/, $dateIs);
+	my ($d1yy, $d1mm, $d1dd) = $self->parse_date($date1);
+	my ($d2yy, $d2mm, $d2dd) = $self->parse_date($date2);
 
-	return 0 unless ( check_date($dyy, $dmm, $ddd) );
+	return 0 unless check_date($d1yy, $d1mm, $d1dd);
+	return 0 unless check_date($d2yy, $d2mm, $d2dd);
 
-	my $cdate = IntelliShip::DateUtils->current_date;
-	my ($cyy, $cmm, $cdd) = split(/\//, $cdate);
-
-	return Delta_Days($cyy, $cmm, $cdd, $dyy, $dmm, $ddd);
+	return Delta_Days($d1yy, $d1mm, $d1dd, $d2yy, $d2mm, $d2dd);
 	}
 
 sub get_delta_YMD_from_this_date
@@ -237,11 +233,11 @@ sub get_date_delta_days_from_given_date
 
 	$separator = "/" if (!$separator);
 
-	$cdate = $self->current_date($separator) unless($cdate);
+	$cdate = $self->current_date($separator) unless $cdate;
 
 	my ($cyy, $cmm,$cdd);
-	($cyy, $cmm,$cdd) = split(/\//, $cdate) if($separator eq '/');
-	($cyy, $cmm,$cdd) = split(/\-/, $cdate) if($separator eq '-');
+	($cmm, $cdd,$cyy) = split(/\//, $cdate) if $separator eq '/';
+	($cyy, $cmm,$cdd) = split(/\-/, $cdate) if $separator eq '-';
 
 	my ($nyy, $nmm, $ndd) = Add_Delta_Days($cyy, $cmm, $cdd, $delta);
 	$nmm = "0" . $nmm if (length($nmm) == 1);
@@ -463,6 +459,122 @@ sub get_day_of_week
 	my $dd = substr($date, 6, 2);
 
 	return Day_of_Week($yy,$mm,$dd);
+	}
+
+sub get_future_business_date
+	{
+	my $self = shift;
+	my ($start_date, $offset_days, $include_saturday, $include_sunday) = @_;
+
+	my $parsed_start_date = ParseDate($start_date);
+	my $normalized_start_date = UnixDate($parsed_start_date, "%Q");
+	my $stop_date;
+
+	# If no offset is given, return 'today' if it's a weekday, or the following business
+	# day if it's a weekend or holiday
+	my $DOW = UnixDate($parsed_start_date, "%a");
+
+	if (length $offset_days == 0 and $DOW =~ m/(Sat|Sun)/i)
+		{
+		$offset_days = 1;
+		}
+
+	# One or both weekend days included
+	if ( $include_saturday or $include_sunday )
+		{
+		$stop_date = new Date::Business(
+			DATE     => $normalized_start_date,
+			HOLIDAY  => \&Holiday
+			);
+
+		for ( my $i = 1; $i < ($offset_days + 1); $i ++ )
+			{
+			$stop_date->next();
+
+			if ( $stop_date->day_of_week() == 6 and !$include_saturday )
+				{
+				$stop_date->next();
+				}
+
+			if ( $stop_date->day_of_week() == 0 and !$include_sunday )
+				{
+				$stop_date->next();
+				}
+			}
+		}
+	else # Normal
+		{
+		$stop_date = new Date::Business(
+			DATE     => $normalized_start_date,
+			OFFSET   => $offset_days,
+			HOLIDAY  => \&Holiday
+			);
+		}
+
+	$stop_date = $stop_date->image();
+	$stop_date =~ s/(\d{4})(\d{2})(\d{2})/$2\/$3\/$1/;
+
+	return $stop_date;
+	}
+
+sub Holiday
+	{
+	my $self = shift;
+	my ($start, $end) = @_;
+	my $year = (localtime)[5] + 1900;
+
+	my ($numHolidays) = 0;
+	my ($holiday, @holidays);
+
+	my $Profiles = {};
+	## United States of America - Shipping holidays
+	$Profiles->{'US-Shipping'} = {
+		"New Year's Day"	=> "1/1",
+		"Memorial Day"		=> "5/Mon/May",
+		"Independence Day"	=> "7/4",
+		"Labor Day"			=> "1/Mon/Sep",
+		"Thanksgiving Day"	=> "4/Thu/Nov",
+		"Christmas Day"		=> "12/25",
+		};
+
+	# Iterate through this year and next, to make sure we don't get caught by next year's holidays
+	my @years = ( $year, ($year + 1) );
+	foreach my $year (@years)
+		{
+		my $calendar = Date::Calendar->new($Profiles->{'US-Shipping'});
+		my $year = $calendar->year($year);
+
+		my @dates = $calendar->search('');
+
+		foreach my $date (@dates)
+			{
+			# Take date array ref and turn it into a string for use as we move forward
+			if ( @$date[2] !~ /\d{2}/ ) { @$date[2] = '0' . @$date[2] }
+			if ( @$date[3] !~ /\d{2}/ ) { @$date[3] = '0' . @$date[3] }
+			my $date = @$date[1] . @$date[2] . @$date[3];
+
+			my $check_date = new Date::Business(DATE => $date);
+			if ( $check_date != 0 and $check_date != 6 )
+				{
+				push(@holidays,$date);
+				}
+			}
+		}
+
+	foreach $holiday (@holidays)
+		{
+		$numHolidays++ if ($start le $holiday and $end ge $holiday);
+		}
+
+	return $numHolidays;
+	}
+
+sub parse_date
+	{
+	my $self = shift;
+	my $dateStr = shift;
+	$dateStr = ParseDate($dateStr);
+	return (substr($dateStr,0,4), substr($dateStr,4,2), substr($dateStr,6,2), substr($dateStr,9,2), substr($dateStr,12,2), substr($dateStr,15,2));
 	}
 
 1;
