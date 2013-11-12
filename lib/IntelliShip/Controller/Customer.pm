@@ -470,6 +470,15 @@ sub get_select_list
 			{ value => 'sundaypickup' , name => 'Sunday Pickup' },
 			]};
 		}
+	elsif ($list_name eq 'DELIVERY_METHOD')
+		{
+		$list = {
+			list => [
+			{ value => 'prepaid' , name => 'Prepaid' },
+			{ value => 'collect' , name => 'Collect' },
+			{ value => '3rdparty' , name => '3rd Party' },
+			]};
+		}
 
 	return $list->{list};
 	}

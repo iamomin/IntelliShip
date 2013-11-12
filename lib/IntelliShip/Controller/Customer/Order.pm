@@ -404,11 +404,11 @@ sub get_auto_order_number
 	my $myDBI = $c->model("MyDBI");
 	my $Customer = $self->customer;
 
-	$c->log->debug("\n get_auto_order_number IN ordernumber=$OrderNumber");
+	$c->log->debug("get_auto_order_number IN ordernumber=$OrderNumber");
 
 	# see if a customer sequence exists for the order number
 	my $SQL = "SELECT count(*) from pg_class where relname = lower('ordernumber_" . $Customer->customerid . "_seq')";
-	$c->log->debug("\n get_auto_order_number SQL=$SQL");
+	$c->log->debug("get_auto_order_number SQL=$SQL");
 
 	my $HasAutoOrderNumber = $myDBI->select($SQL)->fetchrow(0)->{'count'};
 
@@ -422,7 +422,7 @@ sub get_auto_order_number
 		$OrderNumber = "QS" . $myDBI->select($SQL)->fetchrow_array;
 		}
 
-	$c->log->debug("\n get_auto_order_number OUT ordernumber=$OrderNumber");
+	$c->log->debug("get_auto_order_number OUT ordernumber=$OrderNumber");
 
 	return ($OrderNumber,$HasAutoOrderNumber);
 	}

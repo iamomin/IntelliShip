@@ -108,7 +108,7 @@ body{
 }
 
 #content {
-    margin: 0 auto;
+    margin: 0 10px;
     width: auto;
 }
 
@@ -151,22 +151,18 @@ html>body #footer {
 }
 
 h1, h2, h3 {
-    margin: 0;
     font: bold;
     color: #1875ba;
+    margin-bottom: 10px;
 }
 
 h1 {
-    padding: 5px;
-    font-size: 22px;
-    margin-bottom: 5px;
+    font-size: 20px;
     border-bottom: solid 1px;
 }
 
 h2 {
-    padding: 5px;
-    font-size: 18px;
-    margin-bottom: 5px;
+    font-size: 16px;
     border-bottom: solid 1px;
 }
 
@@ -268,7 +264,9 @@ table.app {
 }
 
 .default_text {
-    margin: 3px;
+    margin: 2px;
+    padding: 0 3px;
+    font-size: 11px;
     font-weight: bold;
 }
 
@@ -281,7 +279,6 @@ table.app {
 
 input  {
     width: auto;
-    margin: 3px;
     padding: 0 3px;
     border: solid 1px #afafaf;
 
@@ -296,7 +293,7 @@ input  {
 }
 
 input.checkbox  {
-    border: solid 1px #afafaf;
+    margin-top: 2px;
 
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
@@ -312,7 +309,7 @@ input.text {
     width: 160px;
 }
 
-input.broad {
+input.broad_text {
     width: 250px;
 }
 
@@ -320,15 +317,23 @@ input.auto_width {
     width: auto;
 }
 
+input.hidden {
+    border: none;
+    background: #e9e9e9;
+}
+
 /* Buttons */
 
-input.rounded5 {
-    border-radius: 5px;
+input.button {
     width: auto;
-    padding: 0px 3px;
+    padding: 0px 2px;
+    cursor: pointer;
+    font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
-    cursor: pointer;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 input.submit {
@@ -367,8 +372,6 @@ input.create {
 
 /* The CSS3 select control */
 select {
-    width: 160px;
-    margin: 3px;
     border: solid 1px #afafaf;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;

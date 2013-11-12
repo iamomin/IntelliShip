@@ -58,6 +58,7 @@ sub setup :Private
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
 	$c->stash->{packageunittype_loop} = $self->get_select_list('PACKAGE_UNIT_TYPE');
+	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	$c->stash->{default_country} = "US";
 	}
