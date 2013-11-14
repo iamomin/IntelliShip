@@ -75,6 +75,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->adjust_due_date;
 		}
+	elsif ($params->{'action'} eq 'add_new_row')
+		{
+		$dataHash = $self->add_new_row;
+		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_response = $self->jsonify($dataHash);
@@ -159,6 +163,23 @@ sub adjust_due_date
 	return { dateneeded => $adjusted_datetime };
 	}
 
+sub add_new_row :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{PKG_DETAIL_ROW} = 1;
+	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
+	$c->stash->{packageunittype_loop} = $self->get_select_list('PACKAGE_UNIT_TYPE');
+
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{PKG_DETAIL_ROW} = 0;
+
+	#$self->context->log->debug("add_new_row : row_HTML : |" . $row_HTML."|");
+	return { rowHTML => $row_HTML };
+	}
+
 sub jsonify
 	{
 	my $self = shift;
@@ -206,7 +227,11 @@ sub clean_json_data
 	my $item = shift;
 
 	$item =~ s/"/\\"/g;
-	$item =~ s/[\n\t]//g;
+	$item =~ s/\t+//g;
+	$item =~ s/\n+//g;
+	$item =~ s/\r+//g;
+	$item =~ s/^\s+//g;
+	$item =~ s/\s+$//g;
 
 	return $item;
 	}

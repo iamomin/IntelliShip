@@ -143,3 +143,18 @@ function validateForm( requireFields ) {
 
 	return boolResult;
 	}
+
+var pkg_detail_row_ID = 0;
+function add_row_to_table() {
+	pkg_detail_row_ID++;
+	var query_param = '&row_ID=' + pkg_detail_row_ID;
+
+	send_ajax_request('', 'JSON', 'order', 'add_new_row', query_param, function (){
+			add_new_row('pkg_detail', JSON_data.rowHTML);
+			});
+	}
+
+function add_new_row(table_id, rowHTML) {
+	$(rowHTML).appendTo("#" + table_id + " tbody").fadeIn();
+	//$("#" + table_id + " tbody").append(rowHTML);
+	}
