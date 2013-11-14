@@ -145,11 +145,11 @@ function validateForm( requireFields ) {
 	}
 
 var pkg_detail_row_ID = 0;
-function add_row_to_table() {
+function add_pkg_detail_row(detail_type) {
 	pkg_detail_row_ID++;
-	var query_param = '&row_ID=' + pkg_detail_row_ID;
+	var query_param = '&row_ID=' + pkg_detail_row_ID + '&detail_type=' + detail_type;
 
-	send_ajax_request('', 'JSON', 'order', 'add_new_row', query_param, function (){
+	send_ajax_request('', 'JSON', 'order', 'add_pkg_detail_row', query_param, function (){
 			add_new_row('pkg_detail', JSON_data.rowHTML);
 			});
 	}

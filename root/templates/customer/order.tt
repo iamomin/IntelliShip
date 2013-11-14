@@ -185,13 +185,13 @@
 	</table>
 
 	<table class="app">
-		<tr id="footer_row">
-			<td colspan=2><input type="button" id = "add_new_package" class="button submit" value="Add Package"/></td>
-			<td><input type="button" class="button submit" value="Add Product"/></td>
+		<tr>
+			<td colspan=2><input type="button" id = "add_pkg_row" class="button submit" value="Add Package"/></td>
+			<td><input type="button" id = "add_prdt_row" class="button submit" value="Add Product"/></td>
 			<td colspan=3>
 				Multiply Qty * Weight
 				<input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label>
-				<input type="radio" name="quantityxweight" id="quantityxweightn" value="0"/><label for="quantityxweightn">No</label>
+				<input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label>
 			</td>
 			<td colspan=3><label for="printpackinglist">Print Packing List:</label><input type="checkbox" name="printpackinglist" id="printpackinglist"/></td>
 			<td colspan=5></td>
@@ -357,40 +357,76 @@ function calculate_density(row_num)
 	var DimWidth = $("#dimwidth_"+row_num).val();
 	var DimHeight = $("#dimheight_"+row_num).val();
 
-	if ( DimLength > 0 && DimWidth > 0 && DimHeight > 0  && Weight > 0 && Quantity > 0) {
+	if ( DimLength > 0 && DimWidth > 0 && DimHeight > 0  && Weight > 0 && Quantity > 0) 
+		{
 		var Density = (( (Weight/Quantity) / ( DimLength * DimWidth * DimHeight ) ) * 1728 );
+		$("#density_"+row_num).val(Density.toFixed(2));
 
-		$("#density_"+row_num).val(Density);
+		var Class = $("#class_"+row_num).val();
+		if (Class.length == 0)
+			{
+			var query_param = '&density='+Density;
+			send_ajax_request('', 'JSON', 'order', 'get_freight_class', query_param, function (){
+				if (JSON_data.freight_class) {
+					$("#class_"+row_num).val(JSON_data.freight_class);
+					}
+				});
+			}
 		}
 	}
 
-function calculate_weight()
+function calculate_total_packages_weight()
 	{
-	// Only add up package rows (i.e. skip products)
-	var EnteredWeight = $("#weight").val();
-	var DimWeight = $("#dimweight").val();
-	var Quantity = $("#quantity").val();
-	var TotalWeight = 0;
+	var TotalQuantity = 0;
+	TotalQuantity -= 0;
 
-	EnteredWeight -= 0; 
-	DimWeight -= 0; 
-	Quantity -= 0; 
-	if($('input[name=quantityxweight]:radio:checked').val() == 1) {
-		var OriginalEnteredWeight = EnteredWeight;
-		if (Quantity > 0) {
-			var SingleWeight = Math.ceil(EnteredWeight/Quantity);
-			EnteredWeight = SingleWeight * Quantity;
+	$('#pkg_detail tr').each(function() {
+		var row_id = this.id;
+
+		if (row_id.match(/^new_pkg/))
+			{
+			var row_num = row_id.split('_')[2];
+			var Quantity = $("#quantity_"+row_num).val();
+			Quantity -= 0;
+			TotalQuantity += Quantity;
 			}
-		}
+		});
 
-	if (EnteredWeight >= DimWeight) {
-		TotalWeight += EnteredWeight;
-		}
-	else {
-		TotalWeight += DimWeight;
-		}
+	$('#totalpackages_div').html(TotalQuantity.toFixed(2));
+	}
 
-	$("#totalweight").text('total Weigth:' + TotalWeight);
+
+function calculate_total_weight()
+	{
+	var TotalWeight = 0;
+	$('#pkg_detail tr').each(function() {
+		var row_id = this.id;
+
+		if (row_id != 'header_row')
+			{
+			var row_num = row_id.split('_')[2];
+			var EnteredWeight = $("#weight_"+row_num).val();
+			var DimWeight = $("#dimweight_"+row_num).val();
+			var Quantity = $("#quantity_"+row_num).val();
+
+			EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
+			if($('input[name=quantityxweight]:radio:checked').val() == 1) {
+				var OriginalEnteredWeight = EnteredWeight;
+				if (Quantity > 0) {
+					EnteredWeight = SingleWeight * Quantity;
+					}
+				}
+
+			if (EnteredWeight >= DimWeight) {
+				TotalWeight += EnteredWeight;
+				}
+			else {
+				TotalWeight += DimWeight;
+				}
+			}
+		});
+
+	$('#totalweight_div').html(TotalWeight.toFixed(2));
 	}
 
 function setSkuDetails(row_num, sku_id)
@@ -479,12 +515,15 @@ $(document).ready(function(){
 		check_due_date();
 		});
 
-/*
-	$("#weight, #quantity, #dimweight, #dimlength, #dimwidth, #dimheight").blur(function() {
-		calculate_weight();
-		calculate_density();
+	$(document).on('change', '.total_pkg_detail', function() {
+
+		calculate_total_weight();
+		calculate_total_packages_weight();
+
+		var row_id = this.id;
+		var row_num = row_id.split('_')[1];
+		calculate_density(row_num);
 	});
-*/
 
 	$(document).on('change', '.sku_id', function() {
 		var row_id = this.id;
@@ -492,19 +531,20 @@ $(document).ready(function(){
 		setSkuDetails(row_num, this.value)
 		});
 
-	$( "#add_new_package").click(function() {
-		add_row_to_table();
+	$( "#add_pkg_row").click(function() {
+		add_pkg_detail_row('pkg');
 		});
 
-	$(document).on('click', '.package_remove_link', function() {
-		// get scroll position
-		var x = window.scrollX,
-		y = window.scrollY;
+	$( "#add_prdt_row").click(function() {
+		add_pkg_detail_row('prdt');
+		});
 
+	$(document).on('click', '.remove_pkg_link', function() {
 		$(this).parent().parent().remove();
+		});
 
-		// set scroll position to x: 140, y: 700
-		window.scrollTo( x, y );
+	$("input[name=quantityxweight]:radio").change(function () {
+		calculate_total_weight();
 		});
 
 /*
@@ -540,7 +580,7 @@ $(document).ready(function(){
 		return validateForm(requireHash);
 		});
 
-	add_row_to_table();
+	add_pkg_detail_row('pkg');
 	checkInternationalSection();
 	});
 
