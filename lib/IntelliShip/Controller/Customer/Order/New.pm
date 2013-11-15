@@ -27,9 +27,9 @@ sub index :Path :Args(0) {
 
 	my $do_value = $c->req->param('do') || '';
 
-	if ($do_value eq 'add')
+	if ($do_value eq 'save')
 		{
-		$self->add;
+		$self->save_order;
 		}
 	elsif ( $do_value eq 'quick')
 		{
@@ -57,7 +57,7 @@ sub setup :Private
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
-	$c->stash->{packageunittype_loop} = $self->get_select_list('PACKAGE_UNIT_TYPE');
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	$c->stash->{default_country} = "US";

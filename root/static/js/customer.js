@@ -90,56 +90,115 @@ $( "#dialog-message" ).dialog({
 	});
 
 function showMessage( dialogMessage, dialogTitle ) {
-	if (dialogTitle == undefined)
-		$('#dialog-message').dialog( { title: "Message"} );
-	else
-		$('#dialog-message').dialog( { title: dialogTitle } );
+	if (dialogTitle == undefined) dialogTitle = "Message";
 
-	$( "#dialog-message" ).html( "<p>" + dialogMessage + "</p>" );
+	$('#dialog-message').dialog( {
+		title: dialogTitle,
+		width: '400px',
+		buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+				}
+			}
+		});
+
+	$( "#dialog-message" ).html( dialogMessage );
 	$( "#dialog-message" ).dialog("open");
 	}
 
 function validateEmail( Email ) {
+	if (Email == undefined) return false;
 	var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
 	return filter.test(Email);
 	}
 
 function validPhoneNumber( Phone ) {
+	if (Phone == undefined) return false;
 	Phone = Phone.replace(/\D+/g,"");
 	//alert("validPhoneNumber, Phone = " + Phone + ", length = " + Phone.length);
 	return (Phone.length == 10);
 	}
 
+function validDate( DateStr ) {
+	var matches = /^(\d{2})[-\/](\d{2})[-\/](\d{4})$/.exec(DateStr);
+	if (matches == null) return false;
+	var mm = matches[1] - 1;
+	var dd = matches[2];
+	var yyyy = matches[3];
+	var composedDate = new Date(yyyy, mm, dd);
+	return composedDate.getDate() == dd && composedDate.getMonth() == mm && composedDate.getFullYear() == yyyy;
+	}
+
+function updateTips( tips, t )
+	{
+	tips
+		.html( t )
+		.addClass( "ui-state-highlight" );
+		setTimeout(function() {
+			tips.removeClass( "ui-state-highlight", 1500 );
+			}, 500 );
+	}
+
 function validateForm( requireFields ) {
 	//alert("in validateForm");
 	var boolResult = true;
+	var messageStr = "";
 
 	Object.keys(requireFields).forEach(function (control) {
 		var boolRequired = false;
 		var properties = requireFields[control]
 
+		// this check is added to breack forEach for one by one validation
+		//if (boolRequired) return false;
+
+		//alert("control= " + control);
 		Object.keys(properties).forEach(function (proerty) {
 			var value = properties[proerty];
 			//alert("proerty= " + proerty + ", value = " + value);
+
+			//if (boolRequired && proerty != "description") return false;
 
 			if ( proerty == "email" )
 				boolRequired = ( value && !validateEmail($('#'+control).val()) );
 			else if ( proerty == "phone" )
 				boolRequired = ( value && !validPhoneNumber($('#'+control).val()) && $('#'+control).val('') );
+			else if ( proerty == "date" )
+				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "minlength" )
 				boolRequired = ( $('#'+control).val().length < value );
+			else if ( proerty == "passwordmatch" )
+				boolRequired = ( $('#'+control).val() != $('#'+value).val());
+			else if ( proerty == "description" && boolRequired)
+				if (messageStr.length == 0)
+					messageStr = "<p>" + value + "</p>";
+				else
+					messageStr = messageStr + "<p>" + value + "</p>";
+
 			});
 
 		if (boolRequired) {
 			boolResult = false;
-			$('#'+control).addClass('require');
+			$('#'+control).addClass( "ui-state-error" );
 			}
 		else
-			if ($('#'+control).hasClass('require')) $('#'+control).removeClass('require');
+			if ($('#'+control).hasClass('ui-state-error')) $('#'+control).removeClass('ui-state-error');
 		});
 
-	if (boolResult == false)
-		showMessage("Please fillup the valid information.","Error");
+	var tips = $(".validateTips");
+	//alert("tips: " + tips.length);
+
+	if (boolResult == false) {
+		if (tips.length == 0) {
+			if (messageStr.length == 0)
+				messageStr = "<div class='error'>Please fillup the valid information.</div>";
+			else
+				messageStr = "<div class='error'>"+messageStr+"</div>";
+
+			showMessage(messageStr, "Error");
+			} else {
+			updateTips(tips, messageStr);
+			}
+		}
 
 	return boolResult;
 	}

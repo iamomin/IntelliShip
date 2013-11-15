@@ -1,0 +1,251 @@
+[% #---------------------------------------------------------- %]
+[% # DISPLAY SETTINGS %]
+[% #---------------------------------------------------------- %]
+[% IF settings_loop %]
+<h2>Settings</h2>
+
+[% IF MESSAGE %]
+	<div class="notice">[% MESSAGE %]</div>
+[% END %]
+
+<div ID="list">
+	<ul>
+		[% FOREACH item IN settings_loop %]
+		<li><a href="[% item.url %]">[% item.name %]</a></li>
+		[% END %]
+	</ul>
+</div>
+[% END %]
+
+[% #---------------------------------------------------------- %]
+[% # CHANGE PASSWORD SETUP %]
+[% #---------------------------------------------------------- %]
+[% IF CHANGE_PASSWORD_SETUP %]
+<h2>Change Password</h2>
+
+<form id="frm_change_password" method="post" action="/customer/settings/changepassword">
+	<div class="notice">
+	When you create a new password, make sure that it's at least 6 characters long. Try to use a complex combination of numbers, letters, and punctuation marks.
+	<br>If the password you entered isn't strong enough, try mixing together uppercase and lowercase letters or making the password longer.
+	</div>
+
+	<p class="validateTips"></p>
+
+	[% IF ERR_MESSAGE %]
+		<div class="error">[% ERR_MESSAGE %]</div>
+	[% END %]
+
+	<table class="app">
+		<tr> 
+			<td colspan=2>&nbsp;</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="oldpassword">Old Password:</td>
+			<td><input type="password" class="broad_text" id="oldpassword" name="oldpassword" autocomplete="off" maxlength="50" /></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="newpassword1">New Password:</td>
+			<td align="left"><input type="password" class="broad_text" id="newpassword1" name="newpassword1" autocomplete="off" maxlength="50" /></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="newpassword2">Confirm New Password:</td>
+			<td align="left"><input type="password" class="broad_text" id="newpassword2" name="newpassword2" autocomplete="off" maxlength="50" /></td>
+		</tr>
+		<tr> 
+			<td colspan=2>&nbsp;</td>
+		</tr>
+	</table>
+	<center><input type="submit" class="large" id="change_password" value="Update Password" /></center>
+</form>
+
+<script>
+$(document).ready(function(){
+
+	$("#frm_change_password").submit(function() {
+		var requireHash = {
+				oldpassword : { minlength: 1, description: "Please enter current password" },
+				newpassword1 : { minlength: 6, description: "New password at least 6 characters long" }
+				};
+		if (validateForm(requireHash)) {
+			requireHash = {
+				newpassword2 : { passwordmatch: 'newpassword1', description: "Your new password and confirm password do not match" }
+				};
+			return validateForm(requireHash);
+			} else {
+			return false;
+			}
+		});
+	});
+
+</script>
+[%END%]
+
+[% #---------------------------------------------------------- %]
+[% # PRODUCT SKU MANAGEMENT %]
+[% #---------------------------------------------------------- %]
+[% IF SKU_MANAGEMENT %]
+	<h2>Sku Management</h2>
+
+	<p class="validateTips"></p>
+
+	[% IF PRODUCT_SKU_LIST %]
+	<form id="frm_sku_management" method="post" action="/customer/settings/changepassword">
+		<table>
+			<tr> 
+				<td colspan=2>&nbsp;</td>
+			</tr>
+			<tr>
+				<td><label class="float_right" for="sku">SKU:</td>
+				<td><input type="text" class="text" id="sku" name="sku" /></td>
+				<td><input type="submit" class="large" id="sku_edit" value="Edit" /></td>
+				<td><input type="submit" class="large" id="sku_add" value="Add New" /></td>
+			</tr>
+		</table>
+	</form>
+
+	[% UNLESS productskulist %]
+	<div class="notice">
+		Production Sku Information Not Found.
+	</div>
+	[%END%]
+
+	<table class="app">
+		<tr>
+			<th>Description</th>
+			<th>UPC</th>
+			<th>hazardous</th>
+			<th>weight</th>
+			<th>length</th>
+			<th>width</th>
+			<th>height</th>
+			<th>class</th>
+			<th>unitofmeasure</th>
+			<th>balanceonhand</th>
+			<th>&nbsp;</th>
+		</tr>
+		[% WHILE (item = productskulist.next) %]
+			<tr>
+				<td>[% item.description %]</td>
+				<td>[% item.upccode %]</td>
+				<td>[% item.hazardous %]</td>
+				<td>[% item.weight %]</td>
+				<td>[% item.length %]</td>
+				<td>[% item.width %]</td>
+				<td>[% item.height %]</td>
+				<td>[% item.class %]</td>
+				<td>[% item.unitofmeasure %]</td>
+				<td>[% item.balanceonhand %]</td>
+				<td><a href="[% item.productskuid %]">edit</a></td>
+			</tr>
+		[% END %]
+	</table>
+
+	<script>
+	$(document).ready(function(){
+		$("#frm_sku_management").submit(function() {
+			return validateForm({
+					sku : { minlength: 1, description: "Please enter valid SKU" }
+					});
+			});
+		});
+	</script>
+	[% END %]
+
+	[% IF SETUP_PRODUCT_SKU %]
+	<form id="frm_setup_sku" method="post" action="/customer/settings/changepassword">
+	<table>
+		<tr>
+			<td>SKU Item ID:</font></td>
+			<td><input type="text" name="customerskuid" value="" size="30" maxlength="50" tabindex="1"></td>
+			<td>&nbsp;&nbsp;</td>
+			<td>SKU Item Description:</font></td>
+			<td><input type="text" name="description" value="" size="30" maxlength="50" tabindex="5"></td>
+		</tr>
+		<tr>
+			<td>SKU Item UPC Code:</font></td>
+			<td><input type="text" name="upccode" value="" size="30" maxlength="50" tabindex="10"></td>
+			<td>&nbsp;&nbsp;</td>
+			<td>SKU Item Country of Manufacture:</font></td>
+			<td><input type="text" name="manufacturecountry" value="" size="30" maxlength="50" tabindex="15"></td>
+		</tr>
+		<tr>
+			<td>SKU Item Value:</font></td>
+			<td><input type="text" name="value" value="" size="30" maxlength="50" tabindex="20"></td>
+			<td>&nbsp;&nbsp;</td>
+			<td>SKU Class:</font></td>
+			<td><input type="text" name="class" value="" size="30" maxlength="50" tabindex="25"></td>
+		</tr>
+		<tr>
+			<td>Hazardous:</font></td>
+			<td></td>
+			<td>&nbsp;&nbsp;</td>
+			<td>SKU NMFC Code:</font></td>
+			<td><input type="text" name="nmfc" value="" size="30" maxlength="50" tabindex="35"></td>
+		</tr>
+		<tr>
+			<td>Unit of Measure:</font></td>
+			<td><select name="unitofmeasure" value="unitofmeasure" tabindex=40><option value='0'>Select One</option><option value='Each'>Each</option><option value='Inch'>Inch</option><option value='Feet'>Feet</option><option value='Kit'>Kit</option><option value='Pounds'>Pounds</option><option value='Lot'>Lot</option><option value='Roll'>Roll</option><option value='Sheet'>Sheet</option><option value='Sq. Ft'>Sq. Ft</option></select></td>
+			<td>&nbsp;&nbsp;</td>
+			<td>Balance on Hand:</font></td>
+			<td><input type="text" name="balanceonhand" value="" size="30" maxlength="50" tabindex="45"></td>
+		</tr>
+		<tr>
+			<td>Unit Type:</font></td>
+			<td><select id="unittypeid" name="unittypeid">
+				<select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">
+					[% FOREACH item IN packageunittype_loop %]
+					<option [% IF item.selected == 1 %] SELECTED [% END %] value="[% item.id %]">[% item.name %]</option>
+					[% END %]
+				</select></td>
+			<td>&nbsp;&nbsp;</td>
+			<td></font></td>
+			<td></td>
+		</tr>
+	</table>
+	<table>
+		<tr> 
+			<td colspan=8>&nbsp;</td>
+		</tr>
+		<tr height=20 align='center'>
+			<td>&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;Weight&nbsp;&nbsp;&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;Weight Type&nbsp;&nbsp;&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Length&nbsp;&nbsp;&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Width&nbsp;&nbsp;&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Height&nbsp;&nbsp;&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Type&nbsp;&nbsp;&nbsp;</td>
+		  <td class='section_header'>&nbsp;&nbsp;&nbsp;Qty Per&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		<tr>
+			<td>SKU:</font></td>
+			<td align="center"><input type="text" name="weight" value="" size="5" tabindex="50"></td>
+			<td align="center"><select name="weighttype" value="weighttype" tabindex=55><option value='1'>LB</option><option value='2'>KG</option></select></td>
+			<td align="center"><input type="text" name="length" value="" size="5" tabindex="60"></td>
+			<td align="center"><input type="text" name="width" value="" size="5" tabindex="65"></td>
+			<td align="center"><input type="text" name="height" value="" size="5" tabindex="70"></td>
+			<td align="center"><select name="dimtype" value="dimtype" tabindex=75><option value='1'>IN</option><option value='3'>CM</option></select></td>
+			<td align="center"></td>
+		</tr>
+		<tr>
+			<td>Case:</font></td>
+			<td align="center"><input type="text" name="caseweight" value="" size="5" tabindex="80"></td>
+			<td align="center"><select name="caseweighttype" value="caseweighttype" tabindex=85><option value='1'>LB</option><option value='2'>KG</option></select></td>
+			<td align="center"><input type="text" name="caselength" value="" size="5" tabindex="90"></td>
+			<td align="center"><input type="text" name="casewidth" value="" size="5" tabindex="95"></td>
+			<td align="center"><input type="text" name="caseheight" value="" size="5" tabindex="100"></td>
+			<td align="center"><select name="casedimtype" value="casedimtype" tabindex=105><option value='1'>IN</option><option value='3'>CM</option></select></td>
+			<td align="center"><input type="text" name="skupercase" value="" size="5" tabindex="110"></td>
+		</tr>
+		<tr>
+			<td>Pallet:</font></td>
+			<td align="center"><input type="text" name="palletweight" value="" size="5" tabindex="115"></td>
+			<td align="center"><select name="palletweighttype" value="palletweighttype" tabindex=120><option value='1'>LB</option><option value='2'>KG</option></select></td>
+			<td align="center"><input type="text" name="palletlength" value="" size="5" tabindex="125"></td>
+			<td align="center"><input type="text" name="palletwidth" value="" size="5" tabindex="130"></td>
+			<td align="center"><input type="text" name="palletheight" value="" size="5" tabindex="135"></td>
+			<td align="center"><select name="palletdimtype" value="palletdimtype" tabindex=140><option value='1'>IN</option><option value='3'>CM</option></select></td>
+			<td align="center"><input type="text" name="casesperpallet" value="" size="5" tabindex="145"></td>
+		</tr>
+	<table>
+	[% END %]
+[%END%]

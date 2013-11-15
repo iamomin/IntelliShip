@@ -325,9 +325,9 @@
 	<br/>
 
 	<div class="float_right">
-		<input type="submit" class="button create" value="Save"/>
-		<input type="button" class="button review" value="Ship"/>
-		<input type="button" class="button cancel" value="Cancel"/>
+		<input type="button" class="button create" id="save" value="Save"/>
+		<input type="button" class="button review" id="ship" value="Ship"/>
+		<input type="button" class="button cancel" id="cancel" value="Cancel"/>
 	</div>
 
 	</form>
@@ -560,11 +560,23 @@ $(document).ready(function(){
 		$('#totalpackages_div').html($("#totalpackages").val());
 		});
 */
+
+	$('#save').click(function() {
+		$("#frm_order").submit();
+		});
+
+	$('#ship').click(function() {
+		});
+
+	$('#cancel').click(function() {
+		});
+
 	$("#frm_order").submit(function() {
 
 		var requireHash = {
+				datetoship    : { date: true },
+				dateneeded    : { date: true },
 				fromdepartment: { minlength: 2 },
-				fromcontact   : { phone: true },
 				fromemail     : { email: true },
 				toname        : { minlength: 2 },
 				toaddress1    : { minlength: 2 },

@@ -97,6 +97,11 @@ sub auto :Private {
 			return 0;
 			}
 
+		if ($c->res->cookies->{'TokenID'})
+			{
+			$c->res->cookies->{'TokenID'} = { value => $c->stash->{TokenID}, expires => '+3600' };
+			}
+
 		$c->log->debug("**** User Authorized Successfully");
 		}
 
