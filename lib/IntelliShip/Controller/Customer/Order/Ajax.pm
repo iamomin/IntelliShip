@@ -3,6 +3,7 @@ use Moose;
 use Data::Dumper;
 use namespace::autoclean;
 use IntelliShip::DateUtils;
+use IntelliShip::Utils;
 
 BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
@@ -75,8 +76,16 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->adjust_due_date;
 		}
+	elsif ($params->{'action'} eq 'add_pkg_detail_row')
+		{
+		$dataHash = $self->add_pkg_detail_row;
+		}
+	elsif ($params->{'action'} eq 'get_freight_class')
+		{
+		$dataHash = $self->get_freight_class;
+		}
 
-	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_response = $self->jsonify($dataHash);
 	#$c->log->debug("\n TO json_response:  " . Dumper ($json_response));
 
@@ -159,6 +168,47 @@ sub adjust_due_date
 	return { dateneeded => $adjusted_datetime };
 	}
 
+sub add_pkg_detail_row :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{PKG_DETAIL_ROW} = 1;
+	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
+	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
+	$c->stash->{packageunittype_loop} = $self->get_select_list('PACKAGE_UNIT_TYPE');
+
+	$self->context->log->debug("in add_new_row : row_HTML");
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{PKG_DETAIL_ROW} = 0;
+
+	$self->context->log->debug("add_new_row : row_HTML : |" . $row_HTML."|");
+	return { rowHTML => $row_HTML };
+	}
+
+sub get_freight_class :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $density = $params->{'density'};
+	my $response_hash = {};
+	if ( my $freight_class = IntelliShip::Utils->get_freight_class_from_density(undef,undef,undef,undef,$density))
+		{
+		$self->context->log->debug("add_new_row : freight_class : |" . $freight_class."|");
+		$response_hash->{ 'freight_class'} = $freight_class;
+		}
+	else
+		{
+		$response_hash->{ 'freight_class'} = '0';
+		}
+
+	#$self->context->log->debug("add_new_row : response_hash : |" . Dumper($response_hash));
+	return $response_hash;
+	}
+
 sub jsonify
 	{
 	my $self = shift;
@@ -206,7 +256,11 @@ sub clean_json_data
 	my $item = shift;
 
 	$item =~ s/"/\\"/g;
-	$item =~ s/[\n\t]//g;
+	$item =~ s/\t+//g;
+	$item =~ s/\n+//g;
+	$item =~ s/\r+//g;
+	$item =~ s/^\s+//g;
+	$item =~ s/\s+$//g;
 
 	return $item;
 	}

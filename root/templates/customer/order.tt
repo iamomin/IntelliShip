@@ -159,55 +159,39 @@
 		</tr>
 	</table>
 
+	<table id="pkg_detail" class="app">
+		<thead>
+			<tr id="header_row">
+				<th>QTY</th>
+				<th>SKU</th>
+				<th>Description</th>
+				<th>Type</th>
+				<th>Weight</th>
+				<th>Dim Weight</th>
+				<th>Length</th>
+				<th>Width</th>
+				<th>Height</th>
+				<th>Density</th>
+				<th>NMFC</th>
+				<th>Class</th>
+				<th>Declared Val</th>
+				<th>Freight Ins</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+
+		</tbody>
+	</table>
+
 	<table class="app">
 		<tr>
-			<th>QTY</th>
-			<th>SKU</th>
-			<th>Description</th>
-			<th>Type</th>
-			<th>Weight</th>
-			<th>Dim Weight</th>
-			<th>Length</th>
-			<th>Width</th>
-			<th>Height</th>
-			<th>Density</th>
-			<th>NMFC</th>
-			<th>Class</th>
-			<th>Declared Val</th>
-			<th>Freight Ins</th>
-		</tr>
-		<tr>
-			<td><input type="text" name="quantity" id="quantity" size="1"/></td>
-			<td><input type="text" name="sku" id="sku" size="1"/></td>
-			<td><input type="text" name="description" id="description"/></td>
-			<td>
-			<label>
-			<select name="unittype" id="unittype"/>
-				[% is_selected=0 %]
-				[% FOREACH item IN packageunittype_loop %]
-					[% is_selected=item.is_selected %]
-						<option [% IF is_selected == 1 %] selected [% END %] value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-			</select></label>
-			</td>
-			<td><input type="text" name="weight" id="weight" size="1"/></td>
-			<td><input type="text" name="dimweight" id="dimweight" size="1"/></td>
-			<td><input type="text" name="dimlength" id="dimlength" size="1"/></td>
-			<td><input type="text" name="dimwidth" id="dimwidth" size="1"/></td>
-			<td><input type="text" name="dimheight" id="dimheight" size="1"/></td>
-			<td><input type="text" name="density" id="density" size="5"/></td>
-			<td><input type="text" name="nmfc" id="nmfc" size="1"/></td>
-			<td><input type="text" name="class1" id="class1" size="1"/></td>
-			<td><input type="text" name="decval" id="decval" size="5"/></td>
-			<td><input type="text" name="frtins" id="frtins" size="1"/></td>
-		</tr>
-		<tr>
-			<td colspan=2><input type="button" class="button submit" value="Add Package"/></td>
-			<td><input type="button" class="button submit" value="Add Product"/></td>
+			<td colspan=2><input type="button" id = "add_pkg_row" class="button submit" value="Add Package"/></td>
+			<td><input type="button" id = "add_prdt_row" class="button submit" value="Add Product"/></td>
 			<td colspan=3>
-				Multiply Qty X Weight
+				Multiply Qty * Weight
 				<input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label>
-				<input type="radio" name="quantityxweight" id="quantityxweightn" value="0"/><label for="quantityxweightn">No</label>
+				<input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label>
 			</td>
 			<td colspan=3><label for="printpackinglist">Print Packing List:</label><input type="checkbox" name="printpackinglist" id="printpackinglist"/></td>
 			<td colspan=5></td>
@@ -365,52 +349,125 @@ function check_due_date()
 		});
 	}
 
-function calculate_density()
+function calculate_density(row_num)
 	{
-	var Weight = $("#weight").val();
-	var Quantity = $("#quantity").val();
-	var DimLength = $("#dimlength").val();
-	var DimWidth = $("#dimwidth").val();
-	var DimHeight = $("#dimheight").val();
+	var Weight = $("#weight_"+row_num).val();
+	var Quantity = $("#quantity_"+row_num).val();
+	var DimLength = $("#dimlength_"+row_num).val();
+	var DimWidth = $("#dimwidth_"+row_num).val();
+	var DimHeight = $("#dimheight_"+row_num).val();
 
-	if ( DimLength > 0 && DimWidth > 0 && DimHeight > 0  && Weight > 0 && Quantity > 0)
+	if ( DimLength > 0 && DimWidth > 0 && DimHeight > 0  && Weight > 0 && Quantity > 0) 
 		{
 		var Density = (( (Weight/Quantity) / ( DimLength * DimWidth * DimHeight ) ) * 1728 );
+		$("#density_"+row_num).val(Density.toFixed(2));
 
-		$("#density").val(Density);
+		var Class = $("#class_"+row_num).val();
+		if (Class.length == 0)
+			{
+			var query_param = '&density='+Density;
+			send_ajax_request('', 'JSON', 'order', 'get_freight_class', query_param, function (){
+				if (JSON_data.freight_class) {
+					$("#class_"+row_num).val(JSON_data.freight_class);
+					}
+				});
+			}
 		}
 	}
 
-function setSkuDetails(sku_id)
+function calculate_total_packages_weight()
+	{
+	var TotalQuantity = 0;
+	TotalQuantity -= 0;
+
+	$('#pkg_detail tr').each(function() {
+		var row_id = this.id;
+
+		if (row_id.match(/^new_pkg/))
+			{
+			var row_num = row_id.split('_')[2];
+			var Quantity = $("#quantity_"+row_num).val();
+			Quantity -= 0;
+			TotalQuantity += Quantity;
+			}
+		});
+
+	$('#totalpackages_div').html(TotalQuantity.toFixed(2));
+	}
+
+
+function calculate_total_weight()
+	{
+	var TotalWeight = 0;
+	$('#pkg_detail tr').each(function() {
+		var row_id = this.id;
+
+		if (row_id != 'header_row')
+			{
+			var row_num = row_id.split('_')[2];
+			var EnteredWeight = $("#weight_"+row_num).val();
+			var DimWeight = $("#dimweight_"+row_num).val();
+			var Quantity = $("#quantity_"+row_num).val();
+
+			EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
+			if($('input[name=quantityxweight]:radio:checked').val() == 1) {
+				var OriginalEnteredWeight = EnteredWeight;
+				if (Quantity > 0) {
+					EnteredWeight = SingleWeight * Quantity;
+					}
+				}
+
+			if (EnteredWeight >= DimWeight) {
+				TotalWeight += EnteredWeight;
+				}
+			else {
+				TotalWeight += DimWeight;
+				}
+			}
+		});
+
+	$('#totalweight_div').html(TotalWeight.toFixed(2));
+	}
+
+function setSkuDetails(row_num, sku_id)
 	{
 	var query_param = '&sku_id='+sku_id;
 
 	if(sku_id > 0) {
 		send_ajax_request('', 'JSON', 'order', 'get_sku_detail', query_param, function (){
 			if (JSON_data.error) {
-					$("#description").val('');
-					$("#weight").val('');
-					$("#dimlength").val('');
-					$("#dimwidth").val('');
-					$("#dimheight").val('');
-					$("#nmfc").val('');
-					$("#class1").val('');
-					$("#density").val('');
-					$("#quantity").val('1');
+				clear_product_details(row_num);
 				}
-				else {
-					$("#description").val(JSON_data.description);
-					$("#weight").val(JSON_data.weight);
-					$("#dimlength").val(JSON_data.length);
-					$("#dimwidth").val(JSON_data.width);
-					$("#dimheight").val(JSON_data.height);
-					$("#nmfc").val(JSON_data.nmfc);
-					$("#class1").val(JSON_data.class);
-					$("#unittype option:selected").val(JSON_data.unittypeid);
+			else {
+				$("#description_"+row_num).val(JSON_data.description);
+				$("#weight_"+row_num).val(JSON_data.weight);
+				$("#dimlength_"+row_num).val(JSON_data.length);
+				$("#dimwidth_"+row_num).val(JSON_data.width);
+				$("#dimheight_"+row_num).val(JSON_data.height);
+				$("#nmfc_"+row_num).val(JSON_data.nmfc);
+				$("#class_"+row_num).val(JSON_data.class);
+				$("#unittype_"+row_num+" option:selected").val(JSON_data.unittypeid);
 				}
 			});
-		} else {
+
+		calculate_density(row_num);
+		} 
+	else {
+		clear_product_details(row_num);
 		}
+	}
+
+function clear_product_details(row_num) 
+	{
+	$("#description_"+row_num).val('');
+	$("#weight_"+row_num).val('');
+	$("#dimlength_"+row_num).val('');
+	$("#dimwidth_"+row_num).val('');
+	$("#dimheight_"+row_num).val('');
+	$("#nmfc_"+row_num).val('');
+	$("#class_"+row_num).val('');
+	$("#density_"+row_num).val('');
+	$("#quantity_"+row_num).val('1');
 	}
 
 function checkInternationalSection() {
@@ -454,32 +511,40 @@ $(document).ready(function(){
 		checkInternationalSection();
 		});
 
-	$("#sku").blur(function() {
-		setSkuDetails($("#sku").val());
-		});
-
 	$("#dateneeded").change(function() {
 		check_due_date();
 		});
 
-	$("#weight").blur(function() {
-		calculate_density();
+	$(document).on('change', '.total_pkg_detail', function() {
+
+		calculate_total_weight();
+		calculate_total_packages_weight();
+
+		var row_id = this.id;
+		var row_num = row_id.split('_')[1];
+		calculate_density(row_num);
+	});
+
+	$(document).on('change', '.sku_id', function() {
+		var row_id = this.id;
+		var row_num = row_id.replace(/^sku_/, "");
+		setSkuDetails(row_num, this.value)
 		});
 
-	$("#quantity").blur(function() {
-		calculate_density();
+	$( "#add_pkg_row").click(function() {
+		add_pkg_detail_row('pkg');
 		});
 
-	$("#dimlength").blur(function() {
-		calculate_density();
+	$( "#add_prdt_row").click(function() {
+		add_pkg_detail_row('prdt');
 		});
 
-	$("#dimwidth").blur(function() {
-		calculate_density();
+	$(document).on('click', '.remove_pkg_link', function() {
+		$(this).parent().parent().remove();
 		});
 
-	$("#dimheight").blur(function() {
-		calculate_density();
+	$("input[name=quantityxweight]:radio").change(function () {
+		calculate_total_weight();
 		});
 
 /*
@@ -515,6 +580,7 @@ $(document).ready(function(){
 		return validateForm(requireHash);
 		});
 
+	add_pkg_detail_row('pkg');
 	checkInternationalSection();
 	});
 

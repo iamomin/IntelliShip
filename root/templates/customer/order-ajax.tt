@@ -105,3 +105,29 @@
 	</tr>
 	</table>
 [% END %]
+
+[% IF PKG_DETAIL_ROW %]
+	<tr id="new_[% DETAIL_TYPE %]_[% ROW_COUNT %]">
+		<td><input type="text" class="total_pkg_detail" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="1" size="1"/></td>
+		<td><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" readonly/></td>
+		<td>
+			<select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">
+				[% FOREACH item IN packageunittype_loop %]
+				<option [% IF item.selected == 1 %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select>
+		</td>
+		<td><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" class="total_pkg_detail" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" class="total_pkg_detail" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" class="total_pkg_detail" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" size="5"/></td>
+		<td><input type="text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]" size="1"/></td>
+		<td><input type="text" name="decval_[% ROW_COUNT %]" id="decval_[% ROW_COUNT %]" size="5"/></td>
+		<td><input type="text" name="frtins_[% ROW_COUNT %]" id="frtins_[% ROW_COUNT %]" size="1"/></td>
+		<td><a href="javascript:void(0);" class="remove_pkg_link">X</a></td>
+	</tr>
+[% END %]
