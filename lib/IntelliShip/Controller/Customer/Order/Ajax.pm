@@ -85,7 +85,7 @@ sub get_JSON_DATA :Private
 		$dataHash = $self->get_freight_class;
 		}
 
-	$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_response = $self->jsonify($dataHash);
 	#$c->log->debug("\n TO json_response:  " . Dumper ($json_response));
 
@@ -177,7 +177,7 @@ sub add_pkg_detail_row :Private
 	$c->stash->{PKG_DETAIL_ROW} = 1;
 	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
 	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
-	$c->stash->{packageunittype_loop} = $self->get_select_list('PACKAGE_UNIT_TYPE');
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
 	$self->context->log->debug("in add_new_row : row_HTML");
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);

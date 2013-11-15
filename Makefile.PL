@@ -21,6 +21,9 @@ requires 'Math::BaseCalc' => '1.011';
 requires 'Date::Business';
 requires 'Date::Calendar';
 requires 'Date::Manip';
+requires 'Date::Calc';
+requires 'Email::Stuff';
+requires 'Sys::Hostname';
 test_requires 'Test::More' => '0.88';
 catalyst;
 

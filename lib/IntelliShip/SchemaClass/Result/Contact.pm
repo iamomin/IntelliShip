@@ -197,6 +197,12 @@ __PACKAGE__->has_one(
 		'customerid'
 	);
 
+sub full_name
+	{
+	my $self = shift;
+	return $self->firstname . ' ' . $self->lastname;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

@@ -45,6 +45,17 @@ sub american_date
 	return "$mm/$dd/$yy";
 	}
 
+sub american_date_time
+	{
+	my $self = shift;
+
+	my $date_time = $self->get_db_format_date_time;
+	my ($date,$time) = split(/\ /, $date_time);
+	my ($yy, $mm, $dd) = split(/\-/, $date);
+
+	return "$mm/$dd/$yy $time";
+	}
+
 =head2 current_date
 
 	my $date = IntelliShip::DateUtils->current_date;
@@ -57,12 +68,12 @@ sub american_date
 
 sub current_date
 	{
-	my $self	= shift;
+	my $self = shift;
 	my $separator = shift;
 
 	$separator = "/" if (!$separator);
 
-	my @tm		= localtime;
+	my @tm = localtime;
 	my ($tm, $date);
 
 	$tm[4] += 1;

@@ -114,7 +114,7 @@
 		<td>
 			<select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">
 				[% FOREACH item IN packageunittype_loop %]
-				<option [% IF item.selected == 1 %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+				<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
 				[% END %]
 			</select>
 		</td>

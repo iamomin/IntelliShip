@@ -125,20 +125,21 @@ sub authenticate_user :Private
 
 	my ($Username, $Password, $BrandingID, $SSOUsername, $SSOAuth) = @_;
 
-	$c->log->debug("Authenticated user: " . $Username);
+	my ($Customer, $Contact ) = $self->get_customer_contact($Username,$Password);
 
 	my ($CustomerID, $ContactID, $ActiveUser);
 
-	my @contacts = $c->model('MyDBI::Contact')->search({username => $Username, password => $Password});
-
-	if (my $Contact = $contacts[0])
+	if ($Customer and $Contact)
 		{
-		my $Customer = $Contact->customer;
-
 		$ContactID = $Contact->contactid;
 		$CustomerID = $Customer->customerid;
-		$ActiveUser = ($Contact->firstname ? $Contact->firstname : $Contact->username);
+
+		#$ActiveUser = ($Contact->firstname ? $Contact->firstname : $Contact->username);
+		$ActiveUser = $Contact->username;
 		$BrandingID = $self->get_branding_id;
+
+		$c->log->debug("ActiveUser: " . $ActiveUser);
+		$c->log->debug("BrandingID: " . $BrandingID);
 
 		$self->contact($Contact);
 		$self->customer($Customer);
@@ -149,7 +150,9 @@ sub authenticate_user :Private
 
 	if ($ContactID)
 		{
-		$TokenID = $self->generate_new_token;
+		$TokenID = $self->get_token_id;
+
+		$c->stash->{TokenID} = $TokenID;
 
 		$c->log->debug("#### Creating new session for token: " . $TokenID);
 
@@ -158,7 +161,7 @@ sub authenticate_user :Private
 		my $sql = "INSERT INTO token
 					(tokenid, customerid, datecreated, dateexpires,active_username,brandingid,ssoid)
 				VALUES
-					('$TokenID', '$ContactID', timestamp 'now', timestamp 'now' + '2 hours', '$ActiveUser', '$BrandingID', '$SSOAuth')";
+					('$TokenID', '$ContactID', timestamp 'now', timestamp 'now' + '2 hours', '$Username', '$BrandingID', '$SSOAuth')";
 
 		$myDBI->dbh->do($sql);
 
@@ -184,14 +187,12 @@ sub authenticate_token :Private
 	my $self = shift;
 	my $c = $self->context;
 
-	my $TokenID = $self->get_token_id;
+	my $TokenID = $self->get_login_token;
 
 	$c->log->debug("**** Authorize Customer User, Token ID: " . $TokenID);
 
 	my ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
 
-	## Update token expire time
-	$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp 'now' + '2 hours' WHERE tokenid = '$TokenID'");
 	my $Token = $c->model("MyDBI::Token")->find({ tokenid => $TokenID });
 
 	if ($Token)
@@ -199,10 +200,7 @@ sub authenticate_token :Private
 		$NewTokenID = $Token->tokenid;
 		$self->token($Token);
 
-		my $Customer = $Token->customer;
-
-		my @contacts = $Customer->contacts;
-		my $Contact = $contacts[0];
+		my ($Customer,$Contact) = $self->get_customer_contact;
 
 		$self->contact($Contact);
 		$self->customer($Customer);
@@ -211,29 +209,58 @@ sub authenticate_token :Private
 		$c->stash->{contact} = $Contact;
 		}
 
+	## Update token expire time
+	$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp 'now' + '2 hours' WHERE tokenid = '$TokenID'");
+
 	return ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
+	}
+
+sub get_customer_contact
+	{
+	my $self = shift;
+	my $username = shift;
+	my $password = shift;
+
+	my $c = $self->context;
+
+	$username = $self->token->active_username if $self->token;
+	$c->log->debug("Authenticated user: " . $username);
+
+	my ($customerUser, $contactUser) = split(/\//,$username);
+
+	$contactUser = $customerUser unless $contactUser;
+
+	$c->log->debug("Customer user: " . $customerUser);
+	$c->log->debug("Contact  user: " . $contactUser) if $contactUser;
+
+	my $contact_search = { username => $contactUser };
+	$contact_search->{password} = $password unless $self->token;
+
+	my $Customer = $c->model('MyDBI::Customer')->find({ username => $customerUser });
+	my $Contact = $c->model('MyDBI::Contact')->find($contact_search);
+
+	return ($Customer, $Contact);
 	}
 
 sub get_token :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
-	my $TokenID = $c->stash->{token_id};
+	my $TokenID = $c->stash->{TokenID};
 	$TokenID = $c->req->cookies->{'TokenID'}->value if !$TokenID and $c->req->cookies->{'TokenID'};
 	return $c->model("MyDBI::Token")->find({ tokenid => $TokenID });
 	}
 
-sub get_token_id :Private
+sub get_login_token :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
-
-	my $TokenID = $c->stash->{token_id};
+	my $TokenID = $c->stash->{TokenID};
 	$TokenID = $c->req->cookies->{'TokenID'}->value if !$TokenID and $c->req->cookies->{'TokenID'};
 	return $TokenID;
 	}
 
-sub generate_new_token :Private
+sub get_token_id :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -248,11 +275,7 @@ sub generate_new_token :Private
 	my $SeqID = $BaseCalc->to_base($RawToken);
 
 	#print STDERR "\n********** SeqID: " . $SeqID;
-	$c->stash->{token_id} = $SeqID;
-	$c->res->cookies->{'TokenID'} = {
-						value => $SeqID,
-						expires => '+3600',
-						};
+	$c->log->debug("get_token_id, Token ID: " . $SeqID);
 
 	return $SeqID;
 	}
@@ -305,71 +328,58 @@ sub get_select_list
 	my $self = shift;
 	my $list_name = shift;
 
-	my $list = {};
+	my $list = [];
 	if ($list_name eq 'ACTIVE_INACTIVE')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ name => 'Active', value => 'ACTIVE'},
 			{ name => 'Inactive', value => 'INACTIVE'},
-			]};
+			];
 		}
 	elsif ($list_name eq 'YES_NO')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ name => 'Yes', value => 'Y'},
 			{ name => 'No', value => 'N'},
-			]};
+			];
 		}
 	elsif ($list_name eq 'YES_NO_BLANK')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ name => '', value => ''},
 			{ name => 'Yes', value => 'Y'},
 			{ name => 'No', value => 'N'},
-			]};
+			];
 		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
-		my $c = $self->context;
-
-		my @records = $c->model('MyDBI::Customer')->all;
-
+		my @records = $self->context->model('MyDBI::Customer')->all;
 		foreach my $Country (@records)
 			{
-			push(@{$list->{list}}, { name => $Country->customername, value => $Country->customerid});
+			push(@$list, { name => $Country->customername, value => $Country->customerid});
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')
 		{
-		my $c = $self->context;
-
-		my @records = $c->model('MyDBI::Country')->all;
-		#my @records = $c->model('MyDBI::Country')->search({ countryiso2 => 'US' });
+		my @records = $self->context->model('MyDBI::Country')->all;
+		#my @records = $self->context->model('MyDBI::Country')->search({ countryiso2 => 'US' });
 
 		foreach my $Country (@records)
 			{
-			push(@{$list->{list}}, { name => $Country->countryname, value => $Country->countryiso2});
+			push(@$list, { name => $Country->countryname, value => $Country->countryiso2});
 			}
 		}
-	elsif ($list_name eq 'PACKAGE_UNIT_TYPE')
+	elsif ($list_name eq 'UNIT_TYPE')
 		{
-		my $c = $self->context;
-
-		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
-
+		my @records = $self->context->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
-			my $is_selected = 1 if ($UnitType->unittypename eq 'Envelope');
-			push(@{$list->{list}}, { name => $UnitType->unittypename, value => $UnitType->unittypeid, is_selected => $is_selected });
+			push(@$list, { name => $UnitType->unittypename, value => $UnitType->unittypeid });
 			}
 		}
 	elsif ($list_name eq 'US_STATES')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ value => ''  , name => ''},
 			{ value => 'AL', name => 'Alabama' },
 			{ value => 'AK', name => 'Alaska' },
@@ -424,23 +434,21 @@ sub get_select_list
 			{ value => 'WV', name => 'West Virginia' },
 			{ value => 'WI', name => 'Wisconsin' },
 			{ value => 'WY', name => 'Wyoming' }
-			]};
+			];
 		}
 	elsif ($list_name eq 'HOUR')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ name => '', value => '0'},
 			{ name => '01', value => '01'},{ name => '02', value => '02'},{ name => '03', value => '03'},
 			{ name => '04', value => '04'},{ name => '05', value => '05'},{ name => '06', value => '06'},
 			{ name => '07', value => '07'},{ name => '08', value => '08'},{ name => '09', value => '09'},
 			{ name => '10', value => '10'},{ name => '11', value => '11'},{ name => '12', value => '12'},
-			]};
+			];
 		}
 	elsif ($list_name eq 'MONTH')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ name => '', value => ''},
 			{ name => 'January', value => '1'},{ name => 'February', value => '2'},
 			{ name => 'March', value => '3'},{ name => 'April', value => '4'},
@@ -448,12 +456,11 @@ sub get_select_list
 			{ name => 'July', value => '7'},{ name => 'August', value => '8'},
 			{ name => 'September', value => '9'},{ name => 'October', value => '10'},
 			{ name => 'November', value => '11'},{ name => 'December', value => '12'},
-			]};
+			];
 		}
 	elsif ($list_name eq 'SPECIAL_SERVICE')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ value => 'adultsigreq' , name => 'Adult Signature Required' },
 			{ value => 'callforappointment' , name => 'Call for Delivery Appointment' },
 			{ value => 'cod' , name => 'COD Service' },
@@ -468,19 +475,18 @@ sub get_select_list
 			{ value => 'sigreq' , name => 'Signature Required' },
 			{ value => 'sundaydelivery' , name => 'Sunday Delivery' },
 			{ value => 'sundaypickup' , name => 'Sunday Pickup' },
-			]};
+			];
 		}
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
-		$list = {
-			list => [
+		$list = [
 			{ value => 'prepaid' , name => 'Prepaid' },
 			{ value => 'collect' , name => 'Collect' },
 			{ value => '3rdparty' , name => '3rd Party' },
-			]};
+			];
 		}
 
-	return $list->{list};
+	return $list;
 	}
 
 
