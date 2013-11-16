@@ -477,6 +477,26 @@ sub get_select_list
 			{ value => 'sundaypickup' , name => 'Sunday Pickup' },
 			];
 		}
+	elsif ($list_name eq 'CARRIER')
+		{
+		$list = [
+			{ value => '0000000000006' , name => 'ConWay' },
+			{ value => '0000000000001' , name => 'FedEx' },
+			{ value => '0000000000005' , name => 'FedEx Freight LTL' },
+			{ value => 'WATKINS000001' , name => 'FedEx LTL' },
+			{ value => 'AMTREX0000001' , name => 'IN-HOUSE' },
+			{ value => 'LANDSTAREXPS1' , name => 'Landstar Express' },
+			{ value => '0000000000031' , name => 'Mach 1' },
+			{ value => 'OHF0000000001' , name => 'Oak Harbor Freight' },
+			{ value => 'OLDDOMINION01' , name => 'Old Dominion' },
+			{ value => 'SEKO000000001' , name => 'Seko Worldwide' },
+			{ value => '0000000000003' , name => 'UPS' },
+			{ value => 'USPS000000001' , name => 'USPS' },
+			{ value => 'VISIONSHIP001' , name => 'Vision' },
+			{ value => '0000000000011' , name => 'YRC' },
+			{ value => 'OTHER_NEW' , name => 'Other - New' },
+			];
+		}
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
