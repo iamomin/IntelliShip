@@ -119,35 +119,29 @@ sub update_password :Private
 		}
 	}
 
-
 sub skumanagement :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $do_value = $params->{'do'} || '';
-	$c->log->debug("SKU MANAGEMENT, do: " . $do_value);
+	$c->log->debug("SKU MANAGEMENT");
 
-	if ($do_value eq 'edit')
-		{
-		$self->sku_setup;
-		}
-	else
-		{
-		my $ps_resultset = $c->model('MyDBI::Productsku')->search({ customerid => $self->customer->customerid }, { rows => 100 , order_by => 'description'});
+	my $WHERE = {};
+	#$WHERE->{customerid} = $self->customer->customerid;
+	my $ps_resultset = $c->model('MyDBI::Productsku')->search($WHERE, { rows => 100 , order_by => 'description'});
 
-		$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
+	$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
 
-		$c->stash->{productskulist} = $ps_resultset;
-		$c->stash->{PRODUCT_SKU_LIST} = 1;
-		}
+	$c->stash->{productskulist} = $ps_resultset;
 
+	$c->stash->{PRODUCT_SKU_LIST} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
+
 	$c->stash(template => "templates/customer/settings.tt");
 	}
 
-sub sku_setup :Private
+sub productskusetup :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -159,6 +153,11 @@ sub sku_setup :Private
 		}
 
 	$c->stash->{unittypelist} = $self->get_select_list('UNIT_TYPE');
+
+	$c->stash->{SETUP_PRODUCT_SKU} = 1;
+	$c->stash->{SKU_MANAGEMENT} = 1;
+
+	$c->stash(template => "templates/customer/settings.tt");
 	}
 
 =encoding utf8

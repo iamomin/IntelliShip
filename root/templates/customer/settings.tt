@@ -35,7 +35,7 @@
 		<div class="error">[% ERR_MESSAGE %]</div>
 	[% END %]
 
-	<table class="app">
+	<table class="center_app">
 		<tr> 
 			<td colspan=2>&nbsp;</td>
 		</tr>
@@ -88,17 +88,25 @@ $(document).ready(function(){
 
 	<p class="validateTips"></p>
 
+	[% #---------------------------------------------------------- %]
+	[% # PRODUCT_SKU_LIST START %]
+	[% #---------------------------------------------------------- %]
 	[% IF PRODUCT_SKU_LIST %]
-	<form id="frm_sku_management" method="post" action="/customer/settings/changepassword">
+
+	<form id="frm_sku_management" method="post" action="/customer/settings/productskusetup">
+		<input type="hidden" id="do" name="do" value=""/>
 		<table>
 			<tr> 
-				<td colspan=2>&nbsp;</td>
+				<td colspan=4>&nbsp;</td>
 			</tr>
 			<tr>
-				<td><label class="float_right" for="sku">SKU:</td>
-				<td><input type="text" class="text" id="sku" name="sku" /></td>
-				<td><input type="submit" class="large" id="sku_edit" value="Edit" /></td>
-				<td><input type="submit" class="large" id="sku_add" value="Add New" /></td>
+				<td><label class="float_right" for="productsku">SKU:</td>
+				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
+				<td><input type="button" class="large" id="sku_edit" value="Edit" /></td>
+				<td><input type="button" class="large" id="sku_add" value="Add New" /></td>
+			</tr>
+			<tr> 
+				<td colspan=4>&nbsp;</td>
 			</tr>
 		</table>
 	</form>
@@ -109,7 +117,13 @@ $(document).ready(function(){
 	</div>
 	[%END%]
 
-	<table class="app">
+	<h3>Product Sku List</h3>
+
+	<script>
+	var availableProductSkus = [];
+	</script>
+
+	<table class="report">
 		<tr>
 			<th>Description</th>
 			<th>UPC</th>
@@ -135,117 +149,143 @@ $(document).ready(function(){
 				<td>[% item.class %]</td>
 				<td>[% item.unitofmeasure %]</td>
 				<td>[% item.balanceonhand %]</td>
-				<td><a href="[% item.productskuid %]">edit</a></td>
+				<td>
+					<a href="[% item.productskuid %]">edit</a>
+					<script>availableProductSkus.push("[% item.description%]");</script>
+				</td>
 			</tr>
 		[% END %]
 	</table>
 
 	<script>
+
 	$(document).ready(function(){
-		$("#frm_sku_management").submit(function() {
-			return validateForm({
-					sku : { minlength: 1, description: "Please enter valid SKU" }
-					});
+		$("#productsku").autocomplete({
+			source: availableProductSkus
+			});
+
+		$("#sku_edit").click(function() {
+			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+				$("#do").val("setup");
+				$("#frm_sku_management").submit();
+				}
+			});
+		$("#sku_add").click(function() {
+			$("#do").val("setup");
+			$("#productsku").val("");
+			$("#frm_sku_management").submit();
 			});
 		});
 	</script>
 	[% END %]
+	[% #---------------------------------------------------------- %]
+	[% # PRODUCT_SKU_LIST END %]
+	[% #---------------------------------------------------------- %]
 
+	[% #---------------------------------------------------------- %]
+	[% # SETUP_PRODUCT_SKU START %]
+	[% #---------------------------------------------------------- %]
 	[% IF SETUP_PRODUCT_SKU %]
-	<form id="frm_setup_sku" method="post" action="/customer/settings/changepassword">
-	<table>
-		<tr>
-			<td>SKU Item ID:</font></td>
-			<td><input type="text" name="customerskuid" value="" size="30" maxlength="50" tabindex="1"></td>
-			<td>&nbsp;&nbsp;</td>
-			<td>SKU Item Description:</font></td>
-			<td><input type="text" name="description" value="" size="30" maxlength="50" tabindex="5"></td>
-		</tr>
-		<tr>
-			<td>SKU Item UPC Code:</font></td>
-			<td><input type="text" name="upccode" value="" size="30" maxlength="50" tabindex="10"></td>
-			<td>&nbsp;&nbsp;</td>
-			<td>SKU Item Country of Manufacture:</font></td>
-			<td><input type="text" name="manufacturecountry" value="" size="30" maxlength="50" tabindex="15"></td>
-		</tr>
-		<tr>
-			<td>SKU Item Value:</font></td>
-			<td><input type="text" name="value" value="" size="30" maxlength="50" tabindex="20"></td>
-			<td>&nbsp;&nbsp;</td>
-			<td>SKU Class:</font></td>
-			<td><input type="text" name="class" value="" size="30" maxlength="50" tabindex="25"></td>
-		</tr>
-		<tr>
-			<td>Hazardous:</font></td>
-			<td></td>
-			<td>&nbsp;&nbsp;</td>
-			<td>SKU NMFC Code:</font></td>
-			<td><input type="text" name="nmfc" value="" size="30" maxlength="50" tabindex="35"></td>
-		</tr>
-		<tr>
-			<td>Unit of Measure:</font></td>
-			<td><select name="unitofmeasure" value="unitofmeasure" tabindex=40><option value='0'>Select One</option><option value='Each'>Each</option><option value='Inch'>Inch</option><option value='Feet'>Feet</option><option value='Kit'>Kit</option><option value='Pounds'>Pounds</option><option value='Lot'>Lot</option><option value='Roll'>Roll</option><option value='Sheet'>Sheet</option><option value='Sq. Ft'>Sq. Ft</option></select></td>
-			<td>&nbsp;&nbsp;</td>
-			<td>Balance on Hand:</font></td>
-			<td><input type="text" name="balanceonhand" value="" size="30" maxlength="50" tabindex="45"></td>
-		</tr>
-		<tr>
-			<td>Unit Type:</font></td>
-			<td><select id="unittypeid" name="unittypeid">
-				<select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">
-					[% FOREACH item IN packageunittype_loop %]
-					<option [% IF item.selected == 1 %] SELECTED [% END %] value="[% item.id %]">[% item.name %]</option>
-					[% END %]
-				</select></td>
-			<td>&nbsp;&nbsp;</td>
-			<td></font></td>
-			<td></td>
-		</tr>
-	</table>
-	<table>
-		<tr> 
-			<td colspan=8>&nbsp;</td>
-		</tr>
-		<tr height=20 align='center'>
-			<td>&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;Weight&nbsp;&nbsp;&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;Weight Type&nbsp;&nbsp;&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Length&nbsp;&nbsp;&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Width&nbsp;&nbsp;&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Height&nbsp;&nbsp;&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;DIM Type&nbsp;&nbsp;&nbsp;</td>
-		  <td class='section_header'>&nbsp;&nbsp;&nbsp;Qty Per&nbsp;&nbsp;&nbsp;</td>
-		</tr>
-		<tr>
-			<td>SKU:</font></td>
-			<td align="center"><input type="text" name="weight" value="" size="5" tabindex="50"></td>
-			<td align="center"><select name="weighttype" value="weighttype" tabindex=55><option value='1'>LB</option><option value='2'>KG</option></select></td>
-			<td align="center"><input type="text" name="length" value="" size="5" tabindex="60"></td>
-			<td align="center"><input type="text" name="width" value="" size="5" tabindex="65"></td>
-			<td align="center"><input type="text" name="height" value="" size="5" tabindex="70"></td>
-			<td align="center"><select name="dimtype" value="dimtype" tabindex=75><option value='1'>IN</option><option value='3'>CM</option></select></td>
-			<td align="center"></td>
-		</tr>
-		<tr>
-			<td>Case:</font></td>
-			<td align="center"><input type="text" name="caseweight" value="" size="5" tabindex="80"></td>
-			<td align="center"><select name="caseweighttype" value="caseweighttype" tabindex=85><option value='1'>LB</option><option value='2'>KG</option></select></td>
-			<td align="center"><input type="text" name="caselength" value="" size="5" tabindex="90"></td>
-			<td align="center"><input type="text" name="casewidth" value="" size="5" tabindex="95"></td>
-			<td align="center"><input type="text" name="caseheight" value="" size="5" tabindex="100"></td>
-			<td align="center"><select name="casedimtype" value="casedimtype" tabindex=105><option value='1'>IN</option><option value='3'>CM</option></select></td>
-			<td align="center"><input type="text" name="skupercase" value="" size="5" tabindex="110"></td>
-		</tr>
-		<tr>
-			<td>Pallet:</font></td>
-			<td align="center"><input type="text" name="palletweight" value="" size="5" tabindex="115"></td>
-			<td align="center"><select name="palletweighttype" value="palletweighttype" tabindex=120><option value='1'>LB</option><option value='2'>KG</option></select></td>
-			<td align="center"><input type="text" name="palletlength" value="" size="5" tabindex="125"></td>
-			<td align="center"><input type="text" name="palletwidth" value="" size="5" tabindex="130"></td>
-			<td align="center"><input type="text" name="palletheight" value="" size="5" tabindex="135"></td>
-			<td align="center"><select name="palletdimtype" value="palletdimtype" tabindex=140><option value='1'>IN</option><option value='3'>CM</option></select></td>
-			<td align="center"><input type="text" name="casesperpallet" value="" size="5" tabindex="145"></td>
-		</tr>
-	<table>
+
+	<h3>[% IF productskuid %]Edit[% ELSE %]Add New[% END %] Product Sku</h3>
+
+	<form id="frm_setup_sku" method="post" action="/customer/settings/productskusetup">
+		<input type="hidden" id="productskuid" name="productskuid" value="[% productskuid %]"/>
+		<table class="center_app">
+			<tr>
+				<td>SKU Item ID:</td>
+				<td><input type="text" name="customerskuid" value="" size="30" maxlength="50"></td>
+				<td>&nbsp;&nbsp;</td>
+				<td>SKU Item Description:</td>
+				<td><input type="text" name="description" value="" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>SKU Item UPC Code:</td>
+				<td><input type="text" name="upccode" value="" size="30" maxlength="50"></td>
+				<td>&nbsp;&nbsp;</td>
+				<td>SKU Item Country of Manufacture:</td>
+				<td><input type="text" name="manufacturecountry" value="" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>SKU Item Value:</td>
+				<td><input type="text" name="value" value="" size="30" maxlength="50"></td>
+				<td>&nbsp;&nbsp;</td>
+				<td>SKU Class:</td>
+				<td><input type="text" name="class" value="" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>Hazardous:</td>
+				<td></td>
+				<td>&nbsp;&nbsp;</td>
+				<td>SKU NMFC Code:</td>
+				<td><input type="text" name="nmfc" value="" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>Unit of Measure:</td>
+				<td><select name="unitofmeasure" value="unitofmeasure"><option value='0'>Select One</option><option value='Each'>Each</option><option value='Inch'>Inch</option><option value='Feet'>Feet</option><option value='Kit'>Kit</option><option value='Pounds'>Pounds</option><option value='Lot'>Lot</option><option value='Roll'>Roll</option><option value='Sheet'>Sheet</option><option value='Sq. Ft'>Sq. Ft</option></select></td>
+				<td>&nbsp;&nbsp;</td>
+				<td>Balance on Hand:</td>
+				<td><input type="text" name="balanceonhand" value="" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>Unit Type:</td>
+				<td><select id="unittypeid" name="unittypeid">
+						[% FOREACH item IN unittypelist %]
+						<option [% IF item.selected == 1 %] SELECTED [% END %] value="[% item.id %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
+				<td>&nbsp;&nbsp;</td>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+		<table class="center_app">
+			<tr height=20 align='center'>
+				<th>&nbsp;</th>
+				<th>Weight</th>
+				<th>Weight Type</th>
+				<th>DIM Length</th>
+				<th>DIM Width</th>
+				<th>DIM Height</th>
+				<th>DIM Type</th>
+				<th>Qty Per</th>
+			</tr>
+			<tr>
+				<td>SKU:</td>
+				<td><input type="text" name="weight" value="" size="5"></td>
+				<td><select name="weighttype" value="weighttype"><option value='1'>LB</option><option value='2'>KG</option></select></td>
+				<td><input type="text" name="length" value="" size="5"></td>
+				<td><input type="text" name="width" value="" size="5"></td>
+				<td><input type="text" name="height" value="" size="5"></td>
+				<td><select name="dimtype" value="dimtype"><option value='1'>IN</option><option value='3'>CM</option></select></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Case:</td>
+				<td><input type="text" name="caseweight" value="" size="5"></td>
+				<td><select name="caseweighttype" value="caseweighttype"><option value='1'>LB</option><option value='2'>KG</option></select></td>
+				<td><input type="text" name="caselength" value="" size="5"></td>
+				<td><input type="text" name="casewidth" value="" size="5"></td>
+				<td><input type="text" name="caseheight" value="" size="5"></td>
+				<td><select name="casedimtype" value="casedimtype"><option value='1'>IN</option><option value='3'>CM</option></select></td>
+				<td><input type="text" name="skupercase" value="" size="5"></td>
+			</tr>
+			<tr>
+				<td>Pallet:</td>
+				<td><input type="text" name="palletweight" value="" size="5"></td>
+				<td><select name="palletweighttype" value="palletweighttype"><option value='1'>LB</option><option value='2'>KG</option></select></td>
+				<td><input type="text" name="palletlength" value="" size="5"></td>
+				<td><input type="text" name="palletwidth" value="" size="5"></td>
+				<td><input type="text" name="palletheight" value="" size="5"></td>
+				<td><select name="palletdimtype" value="palletdimtype"><option value='1'>IN</option><option value='3'>CM</option></select></td>
+				<td><input type="text" name="casesperpallet" value="" size="5"></td>
+			</tr>
+		</table>
+		<center><input type="button" class="large" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" /></center>
+	</form>
 	[% END %]
-[%END%]
+	[% #---------------------------------------------------------- %]
+	[% # SETUP_PRODUCT_SKU END %]
+	[% #---------------------------------------------------------- %]
+
+[% END %]
