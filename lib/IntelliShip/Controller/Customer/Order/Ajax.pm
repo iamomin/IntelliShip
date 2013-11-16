@@ -84,6 +84,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->get_freight_class;
 		}
+	elsif ($c->req->param('action') eq 'third_party_delivery')
+		{
+		$dataHash = $self->set_third_party_delivery;
+		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_response = $self->jsonify($dataHash);
@@ -183,7 +187,6 @@ sub add_pkg_detail_row :Private
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	$c->stash->{PKG_DETAIL_ROW} = 0;
 
-	$self->context->log->debug("add_new_row : row_HTML : |" . $row_HTML."|");
 	return { rowHTML => $row_HTML };
 	}
 
@@ -205,8 +208,21 @@ sub get_freight_class :Private
 		$response_hash->{ 'freight_class'} = '0';
 		}
 
-	#$self->context->log->debug("add_new_row : response_hash : |" . Dumper($response_hash));
 	return $response_hash;
+	}
+
+sub set_third_party_delivery
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
+	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
+	$c->stash->{THIRD_PARTY_DELIVERY} = 1;
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{THIRD_PARTY_DELIVERY} = 0;
+
+	return { rowHTML => $row_HTML };
 	}
 
 sub jsonify

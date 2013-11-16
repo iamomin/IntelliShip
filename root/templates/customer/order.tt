@@ -19,132 +19,114 @@
 			<td>
 			<input type="checkbox" class="checkbox" id="combine" value="combine"><label for="combine">Combine</label>
 			</td>
-			<td>
-			<input type="checkbox" class="checkbox" id="freightch" value="freightch"><label for="freightch">Freight Charges</label>
-			</td>
-			<td>
-			<input type="checkbox" class="checkbox" id="cod" value="cod"><label for="cod">COD</label>
-			</td>
-			<td>
-			<input type="checkbox" class="checkbox" id="collect" value="collect"><label for="collect">Collect</label>
-			</td>
-			<td>
-			<input type="checkbox" class="checkbox" id="thirdp" value="thirdp"><label for="thirdp">3rd Party</label>
-			</td>
 		<tr>
 	</table>
 
-	<table>
+	<table class="fixed_app">
+		<caption>SHIP FROM</caption>
 		<tr>
-			<td>
-			<table class="app">
-				<caption>SHIP FROM</caption>
-				<tr>
-					<td><label for="fromname" class="float_right">Company:</label></td><td><div class="default_text">[% customer.customername %]</div></td>
-				</tr>
-				<tr>
-					<td><label for="fromaddress1" class="float_right">Address 1:</label></td><td><div class="default_text">[% customerAddress.address1 %]</div></td>
-				</tr>
-				<tr>
-					<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><div class="default_text">[% customerAddress.address2 %]</div></td>
-				</tr>
-				<tr>
-					<td><label class="float_right">City, State, Zipcode:</label></td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
-				</tr>
-				<tr>
-					<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% customerAddress.country %]"/><div class="default_text">[% customerAddress.country_description %]</div>
-					</td>
-				</tr>
-				<tr>
-					<td><label for="fromcontact" class="float_right">Contact:</label></td><td><div class="default_text">[% customer.contact %]</div></td>
-				</tr>
-				</tr>
-					<td><label for="fromphone" class="float_right">Phone:</label></td><td><div class="default_text">[% customer.phone %]</div></td>
-				<tr>
-				</tr>
-					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment"></td>
-				<tr>
-				<tr>
-					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail"/></td>
-				</tr>
-			</table>
-			</td>
-			<td>
-			<table class="app">
-				<caption>SHIP TO</caption>
-				<tr>
-					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname"/></td>
-				</tr>
-				<tr>
-					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1"/></td>
-				</tr>
-				<tr>
-					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2"/></td>
-				</tr>
-				<tr>
-					<td><label class="float_right"><label for="tocity">City</label>,&nbsp;<label for="tostate">State</label>,&nbsp;<label for="tozip">Zipcode:</label></label></td><td>
-					<input type="text" name="tocity" id="tocity" size="6"/>
-					<label>
-					<select name="tostate" id="tostate">
-						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]">[% item.name %]</option>
-						[% END %]
-					</select>
-					</label>
-					<input type="text" name="tozip" id="tozip" size="2"/>
-					</td>
-				</tr>
-				<tr>
-					<td><label for="tocountry" class="float_right">Country:</label></td><td>
-					<label>
-					<select name="tocountry" id="tocountry">
-						[% FOREACH item IN countrylist_loop %]
-								<option value="[% item.value %]" [% IF item.value == default_country %] SELECTED [% END %]>[% item.name %]</option>
-						[% END %]
-					</select>
-					</label>
-					</td>
-				</tr>
-				<tr>
-					<td><label for="tocontact" class="float_right">Contact:</label></td><td><input type="text" class="broad_text" name="tocontact" id="tocontact"/></td>
-				</tr>
-				<tr>
-					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone"></td>
-				</tr>
-				<tr>
-					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber"/></td>
-				</tr>
-				<tr>
-					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail"/></td>
-				</tr>
-			</table>
-			</td>
-			<td>
-			<table class="app">
-				<caption>SHIPMENT INFORMATION</caption>
-				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" readonly/></td>
-				</tr>
-				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" readonly/></td>
-				</tr>
-				<tr>
-					<td><label for="comments" class="float_right">Comments:</label></td><td><input type="text" class="text" name="comments" id="comments"/></td>
-				</tr>
-				<tr>
-					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="0.00"/><div class="default_text" id="shipmentvalue_div">0.00</div></td>
-				</tr>
-				<tr>
-					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
-				</tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			</table>
+			<td><label for="fromname" class="float_right">Company:</label></td><td><div class="default_text">[% customer.customername %]</div></td>
+		</tr>
+		<tr>
+			<td><label for="fromaddress1" class="float_right">Address 1:</label></td><td><div class="default_text">[% customerAddress.address1 %]</div></td>
+		</tr>
+		<tr>
+			<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><div class="default_text">[% customerAddress.address2 %]</div></td>
+		</tr>
+		<tr>
+			<td><label class="float_right">City, State, Zipcode:</label></td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
+		</tr>
+		<tr>
+			<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% customerAddress.country %]"/><div class="default_text">[% customerAddress.country_description %]</div>
 			</td>
 		</tr>
+		<tr>
+			<td><label for="fromcontact" class="float_right">Contact:</label></td><td><div class="default_text">[% customer.contact %]</div></td>
+		</tr>
+		</tr>
+			<td><label for="fromphone" class="float_right">Phone:</label></td><td><div class="default_text">[% customer.phone %]</div></td>
+		<tr>
+		</tr>
+			<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment"></td>
+		<tr>
+		<tr>
+			<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail"/></td>
+		</tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+	</table>
+
+	<table class="fixed_app">
+		<caption>SHIP TO</caption>
+		<tr>
+			<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname"/></td>
+		</tr>
+		<tr>
+			<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1"/></td>
+		</tr>
+		<tr>
+			<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2"/></td>
+		</tr>
+		<tr>
+			<td><label class="float_right"><label for="tocity">City</label>,&nbsp;<label for="tostate">State</label>,&nbsp;<label for="tozip">Zipcode:</label></label></td><td>
+			<input type="text" name="tocity" id="tocity" size="6"/>
+			<label>
+			<select name="tostate" id="tostate">
+				[% FOREACH item IN statelist_loop %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select>
+			</label>
+			<input type="text" name="tozip" id="tozip" size="2"/>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="tocountry" class="float_right">Country:</label></td><td>
+			<label>
+			<select name="tocountry" id="tocountry">
+				[% FOREACH item IN countrylist_loop %]
+						<option value="[% item.value %]" [% IF item.value == default_country %] SELECTED [% END %]>[% item.name %]</option>
+				[% END %]
+			</select>
+			</label>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="tocontact" class="float_right">Contact:</label></td><td><input type="text" class="broad_text" name="tocontact" id="tocontact"/></td>
+		</tr>
+		<tr>
+			<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone"></td>
+		</tr>
+		<tr>
+			<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber"/></td>
+		</tr>
+		<tr>
+			<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail"/></td>
+		</tr>
+	</table>
+
+	<table class="fixed_app">
+		<caption>SHIPMENT INFORMATION</caption>
+		<tr>
+			<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" readonly/></td>
+		</tr>
+		<tr>
+			<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" readonly/></td>
+		</tr>
+		<tr>
+			<td><label for="comments" class="float_right">Comments:</label></td><td><input type="text" class="text" name="comments" id="comments"/></td>
+		</tr>
+		<tr>
+			<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="0.00"/><div class="default_text" id="shipmentvalue_div">0.00</div></td>
+		</tr>
+		<tr>
+			<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
+		</tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 	</table>
 
 	<h2>Package Detail</h2>
@@ -159,7 +141,7 @@
 		</tr>
 	</table>
 
-	<table id="pkg_detail" class="app">
+	<table id="pkg_detail" class="fixed_app">
 		<thead>
 			<tr id="header_row">
 				<th>QTY</th>
@@ -184,22 +166,24 @@
 		</tbody>
 	</table>
 
-	<table class="app">
+	<div style="clear: both;">&nbsp;</div>
+
+	<table>
 		<tr>
-			<td colspan=2><input type="button" id = "add_pkg_row" class="button submit" value="Add Package"/></td>
-			<td><input type="button" id = "add_prdt_row" class="button submit" value="Add Product"/></td>
-			<td colspan=3>
-				Multiply Qty * Weight
-				<input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label>
-				<input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label>
-			</td>
-			<td colspan=3><label for="printpackinglist">Print Packing List:</label><input type="checkbox" name="printpackinglist" id="printpackinglist"/></td>
-			<td colspan=5></td>
+		<td><input type="button" id = "add_pkg_row" class="button submit" value="Add Package"/></td>
+		<td><input type="button" id = "add_prdt_row" class="button submit" value="Add Product"/></td>
+		<td>Multiply Qty*Weight</td>
+		<td><input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label></td>
+		<td><input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label></td>
+		<td><input type="checkbox" name="printpackinglist" id="printpackinglist"/><label for="printpackinglist">Print Packing List</label></td>
 		</tr>
 	</table>
 
+
 	<h2>Special Services Requested</h2>
-	<span class="require_text">Please check the appropriate boxes for any special services needed for this shipment.</span>
+
+	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
+
 	<table class="app">
 		[% count=0 %]
 		<tr>
@@ -217,117 +201,69 @@
 		</tr>
 	</table>
 
+	<div style="clear: both;">&nbsp;</div>
 	<div id="intlCommoditySec"></div>
+	<div style="clear: both;">&nbsp;</div>
 
-	<table>
+	<table class="fixed_app" id="carrier_service_selection">
+		<caption>Carrier and Service Selection</caption>
 		<tr>
-		<td>
-		<table class="app">
-			<caption>Carrier and Service Selection</caption>
-			<tr>
-				<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="broad_text" name="tpcompanyname" id="tpcompanyname"/></td>
-			</tr>
-			<tr>
-				<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="broad_text" name="tpaddress1" id="tpaddress1"/></td>
-			</tr>
-			<tr>
-				<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="broad_text" name="tpaddress2" id="tpaddress2"/></td>
-			</tr>
-			<tr>
-				<td><label  class="float_right">Billing&nbsp;<label for="tpcity">City</label>,&nbsp;<label for="tpstate">State</label>,&nbsp;<label for="tpzip">Zip</label>:</label></td>
-				<td>
-				<input type="text" name="tpcity" id="tpcity" size="6"/>
-				<label>
-				<select name="tpstate" id="tpstate">
-					[% FOREACH item IN statelist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
-					[% END %]
-				</select>
-				</label>
-				<input type="text" name="tpzip" id="tpzip" size="2"/>
-				</td>
-			</tr>
-			<tr>
-				<td><label for="tpcountry" class="float_right">Billing Country:</label></td>
-				<td>
-				<label>
-					<select name="tpcountry" id="tpcountry">
-						[% FOREACH item IN countrylist_loop %]
-								<option value="[% item.value %]">[% item.name %]</option>
-						[% END %]
-					</select>
-				</label>
-				</td>
-			</tr>
-			<tr>
-				<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="broad_text" name="account" id="account"/></td>
-			</tr>
-			<tr>
-			<tr>
-				<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-				<td>
-				<label>
-				<select name="deliverymethod" id="deliverymethod">
-					[% FOREACH item IN deliverymethod_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
-					[% END %]
-				</select>
-				</label>
-				</td>
-			</tr>
-			<tr>
-				<td><label for="freightcharges" class="float_right">Freight Charges:</label></td>
-				<td>
-				<label>
-				<select name="freightcharges" id="freightcharges">
-					<option value="0"></option>
-					[% FOREACH item IN statelist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
-					[% END %]
-				</select>
-				</label>
-				</td>
-			</tr>
-				<td>&nbsp;</td><td><input type="button" class="button submit" value="Route"/></td>
-			</tr>
-		</table>
-		</td>
-		<td>
-		<table class="app">
-			<caption>Estimated Shipment Charges *</caption>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr>
-				<th>
-				<label for="deliverymethod" class="float_right">Customer Quote:</label>
-				</th>
-				<th>
-				<label>
-				<select name="deliverymethod" id="deliverymethod">
-					<option value="0">--------------------</option>
-				</select>
-				</label>
-				</th>
-			</tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		</table>
-		</td>
+			<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+			<td>
+				[% FOREACH item IN deliverymethod_loop %]
+				<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" /><label for="[% item.value %]">[% item.name %]</label>
+				[% END %]
+			</td>
 		</tr>
 	</table>
 
-	<br/>
+	<table class="fixed_app">
+		<caption>Freight Charges</caption>
+		<tr>
+			<td><input type="checkbox" id="" value="" /> Hi This is Test</td>
+		</tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+	</table>
+	<table class="fixed_app">
+		<caption>Estimated Shipment Charges *</caption>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr>
+			<td>
+			<label for="quote" class="float_right">Customer Quote:</label>
+			</th>
+			<td>
+			<label>
+			<select name="quote" id="quote">
+				<option value="0">--------------------</option>
+			</select>
+			</label>
+			</td>
+		</tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+	</table>
+
+	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float_right">
-		<input type="button" class="button create" id="save" value="Save"/>
-		<input type="button" class="button review" id="ship" value="Ship"/>
-		<input type="button" class="button cancel" id="cancel" value="Cancel"/>
+		<input type="button" class="large" id="save" value="Save"/>
+		<input type="button" class="large" id="ship" value="Ship"/>
+		<input type="button" class="large" id="cancel" value="Cancel"/>
 	</div>
 
 	</form>
@@ -547,6 +483,16 @@ $(document).ready(function(){
 		calculate_total_weight();
 		});
 
+	$("input[name='deliverymethod']:radio").change(function () {
+		//alert("Here I am changed: " + $('input:radio[name=deliverymethod]:checked').val());
+		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") {
+			send_ajax_request('', 'JSON', 'order', 'third_party_delivery', "", function (){
+				if (JSON_data.rowHTML) {
+					$("#carrier_service_selection").append(JSON_data.rowHTML);
+					}
+				});
+			}
+		});
 /*
 	$("#shipmentvalue").change(function() {
 		$('#shipmentvalue_div').html($("#shipmentvalue").val());
