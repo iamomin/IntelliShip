@@ -1,0 +1,145 @@
+[% IF MESSAGE %]
+	<div class="notice">[% MESSAGE %]</div>
+[% END %]
+
+
+[% IF REPORT_SETUP %]
+<h2>Reports</h2>
+<form id="frm_reprot" method="post" action="/customer/report/run">
+<div class="notice">
+Please check 'ALL' option to run report for all carrier. <br>
+</div>
+
+<table class="app" >
+	<tr> 
+		<td colspan=2>&nbsp;</td>
+	</tr>
+	<tr>
+		<td ><label for="startdate" class="float_right bold_text">Start Date:</label></td>
+		<td ><input type="text" name="startdate" id="startdate" readonly/></td>
+	</tr>
+	<tr>
+		<td><label for="enddate" class="float_right bold_text">End Date:</label></td>
+		<td><input type="text" name="enddate" id="enddate" readonly/></td>
+	</tr>
+	<tr>
+		<td><label for="carrier" class="float_right bold_text">Carrier:</label></td>
+		<td>
+			<table class="app">
+				<tr>
+					<td colspan=3><input type="checkbox" id="select_all_carrier"/>Select All</td>
+				</tr>
+				[% count=0 %]
+				<tr>
+				[% FOREACH item IN CARRIER_LOOP %]
+				[% count=count+1 %]
+					[% IF count == 4 %]
+						</tr><tr>
+					[% count = 0 %]
+					[% ELSE %]
+						<td>
+						<input type="checkbox" class="carrier_list" name="[% item.value %]" id="carrier_[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">[% item.name %]</label>
+						</td>
+					[% END %]
+				[% END %]
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td><label for="report_format" class="float_right bold_text">Report Format:</label></td>
+		<td>
+		<select name="report_format" ID="report_format">
+			<option value="HTML" >HTML
+			<option value="CSV" >Excel
+			<option value="MANIFEST" >Manifest
+			<option value="SUMMARY_SERVICE_REPORT" >Summary Service Report
+		</select>
+		</td>
+	</tr>
+	<tr>
+		<td><label for="toemail" class="float_right bold_text">Email Address:</label></td>
+		<td><input type="text" class="broad_text" name="toemail" id="toemail"/></td>
+	</tr>
+	<tr> 
+		<td>&nbsp;</td>
+		<td><input type="submit" class="large" id="run_report" value="Run Report" /></td>
+	</tr>
+</table>
+
+
+</form>
+[% END %]
+
+[% IF RUN_REPORT %]
+<h2>Report Output</h2>
+<form id="frm_reprot_output" name="frm_reprot_output">
+
+<TABLE class="app">
+<tr>
+	[% FOREACH item IN PARAMETER_LOOP %]
+	<td>
+	<SPAN CLASS="regsubtitle">[% item.name %]</SPAN>: [% item.value %] &#160;&#160;
+	</td>
+	[% END %]
+</tr>
+
+<tr>
+	[% FOREACH item IN ROW_HEADER_LOOP %]
+	<td>
+	[% item.value %] &#160;&#160;
+	</td>
+	[% END %]
+</tr>
+
+[% FOREACH item IN ROWS_LOOP %]
+	[% IF IS_EVEN %]
+		<TR BGCOLOR=#F8F8F8 ALIGN=CENTER id="cell%REPORT_NUMBER%-%NUMBER%"  onmouseover="changeColor('D0FFCE', this.id);" onmouseout="changeColor('F8F8F8', this.id);">
+	[% ELSE %]
+		<TR BGCOLOR=#E2E2E2 ALIGN=CENTER id="cell%REPORT_NUMBER%-%NUMBER%"  onmouseover="changeColor('D0FFCE', this.id);" onmouseout="changeColor('E2E2E2', this.id);">
+	[% END %]
+		<td WIDTH=20>%NUMBER%.</td>
+		[% FOREACH item IN ROW_LOOP %]
+		<td></td>
+		[% END %]
+	</tr>
+[% END %]
+
+</TABLE>
+
+
+
+</FORM>
+[% END %]
+
+<script>
+$(document).ready(function(){
+	var currentDate = new Date();
+	$("#startdate, #enddate").datepicker({
+		inline: true,
+		maxDate:(0),
+	});
+
+	$("#enddate").datepicker("setDate", currentDate);
+
+	currentDate.setDate('1');
+	$("#startdate").datepicker("setDate", currentDate);
+
+
+	$("#select_all_carrier").click(function () {
+		alert(this.checked);
+		$('.carrier_list').attr('checked', this.checked);
+	});
+ 
+
+	$(".carrier_list").click(function(){
+		if($(".carrier_list").length == $(".carrier_list:checked").length) {
+			$("#select_all_carrier").attr("checked", "checked");
+		} else {
+			$("#select_all_carrier").removeAttr("checked");
+		}
+	 });
+});
+
+
+</script>
