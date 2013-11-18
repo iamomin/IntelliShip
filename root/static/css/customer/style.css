@@ -255,6 +255,16 @@ table.report tr:hover {background:#EEE !important}
     color: #c45649;
 }
 
+.regsubtitle {
+    text-decoration: none; 
+    color: #085184;
+}
+
+.regsubtitle:hover {
+    text-decoration: underline;
+    color: #ff0000;
+}
+
 div.notice {
     position: relative;
     border: 1px solid #97c1da;
