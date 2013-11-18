@@ -46,9 +46,14 @@ sub get_HTML :Private
 	my $self = shift;
 	my $c = $self->context;
 
-	if ($c->req->param('action') eq 'display_international')
+	my $action = $c->req->param('action') || '';
+	if ($action eq 'display_international')
 		{
 		$self->set_international_details;
+		}
+	elsif ($action eq 'carrier_list')
+		{
+		$self->set_carrier_list;
 		}
 	}
 
@@ -59,6 +64,14 @@ sub set_international_details
 
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{INTERNATIONAL} = 1;
+	}
+
+sub set_carrier_list
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->stash->{CARRIER_LIST} = $self->get_select_list('CARRIER');
 	}
 
 sub get_JSON_DATA :Private

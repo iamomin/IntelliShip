@@ -171,6 +171,10 @@ h3 {
     font-size: 14px;
 }
 
+label {
+    white-space:nowrap;
+}
+
 table {
     margin: 0;
     padding: 0;

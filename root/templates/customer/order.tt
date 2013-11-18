@@ -141,7 +141,7 @@
 		</tr>
 	</table>
 
-	<table id="pkg_detail" class="fixed_app">
+	<table id="pkg_detail">
 		<thead>
 			<tr id="header_row">
 				<th>QTY</th>
@@ -214,6 +214,10 @@
 				<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" /><label for="[% item.value %]">[% item.name %]</label>
 				[% END %]
 			</td>
+		</tr>
+		<tr>
+			<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
+			<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
 		</tr>
 	</table>
 
@@ -429,11 +433,7 @@ $(document).ready(function(){
 	$("#datetoship").datepicker('setDate', '+0d');
 	$("#dateneeded").datepicker({ minDate: '-0d' });
 
-	var availableCustomers = [
-		[% FOREACH item IN customerlist_loop %]
-			"[% item.name %]",
-		[% END %]
-		];
+	var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
 
 	$("#toname").autocomplete({
 		source: availableCustomers
@@ -488,9 +488,21 @@ $(document).ready(function(){
 		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") {
 			send_ajax_request('', 'JSON', 'order', 'third_party_delivery', "", function (){
 				if (JSON_data.rowHTML) {
-					$("#carrier_service_selection").append(JSON_data.rowHTML);
+					$(JSON_data.rowHTML).insertAfter("#carrier_service_selection tr:first");
+					//$("#carrier_service_selection tr:first").append(JSON_data.rowHTML);
 					}
 				});
+			} else {
+			//alert("Hide TP");
+			$(".tp").hide("slow");
+			//alert("$(.tp)" + $(".tp"));
+			//alert("$(.tp).parent()" + $(".tp").parent());
+			//$("#carrier_service_selection tr").each(function(i, n){
+			//	alert('(this).hasClass("tp")' + $(this).hasClass("tp"));
+			//	var current = $(this).attr('class');
+			//	alert("HAS TP: " + this.hasClass('.tp'));
+			//	if ($(this).hasClass("tp")) $(this).remove();
+			//	});
 			}
 		});
 /*

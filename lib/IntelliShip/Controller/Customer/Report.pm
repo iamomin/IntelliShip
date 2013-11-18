@@ -11,7 +11,7 @@ sub index :Path :Args(0)
 	my $params = $c->req->params;
 
 	$c->stash->{REPORT_SETUP} = 1;
-	$c->stash->{CARRIER_LOOP} = $self->get_select_list('CARRIER');
+	$c->stash->{carrier_loop} = $self->get_select_list('CARRIER');
 
 	$c->stash(template => "templates/customer/report.tt");
 	}
