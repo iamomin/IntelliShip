@@ -196,7 +196,7 @@ sub add_pkg_detail_row :Private
 	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
-	$self->context->log->debug("in add_new_row : row_HTML");
+	#$self->context->log->debug("in add_new_row : row_HTML");
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	$c->stash->{PKG_DETAIL_ROW} = 0;
 

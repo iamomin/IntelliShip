@@ -33,7 +33,9 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
     # Hello World
-    $c->response->body( $c->welcome_message );
+    #$c->response->body( $c->welcome_message );
+	$c->log->debug('IN ROOT index');
+	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
 =head2 default
@@ -44,8 +46,9 @@ Standard 404 error page
 
 sub default :Path {
     my ( $self, $c ) = @_;
-    $c->response->body( 'Page not found' );
-    $c->response->status(404);
+    #$c->response->body( 'Page not found' );
+    #$c->response->status(404);
+	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
 sub access_denied :Private
@@ -87,7 +90,8 @@ sub auto :Private {
 
 	#$c->log->debug('##### COOKIES TokenID: ' . Dumper $c->req->cookies->{'TokenID'});
 
-	if ($c->request->action !~ /login$/)
+	my $url_action = $c->request->action;
+	if ($url_action !~ /login$/ and $url_action =~ /customer/g)
 		{
 		unless ($c->controller->authorize_user)
 			{
@@ -127,7 +131,7 @@ sub end : Private {
 		}
 	elsif ($Token)
 		{
-		#$c->log->debug("============== CustomerMaster");
+		$c->log->debug("============== CustomerMaster: " . $Token->tokenid);
 		$c->stash->{active_username} = $Token->active_username;
 		$c->forward($c->view('CustomerMaster'));
 		}

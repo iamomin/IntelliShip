@@ -60,7 +60,7 @@ $(document).ready(function(){
 
 	$("#startdate, #enddate").datepicker({
 		inline: true,
-		maxDate:(0),
+		maxDate:(7),
 		});
 
 	$("#enddate").datepicker("setDate", currentDate);
