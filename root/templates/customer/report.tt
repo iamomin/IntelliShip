@@ -1,75 +1,91 @@
+
+[% #---------------------------------------------------------- %]
+[% # REPORT SETUP START %]
+[% #---------------------------------------------------------- %]
+[% IF REPORT_SETUP %]
+<h2>Reports</h2>
+
 [% IF MESSAGE %]
 	<div class="notice">[% MESSAGE %]</div>
 [% END %]
 
-
-[% IF REPORT_SETUP %]
-<h2>Reports</h2>
 <form id="frm_reprot" method="post" action="/customer/report/run">
-<div class="notice">
-Please check 'ALL' option to run report for all carrier. <br>
-</div>
 
-<table class="app" >
+<table class="center_app" >
 	<tr> 
 		<td colspan=2>&nbsp;</td>
 	</tr>
 	<tr>
-		<td ><label for="startdate" class="float_right bold_text">Start Date:</label></td>
+		<td ><label for="startdate" class="float_right">Start Date:</label></td>
 		<td ><input type="text" name="startdate" id="startdate" readonly/></td>
 	</tr>
 	<tr>
-		<td><label for="enddate" class="float_right bold_text">End Date:</label></td>
+		<td><label for="enddate" class="float_right">End Date:</label></td>
 		<td><input type="text" name="enddate" id="enddate" readonly/></td>
 	</tr>
 	<tr>
-		<td><label for="carrier" class="float_right bold_text">Carrier:</label></td>
-		<td>
-			<table class="app">
-				<tr>
-					<td colspan=3><input type="checkbox" id="select_all_carrier"/>Select All</td>
-				</tr>
-				[% count=0 %]
-				<tr>
-				[% FOREACH item IN CARRIER_LOOP %]
-				[% count=count+1 %]
-					[% IF count == 4 %]
-						</tr><tr>
-					[% count = 0 %]
-					[% ELSE %]
-						<td>
-						<input type="checkbox" class="carrier_list" name="[% item.value %]" id="carrier_[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">[% item.name %]</label>
-						</td>
-					[% END %]
-				[% END %]
-				</tr>
-			</table>
+		<td><label for="carrier" class="float_right">Carrier:</label></td>
+		<td style="width: 380px"><table><tr><td>
+			<input type="checkbox" id="all_carriers" checked/>&nbsp;<label for="all_carriers">All</label>
+			</td></tr></table>
+			<div id="carriersDiv"></div>
 		</td>
 	</tr>
 	<tr>
-		<td><label for="report_format" class="float_right bold_text">Report Format:</label></td>
+		<td><label for="report_format" class="float_right">Report Format:</label></td>
 		<td>
-		<select name="report_format" ID="report_format">
-			<option value="HTML" >HTML
-			<option value="CSV" >Excel
-			<option value="MANIFEST" >Manifest
-			<option value="SUMMARY_SERVICE_REPORT" >Summary Service Report
+		<select name="report_format" id="report_format">
+			<option value="HTML">HTML
+			<option value="CSV">Excel
+			<option value="MANIFEST">Manifest
+			<option value="SUMMARY_SERVICE_REPORT">Summary Service Report
 		</select>
 		</td>
 	</tr>
 	<tr>
-		<td><label for="toemail" class="float_right bold_text">Email Address:</label></td>
+		<td><label for="toemail" class="float_right">Email Address:</label></td>
 		<td><input type="text" class="broad_text" name="toemail" id="toemail"/></td>
 	</tr>
 	<tr> 
 		<td>&nbsp;</td>
-		<td><input type="submit" class="large" id="run_report" value="Run Report" /></td>
 	</tr>
 </table>
 
-
+<center><input type="submit" class="large" id="run_report" value="Run Report" /></center>
 </form>
+
+<script>
+$(document).ready(function(){
+	var currentDate = new Date();
+
+	$("#startdate, #enddate").datepicker({
+		inline: true,
+		maxDate:(7),
+		});
+
+	$("#enddate").datepicker("setDate", currentDate);
+	currentDate.setDate('1');
+	$("#startdate").datepicker("setDate", currentDate);
+
+	$("#all_carriers").click(function () {
+		if($("#all_carriers").is(":checked")) {
+			$("#carriersDiv").slideUp(1000);
+			} else {
+			if ($("#carriersDiv").html().length == 0)
+				send_ajax_request("carriersDiv", "HTML", "order", "carrier_list", "", function (){
+					$("#carriersDiv").slideDown(1000);
+					});
+			else
+				$("#carriersDiv").slideDown(1000);
+			}
+		});
+	});
+</script>
 [% END %]
+
+[% #---------------------------------------------------------- %]
+[% # REPORT SETUP END %]
+[% #---------------------------------------------------------- %]
 
 [% IF RUN_REPORT %]
 <h2>Report Output</h2>
@@ -105,41 +121,7 @@ Please check 'ALL' option to run report for all carrier. <br>
 	</tr>
 [% END %]
 
-</TABLE>
+</table>
 
-
-
-</FORM>
+</form>
 [% END %]
-
-<script>
-$(document).ready(function(){
-	var currentDate = new Date();
-	$("#startdate, #enddate").datepicker({
-		inline: true,
-		maxDate:(0),
-	});
-
-	$("#enddate").datepicker("setDate", currentDate);
-
-	currentDate.setDate('1');
-	$("#startdate").datepicker("setDate", currentDate);
-
-
-	$("#select_all_carrier").click(function () {
-		alert(this.checked);
-		$('.carrier_list').attr('checked', this.checked);
-	});
- 
-
-	$(".carrier_list").click(function(){
-		if($(".carrier_list").length == $(".carrier_list:checked").length) {
-			$("#select_all_carrier").attr("checked", "checked");
-		} else {
-			$("#select_all_carrier").removeAttr("checked");
-		}
-	 });
-});
-
-
-</script>

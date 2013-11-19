@@ -12,7 +12,6 @@ BEGIN {
 
 	has 'context' => ( is => 'rw' );
 	has 'token' => ( is => 'rw' );
-	has 'token' => ( is => 'rw' );
 	has 'contact' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
 
@@ -77,7 +76,9 @@ sub login :Local :Args(0)
 	{
 	my ( $self, $c ) = @_;
 
-	$c->log->debug("========== LOG IN CUSTOMER USER");
+	$c->log->debug("********* LOG IN CUSTOMER USER *********");
+
+	$self->flush_expired_tokens;
 
 	my $params = $c->request->parameters;
 	my $Token = $self->get_token;
@@ -144,6 +145,10 @@ sub authenticate_user :Private
 		$self->contact($Contact);
 		$self->customer($Customer);
 		}
+	else
+		{
+		$self->token(undef);
+		}
 
 	my $TokenID = undef;
 	my $myDBI = $c->model("MyDBI");
@@ -168,10 +173,17 @@ sub authenticate_user :Private
 		$self->token($c->model("MyDBI::Token")->find($TokenID));
 		}
 
-	$c->log->debug("#### FLUSH EXPIRED TOKEN FROM DB");
-	$myDBI->dbh->do("DELETE FROM token WHERE dateexpires <= timestamp 'now'");
+	$self->flush_expired_tokens;
 
 	return $TokenID;
+	}
+
+sub flush_expired_tokens :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	$c->log->debug("#### FLUSH EXPIRED TOKEN FROM DB");
+	$c->model("MyDBI")->dbh->do("DELETE FROM token WHERE dateexpires <= timestamp 'now'");
 	}
 
 sub authorize_user :Private

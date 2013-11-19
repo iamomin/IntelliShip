@@ -171,6 +171,11 @@ h3 {
     font-size: 14px;
 }
 
+label {
+    white-space:nowrap;
+    padding: 3px;
+}
+
 table {
     margin: 0;
     padding: 0;
@@ -204,11 +209,12 @@ table.fixed_app {
     font-size: 11px;
     border-collapse: collapse;
     float: left;
-    width: 25%;
-    min-width: 200px;
+    width: auto;
+    min-width: 20%;
 }
 
 table.fixed_app caption {
+    width: auto;
     padding: 5px;
     color: #fff;
     font-weight: bold;
@@ -343,6 +349,13 @@ a:hover {
     list-style-type:circle;
 }
 
+ul.sortable {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    cursor: -webkit-grabbing;
+}
+
 input  {
     width: auto;
     padding: 0 3px;
@@ -376,7 +389,7 @@ input.text {
 }
 
 input.broad_text {
-    width: 220px;
+    width: 210px;
 }
 
 input.auto_width {

@@ -34,7 +34,7 @@
 			<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><div class="default_text">[% customerAddress.address2 %]</div></td>
 		</tr>
 		<tr>
-			<td><label class="float_right">City, State, Zipcode:</label></td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
+			<td><label class="float_right">City,State,Zipcode:</label></td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
 		</tr>
 		<tr>
 			<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% customerAddress.country %]"/><div class="default_text">[% customerAddress.country_description %]</div>
@@ -67,7 +67,8 @@
 			<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2"/></td>
 		</tr>
 		<tr>
-			<td><label class="float_right"><label for="tocity">City</label>,&nbsp;<label for="tostate">State</label>,&nbsp;<label for="tozip">Zipcode:</label></label></td><td>
+			<td><label class="float_right"><label for="tocity">City</label>,<label for="tostate">State</label>,<label for="tozip">Zipcode:</label></label></td>
+			<td>
 			<input type="text" name="tocity" id="tocity" size="6"/>
 			<label>
 			<select name="tostate" id="tostate">
@@ -84,7 +85,7 @@
 			<label>
 			<select name="tocountry" id="tocountry">
 				[% FOREACH item IN countrylist_loop %]
-						<option value="[% item.value %]" [% IF item.value == default_country %] SELECTED [% END %]>[% item.name %]</option>
+					<option value="[% item.value %]" [% IF item.value == default_country %] SELECTED [% END %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</label>
@@ -141,37 +142,56 @@
 		</tr>
 	</table>
 
-	<table id="pkg_detail" class="fixed_app">
-		<thead>
-			<tr id="header_row">
-				<th>QTY</th>
-				<th>SKU</th>
-				<th>Description</th>
-				<th>Type</th>
-				<th>Weight</th>
-				<th>Dim Weight</th>
-				<th>Length</th>
-				<th>Width</th>
-				<th>Height</th>
-				<th>Density</th>
-				<th>NMFC</th>
-				<th>Class</th>
-				<th>Declared Val</th>
-				<th>Freight Ins</th>
-				<th></th>
+	<ul class="sortable" id="package_detail_list">
+		<li class="ui-state-fixed">
+		<table>
+			<tr>
+				<th style="width:  4%">QTY</th>
+				<th style="width:  5%">SKU</th>
+				<th style="width: 20%">Description</th>
+				<th style="width: 10%">Type</th>
+				<th style="width:  5%">Weight</th>
+				<th style="width:  5%">Dim Weight</th>
+				<th style="width:  5%">Length</th>
+				<th style="width:  5%">Width</th>
+				<th style="width:  5%">Height</th>
+				<th style="width:  5%">Density</th>
+				<th style="width:  5%">NMFC</th>
+				<th style="width:  5%">Class</th>
+				<th style="width: 10%">Declared Val</th>
+				<th style="width: 10%">Freight Ins</th>
+				<td style="width:  1%">&nbsp;</td>
 			</tr>
-		</thead>
-		<tbody>
-
-		</tbody>
-	</table>
+		</table>
+		</li><li id="new_pkg_1" class="ui-state-highlight ui-state-fixed">
+			<table>
+			<tr>
+				<td style="width:  4%"><input type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" size="1"/></td>
+				<td style="width:  5%"><input type="text" class="sku_id" name="sku_1" id="sku_1" size="1"/></td>
+				<td style="width: 20%"><input type="text" name="description_1" id="description_1" readonly/></td>
+				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="weight_1" id="weight_1" size="1"/></td>
+				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" size="1"/></td>
+				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" size="1"/></td>
+				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" size="1"/></td>
+				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" size="1"/></td>
+				<td style="width:  5%"><input type="text" name="density_1" id="density_1" size="5"/></td>
+				<td style="width:  5%"><input type="text" name="nmfc_1" id="nmfc_1" size="1"/></td>
+				<td style="width:  5%"><input type="text" name="class_1" id="class_1" size="1"/></td>
+				<td style="width: 10%"><input type="text" name="decval_1" id="decval_1" size="5"/></td>
+				<td style="width: 10%"><input type="text" name="frtins_1" id="frtins_1" size="1"/></td>
+				<td style="width:  1%">&nbsp;</td>
+			</tr>
+			</table>
+		</li>
+	</ul>
 
 	<div style="clear: both;">&nbsp;</div>
 
 	<table>
 		<tr>
 		<td><input type="button" id = "add_pkg_row" class="button submit" value="Add Package"/></td>
-		<td><input type="button" id = "add_prdt_row" class="button submit" value="Add Product"/></td>
+		<td><input type="button" id = "add_product_row" class="button submit" value="Add Product"/></td>
 		<td>Multiply Qty*Weight</td>
 		<td><input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label></td>
 		<td><input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label></td>
@@ -205,33 +225,47 @@
 	<div id="intlCommoditySec"></div>
 	<div style="clear: both;">&nbsp;</div>
 
-	<table class="fixed_app" id="carrier_service_selection">
+	<table class="fixed_app" style="width: 60%">
 		<caption>Carrier and Service Selection</caption>
-		<tr>
-			<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-			<td>
-				[% FOREACH item IN deliverymethod_loop %]
-				<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" /><label for="[% item.value %]">[% item.name %]</label>
-				[% END %]
-			</td>
-		</tr>
+		<tr><td>
+			<table id="delivery_method_table">
+				<tr>
+					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+					<td>
+						[% FOREACH item IN deliverymethod_loop %]
+						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" /><label for="[% item.value %]">[% item.name %]</label>
+						[% END %]
+					</td>
+				</tr>
+				<tr>
+					<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
+					<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
+				</tr>
+				<tr class="tp">
+					<td>&nbsp;</td><td><input type="button" class="button submit" id="route" value="Route" style="display: none;"/></td>
+				</tr>
+			</table>
+		</td><td valign=top>
+			<table>
+				<tr>
+					<td>Freight Charges:</td>
+					<td><input type="checkbox" id="" value="" /> Hi This is Test</td>
+				</tr>
+				<!--
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				-->
+			</table>
+		</td></tr>
 	</table>
 
-	<table class="fixed_app">
-		<caption>Freight Charges</caption>
-		<tr>
-			<td><input type="checkbox" id="" value="" /> Hi This is Test</td>
-		</tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-	</table>
 	<table class="fixed_app">
 		<caption>Estimated Shipment Charges *</caption>
 		<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -285,6 +319,16 @@ function check_due_date()
 		});
 	}
 
+var pkg_detail_row_ID = 1;
+function add_pkg_detail_row(detail_type) {
+	pkg_detail_row_ID++;
+	var query_param = '&row_ID=' + pkg_detail_row_ID + '&detail_type=' + detail_type;
+
+	send_ajax_request('', 'JSON', 'order', 'add_pkg_detail_row', query_param, function (){
+			add_new_row('package_detail_list', JSON_data.rowHTML);
+			});
+	}
+
 function calculate_density(row_num)
 	{
 	var Weight = $("#weight_"+row_num).val();
@@ -311,12 +355,12 @@ function calculate_density(row_num)
 		}
 	}
 
-function calculate_total_packages_weight()
+function calculate_total_packages()
 	{
 	var TotalQuantity = 0;
 	TotalQuantity -= 0;
 
-	$('#pkg_detail tr').each(function() {
+	$('#package_detail_list li').each(function() {
 		var row_id = this.id;
 
 		if (row_id.match(/^new_pkg/))
@@ -328,37 +372,35 @@ function calculate_total_packages_weight()
 			}
 		});
 
-	$('#totalpackages_div').html(TotalQuantity.toFixed(2));
+	$('#totalpackages_div').html(TotalQuantity);
 	}
 
 
 function calculate_total_weight()
 	{
 	var TotalWeight = 0;
-	$('#pkg_detail tr').each(function() {
+	$('#package_detail_list li').each(function() {
+	//$('#pkg_detail tr').each(function() {
 		var row_id = this.id;
+		var row_num = row_id.split('_')[2];
 
-		if (row_id != 'header_row')
-			{
-			var row_num = row_id.split('_')[2];
-			var EnteredWeight = $("#weight_"+row_num).val();
-			var DimWeight = $("#dimweight_"+row_num).val();
-			var Quantity = $("#quantity_"+row_num).val();
+		var EnteredWeight = $("#weight_"+row_num).val();
+		var DimWeight = $("#dimweight_"+row_num).val();
+		var Quantity = $("#quantity_"+row_num).val();
 
-			EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
-			if($('input[name=quantityxweight]:radio:checked').val() == 1) {
-				var OriginalEnteredWeight = EnteredWeight;
-				if (Quantity > 0) {
-					EnteredWeight = SingleWeight * Quantity;
-					}
+		EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
+		if($('input[name=quantityxweight]:radio:checked').val() == 1) {
+			var OriginalEnteredWeight = EnteredWeight;
+			if (Quantity > 0) {
+				EnteredWeight = SingleWeight * Quantity;
 				}
+			}
 
-			if (EnteredWeight >= DimWeight) {
-				TotalWeight += EnteredWeight;
-				}
-			else {
-				TotalWeight += DimWeight;
-				}
+		if (EnteredWeight >= DimWeight) {
+			TotalWeight += EnteredWeight;
+			}
+		else {
+			TotalWeight += DimWeight;
 			}
 		});
 
@@ -381,7 +423,7 @@ function setSkuDetails(row_num, sku_id)
 				$("#dimwidth_"+row_num).val(JSON_data.width);
 				$("#dimheight_"+row_num).val(JSON_data.height);
 				$("#nmfc_"+row_num).val(JSON_data.nmfc);
-				$("#class_"+row_num).val(JSON_data.class);
+				//$("#class_"+row_num).val(JSON_data.class);
 				$("#unittype_"+row_num+" option:selected").val(JSON_data.unittypeid);
 				}
 			});
@@ -429,11 +471,7 @@ $(document).ready(function(){
 	$("#datetoship").datepicker('setDate', '+0d');
 	$("#dateneeded").datepicker({ minDate: '-0d' });
 
-	var availableCustomers = [
-		[% FOREACH item IN customerlist_loop %]
-			"[% item.name %]",
-		[% END %]
-		];
+	var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
 
 	$("#toname").autocomplete({
 		source: availableCustomers
@@ -452,9 +490,8 @@ $(document).ready(function(){
 		});
 
 	$(document).on('change', '.total_pkg_detail', function() {
-
 		calculate_total_weight();
-		calculate_total_packages_weight();
+		calculate_total_packages();
 
 		var row_id = this.id;
 		var row_num = row_id.split('_')[1];
@@ -465,22 +502,31 @@ $(document).ready(function(){
 		var row_id = this.id;
 		var row_num = row_id.replace(/^sku_/, "");
 		setSkuDetails(row_num, this.value)
+
+		calculate_total_weight();
+		calculate_total_packages();
 		});
 
 	$( "#add_pkg_row").click(function() {
 		add_pkg_detail_row('pkg');
 		});
 
-	$( "#add_prdt_row").click(function() {
-		add_pkg_detail_row('prdt');
+	$( "#add_product_row").click(function() {
+		add_pkg_detail_row('product');
 		});
 
+	$("#package_detail_list").disableSelection();
+	$("#package_detail_list").sortable({cancel: ".ui-state-fixed", items: "li:not('.ui-state-fixed')"});
+
 	$(document).on('click', '.remove_pkg_link', function() {
-		$(this).parent().parent().remove();
+		$(this).parent().parent().parent().parent().parent().remove();
+		calculate_total_weight();
+		calculate_total_packages();
 		});
 
 	$("input[name=quantityxweight]:radio").change(function () {
 		calculate_total_weight();
+		calculate_total_packages();
 		});
 
 	$("input[name='deliverymethod']:radio").change(function () {
@@ -488,9 +534,21 @@ $(document).ready(function(){
 		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") {
 			send_ajax_request('', 'JSON', 'order', 'third_party_delivery', "", function (){
 				if (JSON_data.rowHTML) {
-					$("#carrier_service_selection").append(JSON_data.rowHTML);
+					$(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
+					//$("#delivery_method_table tr:first").append(JSON_data.rowHTML);
 					}
 				});
+			} else {
+			//alert("Hide TP");
+			$(".tp").hide("slow");
+			//alert("$(.tp)" + $(".tp"));
+			//alert("$(.tp).parent()" + $(".tp").parent());
+			//$("#delivery_method_table tr").each(function(i, n){
+			//	alert('(this).hasClass("tp")' + $(this).hasClass("tp"));
+			//	var current = $(this).attr('class');
+			//	alert("HAS TP: " + this.hasClass('.tp'));
+			//	if ($(this).hasClass("tp")) $(this).remove();
+			//	});
 			}
 		});
 /*
@@ -538,7 +596,6 @@ $(document).ready(function(){
 		return validateForm(requireHash);
 		});
 
-	add_pkg_detail_row('pkg');
 	checkInternationalSection();
 	});
 

@@ -20,6 +20,7 @@
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.autocomplete.js"></script>
 
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.mouse.js"></script>
+		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.sortable.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.draggable.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.resizable.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.button.js"></script>
