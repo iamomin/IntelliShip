@@ -23,71 +23,16 @@ sub save_order :Private
 		addressid => $fromAddress->addressid
 		};
 
+	$c->stash->{CO_DATA} = $coData;
+
 	## Set default cotypeid (Default to vanilla 'Order')
 	$coData->{'cotypeid'} = (length $params->{'cotypeid'} ? $params->{'cotypeid'} : 1);
 
-	my $toAddressData = {
-			addressname => $params->{'toname'},
-			address1    => $params->{'toaddress1'},
-			address2    => $params->{'toaddress2'},
-			city        => $params->{'tocity'},
-			state       => $params->{'tostate'},
-			zip         => $params->{'tozip'},
-			country     => $params->{'tocountry'},
-			};
+	## SAVE ADDRESS DETAILS
+	$self->save_address;
 
-	$c->log->debug("checking for dropship address availability");
-
-	## Fetch ship from address
-	my @addresses = $c->model('MyDBI::Address')->search($toAddressData);
-
-	my $ToAddress;
-	if (@addresses)
-		{
-		$ToAddress = $addresses[0];
-		$c->log->debug("existing address found, ID" . $ToAddress->addressid);
-		}
-	else
-		{
-		$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
-		$ToAddress->addressid($self->get_token_id);
-		$ToAddress->set_address_code_details;
-		$ToAddress->insert;
-		$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
-		}
-	$coData->{dropaddressid} = $ToAddress->id;
-
-	## Sort out return address/id
-	if (length $params->{'rtaddress1'})
-		{
-		$c->log->debug("checking for return address availability");
-		my $returnAddressData = {
-			addressname => $params->{'rtname'},
-			address1    => $params->{'rtaddress1'},
-			address2    => $params->{'rtaddress2'},
-			city        => $params->{'rtcity'},
-			state       => $params->{'rtstate'},
-			zip         => $params->{'rtzip'},
-			country     => $params->{'rtcountry'},
-			};
-
-		my $ReturnAddress;
-		if (@addresses)
-			{
-			$ReturnAddress = $addresses[0];
-			$c->log->debug("existing address found, ID" . $ToAddress->addressid);
-			}
-		else
-			{
-			$ReturnAddress = $c->model("MyDBI::Address")->new($toAddressData);
-			$ReturnAddress->addressid($self->get_token_id);
-			$ReturnAddress->set_address_code_details;
-			$ReturnAddress->insert;
-			$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
-			}
-
-		$coData->{rtaddressid} = $ReturnAddress->id;
-		}
+	## SAVE PACKAGE & PRODUCT DETAILS
+	$self->save_package_product_details;
 
 	$coData->{'estimatedweight'} = $params->{'estimatedweight'};
 	$coData->{'density'} = $params->{'density'};
@@ -134,6 +79,98 @@ sub save_order :Private
 		$CO->coid($self->get_token_id);
 		$CO->insert;
 		}
+	}
+
+sub save_address
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("save address details");
+
+	my $Order = $self->get_order;
+	my $fromAddress = $self->customer->address;
+
+	my $coData = $c->stash->{CO_DATA};
+
+	my $toAddressData = {
+			addressname => $params->{'toname'},
+			address1    => $params->{'toaddress1'},
+			address2    => $params->{'toaddress2'},
+			city        => $params->{'tocity'},
+			state       => $params->{'tostate'},
+			zip         => $params->{'tozip'},
+			country     => $params->{'tocountry'},
+			};
+
+	$c->log->debug("checking for dropship address availability");
+
+	## Fetch ship from address
+	my @addresses = $c->model('MyDBI::Address')->search($toAddressData);
+
+	my $ToAddress;
+	if (@addresses)
+		{
+		$ToAddress = $addresses[0];
+		$c->log->debug("existing address found, ID" . $ToAddress->addressid);
+		}
+	else
+		{
+		$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
+		$ToAddress->addressid($self->get_token_id);
+		$ToAddress->set_address_code_details;
+		$ToAddress->insert;
+		$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
+		}
+
+	$coData->{dropaddressid} = $ToAddress->id;
+
+	## Sort out return address/id
+	if (length $params->{'rtaddress1'})
+		{
+		$c->log->debug("checking for return address availability");
+		my $returnAddressData = {
+			addressname => $params->{'rtname'},
+			address1    => $params->{'rtaddress1'},
+			address2    => $params->{'rtaddress2'},
+			city        => $params->{'rtcity'},
+			state       => $params->{'rtstate'},
+			zip         => $params->{'rtzip'},
+			country     => $params->{'rtcountry'},
+			};
+
+		my $ReturnAddress;
+		if (@addresses)
+			{
+			$ReturnAddress = $addresses[0];
+			$c->log->debug("existing address found, ID" . $ToAddress->addressid);
+			}
+		else
+			{
+			$ReturnAddress = $c->model("MyDBI::Address")->new($toAddressData);
+			$ReturnAddress->addressid($self->get_token_id);
+			$ReturnAddress->set_address_code_details;
+			$ReturnAddress->insert;
+			$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
+			}
+
+		$coData->{rtaddressid} = $ReturnAddress->id;
+		}
+
+	}
+
+sub save_package_product_details
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("save address details");
+
+	my $Order = $self->get_order;
+
+	my $coData = $c->stash->{CO_DATA};
 	}
 
 sub get_shipment_count
@@ -237,7 +274,7 @@ sub get_order
 
 	$c->log->debug("total customer order found: " . @cos);
 
-	my ($coid, $statusid);
+	my ($coid, $statusid) = (0,0);
 	if (@cos)
 		{
 		my $data = $cos[0];

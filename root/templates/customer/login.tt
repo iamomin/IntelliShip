@@ -1,23 +1,23 @@
 <!DOCTYPE HTML>
 <html>
-<head>
-<title>Intelliship Sign In</title>
-<link rel="stylesheet" type="text/css" href="/static/css/login.css" />
-</head>
-<body>
-<form id="login" name="login" method="post" action="/customer/login">
-<h1>Log In</h1>
-<fieldset id="message">
-&nbsp;[% IF error %] [% error %] [% END %]
-</fieldset>
-<fieldset id="inputs">
-<input id="username" name="username" type="text" placeholder="Username" autofocus="" required="">
-<input id="password" name="password" type="password" placeholder="Password" required="">
-</fieldset>
-<fieldset id="actions">
-<input type="submit" id="submit" value="Log in">
-<a href="">Forgot your password?</a><a href="">Register</a>
-</fieldset>
-</form>
-</body>
+	<head>
+		<title>Intelliship Sign In</title>
+		<link rel="stylesheet" type="text/css" href="/static/css/login.css" />
+	</head>
+	<body>
+		<form id="login" name="login" method="post" action="/customer/login">
+			<h1>Log In</h1>
+			<fieldset id="message">
+				&nbsp;[% IF error %] [% error %] [% END %]
+			</fieldset>
+			<fieldset id="inputs">
+				<input id="username" name="username" type="text" placeholder="Username" autofocus="" required="">
+				<input id="password" name="password" type="password" placeholder="Password" required="">
+			</fieldset>
+			<fieldset id="actions">
+				<input type="submit" id="submit" value="Log in">
+				<a href="">Forgot your password?</a><a href="">Register</a>
+			</fieldset>
+		</form>
+	</body>
 </html>
