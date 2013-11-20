@@ -85,8 +85,11 @@ sub login :Local :Args(0)
 
 	if ($Token)
 		{
+		$c->log->debug('--------- TOKEN FOUND ---------');
 		$self->token($Token);
-		$c->detach("dashboard",$params);
+
+		$c->log->debug('redirect to customer dashboard');
+		$c->response->redirect($c->uri_for('/customer/dashboard'));
 		}
 	elsif (defined $params->{'username'} and defined $params->{'password'})
 		{
@@ -159,7 +162,7 @@ sub authenticate_user :Private
 
 		$c->stash->{TokenID} = $TokenID;
 
-		$c->log->debug("#### Creating new session for token: " . $TokenID);
+		$c->log->debug("#### Creating new TOKEN: " . $TokenID);
 
 		($BrandingID, $SSOUsername, $SSOAuth) = ('','',''); ##**
 
@@ -267,8 +270,15 @@ sub get_login_token :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+
 	my $TokenID = $c->stash->{TokenID};
-	$TokenID = $c->req->cookies->{'TokenID'}->value if !$TokenID and $c->req->cookies->{'TokenID'};
+
+	if (!$TokenID and $c->req->cookies->{'TokenID'})
+		{
+		$TokenID = $c->req->cookies->{'TokenID'}->value;
+		$c->stash->{TokenID} = $TokenID;
+		}
+
 	return $TokenID;
 	}
 

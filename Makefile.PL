@@ -24,6 +24,7 @@ requires 'Date::Manip';
 requires 'Date::Calc';
 requires 'Email::Stuff';
 requires 'Sys::Hostname';
+requires 'XML::Simple';
 test_requires 'Test::More' => '0.88';
 catalyst;
 

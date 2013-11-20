@@ -78,7 +78,8 @@ starting with the application class and going through to the most specific class
 
 =cut
 
-sub auto :Private {
+sub auto :Private
+	{
 	my($self, $c) = @_;
 
 	$c->log->debug('Auto Divert to ' . $c->action);
@@ -88,7 +89,8 @@ sub auto :Private {
 	$c->controller->context($c) if ($c->controller ne $c->controller('Root') );
 	####################
 
-	#$c->log->debug('##### COOKIES TokenID: ' . Dumper $c->req->cookies->{'TokenID'});
+	#$c->log->debug("c->request->cookies: " . Dumper $c->request->cookies);
+	#$c->log->debug("c->response->cookies: " . Dumper $c->response->cookies);
 
 	my $url_action = $c->request->action;
 	if ($url_action !~ /login$/ and $url_action =~ /customer/g)
@@ -101,16 +103,12 @@ sub auto :Private {
 			return 0;
 			}
 
-		if ($c->res->cookies->{'TokenID'})
-			{
-			$c->res->cookies->{'TokenID'} = { value => $c->stash->{TokenID}, expires => '+3600' };
-			}
-
 		$c->log->debug("**** User Authorized Successfully");
+		$c->response->cookies->{'TokenID'} = { value => $c->controller->token->tokenid, expires => '+20M' };
 		}
 
 	return 1;
-}
+	}
 
 sub end : Private {
 	my ($self, $c) = @_;

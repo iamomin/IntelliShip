@@ -1,13 +1,116 @@
+<h1>IntelliShip Dashboard</h1>
+<div class="notice">This page is under construction, below are sample charts with dummy figures!..</div>
 
-	<h1>Hello [% active_username %]!</h1>
+<table class="center">
+	<tr>
+		<td><label for="barChart" class="bold_text">Monthly Orders</label></td>
+		<td><label for="pieChart" class="bold_text">My Orders</label></td>
+	</tr>
+	<tr>
+		<td><canvas id="barChart" width="400" height="300"></canvas></td>
+		<td><canvas id="pieChart" width="300" height="300"></canvas></td>
+	</tr>
+	<tr><td colspan=2>&nbsp;</td></tr>
+	<tr><td colspan=2><hr></td></tr>
+	<tr><td colspan=2>&nbsp;</td></tr>
+	<tr>
+		<td><label for="doughnutChart" class="bold_text">Total System Orders</label></td>
+		<td><label for="lineChart" class="bold_text">Orders Vs Revenue</label></td>
+	</tr>
+	<tr>
+		<td><canvas id="doughnutChart" width="300" height="300"></canvas></td>
+		<td><canvas id="lineChart" width="400" height="300"></canvas></td>
+	</tr>
+</table>
 
-	<br><br>
-	<hr/>
-	<br>
-	<div class="notice">
-	This page is under Construction...
-	</div>
-	<br><br>
-	<hr/>
+<script>
+var data, options={};
 
-	<div id="dashboard"></div>
+data = {
+	labels : ["January","February","March","April","May","June","July"],
+	datasets : [
+		{
+			fillColor : "rgba(220,220,220,0.5)",
+			strokeColor : "rgba(220,220,220,1)",
+			data : [65,59,90,81,56,55,40]
+		},
+		{
+			fillColor : "rgba(151,187,205,0.5)",
+			strokeColor : "rgba(151,187,205,1)",
+			data : [28,48,40,19,96,27,100]
+		}
+	]
+};
+
+//Get context with jQuery - using jQuery's .get() method.
+var ctx = $("#barChart").get(0).getContext("2d");
+new Chart(ctx).Bar(data,options);
+
+data = [
+	{
+		value: 30,
+		color:"#F38630"
+	},
+	{
+		value : 50,
+		color : "#E0E4CC"
+	},
+	{
+		value : 100,
+		color : "#69D2E7"
+	}
+];
+
+ctx = $("#pieChart").get(0).getContext("2d");
+new Chart(ctx).Pie(data,options);
+
+data = [
+	{
+		value: 30,
+		color:"#F7464A"
+	},
+	{
+		value : 50,
+		color : "#E2EAE9"
+	},
+	{
+		value : 100,
+		color : "#D4CCC5"
+	},
+	{
+		value : 40,
+		color : "#949FB1"
+	},
+	{
+		value : 120,
+		color : "#4D5360"
+	}
+
+];
+
+ctx = $("#doughnutChart").get(0).getContext("2d");
+new Chart(ctx).Doughnut(data,options);
+
+data = {
+	labels : ["January","February","March","April","May","June","July"],
+	datasets : [
+		{
+			fillColor : "rgba(220,220,220,0.5)",
+			strokeColor : "rgba(220,220,220,1)",
+			pointColor : "rgba(220,220,220,1)",
+			pointStrokeColor : "#fff",
+			data : [65,59,90,81,56,55,40]
+		},
+		{
+			fillColor : "rgba(151,187,205,0.5)",
+			strokeColor : "rgba(151,187,205,1)",
+			pointColor : "rgba(151,187,205,1)",
+			pointStrokeColor : "#fff",
+			data : [28,48,40,19,96,27,100]
+		}
+	]
+};
+
+ctx = $("#lineChart").get(0).getContext("2d");
+new Chart(ctx).Line(data,options);
+</script>
