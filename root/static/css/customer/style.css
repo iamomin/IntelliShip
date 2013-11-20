@@ -53,8 +53,12 @@ body{
     height: 50px;
     margin: 0 auto;
     border: 1px solid #6F8DB0;
-    //opacity: 0.8;
-    //background: #1875ba;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 5px 5px 5px #888;
+    -moz-box-shadow: 5px 5px 5px #888;
+    -webkit-box-shadow: 5px 5px 5px #888;
 }
 
 /* LOGO */
@@ -74,6 +78,9 @@ body{
     border: solid 1px #ddd;
     border-top: none;
     font: bold 12px Arial, Helvetica;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
 }
 
 #menu ul {
@@ -105,6 +112,12 @@ body{
     width: 98%;
     margin: 10px auto;
     border: solid 1px #ddd;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 5px 5px 5px #888;
+    -moz-box-shadow: 5px 5px 5px #888;
+    -webkit-box-shadow: 5px 5px 5px #888;
 }
 
 #content {
@@ -125,7 +138,12 @@ body{
     width: 98%;
     margin: 10px auto;
     color: #909090;
-/*    border: solid 1px #ddd;*/
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 5px 5px 5px #888;
+    -moz-box-shadow: 5px 5px 5px #888;
+    -webkit-box-shadow: 5px 5px 5px #888;
 }
 
 html>body #footer {
