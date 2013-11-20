@@ -2,8 +2,9 @@ package IntelliShip::Controller::Customer::Order::Ajax;
 use Moose;
 use Data::Dumper;
 use namespace::autoclean;
-use IntelliShip::DateUtils;
+use IntelliShip::HTTP;
 use IntelliShip::Utils;
+use IntelliShip::DateUtils;
 
 BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
@@ -101,6 +102,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->set_third_party_delivery;
 		}
+	elsif ($c->req->param('action') eq 'get_city_state')
+		{
+		$dataHash = $self->get_city_state;
+		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_response = $self->jsonify($dataHash);
@@ -156,15 +161,13 @@ sub adjust_due_date
 	$c->log->debug("ship_date : $ship_date");
 	$c->log->debug("due_date : $due_date");
 	$c->log->debug("equal_offset : $equal_offset");
-	$c->log->debug("less_than_offset : $less_than_offset");
-
-	my $offset;
+	#$c->log->debug("less_than_offset : $less_than_offset");
 
 	my $delta_days = IntelliShip::DateUtils->get_delta_days($ship_date,$due_date);
 
 	$c->log->debug("delta_days : $delta_days");
 
-	my $adjusted_datetime;
+	my ($offset, $adjusted_datetime);
 	if ( $delta_days == 0 and length $equal_offset )
 		{
 		$offset = $equal_offset;
@@ -178,9 +181,9 @@ sub adjust_due_date
 		$adjusted_datetime = $due_date;
 		}
 
-	$c->log->debug("adjusted_datetime : $adjusted_datetime");
+	$adjusted_datetime = IntelliShip::DateUtils->get_future_business_date($ship_date, $offset) if $offset;
 
-	$adjusted_datetime = IntelliShip::DateUtils->get_future_business_date($ship_date, $offset);
+	$c->log->debug("adjusted_datetime : $adjusted_datetime");
 
 	return { dateneeded => $adjusted_datetime };
 	}
@@ -236,6 +239,53 @@ sub set_third_party_delivery
 	$c->stash->{THIRD_PARTY_DELIVERY} = 0;
 
 	return { rowHTML => $row_HTML };
+	}
+
+sub get_city_state
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $address = $params->{'zipcode'};
+
+	my $HTTP = IntelliShip::HTTP->new;
+	$HTTP->method('GET');
+	$HTTP->host_production('maps.googleapis.com/maps/api/geocode/xml');
+	$HTTP->uri_production('address=' . $address . '&sensor=true');
+	$HTTP->timeout('30');
+
+	my $result = $HTTP->send;
+	my $responseDS = IntelliShip::Utils->parse_XML($result);
+	#$c->log->debug("get_city_state result : " . Dumper $result);
+	#$c->log->debug("get_city_state responseDS : " . Dumper $responseDS);
+
+	my ($address1, $address2, $city, $state, $zip, $country);
+	if ($responseDS->{'GeocodeResponse'}->{'status'} eq 'OK')
+		{
+		my $geocodeResponse = $responseDS->{'GeocodeResponse'}->{'result'};
+		my $formatted_address = $geocodeResponse->{'formatted_address'};
+		my $address_components = $geocodeResponse->{'address_component'};
+
+		foreach my $component (@$address_components)
+			{
+			#$c->log->debug("ref component->{type}: " . ref $component->{type});
+			$component->{type} = join(' | ', @{$component->{type}}) if (ref $component->{type}) =~ /array/gi;
+			#$c->log->debug("component->{type}: " . $component->{type});
+
+			$address1 = $component->{short_name} if $component->{type} =~ /administrative_area_level_1/;
+			$address2 = $component->{short_name} if $component->{type} =~ /locality/;
+			$city = $component->{short_name} if $component->{type} =~ /administrative_area_level_2/;
+			$state = $component->{short_name} if $component->{type} =~ /administrative_area_level_1/;
+			$zip = $component->{short_name} if $component->{type} =~ /postal_code/;
+			$country = $component->{short_name} if $component->{type} =~ /country/;
+			;
+			}
+		}
+
+	#$c->log->debug("address1: $address1, address2: $address2, city: $city, state: $state, zip: $zip, country: $country");
+
+	return { address1 => $address1, address2 => $address2, city => $city, state => $state, zip => $zip, country => $country };
 	}
 
 sub jsonify

@@ -449,6 +449,10 @@ function clear_product_details(row_num)
 	}
 
 function checkInternationalSection() {
+	$("#tocity").val("");
+	$("#tostate").val("");
+	$("#tozip").val("");
+
 	if($("#tocountry").val() != $("#fromcountry").val()) {
 		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){
 			$("#intlCommoditySec").slideDown(1000);
@@ -456,6 +460,18 @@ function checkInternationalSection() {
 		} else {
 		$("#intlCommoditySec").slideUp("slow");
 		$("#intlCommoditySec").empty();
+		}
+	}
+
+function setCityAndState()
+	{
+	var query_param = "&zipcode=" + $("#tozip").val(); 
+	if($("#tozip").val() != "") {
+		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
+			$("#tocity").val(JSON_data.city);
+			$("#tostate").val(JSON_data.state);
+			$("#tocountry").val(JSON_data.country);
+			});
 		}
 	}
 
@@ -483,6 +499,10 @@ $(document).ready(function(){
 
 	$("#tocountry").change(function() {
 		checkInternationalSection();
+		});
+
+	$("#tozip").change(function() {
+		setCityAndState();
 		});
 
 	$("#dateneeded").change(function() {

@@ -194,6 +194,13 @@ table td {
     padding: 3px;
 }
 
+table.center {
+    width: auto;
+    padding: 10px;
+    margin: 10px auto;
+    text-align: center;
+}
+
 table.app {
     width: auto;
     margin: 10px 0;
@@ -356,50 +363,64 @@ ul.sortable {
     cursor: -webkit-grabbing;
 }
 
-input  {
+input {
     width: auto;
     padding: 0 3px;
     border: solid 1px #afafaf;
-
-    -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 20px;
     border-radius: 3px;
-/*
-    -webkit-box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
-    -moz-box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
-    box-shadow: 0 2px 0 #ccc, 0 -1px #fff inset;
-*/
 }
 
-input.checkbox  {
-    margin-top: 2px;
-
+input [type="checkbox"] {
+    margin: 0;
+    padding: 0;
+    border: none;
+    vertical-align: middle;
+    -webkit-appearance: none;
+    -webkit-transition: box-shadow 200ms;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;
-/*
+}
+
+input [type="radio"] {
+    margin: 0;
+    padding: 0;
+    border: none;
+    vertical-align: middle;
     -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance:none;
-*/
+    -webkit-transition: box-shadow 200ms;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 input.text {
     width: 160px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 20px;
+    border-radius: 3px;
 }
 
 input.broad_text {
     width: 210px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 20px;
+    border-radius: 3px;
 }
 
 input.auto_width {
     width: auto;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 20px;
+    border-radius: 3px;
 }
 
-input.hidden {
-    border: none;
-    background: #e9e9e9;
-}
 
 /* Buttons */
 

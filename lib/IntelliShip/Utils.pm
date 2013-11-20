@@ -2,6 +2,7 @@ package IntelliShip::Utils;
 
 use strict;
 use bignum;
+use XML::Simple;
 
 =pod
 
@@ -49,56 +50,96 @@ sub get_freight_class_from_density
 		{
 		$FreightClass = 400;
 		}
-	elsif ( $Density >= 1 && $Density < 2 )
+	elsif ( $Density >= 1 and $Density < 2 )
 		{
 		$FreightClass = 300;
 		}
-	elsif ( $Density >= 2 && $Density < 4 )
+	elsif ( $Density >= 2 and $Density < 4 )
 		{
 		$FreightClass = 250;
 		}
-	elsif ( $Density >= 4 && $Density < 6 )
+	elsif ( $Density >= 4 and $Density < 6 )
 		{
 		$FreightClass = 150;
 		}
-	elsif ( $Density >= 6 && $Density < 8 )
+	elsif ( $Density >= 6 and $Density < 8 )
 		{
 		$FreightClass = 125;
 		}
-	elsif ( $Density >= 8 && $Density < 10 )
+	elsif ( $Density >= 8 and $Density < 10 )
 		{
 		$FreightClass = 100;
 		}
-	elsif ( $Density >= 10 && $Density < 12 )
+	elsif ( $Density >= 10 and $Density < 12 )
 		{
 		$FreightClass = 92.5;
 		}
-	elsif ( $Density >= 12 && $Density < 15 )
+	elsif ( $Density >= 12 and $Density < 15 )
 		{
 		$FreightClass = 85;
 		}
-	elsif ( $Density >= 15 && $Density < 18 )
+	elsif ( $Density >= 15 and $Density < 18 )
 		{
 		$FreightClass = 70;
 		}
-	elsif ( $Density >= 18 && $Density < 21 )
+	elsif ( $Density >= 18 and $Density < 21 )
 		{
 		$FreightClass = 65;
 		}
-	elsif ( $Density >= 21 && $Density < 24 )
+	elsif ( $Density >= 21 and $Density < 24 )
 		{
 		$FreightClass = 60;
 		}
-	elsif ( $Density >= 24 && $Density < 27 )
+	elsif ( $Density >= 24 and $Density < 27 )
 		{
 		$FreightClass = 55;
 		}
-	elsif ( $Density >= 27 && $Density < 30 )
+	elsif ( $Density >= 27 and $Density < 30 )
 		{
 		$FreightClass = 50;
 		}
 
 	return $FreightClass;
+	}
+
+sub hex_string
+	{
+	my $self = shift;
+	my $string = shift;
+
+	my %escapes;
+
+	for (0..255)
+		{
+		$escapes{chr($_)} = sprintf("%%%02X", $_);
+		}
+
+	$string =~ s/([\x00-\x20\"#%;\@&=\*<>?{}\!\$\(\)|\\^~`\[\]\x7F-\xFF])/$escapes{$1}/g;
+	$string =~ s/\+/\%2B/g;
+	$string =~ s/ /+/g;
+
+	return $string;
+	}
+
+sub parse_XML
+	{
+	my $self = shift;
+	my $XML = shift;
+
+	my $xs = XML::Simple->new(
+		forcearray => 0,
+		keeproot => 1,
+		suppressempty => 1
+		);
+
+	my $xmlRequestDS = eval{ $xs->XMLin($XML) };
+
+	if ($@)
+		{
+		print STDERR "\nXML Parse Error: " . $@;
+		}
+
+	return $xmlRequestDS;
 	}
 
 1;

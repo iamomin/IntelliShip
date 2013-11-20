@@ -38,6 +38,9 @@
 		 -->
 
 		 <!-- Customer Portal Javascript -->
+		<script src="/static/js/Chart.min.js"></script>
+
+		 <!-- Customer Portal Javascript -->
 		<script src="/static/js/customer.js"></script>
 
 	</head>
