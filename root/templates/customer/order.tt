@@ -136,12 +136,14 @@
 			<td><label>Total Weight:</label></td>
 			<td><input type="hidden" id="totalweight" name="totalweight" value="0.00"/><div class="default_text" id="totalweight_div">0.00</div></td>
 			<td><label>Total Packages:</label></td>
-			<td><input type="hidden" id="totalpackages" name="totalpackages" value="0.00"><div class="default_text" id="totalpackages_div">0.00</div></td>
+			<td><input type="hidden" id="totalpackages" name="totalpackages" value="0.00"><div class="default_text" id="totalpackages_div">0</div></td>
 			<td><label for="insurance">Declared Value:</label><input type="text" name="insurance" id="insurance" value="0.00" size="5"/></td>
 			<td><label for="freightinsurance">Freight Insurance:</label><input type="text" name="freightinsurance" id="freightinsurance" value="0.00" size="5"/></td>
 		</tr>
 	</table>
 
+
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<ul class="sortable" id="package_detail_list">
 		<li class="ui-state-fixed">
 		<table>
@@ -163,7 +165,9 @@
 				<td style="width:  1%">&nbsp;</td>
 			</tr>
 		</table>
-		</li><li id="new_pkg_1" class="ui-state-highlight ui-state-fixed">
+		</li>
+		<li id="new_pkg_1" class="ui-state-highlight ui-state-fixed">
+			<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/> 
 			<table>
 			<tr>
 				<td style="width:  4%"><input type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" size="1"/></td>
@@ -180,7 +184,7 @@
 				<td style="width:  5%"><input type="text" name="class_1" id="class_1" size="1"/></td>
 				<td style="width: 10%"><input type="text" name="decval_1" id="decval_1" size="5"/></td>
 				<td style="width: 10%"><input type="text" name="frtins_1" id="frtins_1" size="1"/></td>
-				<td style="width:  1%">&nbsp;</td>
+				<td style="width:  1%"><input type="hidden" name="type_1" id="type_1" value="package"/>&nbsp;</td>
 			</tr>
 			</table>
 		</li>
@@ -322,6 +326,7 @@ function check_due_date()
 var pkg_detail_row_ID = 1;
 function add_pkg_detail_row(detail_type) {
 	pkg_detail_row_ID++;
+
 	var query_param = '&row_ID=' + pkg_detail_row_ID + '&detail_type=' + detail_type;
 
 	send_ajax_request('', 'JSON', 'order', 'add_pkg_detail_row', query_param, function (){
@@ -597,6 +602,22 @@ $(document).ready(function(){
 
 	$("#frm_order").submit(function() {
 
+	var rownumid=0;
+	$('#package_detail_list li').each(function() {
+		var row_id = this.id;
+
+		if (row_id.match(/^new_/))
+			{
+			var row_num = row_id.split('_')[2];
+
+			rownumid++;
+			$("#rownum_id_"+row_num).val(rownumid);
+			}
+		});
+
+	$("#pkg_detail_row_count").val(rownumid);
+
+
 		var requireHash = {
 				datetoship    : { date: true },
 				dateneeded    : { date: true },
@@ -613,7 +634,7 @@ $(document).ready(function(){
 				toemail       : { email: true }
 				};
 
-		return validateForm(requireHash);
+		//return validateForm(requireHash);
 		});
 
 	checkInternationalSection();

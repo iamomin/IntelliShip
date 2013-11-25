@@ -1,6 +1,6 @@
 package IntelliShip::HTTP;
 
-use Mouse;
+use Moose;
 use HTTP::Request;
 use LWP::UserAgent;
 use IntelliShip::Utils;
@@ -260,7 +260,7 @@ sub is_valid
 
 __PACKAGE__->meta()->make_immutable();
 
-no Mouse;
+no Moose;
 
 1;
 

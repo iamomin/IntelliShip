@@ -32,7 +32,7 @@ sub save_order :Private
 	$self->save_address;
 
 	## SAVE PACKAGE & PRODUCT DETAILS
-	$self->save_package_product_details;
+	# $self->save_package_product_details;
 
 	$coData->{'estimatedweight'} = $params->{'estimatedweight'};
 	$coData->{'density'} = $params->{'density'};
@@ -166,11 +166,62 @@ sub save_package_product_details
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("save address details");
+	$c->log->debug("save package details");
+	my $coData = $c->stash->{CO_DATA};
 
 	my $Order = $self->get_order;
+	my $total_row_count = $params->{'pkg_detail_row_count'};
 
-	my $coData = $c->stash->{CO_DATA};
+	my $last_package_id=0;
+	for (my $index=1; $index <= $total_row_count; $index++)
+		{
+		# If we're a package...the last id we got back was the id of a package.
+		# Save it out so following products will get owned by it.
+		# If this is a product, and we have a packageid, the ownertype needs to be a package
+		$params->{'weight' . $index };
+
+		my $ownerid = $coData->{coid};
+		$ownerid = $last_package_id if ($type eq 'product');
+
+		my $PackProData = {
+				weight            => $params->{'weight' . $index },
+				class             => $params->{'class' . $index },
+				dimweight         => $params->{'dimweight' . $index },
+				unittypeid        => $params->{'unittype' . $index },
+				description       => $params->{'description' . $index },
+				quantity          => $params->{'quantity' . $index },
+				boxnum            => $params->{'quantity' . $index },
+				frtins            => $params->{'frtins' . $index },
+				nmfc              => $params->{'nmfc' . $index },
+				decval            => $params->{'decval' . $index },
+				dimlength         => $params->{'dimlength' . $index },
+				dimwidth          => $params->{'dimwidth' . $index },
+				dimheight         => $params->{'dimheight' . $index },
+				density           => $params->{'density' . $index },
+				type              => $params->{'type' . $index },
+				ownerid           => $ownerid,
+			};
+
+		my $PackProDataObj = $c->model("MyDBI::Packprodata")->new($PackProData);
+		$PackProDataObj->packprodataid($self->get_token_id);
+		$PackProDataObj->insert;
+		$c->log->debug("inserted new Packprodata, ID" . $PackProDataObj->packprodataid);
+		$last_package_id = $PackProDataObj->packprodataidif ($type eq 'package');
+		}
+=a
+		my $OriginalCOID      = $ItemRef->{'consolidatedcoid' . $PackageIndex };
+		my $UnitofMeasure     = $ItemRef->{'unitofmeasure' . $PackageIndex };
+		my $DryIceWt          = ceil($ItemRef->{'dryicewt' . $PackageIndex });
+		my $ConsolidationType = $ItemRef->{'consolidationtype' . $PackageIndex };
+		my $POPPDID           = $ItemRef->{'poppdid' . $PackageIndex };
+		my $StatusID          = $ItemRef->{'statusid' . $PackageIndex };
+		my $ReqQty            = $ItemRef->{'reqqty' . $PackageIndex };
+		my $DGUNNum           = $ItemRef->{'dgunnum' . $PackageIndex };
+		my $DGPkgType         = $ItemRef->{'dgpkgtype' . $PackageIndex };
+		my $DGPackingGroup    = $ItemRef->{'dgpackinggroup' . $PackageIndex };
+		my $DGPkgInstructions = $ItemRef->{'dgpkginstructions' . $PackageIndex };
+=cut
+
 	}
 
 sub get_shipment_count
