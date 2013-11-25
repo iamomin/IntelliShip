@@ -160,6 +160,28 @@ sub save_address
 
 	}
 
+sub get_row_id
+	{
+	my $self = shift;
+	my $index = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $rownum_id;
+
+	my @keys = grep { $params->{$_} == $index } keys %$params;
+	foreach my $key (@keys)
+		{
+		if ($key =~ m/^rownum_id_/ and $params->{$key} == $index)
+			{
+			$rownum_id = $key;
+			last;
+			}
+		}
+
+	return $rownum_id;
+	}
+
 sub save_package_product_details
 	{
 	my $self = shift;
@@ -171,6 +193,7 @@ sub save_package_product_details
 
 	my $Order = $self->get_order;
 	my $total_row_count = $params->{'pkg_detail_row_count'};
+	$total_row_count =~ s/^Package_Row_//;
 
 	my $last_package_id=0;
 	for (my $index=1; $index <= $total_row_count; $index++)
@@ -178,27 +201,27 @@ sub save_package_product_details
 		# If we're a package...the last id we got back was the id of a package.
 		# Save it out so following products will get owned by it.
 		# If this is a product, and we have a packageid, the ownertype needs to be a package
-		$params->{'weight' . $index };
+		my $PackageIndex = $self->get_row_id($index);
+		$PackageIndex =~ s/^rownum_id_//;
 
 		my $ownerid = $coData->{coid};
-		$ownerid = $last_package_id if ($type eq 'product');
+		$ownerid = $last_package_id if ($params->{'type_' . $PackageIndex } eq 'product');
 
 		my $PackProData = {
-				weight            => $params->{'weight' . $index },
-				class             => $params->{'class' . $index },
-				dimweight         => $params->{'dimweight' . $index },
-				unittypeid        => $params->{'unittype' . $index },
-				description       => $params->{'description' . $index },
-				quantity          => $params->{'quantity' . $index },
-				boxnum            => $params->{'quantity' . $index },
-				frtins            => $params->{'frtins' . $index },
-				nmfc              => $params->{'nmfc' . $index },
-				decval            => $params->{'decval' . $index },
-				dimlength         => $params->{'dimlength' . $index },
-				dimwidth          => $params->{'dimwidth' . $index },
-				dimheight         => $params->{'dimheight' . $index },
-				density           => $params->{'density' . $index },
-				type              => $params->{'type' . $index },
+				weight            => $params->{'weight_' . $PackageIndex },
+				class             => $params->{'class_' . $PackageIndex },
+				dimweight         => $params->{'dimweight_' . $PackageIndex },
+				unittypeid        => $params->{'unittype_' . $PackageIndex },
+				description       => $params->{'description_' . $PackageIndex },
+				quantity          => $params->{'quantity_' . $PackageIndex },
+				boxnum            => $params->{'quantity_' . $PackageIndex },
+				frtins            => $params->{'frtins_' . $PackageIndex},
+				nmfc              => $params->{'nmfc_' . $PackageIndex },
+				decval            => $params->{'decval_' . $PackageIndex },
+				dimlength         => $params->{'dimlength_' . $PackageIndex },
+				dimwidth          => $params->{'dimwidth_' . $PackageIndex },
+				dimheight         => $params->{'dimheight_' . $PackageIndex },
+				density           => $params->{'density_' . $PackageIndex },
 				ownerid           => $ownerid,
 			};
 
@@ -206,7 +229,7 @@ sub save_package_product_details
 		$PackProDataObj->packprodataid($self->get_token_id);
 		$PackProDataObj->insert;
 		$c->log->debug("inserted new Packprodata, ID" . $PackProDataObj->packprodataid);
-		$last_package_id = $PackProDataObj->packprodataidif ($type eq 'package');
+		$last_package_id = $PackProDataObj->packprodataid if ($params->{'type_' . $PackageIndex } eq 'package');
 		}
 =a
 		my $OriginalCOID      = $ItemRef->{'consolidatedcoid' . $PackageIndex };

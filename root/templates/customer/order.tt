@@ -167,7 +167,7 @@
 		</table>
 		</li>
 		<li id="new_pkg_1" class="ui-state-highlight ui-state-fixed">
-			<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/> 
+			<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="Package_Row_1"/>
 			<table>
 			<tr>
 				<td style="width:  4%"><input type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" size="1"/></td>
@@ -615,7 +615,7 @@ $(document).ready(function(){
 			}
 		});
 
-	$("#pkg_detail_row_count").val(rownumid);
+	$("#pkg_detail_row_count").val('Package_Row_'+rownumid);
 
 
 		var requireHash = {
