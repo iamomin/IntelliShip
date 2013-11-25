@@ -56,9 +56,9 @@ body{
     border-radius: 3px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
-    box-shadow: 5px 5px 5px #888;
-    -moz-box-shadow: 5px 5px 5px #888;
-    -webkit-box-shadow: 5px 5px 5px #888;
+    box-shadow: 3px 3px 3px #ccc;
+    -moz-box-shadow: 3px 3px 3px #ccc;
+    -webkit-box-shadow: 3px 3px 3px #ccc;
 }
 
 /* LOGO */
@@ -106,6 +106,10 @@ body{
     color: #aaa;
 }
 
+#menu a.selected {
+    color: #aaa;
+}
+
 /* Page */
 
 #page {
@@ -115,9 +119,9 @@ body{
     border-radius: 3px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
-    box-shadow: 5px 5px 5px #888;
-    -moz-box-shadow: 5px 5px 5px #888;
-    -webkit-box-shadow: 5px 5px 5px #888;
+    box-shadow: 3px 3px 3px #ccc;
+    -moz-box-shadow: 3px 3px 3px #ccc;
+    -webkit-box-shadow: 3px 3px 3px #ccc;
 }
 
 #content {
@@ -138,16 +142,13 @@ body{
     width: 98%;
     margin: 10px auto;
     color: #909090;
+    border: solid 1px #ddd;
     border-radius: 3px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
-    box-shadow: 5px 5px 5px #888;
-    -moz-box-shadow: 5px 5px 5px #888;
-    -webkit-box-shadow: 5px 5px 5px #888;
-}
-
-html>body #footer {
-    height: auto;
+    box-shadow: 3px 3px 3px #ccc;
+    -moz-box-shadow: 3px 3px 3px #ccc;
+    -webkit-box-shadow: 3px 3px 3px #ccc;
 }
 
 /* Dashboard */
@@ -256,13 +257,18 @@ table.center_app {
     text-align: left;
     font-size: 11px;
     border-collapse: collapse;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
 }
 
-table.report {border-spacing: 1px}
-table.report td, th {padding: 0 3px}
+table.report {width: 100%; margin: 10px 0; border-spacing: 1px}
+table.report td, th {padding: 0 3px; text-align: center}
 table.report tr:nth-child(odd) {color: #000; background: #FFF}
 table.report tr:nth-child(even) {color: #000; background: #E0E0E0}
-table.report tr:hover {background:#EEE !important}
+table.report tr:hover {background:#99CCFF !important}
+table.report th a {text-decoration: none;color: #FFF}
+table.report th a:hover {text-decoration: underline;color: #97c1da}
 
 .small_title {
     font: 12px;
@@ -307,6 +313,9 @@ div.notice {
     background-image: linear-gradient(#d8ebf8, #d0e3ef);
     background-repeat: repeat-x;
     text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
 }
 
 div.error {
@@ -318,6 +327,9 @@ div.error {
     background-image: linear-gradient(#f8d8d8, #efd0d0);
     background-repeat: repeat-x;
     border-color: #da9797;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
 }
 
 .active {
@@ -363,7 +375,7 @@ a {
 
 a:hover {
     text-decoration: underline;
-    color: #97c1da;
+    color: #555;
 }
 
 #list ul {

@@ -4,9 +4,7 @@
 [% IF settings_loop %]
 <h2>Settings</h2>
 
-[% IF MESSAGE %]
-	<div class="notice">[% MESSAGE %]</div>
-[% END %]
+[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 
 <div ID="list">
 	<ul>
@@ -55,7 +53,7 @@
 			<td colspan=2>&nbsp;</td>
 		</tr>
 	</table>
-	<center><input type="submit" class="large" id="change_password" value="Update Password" /></center>
+	<center><input type="submit" class="large" id="change_password" value="Update Password" />&nbsp;&nbsp;<input type="button" class="large" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 </form>
 
 <script>
@@ -86,15 +84,18 @@ $(document).ready(function(){
 [% IF SKU_MANAGEMENT %]
 	<h2>Sku Management</h2>
 
-	<p class="validateTips"></p>
-
 	[% #---------------------------------------------------------- %]
 	[% # PRODUCT_SKU_LIST START %]
 	[% #---------------------------------------------------------- %]
 	[% IF PRODUCT_SKU_LIST %]
 
+	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
+
+	<p class="validateTips"></p>
+
 	<form id="frm_sku_management" method="post" action="/customer/settings/productskusetup">
-		<input type="hidden" id="do" name="do" value=""/>
+		<input type="hidden" id="do" name="do" value="setup"/>
+		<input type="hidden" id="productskuid" name="productskuid"/>
 		<table>
 			<tr> 
 				<td colspan=4>&nbsp;</td>
@@ -104,6 +105,7 @@ $(document).ready(function(){
 				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
 				<td><input type="button" class="large" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="large" id="sku_add" value="Add New" /></td>
+				<td><input type="button" class="large" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
 			</tr>
 			<tr> 
 				<td colspan=4>&nbsp;</td>
@@ -133,24 +135,26 @@ $(document).ready(function(){
 			<th>width</th>
 			<th>height</th>
 			<th>class</th>
-			<th>unitofmeasure</th>
-			<th>balanceonhand</th>
+			<th>unit of measure</th>
+			<th>unit type</th>
+			<th>balance on hand</th>
 			<th>&nbsp;</th>
 		</tr>
 		[% WHILE (item = productskulist.next) %]
 			<tr>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
-				<td>[% item.hazardous %]</td>
+				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
 				<td>[% item.weight %]</td>
 				<td>[% item.length %]</td>
 				<td>[% item.width %]</td>
 				<td>[% item.height %]</td>
 				<td>[% item.class %]</td>
 				<td>[% item.unitofmeasure %]</td>
+				<td>[% item.unittypedescription %]</td>
 				<td>[% item.balanceonhand %]</td>
 				<td>
-					<a href="[% item.productskuid %]">edit</a>
+					<a href="javascript:editProductSku('[% item.productskuid %]');">edit</a>
 					<script>availableProductSkus.push("[% item.description%]");</script>
 				</td>
 			</tr>
@@ -159,6 +163,12 @@ $(document).ready(function(){
 
 	<script>
 
+	function editProductSku(productskuid) {
+		$("#productsku").val("");
+		$("#productskuid").val(productskuid);
+		$("#frm_sku_management").submit();
+		}
+
 	$(document).ready(function(){
 		$("#productsku").autocomplete({
 			source: availableProductSkus
@@ -166,13 +176,12 @@ $(document).ready(function(){
 
 		$("#sku_edit").click(function() {
 			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
-				$("#do").val("setup");
 				$("#frm_sku_management").submit();
 				}
 			});
 		$("#sku_add").click(function() {
-			$("#do").val("setup");
 			$("#productsku").val("");
+			$("#productskuid").val("");
 			$("#frm_sku_management").submit();
 			});
 		});
@@ -190,51 +199,55 @@ $(document).ready(function(){
 	<h3>[% IF productskuid %]Edit[% ELSE %]Add New[% END %] Product Sku</h3>
 
 	<form id="frm_setup_sku" method="post" action="/customer/settings/productskusetup">
+		<input type="hidden" id="do" name="do" value="configure"/>
 		<input type="hidden" id="productskuid" name="productskuid" value="[% productskuid %]"/>
 		<table class="center_app">
 			<tr>
 				<td>SKU Item ID:</td>
-				<td><input type="text" name="customerskuid" value="" size="30" maxlength="50"></td>
-				<td>&nbsp;&nbsp;</td>
+				<td><input type="text" name="customerskuid" id="customerskuid" value="[%customerskuid%]" size="30" maxlength="50"></td>
 				<td>SKU Item Description:</td>
-				<td><input type="text" name="description" value="" size="30" maxlength="50"></td>
+				<td><input type="text" name="description" id="description" value="[%description%]" size="30" maxlength="50"></td>
 			</tr>
 			<tr>
 				<td>SKU Item UPC Code:</td>
-				<td><input type="text" name="upccode" value="" size="30" maxlength="50"></td>
-				<td>&nbsp;&nbsp;</td>
+				<td><input type="text" name="upccode" id="upccode" value="[%upccode%]" size="30" maxlength="50"></td>
 				<td>SKU Item Country of Manufacture:</td>
-				<td><input type="text" name="manufacturecountry" value="" size="30" maxlength="50"></td>
+				<td><input type="text" name="manufacturecountry" id="manufacturecountry" value="[%manufacturecountry%]" size="30" maxlength="50"></td>
 			</tr>
 			<tr>
 				<td>SKU Item Value:</td>
-				<td><input type="text" name="value" value="" size="30" maxlength="50"></td>
-				<td>&nbsp;&nbsp;</td>
+				<td><input type="text" name="value" id="value" value="[%value%]" size="30" maxlength="50"></td>
 				<td>SKU Class:</td>
-				<td><input type="text" name="class" value="" size="30" maxlength="50"></td>
+				<td><input type="text" name="class" id="class" value="[%class%]" size="30" maxlength="50"></td>
 			</tr>
 			<tr>
 				<td>Hazardous:</td>
-				<td></td>
-				<td>&nbsp;&nbsp;</td>
+				<td><select name="hazardous" id="hazardous">
+						[% FOREACH item IN yesno_list %]
+						<option [% IF hazardous == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
 				<td>SKU NMFC Code:</td>
-				<td><input type="text" name="nmfc" value="" size="30" maxlength="50"></td>
+				<td><input type="text" name="nmfc" id="nmfc" value="[%nmfc%]" size="30" maxlength="50"></td>
 			</tr>
 			<tr>
 				<td>Unit of Measure:</td>
-				<td><select name="unitofmeasure" value="unitofmeasure"><option value='0'>Select One</option><option value='Each'>Each</option><option value='Inch'>Inch</option><option value='Feet'>Feet</option><option value='Kit'>Kit</option><option value='Pounds'>Pounds</option><option value='Lot'>Lot</option><option value='Roll'>Roll</option><option value='Sheet'>Sheet</option><option value='Sq. Ft'>Sq. Ft</option></select></td>
-				<td>&nbsp;&nbsp;</td>
+				<td><select name="unitofmeasure" id="unitofmeasure">
+				
+						[% FOREACH item IN unitofmeasure_list %]
+						<option [% IF unitofmeasure == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
 				<td>Balance on Hand:</td>
-				<td><input type="text" name="balanceonhand" value="" size="30" maxlength="50"></td>
+				<td><input type="text" name="balanceonhand" id="balanceonhand" value="[%balanceonhand%]" size="30" maxlength="50"></td>
 			</tr>
 			<tr>
 				<td>Unit Type:</td>
-				<td><select id="unittypeid" name="unittypeid">
-						[% FOREACH item IN unittypelist %]
-						<option [% IF item.selected == 1 %] SELECTED [% END %] value="[% item.id %]">[% item.name %]</option>
+				<td><select name="unittypeid" id="unittypeid">
+						[% FOREACH item IN unittype_list %]
+						<option [% IF unittypeid == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
 						[% END %]
 					</select></td>
-				<td>&nbsp;&nbsp;</td>
 				<td></td>
 				<td></td>
 			</tr>
@@ -252,37 +265,102 @@ $(document).ready(function(){
 			</tr>
 			<tr>
 				<td>SKU:</td>
-				<td><input type="text" name="weight" value="" size="5"></td>
-				<td><select name="weighttype" value="weighttype"><option value='1'>LB</option><option value='2'>KG</option></select></td>
-				<td><input type="text" name="length" value="" size="5"></td>
-				<td><input type="text" name="width" value="" size="5"></td>
-				<td><input type="text" name="height" value="" size="5"></td>
-				<td><select name="dimtype" value="dimtype"><option value='1'>IN</option><option value='3'>CM</option></select></td>
-				<td></td>
+				<td><input type="text" name="weight" id="weight" value="[%weight%]" size="5"></td>
+				<td><select name="weighttype" id="weighttype">
+						[% FOREACH item IN weighttype_list %]
+						<option [% IF weighttype == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
+				<td><input type="text" name="length" id="length" value="[%length%]" size="5"></td>
+				<td><input type="text" name="width" id="width" value="[%width%]" size="5"></td>
+				<td><input type="text" name="height" id="height" value="[%height%]" size="5"></td>
+				<td><select name="dimtype" id="dimtype">
+						[% FOREACH item IN dimention_list %]
+						<option [% IF dimtype == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
+				<td>&nbsp;</td>
 			</tr>
 			<tr>
 				<td>Case:</td>
-				<td><input type="text" name="caseweight" value="" size="5"></td>
-				<td><select name="caseweighttype" value="caseweighttype"><option value='1'>LB</option><option value='2'>KG</option></select></td>
-				<td><input type="text" name="caselength" value="" size="5"></td>
-				<td><input type="text" name="casewidth" value="" size="5"></td>
-				<td><input type="text" name="caseheight" value="" size="5"></td>
-				<td><select name="casedimtype" value="casedimtype"><option value='1'>IN</option><option value='3'>CM</option></select></td>
-				<td><input type="text" name="skupercase" value="" size="5"></td>
+				<td><input type="text" name="caseweight" id="caseweight" value="[%caseweight%]" size="5"></td>
+				<td><select name="caseweighttype" id="caseweighttype">
+						[% FOREACH item IN weighttype_list %]
+						<option [% IF caseweighttype == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+				</select></td>
+				<td><input type="text" name="caselength" id="caselength" value="[%caselength%]" size="5"></td>
+				<td><input type="text" name="casewidth" id="casewidth" value="[%casewidth%]" size="5"></td>
+				<td><input type="text" name="caseheight" id="caseheight" value="[%caseheight%]" size="5"></td>
+				<td><select name="casedimtype" id="casedimtype">
+						[% FOREACH item IN dimention_list %]
+						<option [% IF casedimtype == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
+				<td><input type="text" name="skupercase" id="skupercase" value="[%skupercase%]" size="5"></td>
 			</tr>
 			<tr>
 				<td>Pallet:</td>
-				<td><input type="text" name="palletweight" value="" size="5"></td>
-				<td><select name="palletweighttype" value="palletweighttype"><option value='1'>LB</option><option value='2'>KG</option></select></td>
-				<td><input type="text" name="palletlength" value="" size="5"></td>
-				<td><input type="text" name="palletwidth" value="" size="5"></td>
-				<td><input type="text" name="palletheight" value="" size="5"></td>
-				<td><select name="palletdimtype" value="palletdimtype"><option value='1'>IN</option><option value='3'>CM</option></select></td>
-				<td><input type="text" name="casesperpallet" value="" size="5"></td>
+				<td><input type="text" name="palletweight" id="palletweight" value="[%palletweight%]" size="5"></td>
+				<td><select name="palletweighttype" id="palletweighttype">
+						[% FOREACH item IN weighttype_list %]
+						<option [% IF palletweighttype == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+				</select></td>
+				<td><input type="text" name="palletlength" id="palletlength" value="[%palletlength%]" size="5"></td>
+				<td><input type="text" name="palletwidth" id="palletwidth" value="[%palletwidth%]" size="5"></td>
+				<td><input type="text" name="palletheight" id="palletheight" value="[%palletheight%]" size="5"></td>
+				<td><select name="palletdimtype" id="palletdimtype">
+						[% FOREACH item IN dimention_list %]
+						<option [% IF palletdimtype == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select></td>
+				<td><input type="text" name="casesperpallet" id="casesperpallet" value="[%casesperpallet%]" size="5"></td>
 			</tr>
 		</table>
-		<center><input type="button" class="large" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" /></center>
+		<center><input type="submit" class="large" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />&nbsp;&nbsp;<input type="button" class="large" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 	</form>
+
+	<script>
+	$("#frm_setup_sku").submit(function () {
+		var requireHash = {
+			customerskuid : { minlength: 1, description: "Please specify customer sku ID" },
+			description : { minlength: 1, description: "Please specify sku description" },
+			upccode : { minlength: 1, description: "Please specify UPC code" },
+			manufacturecountry : { minlength: 1, description: "Please specify manufacture country" },
+			value : { minlength: 1, description: "Please specify sku item value" },
+			class : { minlength: 1, description: "Please specify sku class" },
+			nmfc : { minlength: 1, description: "Please specify sku nmfc code" },
+			balanceonhand : { minlength: 1, description: "Please specify balance on hand" },
+			weight : { minlength: 1, description: "Please specify dim weight" },
+			length : { minlength: 1, description: "Please specify dim length" },
+			width : { minlength: 1, description: "Please specify dim width" },
+			height : { minlength: 1, description: "Please specify dim height" },
+			caseweight : { minlength: 1, description: "Please specify case dim weight" },
+			caselength : { minlength: 1, description: "Please specify case dim length" },
+			casewidth : { minlength: 1, description: "Please specify case dim width" },
+			caseheight : { minlength: 1, description: "Please specify case dim height" },
+			skupercase : { minlength: 1, description: "Please specify skus per case" },
+			palletweight : { minlength: 1, description: "Please specify pallet dim weight" },
+			palletlength : { minlength: 1, description: "Please specify pallet dim length" },
+			palletwidth : { minlength: 1, description: "Please specify pallet dim width" },
+			palletheight : { minlength: 1, description: "Please specify pallet dim height" },
+			casesperpallet : { minlength: 1, description: "Please specify cases per pallet" }
+			};
+		if (validateForm(requireHash)) {
+			$("#update_productsku").val("Please Wait...");
+			$("#update_productsku").attr("disabled", true);
+			return true;
+			} else {
+			return false;
+			}
+		});
+
+	$(document).ready(function(){
+		$("#update_productsku").attr("disabled", false);
+		});
+	</script>
+
 	[% END %]
 	[% #---------------------------------------------------------- %]
 	[% # SETUP_PRODUCT_SKU END %]

@@ -131,7 +131,7 @@ sub skumanagement :Local
 	#$WHERE->{customerid} = $self->customer->customerid;
 	my $ps_resultset = $c->model('MyDBI::Productsku')->search($WHERE, { rows => 100 , order_by => 'description'});
 
-	$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
+	#$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
 
 	$c->stash->{productskulist} = $ps_resultset;
 
@@ -147,17 +147,109 @@ sub productskusetup :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if (length $params->{'productskuid'})
+	my $ProductSku = $self->get_product_sku;
+	if ($params->{'do'} eq 'setup')
 		{
-		my $Productsku = $c->model('MyDBI::Productsku')->find({ productskuid => $params->{'productskuid'} });
+		if ($ProductSku)
+			{
+			#$c->log->debug("PRODUCT SKU DUMP: " . Dumper $ProductSku->{'_column_data'});
+			$c->stash($ProductSku->{'_column_data'});
+			}
+
+		$c->log->debug(($ProductSku ? "EDIT (ID: " . $ProductSku->productskuid . ")" : "SETUP NEW") . " PRODUCT SKU SETUP");
+
+		$c->stash->{dimention_list} = $self->get_select_list('DIMENTION');
+		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE');
+		$c->stash->{yesno_list} = $self->get_select_list('YES_NO_NUMERIC');
+		$c->stash->{weighttype_list} = $self->get_select_list('WEIGHT_TYPE');
+		$c->stash->{unitofmeasure_list} = $self->get_select_list('UNIT_OF_MEASURE');
+
+		#my $unit_type_description = {};
+		#$unit_type_description->{$_->unittypeid} = $_->unittypename foreach $self->context->model('MyDBI::Unittype')->all;
+		#$c->stash->{unit_type_description} = $unit_type_description;
+
+		$c->stash->{SETUP_PRODUCT_SKU} = 1;
+		}
+	elsif ($params->{'do'} eq 'configure')
+		{
+		$ProductSku = $c->model('MyDBI::Productsku')->new unless $ProductSku;
+
+		$ProductSku->description($params->{description});
+		$ProductSku->customerskuid($params->{customerskuid});
+		$ProductSku->upccode($params->{upccode});
+		$ProductSku->manufacturecountry($params->{manufacturecountry});
+		$ProductSku->value($params->{value});
+		$ProductSku->class($params->{class});
+		$ProductSku->hazardous($params->{hazardous});
+		$ProductSku->nmfc($params->{nmfc});
+		$ProductSku->unitofmeasure($params->{unitofmeasure});
+		$ProductSku->balanceonhand($params->{balanceonhand});
+		$ProductSku->unittypeid($params->{unittypeid});
+		## SKU
+		$ProductSku->weight($params->{weight});
+		$ProductSku->weighttype($params->{weighttype});
+		$ProductSku->length($params->{length});
+		$ProductSku->width($params->{width});
+		$ProductSku->height($params->{height});
+		$ProductSku->dimtype($params->{dimtype});
+		## CASE
+		$ProductSku->caseweight($params->{caseweight});
+		$ProductSku->caseweighttype($params->{caseweighttype});
+		$ProductSku->caselength($params->{caselength});
+		$ProductSku->casewidth($params->{casewidth});
+		$ProductSku->caseheight($params->{caseheight});
+		$ProductSku->casedimtype($params->{casedimtype});
+		$ProductSku->skupercase($params->{skupercase});
+		## PALLET
+		$ProductSku->palletweight($params->{palletweight});
+		$ProductSku->palletweighttype($params->{palletweighttype});
+		$ProductSku->palletlength($params->{palletlength});
+		$ProductSku->palletwidth($params->{palletwidth});
+		$ProductSku->palletheight($params->{palletheight});
+		$ProductSku->palletdimtype($params->{palletdimtype});
+		$ProductSku->casesperpallet($params->{casesperpallet});
+
+		my $msg;
+		if ($ProductSku->productskuid)
+			{
+			$ProductSku->update;
+			$c->log->debug("PRODUCT SKU UPDATED, ID: ".$ProductSku->productskuid);
+			$msg = "Product sku update successfully!";
+			}
+		else
+			{
+			$ProductSku->productskuid($self->get_token_id);
+			$ProductSku->insert;
+			$c->log->debug("NEW PRODUCT SKU INSERTED, ID: ".$ProductSku->productskuid);
+			$msg = "New product sku configured successfully!";
+			}
+
+		$c->stash->{MESSAGE} = $msg;
+		$c->detach("skumanagement",$params);
 		}
 
-	$c->stash->{unittypelist} = $self->get_select_list('UNIT_TYPE');
-
-	$c->stash->{SETUP_PRODUCT_SKU} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
+	$c->stash->{template} = "templates/customer/settings.tt";
+	}
 
-	$c->stash(template => "templates/customer/settings.tt");
+sub get_product_sku
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = {};
+	if (length $params->{'productskuid'})
+		{
+		$WHERE->{productskuid} = $params->{'productskuid'};
+		}
+	elsif (length $params->{'productsku'})
+		{
+		$WHERE->{description} = $params->{'productsku'};
+		}
+
+	return undef unless scalar keys %$WHERE;
+	return $c->model('MyDBI::Productsku')->find($WHERE);
 	}
 
 =encoding utf8
