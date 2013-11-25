@@ -79,38 +79,33 @@
 			<li><a href="/customer/report" >REPORTS</a>
 			<li><a href="/customer/settings" onclick="javascript:void(0);">SETTINGS</a>
 			<li><a href="/customer/logout" >LOGOUT</a>
-			<li>&nbsp;User:&nbsp;[% active_username %]&nbsp;&nbsp;
+			<li>&nbsp;User:&nbsp;[% username %]&nbsp;&nbsp;
 		  </ul>
 		</form>
 		</div> <!-- end menu -->
 
-	<div id="page"> <!-- start page -->
+		<div id="page"> <!-- start page -->
 
-	<div id="top">&nbsp;</div>
+			<div id="content"> <!-- start content -->
+				<div id="post">
 
-	<div id="content"> <!-- start content -->
+				<!-- ========================================== START ========================================== -->
+				[% content %]
+				<!-- =========================================== END =========================================== -->
+				<div style="clear: both;">&nbsp;</div>
 
-	<div id="post"> <!-- ========================================== START ========================================== -->
+				</div>          
 
+			</div> <!-- end content -->
 
-	[% content %]
+		</div> <!-- end page -->
 
+		<!-- start footer -->
+		<div id="footer">
+			<p id="legal">Copyright &copy; 2002 - 2013 Engage Technology, LLC.</p>
+		</div>
+		<!-- end footer -->
 
-	<div style="clear: both;">&nbsp;</div>
-
-	</div>          <!-- ========================================== END ========================================== -->
-
-	</div> <!-- end content -->
-
-	<div id="bottom">&nbsp;</div>
-
-	</div> <!-- end page -->
-
-	<!-- start footer -->
-	<div id="footer">
-		<p id="legal">Copyright &copy; 2002 - 2013 Engage Technology, LLC.</p>
-	</div>
-	<!-- end footer -->
 	</div>
 	<!-- end wrapper -->
 

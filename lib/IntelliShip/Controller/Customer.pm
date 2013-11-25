@@ -373,6 +373,13 @@ sub get_select_list
 			{ name => 'No', value => 'N'},
 			];
 		}
+	elsif ($list_name eq 'YES_NO_NUMERIC')
+		{
+		$list = [
+			{ name => 'Yes', value => '1'},
+			{ name => 'No', value => '0'},
+			];
+		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
 		my @records = $self->context->model('MyDBI::Customer')->all;
@@ -398,6 +405,35 @@ sub get_select_list
 			{
 			push(@$list, { name => $UnitType->unittypename, value => $UnitType->unittypeid });
 			}
+		}
+	elsif ($list_name eq 'WEIGHT_TYPE')
+		{
+		my @records = $self->context->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypename'});
+		foreach my $WeightType (@records)
+			{
+			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });
+			}
+		}
+	elsif ($list_name eq 'UNIT_OF_MEASURE')
+		{
+		$list = [
+			{ value => 'Each',   name => 'Each'},
+			{ value => 'Inch',   name => 'Inch'},
+			{ value => 'Feet',   name => 'Feet'},
+			{ value => 'Kit',    name => 'Kit'},
+			{ value => 'Pounds', name => 'Pounds'},
+			{ value => 'Lot',    name => 'Lot'},
+			{ value => 'Roll',   name => 'Roll'},
+			{ value => 'Sheet',  name => 'Sheet'},
+			{ value => 'Sq. Ft', name => 'Sq. Ft'},
+			];
+		}
+	elsif ($list_name eq 'DIMENTION')
+		{
+		$list = [
+			{ value => '1',   name => 'Inch'},
+			{ value => '3',   name => 'Centimeter'},
+			];
 		}
 	elsif ($list_name eq 'US_STATES')
 		{

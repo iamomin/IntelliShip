@@ -33,14 +33,12 @@ List below are the subroutines available.
 
 sub american_date
 	{
-	my $self	= shift;
-	my $date	= shift;
-	my $split;
+	my $self = shift;
+	my $date = shift;
 
-	$split = "-" if ($date =~ /-/);
-	$split = "\/" if ($date =~ /\//);
-
-	my ($yy, $mm, $dd) = split(/$split/, $date);
+	my ($yy, $mm, $dd);
+	($yy, $mm, $dd) = split(/\-/, $date) if $date =~ /-/;
+	($mm, $dd, $yy) = split(/\//, $date) if $date =~ /\//;
 
 	return "$mm/$dd/$yy";
 	}
@@ -48,8 +46,9 @@ sub american_date
 sub american_date_time
 	{
 	my $self = shift;
+	my $date_time = shift;
 
-	my $date_time = $self->get_db_format_date_time;
+	$date_time = $self->get_db_format_date_time unless $date_time;
 	my ($date,$time) = split(/\ /, $date_time);
 	my ($yy, $mm, $dd) = split(/\-/, $date);
 

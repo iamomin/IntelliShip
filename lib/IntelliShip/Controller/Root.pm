@@ -129,8 +129,8 @@ sub end : Private {
 		}
 	elsif ($Token)
 		{
-		$c->log->debug("============== CustomerMaster: " . $Token->tokenid);
-		$c->stash->{active_username} = $Token->active_username;
+		#$c->log->debug("============== CustomerMaster: " . $Token->tokenid);
+		$c->stash->{username} = $c->controller->contact->full_name;
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else
