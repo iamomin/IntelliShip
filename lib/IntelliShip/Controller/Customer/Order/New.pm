@@ -37,30 +37,10 @@ sub index :Path :Args(0) {
 	else
 		{
 		$self->setup;
+		$c->stash->{title} = 'New Order';
 		}
 
 	$c->stash(template => "templates/customer/order.tt");
-}
-
-sub setup :Private
-	{
-    my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
-
-	$c->stash->{ordernumber} = $params->{'ordernumber'};
-	$c->stash->{customer} = $self->customer;
-	$c->stash->{customerAddress} = $self->customer->address;
-	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
-	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
-	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
-	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
-
-	$c->stash->{default_country} = "US";
 	}
 
 =encoding utf8

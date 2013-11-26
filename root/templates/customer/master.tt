@@ -11,6 +11,7 @@
 
 		<!-- The jQuery UI 1.10.3 Plugin -->
 		<link rel="stylesheet" href="/static/jquery/jquery-ui-1.10.3/themes/base/jquery.ui.all.css">
+
 		<script src="/static/jquery/jquery-ui-1.10.3/jquery-1.9.1.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.core.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.datepicker.js"></script>
@@ -26,8 +27,11 @@
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.button.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.dialog.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.effect.js"></script>
+		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.tooltip.js"></script>
+		<!--
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.effect-blind.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.effect-explode.js"></script>
+		-->
 
 
 		<!-- The jQuery Mask Plugin v 1.3.1 -->
@@ -71,8 +75,10 @@
 		  <input type="hidden" name="do">
 		  <ul>
 			<li><a href="/customer/dashboard" >DASHBOARD</a>
+			<li><a href="/customer/myorders" >MY ORDERS</a>
 			<li><a href="/customer/order/new" >NEW ORDER</a>
 			<!-- <li><a href="/customer/order/address" >NEW ORDER</a> -->
+			<li><a href="/customer/order/quickship" >QUICK SHIP</a>
 			<li><a href="javascript:void(0);" onclick="javascript:void(0);">SHIP PACKAGES</a>
 			<li><a href="javascript:void(0);" onclick="javascript:void(0);">BATCH SHIPPING</a>
 			<li><a href="javascript:void(0);" onclick="javascript:void(0);">UPLOAD ORDER</a>

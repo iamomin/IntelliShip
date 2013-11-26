@@ -82,7 +82,7 @@ sub auto :Private
 	{
 	my($self, $c) = @_;
 
-	$c->log->debug('Auto Divert to ' . $c->action);
+	#$c->log->debug('Auto Divert to ' . $c->action);
 	#$c->log->debug('##** Setting catalyst context in ' . $c->controller);
 
 	## Catalyst context is not accessible in every user defined function
@@ -97,13 +97,13 @@ sub auto :Private
 		{
 		unless ($c->controller->authorize_user)
 			{
-			$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
+			#$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
 			$c->response->redirect($c->uri_for('/customer/login'));
 			$c->stash->{template} = undef;
 			return 0;
 			}
 
-		$c->log->debug("**** User Authorized Successfully");
+		#$c->log->debug("**** User Authorized Successfully");
 		$c->response->cookies->{'TokenID'} = { value => $c->controller->token->tokenid, expires => '+20M' };
 		}
 
@@ -113,7 +113,7 @@ sub auto :Private
 sub end : Private {
 	my ($self, $c) = @_;
 
-	$c->log->debug("In end : Private ");
+	#$c->log->debug("In end : Private ");
 	#$c->log->debug("\nPARAMS : " . Dumper $c->req->params);
 
 	return unless $c->stash->{template};

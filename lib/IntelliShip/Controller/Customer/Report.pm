@@ -15,7 +15,10 @@ sub index :Path :Args(0)
 	## Display reports
 	my $report_list = [
 				{ name => 'Shipment Report', url => '/customer/report/setup?report=SHIPMENT' },
-				{ name => 'New ABC Report', url => '/customer/report/setup?report=ABC' },
+				{ name => 'New ABC Report', url => '/customer/report/setup?report=SHIPMENT' },
+				{ name => 'New DEF Report', url => '/customer/report/setup?report=SHIPMENT' },
+				{ name => 'New GHI Report', url => '/customer/report/setup?report=SHIPMENT' },
+				{ name => 'New XYZ Report', url => '/customer/report/setup?report=SHIPMENT' },
 			];
 
 	$c->stash->{report_list} = $report_list;
@@ -29,7 +32,7 @@ sub setup :Local
 
 	if ($params->{'report'} eq 'SHIPMENT')
 		{
-		$c->stash->{carrier_loop} = $self->get_select_list('CARRIER');
+		#
 		}
 
 	$c->stash->{report_setup} = 1;
@@ -106,17 +109,14 @@ sub generate_report
 	#	$c->detach("index",$params);
 	#	}
 
-		$c->stash->{report_heading_loop} = $report_heading_loop;
+	$c->stash->{filter_criteria_loop} = $filter_criteria_loop;
+	$c->stash->{report_heading_loop} = $report_heading_loop;
+
 	if (scalar @$report_output_row_loop > 0)
 		{
 		#$self->save_report($report_heading_loop,$report_output_row_loop,$filter_criteria_loop);
 		$c->stash->{report_heading_loop} = $report_heading_loop;
 		$c->stash->{report_output_row_loop} = $report_output_row_loop;
-		}
-
-	if ($filter_criteria_loop)
-		{
-		$c->stash->{filter_criteria} = $filter_criteria_loop;
 		}
 
 	$c->stash->{message} = $msg if ($msg);

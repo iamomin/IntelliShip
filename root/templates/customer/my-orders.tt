@@ -1,0 +1,37 @@
+[% #---------------------------------------------------------- %]
+[% # DISPLAY MY ORDERS - START %]
+[% #---------------------------------------------------------- %]
+	<h2>My Orders</h2>
+
+	<table class="report">
+		<tr>
+			<th>Order Number</th>
+			<th>Customer</th>
+			<th>Origin</th>
+			<th>Destination</th>
+			<th>Date</th>
+			<th>Due Date</th>
+			<th>Carrier</th>
+			<th>Service</th>
+			<th>Mode</th>
+			<th>&nbsp;</th>
+		</tr>
+		[% FOREACH item IN myorder_list %]
+			<tr>
+				<td>[% item.ordernumber %]</td>
+				<td>[% item.customer %]</td>
+				<td>[% item.origin %]</td>
+				<td>[% item.destination %]</td>
+				<td>[% item.date %]</td>
+				<td>[% item.duedate %]</td>
+				<td>[% item.carrier %]</td>
+				<td>[% item.service %]</td>
+				<td>[% item.mode %]</td>
+				<td><a href="javascript:void(0);">view</a></td>
+			</tr>
+		[% END %]
+	</table>
+[% #---------------------------------------------------------- %]
+[% #  DISPLAY MY ORDERS - END %]
+[% #---------------------------------------------------------- %]
+

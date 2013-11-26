@@ -187,3 +187,20 @@ $("#route").show();
 	[% END %]
 	</tr></table>
 [% END %]
+
+[% IF COSTATUS_LIST %]
+	[% count=0 %]
+	<table><tr>
+	[% FOREACH item IN COSTATUS_LIST %]
+		[% count=count+1 %]
+		[% IF count == 5 %]
+			</tr><tr>
+		[% count = 0 %]
+		[% ELSE %]
+			<td nowrap>
+			<input type="checkbox" name="costatus" id="[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">&nbsp;[% item.name %]</label>
+			</td>
+		[% END %]
+	[% END %]
+	</tr></table>
+[% END %]
