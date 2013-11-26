@@ -212,7 +212,12 @@ __PACKAGE__->has_many(
 sub full_name
 	{
 	my $self = shift;
-	return $self->firstname . ' ' . $self->lastname;
+	my $full_name = $self->firstname;
+	$full_name .=  ' ' . $self->lastname if $self->lastname;
+	$full_name = $self->username unless $full_name;
+	$full_name = $self->customer->customername unless $full_name;
+	$full_name = $self->customer->username unless $full_name;
+	return $full_name;
 	}
 
 sub is_restricted

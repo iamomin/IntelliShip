@@ -2,6 +2,10 @@
 /* 2013 Aloha Technology Pvt Ltd. */
 /* Designed by: Imran Momin*/
 
+$(function() {
+	var tooltips = $( "[title]" ).tooltip();
+	});
+
 function afterSuccessCallBack(response_type, result_div, call_back_function, responseStatus) {
 	var bollIsErrorResponse = false;
 	var content = (response_type == "JSON" ? JSON_data.error : $('#response-content').html());

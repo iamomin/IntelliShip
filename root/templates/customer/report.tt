@@ -28,6 +28,7 @@
 	<tr> 
 		<td colspan=2>&nbsp;</td>
 	</tr>
+
 	[% IF report_name == 'SHIPMENT' %]
 	<tr>
 		<td ><label for="startdate" class="float_right">Start Date:</label></td>
@@ -39,13 +40,22 @@
 	</tr>
 	<tr>
 		<td><label class="float_right">Carrier:</label></td>
-		<td style="width: 380px"><table><tr><td>
+		<td style="min-width: 380px"><table><tr><td>
 			<input type="checkbox" id="all_carriers" name="carriers" value="all" checked/>&nbsp;<label for="all_carriers">All</label>
 			</td></tr></table>
 			<div id="carriersDiv"></div>
 		</td>
 	</tr>
+	<tr>
+		<td><label class="float_right">Status:</label></td>
+		<td style="min-width: 380px"><table><tr><td>
+			<input type="checkbox" id="all_costatus" name="costatus" value="all" checked/>&nbsp;<label for="all_costatus">All</label>
+			</td></tr></table>
+			<div id="costatusDiv"></div>
+		</td>
+	</tr>
 	[% END %]
+
 	<tr>
 		<td><label for="format" class="float_right">Report Format:</label></td>
 		<td>
@@ -93,7 +103,7 @@ $(document).ready(function(){
 			$("#carriersDiv").slideUp(1000);
 			} else {
 			if ($("#carriersDiv").html().length == 0)
-				send_ajax_request("carriersDiv", "HTML", "order", "carrier_list", "", function (){
+				send_ajax_request("carriersDiv", "HTML", "", "customer_carrier_chkbox", "", function (){
 					$("#carriersDiv").slideDown(1000);
 					});
 			else
@@ -101,6 +111,18 @@ $(document).ready(function(){
 			}
 		});
 
+	$("#all_costatus").click(function () {
+		if($("#all_costatus").is(":checked")) {
+			$("#costatusDiv").slideUp(1000);
+			} else {
+			if ($("#costatusDiv").html().length == 0)
+				send_ajax_request("costatusDiv", "HTML", "", "costatus_chkbox", "", function (){
+					$("#costatusDiv").slideDown(1000);
+					});
+			else
+				$("#costatusDiv").slideDown(1000);
+			}
+		});
 	$("#back").attr("disabled", false);
 	$("#run_report").attr("disabled", false);
 	});
@@ -120,6 +142,14 @@ $(document).ready(function(){
 	[% UNLESS report_output_row_loop %]
 	<div class="notice">No record found.</div>
 	[% END %]
+
+	<table><tr>
+	[% IF filter_criteria_loop %]
+		[% FOREACH item IN filter_criteria_loop %]
+			<td><b>[% item.KEY %] :</b>&nbsp;&nbsp;[% item.VALUE %]</td>
+		[% END %]
+	[% END %]
+	</tr></table>
 
 	<table class="report">
 
@@ -146,6 +176,8 @@ $(document).ready(function(){
 		[% END %]
 
 	</table>
+
+	<input type="button" class="large" id="back" value="Back" onclick="javascript:history.back();"/>
 
 [% END %]
 [% #---------------------------------------------------------- %]

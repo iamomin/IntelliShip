@@ -1,4 +1,4 @@
-package IntelliShip::Controller::Customer::Order::Ajax;
+package IntelliShip::Controller::Customer::Ajax;
 use Moose;
 use Data::Dumper;
 use namespace::autoclean;
@@ -6,11 +6,11 @@ use IntelliShip::HTTP;
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
 
-BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
+BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
 =head1 NAME
 
-IntelliShip::Controller::Customer::Order::Ajax - Catalyst Controller
+IntelliShip::Controller::Customer::Ajax - Catalyst Controller
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,7 @@ sub index :Path :Args(0)
 		$self->get_JSON_DATA;
 		}
 
-	$c->stash(template => "templates/customer/order-ajax.tt");
+	$c->stash(template => "templates/customer/ajax.tt");
 	}
 
 sub get_HTML :Private
@@ -52,9 +52,13 @@ sub get_HTML :Private
 		{
 		$self->set_international_details;
 		}
-	elsif ($action eq 'carrier_list')
+	elsif ($action eq 'customer_carrier_chkbox')
 		{
-		$self->set_carrier_list;
+		$self->set_customer_carrier_chkbox;
+		}
+	elsif ($action eq 'costatus_chkbox')
+		{
+		$self->set_costatus_chkbox;
 		}
 	}
 
@@ -67,12 +71,20 @@ sub set_international_details
 	$c->stash->{INTERNATIONAL} = 1;
 	}
 
-sub set_carrier_list
+sub set_customer_carrier_chkbox
 	{
 	my $self = shift;
 	my $c = $self->context;
 
-	$c->stash->{CARRIER_LIST} = $self->get_select_list('CARRIER');
+	$c->stash->{CARRIER_LIST} = $self->get_select_list('CUSTOMER_SHIPMENT_CARRIER');
+	}
+
+sub set_costatus_chkbox
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->stash->{COSTATUS_LIST} = $self->get_select_list('COSTATUS');
 	}
 
 sub get_JSON_DATA :Private
@@ -200,7 +212,7 @@ sub add_pkg_detail_row :Private
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
 	#$self->context->log->debug("in add_new_row : row_HTML");
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
 	$c->stash->{PKG_DETAIL_ROW} = 0;
 
 	return { rowHTML => $row_HTML };
@@ -235,7 +247,7 @@ sub set_third_party_delivery
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{THIRD_PARTY_DELIVERY} = 1;
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
 	$c->stash->{THIRD_PARTY_DELIVERY} = 0;
 
 	return { rowHTML => $row_HTML };

@@ -142,6 +142,19 @@ sub parse_XML
 	return $xmlRequestDS;
 	}
 
+my $FILTER_CRITERIA_HASH = {
+		'dateshipped'	=> 'Shipped Date',
+		'carrier'		=> 'Carrier',
+		'statusid'		=> 'Status',
+		};
+
+sub get_filter_value_from_key
+	{
+	my ($self,$key) = @_;
+	my ($alias,$key) = split(/\./, $key) if $key =~ /\./g;
+	return $FILTER_CRITERIA_HASH->{$key};
+	}
+
 1;
 
 __END__
