@@ -181,8 +181,8 @@ $("#route").show();
 			</tr><tr>
 		[% count = 0 %]
 		[% ELSE %]
-			<td>
-			<input type="checkbox" name="[% item.value %]" id="carrier_[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">&nbsp;[% item.name %]</label>
+			<td nowrap>
+			<input type="checkbox" name="carriers" id="[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">&nbsp;[% item.name %]</label>
 			</td>
 		[% END %]
 	[% END %]

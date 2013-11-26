@@ -1,20 +1,34 @@
+[% #---------------------------------------------------------- %]
+[% # DISPLAY REPORTS %]
+[% #---------------------------------------------------------- %]
+[% IF report_list %]
+<h2>Reports</h2>
+<div ID="list">
+	<ul>
+		[% FOREACH item IN report_list %]
+		<li><a href="[% item.url %]">[% item.name %]</a></li>
+		[% END %]
+	</ul>
+</div>
+[% END %]
 
 [% #---------------------------------------------------------- %]
 [% # REPORT SETUP START %]
 [% #---------------------------------------------------------- %]
-[% IF REPORT_SETUP %]
-<h2>Reports</h2>
+[% IF report_setup %]
+<h2>[% report_name %] REPORT SETUP</h2>
 
 [% IF MESSAGE %]
 	<div class="notice">[% MESSAGE %]</div>
 [% END %]
 
-<form id="frm_reprot" method="post" action="/customer/report/run">
-
+<form id="frm_report" method="post" action="/customer/report/run">
+<input type="hidden" id="report" name="report" value="[% report_name %]" />
 <table class="center_app" >
 	<tr> 
 		<td colspan=2>&nbsp;</td>
 	</tr>
+	[% IF report_name == 'SHIPMENT' %]
 	<tr>
 		<td ><label for="startdate" class="float_right">Start Date:</label></td>
 		<td ><input type="text" name="startdate" id="startdate" readonly/></td>
@@ -24,21 +38,22 @@
 		<td><input type="text" name="enddate" id="enddate" readonly/></td>
 	</tr>
 	<tr>
-		<td><label for="carrier" class="float_right">Carrier:</label></td>
+		<td><label class="float_right">Carrier:</label></td>
 		<td style="width: 380px"><table><tr><td>
-			<input type="checkbox" id="all_carriers" checked/>&nbsp;<label for="all_carriers">All</label>
+			<input type="checkbox" id="all_carriers" name="carriers" value="all" checked/>&nbsp;<label for="all_carriers">All</label>
 			</td></tr></table>
 			<div id="carriersDiv"></div>
 		</td>
 	</tr>
+	[% END %]
 	<tr>
-		<td><label for="report_format" class="float_right">Report Format:</label></td>
+		<td><label for="format" class="float_right">Report Format:</label></td>
 		<td>
-		<select name="report_format" id="report_format">
+		<select name="format" id="format">
 			<option value="HTML">HTML
 			<option value="CSV">Excel
 			<option value="MANIFEST">Manifest
-			<option value="SUMMARY_SERVICE_REPORT">Summary Service Report
+			<option value="SUMMARY_SERVICE">Summary Service Report
 		</select>
 		</td>
 	</tr>
@@ -51,10 +66,16 @@
 	</tr>
 </table>
 
-<center><input type="submit" class="large" id="run_report" value="Run Report" /></center>
+<center><input type="submit" class="large" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="large" id="back" value="Back" onclick="javascript:history.back();"/></center>
 </form>
 
 <script>
+$("#frm_report").submit(function () {
+	$("#run_report").val("Please Wait...");
+	$("#run_report").attr("disabled", true);
+	$("#back").attr("disabled", true);
+	});
+
 $(document).ready(function(){
 	var currentDate = new Date();
 
@@ -79,6 +100,9 @@ $(document).ready(function(){
 				$("#carriersDiv").slideDown(1000);
 			}
 		});
+
+	$("#back").attr("disabled", false);
+	$("#run_report").attr("disabled", false);
 	});
 </script>
 [% END %]
@@ -87,41 +111,44 @@ $(document).ready(function(){
 [% # REPORT SETUP END %]
 [% #---------------------------------------------------------- %]
 
-[% IF RUN_REPORT %]
-<h2>Report Output</h2>
-<form id="frm_reprot_output" name="frm_reprot_output">
+[% #---------------------------------------------------------- %]
+[% # REPORT OUTPUT START %]
+[% #---------------------------------------------------------- %]
+[% IF report_output %]
+<h2>[% report_name %]</h2>
 
-<TABLE class="app">
-<tr>
-	[% FOREACH item IN PARAMETER_LOOP %]
-	<td>
-	<SPAN CLASS="regsubtitle">[% item.name %]</SPAN>: [% item.value %] &#160;&#160;
-	</td>
+	[% UNLESS report_output_row_loop %]
+	<div class="notice">No record found.</div>
 	[% END %]
-</tr>
 
-<tr>
-	[% FOREACH item IN ROW_HEADER_LOOP %]
-	<td>
-	[% item.value %] &#160;&#160;
-	</td>
-	[% END %]
-</tr>
+	<table class="report">
 
-[% FOREACH item IN ROWS_LOOP %]
-	[% IF IS_EVEN %]
-		<TR BGCOLOR=#F8F8F8 ALIGN=CENTER id="cell%REPORT_NUMBER%-%NUMBER%"  onmouseover="changeColor('D0FFCE', this.id);" onmouseout="changeColor('F8F8F8', this.id);">
-	[% ELSE %]
-		<TR BGCOLOR=#E2E2E2 ALIGN=CENTER id="cell%REPORT_NUMBER%-%NUMBER%"  onmouseover="changeColor('D0FFCE', this.id);" onmouseout="changeColor('E2E2E2', this.id);">
-	[% END %]
-		<td WIDTH=20>%NUMBER%.</td>
-		[% FOREACH item IN ROW_LOOP %]
-		<td></td>
+		[% IF report_heading_loop %]
+		<tr>
+			[% FOREACH item IN report_heading_loop %]
+				[% IF item.sortable %]
+					<th><a href="javascript:sortreport('[% item.name %]');">%item.name%</a></th>
+				[% ELSE %]
+					<th><a href="#">[% item.name %]</a></th>
+				[% END %]
+			[% END %]
+		</tr>
 		[% END %]
-	</tr>
-[% END %]
 
-</table>
+		[% FOREACH column_loop IN report_output_row_loop %]
+		<tr>
+			[% FOREACH column IN column_loop %]
+				<td [% IF column.align %]align=[% column.align %][% END %] [% IF column.colspan %]colspan=[% column.colspan %][% END %] [% IF column.rowspan %]rowspan=[% column.rowspan %][% END %]>
+				[% column.value %]
+				</td>
+			[% END %]
+		</tr>
+		[% END %]
 
-</form>
+	</table>
+
 [% END %]
+[% #---------------------------------------------------------- %]
+[% # REPORT OUTPUT END %]
+[% #---------------------------------------------------------- %]
+

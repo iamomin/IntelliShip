@@ -816,6 +816,44 @@ __PACKAGE__->many_to_many("coids", "shipmentcoassocs", "coid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SIqsoxucVnH7m+CvW/xJxg
 
+__PACKAGE__->has_many(
+	shipment_charges =>
+		'IntelliShip::SchemaClass::Result::Shipmentcharge',
+		'shipmentid'
+	);
+
+sub get_assessorial_charges
+	{
+	my $self = shift;
+
+	my @charges = $self->shipment_charges;
+
+	my $assessorial_charge = 0;
+	foreach my $ShipmentCharge (@charges)
+		{
+		# Skip anything 'Freight Charge'ish (including undiscounted)
+		next if $ShipmentCharge->chargename =~ /Freight Charge/;
+		$assessorial_charge += $ShipmentCharge->chargeamount;
+		}
+
+	return $assessorial_charge;
+	}
+
+sub get_freight_charges
+	{
+	my $self = shift;
+
+	my @charges = $self->shipment_charges;
+
+	my $freight_charge = 0;
+	foreach my $ShipmentCharge (@charges)
+		{
+		next unless $ShipmentCharge->chargename =~ /Freight Charge/;
+		$freight_charge += $ShipmentCharge->chargeamount;
+		}
+
+	return $freight_charge;
+	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

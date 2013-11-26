@@ -144,6 +144,8 @@ function validateForm( requireFields ) {
 	var boolResult = true;
 	var messageStr = "";
 
+	try
+	{
 	Object.keys(requireFields).forEach(function (control) {
 		var boolRequired = false;
 		var properties = requireFields[control]
@@ -198,6 +200,14 @@ function validateForm( requireFields ) {
 			} else {
 			updateTips(tips, messageStr);
 			}
+		}
+	}
+
+	catch(err) {
+		messageStr="<div class='error'><p>There was an error on this page</p>";
+		messageStr+="<p>Error: " + err.message + "</p></div>";
+		showMessage(messageStr, "Application Error");
+		return false;
 		}
 
 	return boolResult;

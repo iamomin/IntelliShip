@@ -197,10 +197,56 @@ __PACKAGE__->has_one(
 		'customerid'
 	);
 
+__PACKAGE__->has_many(
+	restrictions => 
+		'IntelliShip::SchemaClass::Result::Restrictcontact',
+		'contactid'
+	);
+
+__PACKAGE__->has_many(
+	customer_contact_data => 
+		'IntelliShip::SchemaClass::Result::Custcondata',
+		'ownerid'
+	);
+
 sub full_name
 	{
 	my $self = shift;
 	return $self->firstname . ' ' . $self->lastname;
+	}
+
+sub is_restricted
+	{
+	my $self = shift;
+	my $restrict_contact_rs = $self->restrictions;
+	return $restrict_contact_rs->count;
+	}
+
+sub get_restricted_values
+	{
+	my $self = shift;
+	my $field_name = shift;
+	my $field_values = [];
+	my @arr = $self->restrictions;
+	$_->fieldname =~ /$field_name/ and push(@$field_values, $_->fieldvalue) foreach @arr;
+	return $field_values;
+	}
+
+sub get_contact_data_value
+	{
+	my $self = shift;
+	my $data_type_name = shift;
+	my $data_type_id = shift;
+
+	my $WHERE = { ownertypeid => ['1','2'], datatypename => $data_type_name };
+	$WHERE->{datatypeid} = $data_type_id if $data_type_id;
+
+	my @custcondata_objs = $self->customer_contact_data($WHERE);
+
+	my $contact_data_value;
+	$contact_data_value = $_->value and last foreach @custcondata_objs;
+
+	return $contact_data_value;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
