@@ -156,49 +156,44 @@
 [% END %]
 
 [% IF THIRD_PARTY_DELIVERY %]
-<tr class="tp">
-	<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="text" name="tpcompanyname" id="tpcompanyname"/></td>
-</tr>
-<tr class="tp">
-	<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="text" name="tpaddress1" id="tpaddress1"/></td>
-</tr>
-<tr class="tp">
-	<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="text" name="tpaddress2" id="tpaddress2"/></td>
-</tr>
-<tr class="tp">
-	<td><label  class="float_right">Billing&nbsp;<label for="tpcity">City</label>,&nbsp;<label for="tpstate">State</label>,&nbsp;<label for="tpzip">Zip</label>:</label></td>
-	<td>
-	<input type="text" name="tpcity" id="tpcity" size="6"/>
-	<label>
-	<select name="tpstate" id="tpstate">
-		[% FOREACH item IN statelist_loop %]
-			<option value="[% item.value %]">[% item.name %]</option>
-		[% END %]
-	</select>
-	</label>
-	<input type="text" name="tpzip" id="tpzip" size="2"/>
-	</td>
-</tr>
-<tr class="tp">
-	<td><label for="tpcountry" class="float_right">Billing Country:</label></td>
-	<td>
-	<label>
-		<select name="tpcountry" id="tpcountry">
-			[% FOREACH item IN countrylist_loop %]
-					<option value="[% item.value %]">[% item.name %]</option>
+	<tr class="tp">
+		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="text" name="tpcompanyname" id="tpcompanyname"/></td>
+	</tr>
+	<tr class="tp">
+		<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="text" name="tpaddress1" id="tpaddress1"/></td>
+	</tr>
+	<tr class="tp">
+		<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="text" name="tpaddress2" id="tpaddress2"/></td>
+	</tr>
+	<tr class="tp">
+		<td><label  class="float_right">Billing&nbsp;<label for="tpcity">City</label>,&nbsp;<label for="tpstate">State</label>,&nbsp;<label for="tpzip">Zip</label>:</label></td>
+		<td>
+		<input type="text" name="tpcity" id="tpcity" size="6"/>
+		<label>
+		<select name="tpstate" id="tpstate">
+			[% FOREACH item IN statelist_loop %]
+				<option value="[% item.value %]">[% item.name %]</option>
 			[% END %]
 		</select>
-	</label>
-	</td>
-</tr>
-<tr class="tp">
-	<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account"/></td>
-</tr>
-
-<script>
-$("#route").show();
-</script>
-
+		</label>
+		<input type="text" name="tpzip" id="tpzip" size="2"/>
+		</td>
+	</tr>
+	<tr class="tp">
+		<td><label for="tpcountry" class="float_right">Billing Country:</label></td>
+		<td>
+		<label>
+			<select name="tpcountry" id="tpcountry">
+				[% FOREACH item IN countrylist_loop %]
+						<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select>
+		</label>
+		</td>
+	</tr>
+	<tr class="tp">
+		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account"/></td>
+	</tr>
 [% END %]
 
 [% IF CARRIER_LIST %]

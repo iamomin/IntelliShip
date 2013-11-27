@@ -619,8 +619,9 @@ function checkCarrierServiceSection()
 			get_customer_service_list();
 		} else
 		send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function () {
-			if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#delivery_method_table tr");
+			if (JSON_data.rowHTML) $(JSON_data.rowHTML).append("#delivery_method_table");
 			get_customer_service_list();
+			$(".tp").show();
 			has_TP = true;
 			});
 		}

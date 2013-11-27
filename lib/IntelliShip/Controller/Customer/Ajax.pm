@@ -233,6 +233,7 @@ sub set_third_party_delivery
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
 	$c->stash->{THIRD_PARTY_DELIVERY} = 0;
 
+	#$self->context->log->debug("set_third_party_delivery : " . $row_HTML);
 	return { rowHTML => $row_HTML };
 	}
 
