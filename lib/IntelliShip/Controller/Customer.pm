@@ -577,7 +577,7 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => 'prepaid' , name => 'Prepaid' },
+			{ value => 'prepaid' , name => 'Prepaid' , selected => 'checked' },
 			{ value => 'collect' , name => 'Collect' },
 			{ value => '3rdparty' , name => '3rd Party' },
 			];
