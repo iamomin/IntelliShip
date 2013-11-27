@@ -1,5 +1,5 @@
 
-	<h1>ORDER INFORMATION</h1>
+	<h1>[% title %]</h1>
 
 	<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
 	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
@@ -11,7 +11,7 @@
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8"/>
+			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8" title="Here is my sample help"/>
 			</td>
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
@@ -299,9 +299,9 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float_right">
-		<input type="button" class="large" id="save" value="Save"/>
+		[% UNLESS quickship %]<input type="button" class="large" id="save" value="Save"/>[% END %]
 		<input type="button" class="large" id="ship" value="Ship"/>
-		<input type="button" class="large" id="cancel" value="Cancel"/>
+		[% UNLESS quickship %]<input type="button" class="large" id="cancel" value="Cancel"/>[% END %]
 	</div>
 
 	</form>
@@ -316,7 +316,7 @@ function check_due_date()
 	var OffsetLessThan = -7;
 
 	var query_param = '&shipdate=' + ShipDate + '&duedate=' + DueDate + '&offset=' + OffsetEqual + '&lessthanoffset=' + OffsetLessThan;
-	send_ajax_request('', 'JSON', 'order', 'adjust_due_date', query_param, function (){
+	send_ajax_request('', 'JSON', '', 'adjust_due_date', query_param, function (){
 		if (JSON_data.dateneeded) {
 			$("#dateneeded").val(JSON_data.dateneeded);
 			}
@@ -329,7 +329,7 @@ function add_pkg_detail_row(detail_type) {
 
 	var query_param = '&row_ID=' + pkg_detail_row_ID + '&detail_type=' + detail_type;
 
-	send_ajax_request('', 'JSON', 'order', 'add_pkg_detail_row', query_param, function (){
+	send_ajax_request('', 'JSON', '', 'add_pkg_detail_row', query_param, function (){
 			add_new_row('package_detail_list', JSON_data.rowHTML);
 			});
 	}
@@ -351,7 +351,7 @@ function calculate_density(row_num)
 		if (Class.length == 0)
 			{
 			var query_param = '&density='+Density;
-			send_ajax_request('', 'JSON', 'order', 'get_freight_class', query_param, function (){
+			send_ajax_request('', 'JSON', '', 'get_freight_class', query_param, function (){
 				if (JSON_data.freight_class) {
 					$("#class_"+row_num).val(JSON_data.freight_class);
 					}
@@ -417,7 +417,7 @@ function setSkuDetails(row_num, sku_id)
 	var query_param = '&sku_id='+sku_id;
 
 	if(sku_id > 0) {
-		send_ajax_request('', 'JSON', 'order', 'get_sku_detail', query_param, function (){
+		send_ajax_request('', 'JSON', '', 'get_sku_detail', query_param, function (){
 			if (JSON_data.error) {
 				clear_product_details(row_num);
 				}
@@ -459,7 +459,7 @@ function checkInternationalSection() {
 	$("#tozip").val("");
 
 	if($("#tocountry").val() != $("#fromcountry").val()) {
-		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){
+		send_ajax_request('intlCommoditySec', 'HTML', '', 'display_international', '', function (){
 			$("#intlCommoditySec").slideDown(1000);
 			});
 		} else {
@@ -472,7 +472,7 @@ function setCityAndState()
 	{
 	var query_param = "&zipcode=" + $("#tozip").val(); 
 	if($("#tozip").val() != "") {
-		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
+		send_ajax_request('', 'JSON', '', 'get_city_state', query_param, function () {
 			$("#tocity").val(JSON_data.city);
 			$("#tostate").val(JSON_data.state);
 			$("#tocountry").val(JSON_data.country);
@@ -557,7 +557,7 @@ $(document).ready(function(){
 	$("input[name='deliverymethod']:radio").change(function () {
 		//alert("Here I am changed: " + $('input:radio[name=deliverymethod]:checked').val());
 		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") {
-			send_ajax_request('', 'JSON', 'order', 'third_party_delivery', "", function (){
+			send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function (){
 				if (JSON_data.rowHTML) {
 					$(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
 					//$("#delivery_method_table tr:first").append(JSON_data.rowHTML);

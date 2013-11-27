@@ -143,7 +143,7 @@ sub authenticate_user :Private
 		$BrandingID = $self->get_branding_id;
 
 		$c->log->debug("ActiveUser: " . $ActiveUser);
-		$c->log->debug("BrandingID: " . $BrandingID);
+		$c->log->debug("BrandingID: " . $BrandingID) if $BrandingID;
 
 		$self->contact($Contact);
 		$self->customer($Customer);
@@ -380,6 +380,14 @@ sub get_select_list
 			{ name => 'No', value => '0'},
 			];
 		}
+	elsif ($list_name eq 'COSTATUS')
+		{
+		my @records = $self->context->model('MyDBI::Costatus')->all;
+		foreach my $CoStatus (@records)
+			{
+			push(@$list, { name => $CoStatus->costatusname, value => $CoStatus->statusid});
+			}
+		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
 		my @records = $self->context->model('MyDBI::Customer')->all;
@@ -412,6 +420,17 @@ sub get_select_list
 		foreach my $WeightType (@records)
 			{
 			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });
+			}
+		}
+	elsif ($list_name eq 'CUSTOMER_SHIPMENT_CARRIER')
+		{
+		my $myDBI = $self->context->model('MyDBI');
+		my $sql = "SELECT DISTINCT carrier FROM shipment INNER JOIN co ON shipment.coid = co.coid WHERE co.customerid = '" . $self->customer->customerid . "' AND shipment.carrier <> '' ORDER BY 1";
+		my $sth = $myDBI->select($sql);
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			push(@$list, { name => $data->{'carrier'}, value => $data->{'carrier'} });
 			}
 		}
 	elsif ($list_name eq 'UNIT_OF_MEASURE')
