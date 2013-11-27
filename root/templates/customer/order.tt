@@ -182,9 +182,9 @@
 				<td style="width:  5%"><input type="text" name="density_1" id="density_1" size="5"/></td>
 				<td style="width:  5%"><input type="text" name="nmfc_1" id="nmfc_1" size="1"/></td>
 				<td style="width:  5%"><input type="text" name="class_1" id="class_1" size="1"/></td>
-				<td style="width: 10%"><input type="text" name="decval_1" id="decval_1" size="5"/></td>
-				<td style="width: 10%"><input type="text" name="frtins_1" id="frtins_1" size="1"/></td>
-				<td style="width:  1%"><input type="hidden" name="type_1" id="type_1" value="package"/>&nbsp;</td>
+				<td style="width: 10%"><input type="text" class="total_pkg_detail" name="decval_1" id="decval_1" size="5"/></td>
+				<td style="width: 10%"><input type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" size="1"/></td>
+				<td style="width:  1%"><input type="hidden" class="total_pkg_detail"  name="type_1" id="type_1" value="package"/>&nbsp;</td>
 			</tr>
 			</table>
 		</li>
@@ -231,43 +231,40 @@
 
 	<table class="fixed_app" style="width: 60%">
 		<caption>Carrier and Service Selection</caption>
-		<tr><td>
-			<table id="delivery_method_table">
-				<tr>
-					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-					<td>
-						[% FOREACH item IN deliverymethod_loop %]
-						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" /><label for="[% item.value %]">[% item.name %]</label>
-						[% END %]
-					</td>
-				</tr>
-				<tr>
-					<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
-					<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
-				</tr>
-				<tr class="tp">
-					<td>&nbsp;</td><td><input type="button" class="button submit" id="route" value="Route" style="display: none;"/></td>
-				</tr>
-			</table>
-		</td><td valign=top>
-			<table>
-				<tr>
-					<td>Freight Charges:</td>
-					<td><input type="checkbox" id="" value="" /> Hi This is Test</td>
-				</tr>
-				<!--
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				-->
-			</table>
-		</td></tr>
+		<tr>
+			<td>
+				<table id="delivery_method_table">
+					<tr>
+						<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+						<td>
+							[% FOREACH item IN deliverymethod_loop %]
+							<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.selected %]/><label for="[% item.value %]">[% item.name %]</label>
+							[% END %]
+						</td>
+					</tr>
+					<tr>
+						<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
+						<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
+					</tr>
+					<tr class="tp">
+						<td>&nbsp;</td><td><input type="button" class="button submit" id="route" value="Route" style="display: none;"/></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<table id="freight_charges_table" class="fixed_app" style="width: 90%">
+					<tr id="header_row">
+						<th><label for="selection">Selection</label></th>
+						<th><label for="carrier">carrier</label></th>
+						<th><label for="service">Service</label></th>
+						<th><label for="delivery">Delivery</label></th>
+						<th><label for="shippingcharge">Shipping Charge</label></th>
+					</tr>
+				</table>
+			</td>
+		</tr>
 	</table>
 
 	<table class="fixed_app">
@@ -385,31 +382,115 @@ function calculate_total_weight()
 	{
 	var TotalWeight = 0;
 	$('#package_detail_list li').each(function() {
-	//$('#pkg_detail tr').each(function() {
 		var row_id = this.id;
-		var row_num = row_id.split('_')[2];
+		alert ('row_id is ' + row_id);
+		if (row_id.match(/^new_/))
+			{
+			var row_num = row_id.split('_')[2];
+			alert ('row_id is ' + row_id);
+			var EnteredWeight = $("#weight_"+row_num).val();
+			var DimWeight = $("#dimweight_"+row_num).val();
+			var Quantity = $("#quantity_"+row_num).val();
+			alert ('EnteredWeight is ' + EnteredWeight);
+			EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
+			if($('input[name=quantityxweight]:radio:checked').val() == 1) 
+				{
+				if (1 == 0)
+					{
+					// For non aggregate weight cost shipments, weight/quantity *must* be an 
+					// integer...adjust the weight to make it so.
+					}
+				else
+					{
+					var OriginalEnteredWeight = EnteredWeight;
+					if (Quantity > 0) 
+						{
+						var SingleWeight = Math.ceil(EnteredWeight/Quantity);
+						EnteredWeight = SingleWeight * Quantity;
+						}
+					}
 
-		var EnteredWeight = $("#weight_"+row_num).val();
-		var DimWeight = $("#dimweight_"+row_num).val();
-		var Quantity = $("#quantity_"+row_num).val();
+				if (EnteredWeight != OriginalEnteredWeight)
+					{
+					$("#weight_"+row_num).val(EnteredWeight);
+					}
 
-		EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
-		if($('input[name=quantityxweight]:radio:checked').val() == 1) {
-			var OriginalEnteredWeight = EnteredWeight;
-			if (Quantity > 0) {
-				EnteredWeight = SingleWeight * Quantity;
+				if (EnteredWeight >= DimWeight) 
+					{
+					TotalWeight += EnteredWeight;
+					}
+				else 
+					{
+					TotalWeight += DimWeight;
+					}
 				}
-			}
-
-		if (EnteredWeight >= DimWeight) {
-			TotalWeight += EnteredWeight;
-			}
-		else {
-			TotalWeight += DimWeight;
+			else
+				{
+				TotalWeight += EnteredWeight;
+				}
 			}
 		});
 
-	$('#totalweight_div').html(TotalWeight.toFixed(2));
+	if (TotalWeight > 0)
+		{
+		$('#totalweight_div').html(TotalWeight.toFixed(2));
+		}
+
+// If total weight has changed, recalculate the rates
+//	if ( RecalcOK == '1' && TotalWeight != OldWeight && CSIndex != 0 )
+//		{
+//		ReviewCS();
+//		}
+
+//	if ( '<var name=pseudoscreen>' != 'view' && '<var name=loginlevel>' != '25' )
+//		{
+//		DisplayBookingNumber();
+//		DisplaySLAC();
+//		}
+	}
+
+function calculate_total_declared_value_insurance()
+	{
+	var TotalInsurance = 0;
+	$('#package_detail_list li').each(function() {
+		var row_id = this.id;
+		if (row_id.match(/^new_/))
+			{
+			var row_num = row_id.split('_')[2];
+
+			var DecVal = $("#decval_"+row_num).val();
+			DecVal -= 0;
+
+			TotalInsurance += DecVal;
+			}
+		});
+
+	if (TotalInsurance > 0)
+		{
+		$('#insurance').val(TotalInsurance.toFixed(2));
+		}
+	}
+
+function calculate_total_freight_insurance()
+	{
+	var TotalInsurance = 0;
+	$('#package_detail_list li').each(function() {
+		var row_id = this.id;
+		if (row_id.match(/^new_/))
+			{
+			var row_num = row_id.split('_')[2];
+
+			var FrtIns = $("#frtins_"+row_num).val();
+			FrtIns -= 0;
+
+			TotalInsurance += FrtIns;
+			}
+		});
+
+	if (TotalInsurance > 0)
+		{
+		$('#freightinsurance').val(TotalInsurance.toFixed(2));
+		}
 	}
 
 function setSkuDetails(row_num, sku_id)
@@ -480,6 +561,26 @@ function setCityAndState()
 		}
 	}
 
+function clear_customer_service_list()
+	{
+	$('#freight_charges_table tr').each(function() {
+		var row_id = this.id;
+		if (row_id != "header_row")
+			{
+			this.remove();
+			}
+		});
+	}
+
+function get_customer_service_list()
+	{
+	send_ajax_request('', 'JSON', '', 'get_customer_service_list', "", function (){
+		if (JSON_data.rowHTML) {
+			$(JSON_data.rowHTML).insertAfter("#freight_charges_table tr");
+			}
+		});
+	}
+
 $(document).ready(function(){
 
 	$("#tophone").mask("999-999-9999");
@@ -517,6 +618,8 @@ $(document).ready(function(){
 	$(document).on('change', '.total_pkg_detail', function() {
 		calculate_total_weight();
 		calculate_total_packages();
+		calculate_total_declared_value_insurance();
+		calculate_total_freight_insurance();
 
 		var row_id = this.id;
 		var row_num = row_id.split('_')[1];
@@ -540,13 +643,16 @@ $(document).ready(function(){
 		add_pkg_detail_row('product');
 		});
 
-	$("#package_detail_list").disableSelection();
-	$("#package_detail_list").sortable({cancel: ".ui-state-fixed", items: "li:not('.ui-state-fixed')"});
+	//$("#package_detail_list").disableSelection();
+	//$("#package_detail_list").sortable({cancel: ".ui-state-fixed", items: "li:not('.ui-state-fixed')"});
+	$("#package_detail_list").sortable();
 
 	$(document).on('click', '.remove_pkg_link', function() {
 		$(this).parent().parent().parent().parent().parent().remove();
 		calculate_total_weight();
 		calculate_total_packages();
+		calculate_total_declared_value_insurance();
+		calculate_total_freight_insurance();
 		});
 
 	$("input[name=quantityxweight]:radio").change(function () {
@@ -555,17 +661,30 @@ $(document).ready(function(){
 		});
 
 	$("input[name='deliverymethod']:radio").change(function () {
-		//alert("Here I am changed: " + $('input:radio[name=deliverymethod]:checked').val());
-		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") {
+		alert("Here I am changed: " + $('input:radio[name=deliverymethod]:checked').val());
+		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
+			{
+			clear_customer_service_list();
 			send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function (){
 				if (JSON_data.rowHTML) {
 					$(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
 					//$("#delivery_method_table tr:first").append(JSON_data.rowHTML);
 					}
 				});
-			} else {
+
+			get_customer_service_list();
+			}
+		else if($('input:radio[name=deliverymethod]:checked').val() == "collect") 
+			{
+			$(".tp").hide("slow");
+			clear_customer_service_list();
+			get_customer_service_list();
+			}
+		else
+			{
 			//alert("Hide TP");
 			$(".tp").hide("slow");
+			clear_customer_service_list();
 			//alert("$(.tp)" + $(".tp"));
 			//alert("$(.tp).parent()" + $(".tp").parent());
 			//$("#delivery_method_table tr").each(function(i, n){
@@ -619,22 +738,23 @@ $(document).ready(function(){
 
 
 		var requireHash = {
-				datetoship    : { date: true },
-				dateneeded    : { date: true },
-				fromdepartment: { minlength: 2 },
-				fromemail     : { email: true },
-				toname        : { minlength: 2 },
-				toaddress1    : { minlength: 2 },
-				tocity        : { minlength: 2 },
-				tostate       : { minlength: 2 },
-				tozip         : { minlength: 5 },
-				tocountry     : { minlength: 2 },
-				tocontact     : { minlength: 2 },
-				tophone       : { phone: true },
-				toemail       : { email: true }
+				datetoship         : { date: true },
+				dateneeded         : { date: true },
+				fromdepartment     : { minlength: 2 },
+				fromemail          : { email: true },
+				toname             : { minlength: 2 },
+				toaddress1         : { minlength: 2 },
+				tocity             : { minlength: 2 },
+				tostate            : { minlength: 2 },
+				tozip              : { minlength: 5 },
+				tocountry          : { minlength: 2 },
+				tocontact          : { minlength: 2 },
+				tophone            : { phone: true },
+				toemail            : { email: true },
+				package_detail_list: { require: true },
 				};
 
-		//return validateForm(requireHash);
+		return validateForm(requireHash);
 		});
 
 	checkInternationalSection();
