@@ -763,6 +763,23 @@ __PACKAGE__->many_to_many("shipmentids", "shipmentcoassocs", "shipmentid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9gb1XDCzBKUV29zu3sUxdg
 
+__PACKAGE__->belongs_to(
+	from_address => 
+	"IntelliShip::SchemaClass::Result::Address",
+	"addressid"
+	);
+
+__PACKAGE__->belongs_to(
+	drop_address => 
+	"IntelliShip::SchemaClass::Result::Address",
+	"dropaddressid"
+	);
+
+__PACKAGE__->belongs_to(
+	rt_address => 
+	"IntelliShip::SchemaClass::Result::Address",
+	"rtaddressid"
+	);
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

@@ -27,8 +27,9 @@ sub index :Path :Args(0) {
 
 	#$c->response->body('Matched IntelliShip::Controller::Customer::MyOrders in Customer::MyOrders.');
 	my $do_value = $params->{'do'} || '';
-	if ($do_value eq 'xxx')
+	if ($do_value eq 'review')
 		{
+		$self->review_order;
 		}
 	else
 		{
@@ -58,12 +59,12 @@ sub display_my_orders
 		$SQL = $self->get_not_shipped_sql; ## Not shipped / Open orders
 		}
 
-	$c->log->debug("MY ORDER SQL : " . $SQL);
+	#$c->log->debug("MY ORDER SQL : " . $SQL);
 
 	my $myDBI = $c->model("MyDBI");
 	my $sth = $myDBI->select($SQL);
 
-	$c->log->debug("TOTAL ORDERS FOUND: " . $sth->numrows);
+	#$c->log->debug("TOTAL ORDERS FOUND: " . $sth->numrows);
 
 	my $myorder_list = [];
 	for (my $row=0; $row < $sth->numrows; $row++)
@@ -73,9 +74,26 @@ sub display_my_orders
 		push(@$myorder_list, $row_data);
 		}
 
-	$c->stash->{myorder_list} = $myorder_list;
-	}
+	my $title = {
+		''        => 'Not Shipped',
+		'shipped' => 'Recently Shipped',
+		'voided'  => 'Recently Voided',
+		};
 
+	$c->stash->{refresh_interval_sec} = 30;
+	$c->stash->{list_title} = $title->{$params->{'view'}};
+	$c->stash->{myorder_list_count} = @$myorder_list;
+	$c->stash->{myorder_list} = $myorder_list;
+
+	$c->stash->{view} = $params->{'view'};
+	$c->stash->{view_list} = [
+			{ name => 'Not Shipped', value => ''},
+			{ name => 'Recently Shipped', value => 'shipped'},
+			{ name => 'Recently Voided', value => 'voided'},
+			];
+
+	$c->stash->{MY_ORDERS} = 1;
+	}
 
 sub get_not_shipped_sql
 	{
@@ -375,7 +393,7 @@ sub get_voided_sql
 			cu.customerid = co.customerid
 			AND cu.addressid = oa.addressid
 			AND co.addressid = da.addressid
-			AND cu.customerid = ?
+			AND cu.customerid = '$CustomerID'
 			AND co.statusid = 200
 			AND (isdropship is null or isdropship = 0)
 	";
@@ -421,7 +439,7 @@ sub get_voided_sql
 			cu.customerid = co.customerid
 			AND co.dropaddressid = oa.addressid
 			AND co.addressid = da.addressid
-			AND cu.customerid = ?
+			AND cu.customerid = '$CustomerID'
 			AND co.statusid = 200
 			AND co.isdropship = 1
 	";
@@ -454,6 +472,13 @@ sub get_allowed_ext_cust_num_sql :Private
 	my $Contact = $self->contact;
 	my $arr = $Contact->get_restricted_values('extcustnum') if $Contact->is_restricted;
 	return ($arr ? " AND upper(co.extcustnum) IN (" . join(',', @$arr) . ")" : '');
+	}
+
+sub review_order :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
 	}
 
 =encoding utf8

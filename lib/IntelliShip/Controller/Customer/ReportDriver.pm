@@ -58,7 +58,12 @@ sub generate_shipment_report
 	my $Customer = $self->customer;
 	my $Address  = $Customer->address;
 
-	my $carriers = $params->{'carriers'} unless $params->{'carriers'} =~ /all/i;
+	my $carriers;
+	unless ($params->{'carriers'} =~ /all/i)
+		{
+		$carriers= (ref $params->{'carriers'} eq 'ARRAY' ? $params->{'carriers'} : [$params->{'carriers'}]);
+		}
+
 	my $start_date = IntelliShip::DateUtils->get_db_format_date_time($params->{'startdate'});
 	my $stop_date  = IntelliShip::DateUtils->get_db_format_date_time($params->{'enddate'});
 
@@ -108,17 +113,9 @@ sub generate_shipment_report
 	my $and_ownertypeid_sql = " AND ppd.ownertypeid = 2000 ";
 	my $and_datatypeid_sql = " AND ppd.datatypeid = 1000 ";
 
-	my $and_carrier_in_sql = '';
-	unless ($params->{'carriers'} eq 'all')
-		{
-		#my $CarrierName = &APIRequest({action=>'GetValueHashRef',module=>'CARRIER',moduleid=>$carrier,field=>'carriername'})->{'carriername'};
-		$and_carrier_in_sql = " AND sh.carrier IN ('" . join("' ,'", @{$params->{'carriers'}}) . "') ";
-		}
-	my $and_status_id_in_sql = '';#" AND sh.statusid IN (10,100) ";
-	unless ($params->{'costatus'} eq 'all')
-		{
-		$and_status_id_in_sql = " AND sh.statusid IN (" .  join(',', @{$params->{'costatus'}}) . ") ";
-		}
+	my $and_carrier_sql = $self->get_carrier_sql;
+	my $and_status_id_sql = $self->get_co_status_sql;
+
 	my $and_username_sql = '';
 	unless ($Customer->superuser)
 		{
@@ -186,10 +183,10 @@ sub generate_shipment_report
 		{
 		$WHERE = 
 				$and_customerid_sql .
-				$and_carrier_in_sql .
+				$and_carrier_sql .
 				$and_start_date_sql .
 				$and_stop_date_sql .
-				$and_status_id_in_sql .
+				$and_status_id_sql .
 				$and_ownertypeid_sql .
 				$and_datatypeid_sql .
 				$and_username_sql .
@@ -240,7 +237,7 @@ sub generate_shipment_report
 				$and_customerid_sql .
 				$and_start_date_sql .
 				$and_stop_date_sql .
-				$and_status_id_in_sql .
+				$and_status_id_sql .
 				$and_ownertypeid_sql .
 				$and_datatypeid_sql .
 				$and_username_sql .
@@ -445,7 +442,9 @@ sub get_filter_details
 		elsif ($criteria =~ m/\ IN\ /i)
 			{
 			($key,$value) = split(' IN ' , $criteria);
-			$value =~ s/(^\s*\(|\)\s*$)//;
+			$value =~ s/\(//;
+			$value =~ s/\)//;
+			$value =~ s/\'\,\'/\,\ /g;
 			$key = IntelliShip::Utils->get_filter_value_from_key($key);
 			}
 		else
@@ -467,6 +466,45 @@ sub get_filter_details
 		}
 
 	return $filter_criteria_hash_arr;
+	}
+
+sub get_carrier_sql
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	return '' if $params->{'carriers'} eq 'all';
+
+	my $and_carrier_sql;
+	if (ref $params->{'carriers'} eq 'ARRAY')
+		{
+		$and_carrier_sql = " AND sh.carrier IN ('" . join("','", @{$params->{'carriers'}}) . "') ";
+		}
+	else
+		{
+		$and_carrier_sql = " AND sh.carrier = '" . $params->{'carriers'} . "' ";
+		}
+	return $and_carrier_sql;
+	}
+
+sub get_co_status_sql
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	return '' if $params->{'costatus'} eq 'all';
+
+	my $and_status_id_sql; #" AND sh.statusid IN (10,100) "
+	if (ref $params->{'costatus'} eq 'ARRAY')
+		{
+		$and_status_id_sql = " AND sh.statusid IN ('" . join("','", @{$params->{'costatus'}}) . "') ";
+		}
+	else
+		{
+		$and_status_id_sql = " AND sh.statusid = '" . $params->{'costatus'} . "' ";
+		}
 	}
 
 __PACKAGE__->meta->make_immutable;

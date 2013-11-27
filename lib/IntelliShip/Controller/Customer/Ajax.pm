@@ -222,27 +222,6 @@ sub add_pkg_detail_row :Private
 	return { rowHTML => $row_HTML };
 	}
 
-sub get_freight_class :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $density = $params->{'density'};
-	my $response_hash = {};
-	if ( my $freight_class = IntelliShip::Utils->get_freight_class_from_density(undef,undef,undef,undef,$density))
-		{
-		$self->context->log->debug("add_new_row : freight_class : |" . $freight_class."|");
-		$response_hash->{ 'freight_class'} = $freight_class;
-		}
-	else
-		{
-		$response_hash->{ 'freight_class'} = '0';
-		}
-
-	return $response_hash;
-	}
-
 sub set_third_party_delivery
 	{
 	my $self = shift;
@@ -255,6 +234,26 @@ sub set_third_party_delivery
 	$c->stash->{THIRD_PARTY_DELIVERY} = 0;
 
 	return { rowHTML => $row_HTML };
+	}
+
+sub get_freight_class :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $density = $params->{'density'};
+	my $response_hash = {};
+	if ( my $freight_class = IntelliShip::Utils->get_freight_class_from_density(undef,undef,undef,undef,$density))
+		{
+		$response_hash->{ 'freight_class'} = $freight_class;
+		}
+	else
+		{
+		$response_hash->{ 'freight_class'} = '0';
+		}
+
+	return $response_hash;
 	}
 
 sub get_city_state
