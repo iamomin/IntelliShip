@@ -70,7 +70,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 				$('#preload').hide();
 				},
 			complete: function(data){
-				$('#preload').hide();
+				//$('#preload').hide();
 				}
 			});
 		} else {
@@ -123,6 +123,15 @@ function validPhoneNumber( Phone ) {
 	return (Phone.length == 10);
 	}
 
+function validNumericField( control )
+	{
+	if ($("#" + control ).val().match(/\D+/g)) return 0;
+	if ($("#" + control ).val() == undefined) return 0;
+	if ($("#" + control ).val() == 0) return 0;
+
+	return 1;
+	}
+
 function validDate( DateStr ) {
 	var matches = /^(\d{2})[-\/](\d{2})[-\/](\d{4})$/.exec(DateStr);
 	if (matches == null) return false;
@@ -172,6 +181,12 @@ function validateForm( requireFields ) {
 				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "minlength" )
 				boolRequired = ( $('#'+control).val().length < value );
+			else if ( proerty == "method" )
+				{
+				var fnstring = "validate_package_details";
+				var function_name = window[fnstring];
+				if (typeof function_name === "function") function_name();
+				}
 			else if ( proerty == "passwordmatch" )
 				boolRequired = ( $('#'+control).val() != $('#'+value).val());
 			else if ( proerty == "description" && boolRequired)

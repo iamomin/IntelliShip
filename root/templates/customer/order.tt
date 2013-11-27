@@ -383,15 +383,15 @@ function calculate_total_weight()
 	var TotalWeight = 0;
 	$('#package_detail_list li').each(function() {
 		var row_id = this.id;
-		alert ('row_id is ' + row_id);
+
 		if (row_id.match(/^new_/))
 			{
 			var row_num = row_id.split('_')[2];
-			alert ('row_id is ' + row_id);
+
 			var EnteredWeight = $("#weight_"+row_num).val();
 			var DimWeight = $("#dimweight_"+row_num).val();
 			var Quantity = $("#quantity_"+row_num).val();
-			alert ('EnteredWeight is ' + EnteredWeight);
+
 			EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
 			if($('input[name=quantityxweight]:radio:checked').val() == 1) 
 				{
@@ -570,15 +570,67 @@ function clear_customer_service_list()
 			this.remove();
 			}
 		});
+
+	$("#freight_charges_table").hide();
 	}
 
 function get_customer_service_list()
 	{
 	send_ajax_request('', 'JSON', '', 'get_customer_service_list', "", function (){
-		if (JSON_data.rowHTML) {
-			$(JSON_data.rowHTML).insertAfter("#freight_charges_table tr");
+		if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#freight_charges_table tr");
+		$("#freight_charges_table").show();
+		});
+	}
+
+function validate_package_details()
+	{
+	var controls = ['quantity', 'sku', 'weight', 'dimlength', 'dimwidth', 'dimheight'];
+	$('#package_detail_list li').each(function() {
+		var row_id = this.id;
+
+		if (row_id.match(/^new_/))
+			{
+			var row_num = row_id.split('_')[2];
+
+			for (var i = 0; i < controls.length; i++) 
+				{
+				 var element = controls[i];
+
+				 if (validNumericField(element+'_'+row_num))
+						{
+						if ($("#"+element+"_"+row_num).hasClass('ui-state-error')) 
+							$("#"+element+"_"+row_num).removeClass('ui-state-error');
+						}
+					else
+						{
+						$("#"+element+"_"+row_num).addClass( "ui-state-error" );
+						}
+				}
 			}
 		});
+	}
+
+function checkCarrierServiceSection()
+	{
+	clear_customer_service_list();
+
+	if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
+		{
+		send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function () {
+			if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
+				get_customer_service_list();
+				});
+		}
+	else if($('input:radio[name=deliverymethod]:checked').val() == "collect") 
+		{
+		$(".tp").hide("slow");
+		get_customer_service_list();
+		}
+	else
+		{
+		//alert("Hide TP");
+		$(".tp").hide("slow");
+		}
 	}
 
 $(document).ready(function(){
@@ -661,39 +713,7 @@ $(document).ready(function(){
 		});
 
 	$("input[name='deliverymethod']:radio").change(function () {
-		alert("Here I am changed: " + $('input:radio[name=deliverymethod]:checked').val());
-		if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
-			{
-			clear_customer_service_list();
-			send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function (){
-				if (JSON_data.rowHTML) {
-					$(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
-					//$("#delivery_method_table tr:first").append(JSON_data.rowHTML);
-					}
-				});
-
-			get_customer_service_list();
-			}
-		else if($('input:radio[name=deliverymethod]:checked').val() == "collect") 
-			{
-			$(".tp").hide("slow");
-			clear_customer_service_list();
-			get_customer_service_list();
-			}
-		else
-			{
-			//alert("Hide TP");
-			$(".tp").hide("slow");
-			clear_customer_service_list();
-			//alert("$(.tp)" + $(".tp"));
-			//alert("$(.tp).parent()" + $(".tp").parent());
-			//$("#delivery_method_table tr").each(function(i, n){
-			//	alert('(this).hasClass("tp")' + $(this).hasClass("tp"));
-			//	var current = $(this).attr('class');
-			//	alert("HAS TP: " + this.hasClass('.tp'));
-			//	if ($(this).hasClass("tp")) $(this).remove();
-			//	});
-			}
+		checkCarrierServiceSection();
 		});
 /*
 	$("#shipmentvalue").change(function() {
@@ -751,13 +771,14 @@ $(document).ready(function(){
 				tocontact          : { minlength: 2 },
 				tophone            : { phone: true },
 				toemail            : { email: true },
-				package_detail_list: { require: true },
+				package_detail_list: { method: validate_package_details },
 				};
 
 		return validateForm(requireHash);
 		});
 
 	checkInternationalSection();
+	checkCarrierServiceSection();
 	});
 
 </script>
