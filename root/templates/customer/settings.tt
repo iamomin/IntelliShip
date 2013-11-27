@@ -96,21 +96,15 @@ $(document).ready(function(){
 	<form id="frm_sku_management" method="post" action="/customer/settings/productskusetup">
 		<input type="hidden" id="do" name="do" value="setup"/>
 		<input type="hidden" id="productskuid" name="productskuid"/>
-		<table>
-			<tr> 
-				<td colspan=4>&nbsp;</td>
-			</tr>
-			<tr>
+		<div class="float_right">
+			<table><tr>
 				<td><label class="float_right" for="productsku">SKU:</td>
 				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
 				<td><input type="button" class="large" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="large" id="sku_add" value="Add New" /></td>
 				<td><input type="button" class="large" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
-			</tr>
-			<tr> 
-				<td colspan=4>&nbsp;</td>
-			</tr>
-		</table>
+			</tr></table>
+		</div>
 	</form>
 
 	[% UNLESS productskulist %]
@@ -119,7 +113,7 @@ $(document).ready(function(){
 	</div>
 	[%END%]
 
-	<h3>Product Sku List</h3>
+	<h3>Product Sku Count [% productskulist.count %]</h3>
 
 	<script>
 	var availableProductSkus = [];

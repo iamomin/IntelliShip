@@ -128,10 +128,11 @@ sub skumanagement :Local
 	$c->log->debug("SKU MANAGEMENT");
 
 	my $WHERE = {};
-	#$WHERE->{customerid} = $self->customer->customerid;
-	my $ps_resultset = $c->model('MyDBI::Productsku')->search($WHERE, { rows => 100 , order_by => 'description'});
+	$WHERE->{customerid} = $self->customer->customerid;
+	my $ORDER_BY = { order_by => 'description' };
+	my $ps_resultset = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
 
-	#$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
+	$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
 
 	$c->stash->{productskulist} = $ps_resultset;
 

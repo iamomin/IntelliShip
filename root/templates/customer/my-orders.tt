@@ -1,7 +1,29 @@
 [% #---------------------------------------------------------- %]
 [% # DISPLAY MY ORDERS - START %]
 [% #---------------------------------------------------------- %]
+[% IF MY_ORDERS %]
 	<h2>My Orders</h2>
+
+	<div class="notice">This page will automatically refresh in [% refresh_interval_sec %] seconds</div>
+
+	<form id="frm_my_ordres" method="post" action="/customer/myorders">
+		<input type="hidden" name="do" id="do"/>
+		<input type="hidden" name="coid" id="coid"/>
+		<div class="float_right">
+			<table><tr>
+				<td><label class="float_right" for="view">Type:</td>
+				<td><select name="view" id="view" onChange="$('#frm_my_ordres').submit();">
+						[% FOREACH item IN view_list %]
+						<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+				</select></td>
+				<td><input type="submit" class="large" id="refresh" value="Refresh"/></td>
+				<td><input type="button" class="large" id="back" value="Back" onclick="javascript:history.back();"/></td>
+			</tr></table>
+		</div>
+	</form>
+
+	<h3>[% list_title %] Count [% myorder_list_count %]</h3>
 
 	<table class="report">
 		<tr>
@@ -27,10 +49,25 @@
 				<td>[% item.carrier %]</td>
 				<td>[% item.service %]</td>
 				<td>[% item.mode %]</td>
-				<td><a href="javascript:void(0);">view</a></td>
+				<td><a href="javascript:reviewOrder('[% item.coid %]');">view</a></td>
 			</tr>
 		[% END %]
 	</table>
+
+	<script>
+
+	function reviewOrder(coid) {
+		$("#do").val("review");
+		$("#coid").val($coid);
+		$('#frm_my_ordres').submit();
+		}
+
+	$(document).ready(function(){
+		setInterval("$('#frm_my_ordres').submit()", [% refresh_interval_sec %] * 1000);
+		});
+
+	</script>
+[% END %]
 [% #---------------------------------------------------------- %]
 [% #  DISPLAY MY ORDERS - END %]
 [% #---------------------------------------------------------- %]
