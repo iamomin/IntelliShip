@@ -62,7 +62,7 @@
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
-					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname"/></td>
+					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toname %]"/></td>
 				</tr>
 				<tr>
 					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1"/></td>
@@ -570,6 +570,7 @@ function setCityAndState()
 
 function validate_package_details()
 	{
+	var boolResult=true;
 	var controls = ['quantity', 'sku', 'weight', 'dimlength', 'dimwidth', 'dimheight'];
 	$('#package_detail_list li').each(function() {
 		var row_id = this.id;
@@ -590,10 +591,13 @@ function validate_package_details()
 					else
 						{
 						$("#"+element+"_"+row_num).addClass( "ui-state-error" );
+						boolResult=false;
 						}
 				}
 			}
 		});
+
+	return boolResult;
 	}
 
 var has_FC=false;
@@ -619,7 +623,7 @@ function checkCarrierServiceSection()
 			get_customer_service_list();
 		} else
 		send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function () {
-			if (JSON_data.rowHTML) $(JSON_data.rowHTML).append("#delivery_method_table");
+			if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
 			get_customer_service_list();
 			$(".tp").show();
 			has_TP = true;
@@ -745,21 +749,20 @@ $(document).ready(function(){
 
 	$("#frm_order").submit(function() {
 
-	var rownumid=0;
-	$('#package_detail_list li').each(function() {
-		var row_id = this.id;
+		var rownumid=0;
+		$('#package_detail_list li').each(function() {
+			var row_id = this.id;
 
-		if (row_id.match(/^new_/))
-			{
-			var row_num = row_id.split('_')[2];
+			if (row_id.match(/^new_/))
+				{
+				var row_num = row_id.split('_')[2];
 
-			rownumid++;
-			$("#rownum_id_"+row_num).val(rownumid);
-			}
-		});
+				rownumid++;
+				$("#rownum_id_"+row_num).val(rownumid);
+				}
+			});
 
-	$("#pkg_detail_row_count").val('Package_Row_'+rownumid);
-
+		$("#pkg_detail_row_count").val('Package_Row_'+rownumid);
 
 		var requireHash = {
 				datetoship         : { date: true },

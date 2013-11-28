@@ -182,11 +182,7 @@ function validateForm( requireFields ) {
 			else if ( proerty == "minlength" )
 				boolRequired = ( $('#'+control).val().length < value );
 			else if ( proerty == "method" )
-				{
-				var fnstring = "validate_package_details";
-				var function_name = window[fnstring];
-				if (typeof function_name === "function") function_name();
-				}
+				if (value != null) boolRequired = value();
 			else if ( proerty == "passwordmatch" )
 				boolRequired = ( $('#'+control).val() != $('#'+value).val());
 			else if ( proerty == "description" && boolRequired)
@@ -194,7 +190,6 @@ function validateForm( requireFields ) {
 					messageStr = "<p>" + value + "</p>";
 				else
 					messageStr = messageStr + "<p>" + value + "</p>";
-
 			});
 
 		if (boolRequired) {
