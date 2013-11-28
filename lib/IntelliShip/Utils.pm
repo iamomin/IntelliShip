@@ -155,6 +155,62 @@ sub get_filter_value_from_key
 	return $FILTER_CRITERIA_HASH->{$key};
 	}
 
+sub jsonify
+	{
+	my $self = shift;
+	my $struct = shift;
+	my $json = [];
+	if (ref($struct) eq "ARRAY")
+		{
+		my $list = [];
+		foreach my $item (@$struct)
+			{
+				if (ref($item) eq "" ){
+					$item = $self->clean_json_data($item);
+					push @$list, "\"$item\"";
+				}
+				else{
+					push @$list, $self->jsonify($item);
+				}
+			}
+		return "[" . join(",",@$list) . "]";
+
+		}
+	elsif (ref($struct) eq "HASH")
+		{
+		my $list = [];
+		foreach my $key (keys %$struct)
+			{
+			my $val = $struct->{$key};
+			if (ref($val) eq "" )
+				{
+				$val = $self->clean_json_data($val);
+				push @$list, "\"$key\":\"$val\"";
+				}
+			else
+				{
+				push @$list, "\"$key\":" . $self->jsonify($struct->{$key});
+				}
+			}
+		return "{" . join(',',@$list) . "}";
+		}
+	}
+
+sub clean_json_data
+	{
+	my $self = shift;
+	my $item = shift;
+
+	$item =~ s/"/\\"/g;
+	$item =~ s/\t+//g;
+	$item =~ s/\n+//g;
+	$item =~ s/\r+//g;
+	$item =~ s/^\s+//g;
+	$item =~ s/\s+$//g;
+
+	return $item;
+	}
+
 1;
 
 __END__

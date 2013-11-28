@@ -38,8 +38,6 @@ sub index :Path :Args(0)
 		{
 		$self->get_JSON_DATA;
 		}
-
-	$c->stash(template => "templates/customer/ajax.tt");
 	}
 
 sub get_HTML :Private
@@ -60,6 +58,8 @@ sub get_HTML :Private
 		{
 		$self->set_costatus_chkbox;
 		}
+
+	$c->stash(template => "templates/customer/ajax.tt");
 	}
 
 sub set_international_details
@@ -124,10 +124,9 @@ sub get_JSON_DATA :Private
 		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
-	my $json_response = $self->jsonify($dataHash);
-	#$c->log->debug("\n TO json_response:  " . Dumper ($json_response));
-
-	$c->stash->{JSON_DATA} = $json_response;
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	$c->response->body($json_DATA);
 	}
 
 sub get_sku_detail :Private
@@ -488,61 +487,6 @@ sub get_carrrier_service_rate_list
 	return ($ListRef, $DefaultCSID, $CostList, $CSDataRef, $DefaultCost, $CSSecurityTypes, $DefaultTotalCost, $UsingAltSOP, $AltSOPID);
 	}
 =cut
-sub jsonify
-	{
-	my $self = shift;
-	my $struct = shift;
-	my $json = [];
-	if (ref($struct) eq "ARRAY")
-		{
-		my $list = [];
-		foreach my $item (@$struct)
-			{
-				if (ref($item) eq "" ){
-					$item = $self->clean_json_data($item);
-					push @$list, "\"$item\"";
-				}
-				else{
-					push @$list, $self->jsonify($item);
-				}
-			}
-		return "[" . join(",",@$list) . "]";
-
-		}
-	elsif (ref($struct) eq "HASH")
-		{
-		my $list = [];
-		foreach my $key (keys %$struct)
-			{
-			my $val = $struct->{$key};
-			if (ref($val) eq "" )
-				{
-				$val = $self->clean_json_data($val);
-				push @$list, "\"$key\":\"$val\"";
-				}
-			else
-				{
-				push @$list, "\"$key\":" . $self->jsonify($struct->{$key});
-				}
-			}
-		return "{" . join(',',@$list) . "}";
-		}
-	}
-
-sub clean_json_data
-	{
-	my $self = shift;
-	my $item = shift;
-
-	$item =~ s/"/\\"/g;
-	$item =~ s/\t+//g;
-	$item =~ s/\n+//g;
-	$item =~ s/\r+//g;
-	$item =~ s/^\s+//g;
-	$item =~ s/\s+$//g;
-
-	return $item;
-	}
 
 sub OrderHasWeight
 	{

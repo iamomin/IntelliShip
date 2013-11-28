@@ -52,7 +52,7 @@ sub generate_shipment_report
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("Ref Param: " . $_ . " => " . ref $params->{$_}) foreach keys %$params;
+	#$c->log->debug("Ref Param: " . $_ . " => " . ref $params->{$_}) foreach keys %$params;
 
 	my $Contact  = $self->contact;
 	my $Customer = $self->customer;
@@ -181,7 +181,7 @@ sub generate_shipment_report
 	my $report_SQL_1 = '';
 	if (!grep(/^OTHER_/, @$carriers))
 		{
-		$WHERE = 
+		$WHERE =
 				$and_customerid_sql .
 				$and_carrier_sql .
 				$and_start_date_sql .
@@ -233,7 +233,7 @@ sub generate_shipment_report
 			$and_other_name_in_sql = " AND o.othername IN (" . join(',', @other_names) . ") "if @other_names;
 			}
 
-		$WHERE = 
+		$WHERE =
 				$and_customerid_sql .
 				$and_start_date_sql .
 				$and_stop_date_sql .
@@ -273,7 +273,7 @@ sub generate_shipment_report
 
 	$report_SQL .= " ORDER BY 3,2,4 ";
 
-	$c->log->debug("REPORT SQL: \n" . $report_SQL);
+	#$c->log->debug("REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
@@ -453,12 +453,7 @@ sub get_filter_details
 			next;
 			}
 
-		$value =~ s/(^[\'\s]+|[\'\s]+$)//g;
-
-		if (IntelliShip::DateUtils->is_valid_date($value))
-			{
-			$value = IntelliShip::DateUtils->american_date_time($value);
-			}
+		$value = $self->get_value_description($key, $value);
 
 		next unless $key and $value;
 
@@ -466,6 +461,27 @@ sub get_filter_details
 		}
 
 	return $filter_criteria_hash_arr;
+	}
+
+sub get_value_description
+	{
+	my $self = shift;
+	my $key = shift;
+	my $value = shift;
+
+	$value =~ s/(^[\'\s]+|[\'\s]+$)//g;
+
+	if ($key =~ /Status/i)
+		{
+		my $WHERE = { statusid => ($value =~ /,/ ? [ split(',' , $value) ] : $value) };
+		$value = join(", ", map { $_->costatusname } $self->context->model('MyDBI::Costatus')->search($WHERE));
+		}
+	elsif ($value =~ /^\d{4}\-\d{2}\-\d{2}/ and IntelliShip::DateUtils->is_valid_date($value))
+		{
+		$value = IntelliShip::DateUtils->american_date_time($value);
+		}
+
+	return $value;
 	}
 
 sub get_carrier_sql
