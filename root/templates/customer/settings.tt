@@ -82,42 +82,42 @@ $(document).ready(function(){
 [% # PRODUCT SKU MANAGEMENT %]
 [% #---------------------------------------------------------- %]
 [% IF SKU_MANAGEMENT %]
-	<h2>Sku Management</h2>
+	[% UNLESS ajax %]<h2>Sku Management</h2>[% END %]
 
 	[% #---------------------------------------------------------- %]
 	[% # PRODUCT_SKU_LIST START %]
 	[% #---------------------------------------------------------- %]
 	[% IF PRODUCT_SKU_LIST %]
 
+	[% UNLESS ajax %]
 	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 
 	<p class="validateTips"></p>
 
-	<form id="frm_sku_management" method="post" action="/customer/settings/productskusetup">
-		<input type="hidden" id="do" name="do" value="setup"/>
-		<input type="hidden" id="productskuid" name="productskuid"/>
-		<div class="float_right">
+		<form id="frm_sku_management" method="post" action="/customer/settings/productskusetup">
+			<input type="hidden" id="do" name="do" value="setup"/>
+			<input type="hidden" id="productskuid" name="productskuid"/>
+			<div class="float_right">
 			<table><tr>
 				<td><label class="float_right" for="productsku">SKU:</td>
 				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
 				<td><input type="button" class="large" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="large" id="sku_add" value="Add New" /></td>
 				<td><input type="button" class="large" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
+				<td>
+					<select name="sku_page" id="sku_page">
+					[% FOREACH ids IN productskus_batches %]
+						<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+					[% END %]
+					</select>
+				</td>
 			</tr></table>
-		</div>
-	</form>
+			</div>
+		</form>
+	[% END %]
 
-	[% UNLESS productskulist %]
-	<div class="notice">
-		Production Sku Information Not Found.
-	</div>
-	[%END%]
-
-	<h3>Product Sku Count [% productskulist.count %]</h3>
-
-	<script>
-	var availableProductSkus = [];
-	</script>
+	[% UNLESS ajax %]<div id="divSkuList">[% END %]
+	<h3>Product Sku Count [% productsku_count %]</h3>
 
 	<table class="report">
 		<tr>
@@ -134,7 +134,7 @@ $(document).ready(function(){
 			<th>balance on hand</th>
 			<th>&nbsp;</th>
 		</tr>
-		[% WHILE (item = productskulist.next) %]
+		[% FOREACH item IN productskulist %]
 			<tr>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
@@ -147,14 +147,13 @@ $(document).ready(function(){
 				<td>[% item.unitofmeasure %]</td>
 				<td>[% item.unittypedescription %]</td>
 				<td>[% item.balanceonhand %]</td>
-				<td>
-					<a href="javascript:editProductSku('[% item.productskuid %]');">edit</a>
-					<script>availableProductSkus.push("[% item.description%]");</script>
-				</td>
+				<td><a href="javascript:editProductSku('[% item.productskuid %]');">edit</a></td>
 			</tr>
 		[% END %]
 	</table>
+	[% UNLESS ajax %]</div>[% END %]
 
+	[% UNLESS ajax %]
 	<script>
 
 	function editProductSku(productskuid) {
@@ -163,9 +162,25 @@ $(document).ready(function(){
 		$("#frm_sku_management").submit();
 		}
 
+	var cachedProductSkus = {};
+
 	$(document).ready(function(){
+
 		$("#productsku").autocomplete({
-			source: availableProductSkus
+			minLength: 2,
+			source: function ( request, response ) {
+					var term = request.term;
+					if ( term in cachedProductSkus ) {
+						response( cachedProductSkus[ term ] );
+						return;
+						}
+					$('#preload').show();
+					$.getJSON( "/customer/settings/findsku", request, function( data, status, xhr ) {
+						cachedProductSkus[ term ] = data;
+						response( data );
+						$('#preload').hide();
+						});
+					}
 			});
 
 		$("#sku_edit").click(function() {
@@ -173,13 +188,20 @@ $(document).ready(function(){
 				$("#frm_sku_management").submit();
 				}
 			});
+
 		$("#sku_add").click(function() {
 			$("#productsku").val("");
 			$("#productskuid").val("");
 			$("#frm_sku_management").submit();
 			});
+
+		$("#sku_page").change(function() {
+			var query_param = "&productsku=1&page=" + $(this).val();
+			send_ajax_request('divSkuList', 'HTML', 'settings', '', query_param);
+			});
 		});
 	</script>
+	[% END %]
 	[% END %]
 	[% #---------------------------------------------------------- %]
 	[% # PRODUCT_SKU_LIST END %]

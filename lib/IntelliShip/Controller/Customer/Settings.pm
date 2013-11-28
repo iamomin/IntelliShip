@@ -127,19 +127,75 @@ sub skumanagement :Local
 
 	$c->log->debug("SKU MANAGEMENT");
 
-	my $WHERE = {};
-	$WHERE->{customerid} = $self->customer->customerid;
+	my $productskus_batches = $self->process_pagination;
+
 	my $ORDER_BY = { order_by => 'description' };
-	my $ps_resultset = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
+	my $WHERE = { customerid => $self->customer->customerid, productskuid => $productskus_batches->[0] };
+	#$c->log->debug("WHERE: " . Dumper $WHERE);
 
-	$c->log->debug("TOTAL PRODUCT SKU FOUND: " . Dumper $ps_resultset->as_query);
+	my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
+	#$c->log->debug("TOTAL SKUS: " . @productskus);
 
-	$c->stash->{productskulist} = $ps_resultset;
+	$c->stash->{productskulist} = \@productskus;
+	$c->stash->{productsku_count} = scalar @productskus;
+	$c->stash->{productskus_batches} = $productskus_batches;
 
 	$c->stash->{PRODUCT_SKU_LIST} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
 
 	$c->stash(template => "templates/customer/settings.tt");
+	}
+
+sub ajax :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("SETTINGS AJAX");
+
+	$c->stash->{ajax} = 1;
+
+	if ($params->{'productsku'})
+		{
+		my $WHERE = { customerid => $self->customer->customerid };
+		my $ORDER_BY = { order_by => 'description' };
+
+		$WHERE->{productskuid} = [split(',', $params->{'page'})];
+		#$c->log->debug("WHERE: " . Dumper $WHERE);
+		my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
+
+		$c->log->debug("TOTAL SKUS: " . @productskus);
+		$c->stash->{productskulist} = \@productskus;
+		$c->stash->{productsku_count} = scalar @productskus;
+
+		$c->stash->{PRODUCT_SKU_LIST} = 1;
+		$c->stash->{SKU_MANAGEMENT} = 1;
+		}
+
+	$c->stash($params);
+	$c->stash(template => "templates/customer/settings.tt");
+	}
+
+sub findsku :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	$c->log->debug("FIND SKU: " . Dumper $params);
+
+	#my $WHERE = { customerid => $self->customer->customerid };
+	#$WHERE->{description} = { like => $params->{'term'} };
+	#my $rs = $c->model('MyDB')->search($WHERE, { select => ['productskuid'],  as => ['productskuid'], order_by => 'description' });
+	#$c->log->debug("productskus: " . Dumper $rs);
+
+	my $sql = "SELECT description FROM productsku WHERE customerid = '" . $self->customer->customerid . "' AND description LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
+	my $sth = $c->model('MyDBI')->select($sql);
+	#$c->log->debug("query_data: " . Dumper $sth->query_data);
+	my $arr = [];
+	push(@$arr, $_->[0]) foreach @{$sth->query_data};
+	#$c->log->debug("jsonify: " . IntelliShip::Utils->jsonify($arr));
+	$c->response->body(IntelliShip::Utils->jsonify($arr));
 	}
 
 sub productskusetup :Local
@@ -251,6 +307,39 @@ sub get_product_sku
 
 	return undef unless scalar keys %$WHERE;
 	return $c->model('MyDBI::Productsku')->find($WHERE);
+	}
+
+sub process_pagination
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->log->debug("PROCESS PAGINATION");
+
+	my $sql = "SELECT productskuid FROM productsku WHERE customerid = '" . $self->customer->customerid . "' ORDER BY description";
+	my $product_sku_batch = $self->spawn_batches($sql,100);
+	$c->log->debug("TOTAL PAGES: " . @$product_sku_batch);
+	#$c->log->debug("TOTAL PAGES: " . Dumper $product_sku_batch);
+	return $product_sku_batch;
+	}
+
+sub spawn_batches
+	{
+	my $self = shift;
+	my $sql = shift;
+	my $batch_size = shift || 1000;
+
+	my $c = $self->context;
+	my $myDBI = $c->model('MyDBI');
+
+	my $sth = $myDBI->select($sql);
+
+	my @matching_ids = map { @$_ } @{ $sth->query_data };
+
+	my $batches = [];
+	push @$batches, [ splice @matching_ids, 0, $batch_size ] while @matching_ids;
+
+	return $batches;
 	}
 
 =encoding utf8
