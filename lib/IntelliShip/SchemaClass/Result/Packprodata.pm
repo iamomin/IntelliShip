@@ -365,7 +365,7 @@ Related object: L<IntelliShip::SchemaClass::Result::Unittype>
 =cut
 
 __PACKAGE__->belongs_to(
-  "unittypeid",
+  "unittype",
   "IntelliShip::SchemaClass::Result::Unittype",
   { unittypeid => "unittypeid" },
   {
@@ -385,7 +385,7 @@ Related object: L<IntelliShip::SchemaClass::Result::Weighttype>
 =cut
 
 __PACKAGE__->belongs_to(
-  "weighttypeid",
+  "weighttype",
   "IntelliShip::SchemaClass::Result::Weighttype",
   { weighttypeid => "weighttypeid" },
   {

@@ -50,10 +50,10 @@
 					<td><label for="fromphone" class="float_right">Phone:</label></td><td><div class="default_text">[% customer.phone %]</div></td>
 				<tr>
 				</tr>
-					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment"></td>
+					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% fromdepartment %]"></td>
 				<tr>
 				<tr>
-					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail"/></td>
+					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
 			</table>
 			</div>
@@ -65,23 +65,23 @@
 					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toname %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1"/></td>
+					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1" value="[% toaddress1 %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2"/></td>
+					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2" value="[% toaddress2 %]"/></td>
 				</tr>
 				<tr>
 					<td><label class="float_right"><label for="tocity">City</label>,<label for="tostate">State</label>,<label for="tozip">Zipcode:</label></label></td>
 					<td>
-					<input type="text" name="tocity" id="tocity" size="6"/>
+					<input type="text" name="tocity" id="tocity" size="6" value="[% tocity %]"/>
 					<label>
 					<select name="tostate" id="tostate">
 						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]">[% item.name %]</option>
+							<option value="[% item.value %]" [% IF item.value == tostate %] selected [% END %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
-					<input type="text" name="tozip" id="tozip" size="2"/>
+					<input type="text" name="tozip" id="tozip" size="2" value="[% tozip %]"/>
 					</td>
 				</tr>
 				<tr>
@@ -89,23 +89,23 @@
 					<label>
 					<select name="tocountry" id="tocountry">
 						[% FOREACH item IN countrylist_loop %]
-							<option value="[% item.value %]" [% IF item.value == default_country %] SELECTED [% END %]>[% item.name %]</option>
+							<option value="[% item.value %]" [% IF item.value == tocountry %] selected [% END %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
 					</td>
 				</tr>
 				<tr>
-					<td><label for="tocontact" class="float_right">Contact:</label></td><td><input type="text" class="broad_text" name="tocontact" id="tocontact"/></td>
+					<td><label for="tocontact" class="float_right">Contact:</label></td><td><input type="text" class="broad_text" name="tocontact" id="tocontact" value="[% tocontact %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone"></td>
+					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
 				<tr>
-					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber"/></td>
+					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail"/></td>
+					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
 			</table>
 			</div>
@@ -114,13 +114,13 @@
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship"/></td>
+					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded"/></td>
+					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="comments" class="float_right">Comments:</label></td><td><input type="text" class="text" name="comments" id="comments"/></td>
+					<td><label for="comments" class="float_right">Comments:</label></td><td><input type="text" class="text" name="comments" id="comments" value="[% comments %]"/></td>
 				</tr>
 				<tr>
 					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="0.00"/><div class="default_text" id="shipmentvalue_div">0.00</div></td>
@@ -150,7 +150,7 @@
 	</table>
 
 
-	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="[% package_detail_row_count %]"/>
 	<ul class="sortable" id="package_detail_list">
 		<li class="pkg-detail-heading">
 		<table>
@@ -173,28 +173,32 @@
 			</tr>
 		</table>
 		</li>
-		<li id="new_pkg_1" class="ui-state-highlight ui-state-fixed">
-			<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="Package_Row_1"/>
-			<table>
-			<tr>
-				<td style="width:  4%"><input type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" size="1"/></td>
-				<td style="width:  5%"><input type="text" class="sku_id" name="sku_1" id="sku_1" size="1"/></td>
-				<td style="width: 20%"><input type="text" name="description_1" id="description_1" readonly/></td>
-				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="weight_1" id="weight_1" size="1"/></td>
-				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" size="1"/></td>
-				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" size="1"/></td>
-				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" size="1"/></td>
-				<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" size="1"/></td>
-				<td style="width:  5%"><input type="text" name="density_1" id="density_1" size="5"/></td>
-				<td style="width:  5%"><input type="text" name="nmfc_1" id="nmfc_1" size="1"/></td>
-				<td style="width:  5%"><input type="text" name="class_1" id="class_1" size="1"/></td>
-				<td style="width: 10%"><input type="text" class="total_pkg_detail" name="decval_1" id="decval_1" size="5"/></td>
-				<td style="width: 10%"><input type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" size="1"/></td>
-				<td style="width:  1%"><input type="hidden" class="total_pkg_detail"  name="type_1" id="type_1" value="package"/>&nbsp;</td>
-			</tr>
-			</table>
-		</li>
+		[% IF package_detail_section %]
+			[% package_detail_section %]
+		[% ELSE %]
+			<li id="new_package_1" class="ui-state-highlight ui-state-fixed">
+				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="Package_Row_1"/>
+				<table>
+				<tr>
+					<td style="width:  4%"><input type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" size="1"/></td>
+					<td style="width:  5%"><input type="text" class="sku_id" name="sku_1" id="sku_1" size="1"/></td>
+					<td style="width: 20%"><input type="text" name="description_1" id="description_1" readonly/></td>
+					<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+					<td style="width:  5%"><input type="text" class="total_pkg_detail" name="weight_1" id="weight_1" size="1"/></td>
+					<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" size="1"/></td>
+					<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" size="1"/></td>
+					<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" size="1"/></td>
+					<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" size="1"/></td>
+					<td style="width:  5%"><input type="text" name="density_1" id="density_1" size="5"/></td>
+					<td style="width:  5%"><input type="text" name="nmfc_1" id="nmfc_1" size="1"/></td>
+					<td style="width:  5%"><input type="text" name="class_1" id="class_1" size="1"/></td>
+					<td style="width: 10%"><input type="text" class="total_pkg_detail" name="decval_1" id="decval_1" size="5"/></td>
+					<td style="width: 10%"><input type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" size="1"/></td>
+					<td style="width:  1%"><input type="hidden" class="total_pkg_detail"  name="type_1" id="type_1" value="package"/>&nbsp;</td>
+				</tr>
+				</table>
+			</li>
+		[% END %]
 	</ul>
 
 	<div style="clear: both;">&nbsp;</div>
@@ -327,8 +331,8 @@ function check_due_date()
 		});
 	}
 
-var pkg_detail_row_ID = 1;
 function add_pkg_detail_row(detail_type) {
+	var pkg_detail_row_ID = $("#pkg_detail_row_count").val();
 	pkg_detail_row_ID++;
 
 	var query_param = '&row_ID=' + pkg_detail_row_ID + '&detail_type=' + detail_type;
@@ -336,6 +340,8 @@ function add_pkg_detail_row(detail_type) {
 	send_ajax_request('', 'JSON', '', 'add_pkg_detail_row', query_param, function (){
 			add_new_row('package_detail_list', JSON_data.rowHTML);
 			});
+
+	$("#pkg_detail_row_count").val(pkg_detail_row_ID);
 	}
 
 function calculate_density(row_num)
@@ -372,7 +378,7 @@ function calculate_total_packages()
 	$('#package_detail_list li').each(function() {
 		var row_id = this.id;
 
-		if (row_id.match(/^new_pkg/))
+		if (row_id.match(/^new_package/))
 			{
 			var row_num = row_id.split('_')[2];
 			var Quantity = $("#quantity_"+row_num).val();
@@ -383,7 +389,6 @@ function calculate_total_packages()
 
 	$('#totalpackages_div').html(TotalQuantity);
 	}
-
 
 function calculate_total_weight()
 	{
@@ -542,10 +547,6 @@ function clear_product_details(row_num)
 	}
 
 function checkInternationalSection() {
-	$("#tocity").val("");
-	$("#tostate").val("");
-	$("#tozip").val("");
-
 	if($("#tocountry").val() != $("#fromcountry").val()) {
 		send_ajax_request('intlCommoditySec', 'HTML', '', 'display_international', '', function (){
 			$("#intlCommoditySec").slideDown(1000);
@@ -643,6 +644,14 @@ function checkCarrierServiceSection()
 
 $(document).ready(function(){
 
+	alert('we are here');
+	[% IF ordernumber %]
+		calculate_total_packages();
+		calculate_total_weight();
+		calculate_total_declared_value_insurance();
+		calculate_total_freight_insurance();
+	[% END %]
+
 	$("#tophone").mask("999-999-9999");
 
 	$("#fromzip").mask("99999");
@@ -696,7 +705,7 @@ $(document).ready(function(){
 		});
 
 	$( "#add_pkg_row").click(function() {
-		add_pkg_detail_row('pkg');
+		add_pkg_detail_row('package');
 		});
 
 	$( "#add_product_row").click(function() {
