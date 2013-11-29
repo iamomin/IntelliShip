@@ -1,0 +1,50 @@
+
+<h2>Ship Packages</h2>
+
+<div class="notice">
+	<p>Please enter the order number and package weight.</p>
+	<p>Click &quot;Submit&quot; when finished.</p>
+	<p>&nbsp;</p>
+	<p class="require_text">* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges.</p>
+</div>
+
+<!-- <p class="validateTips"></p> -->
+
+<form id="frm_ship_packages" method="post" action="/customer/shippackages">
+
+	<table class="center_app">
+		<tr>
+			<td><label for="ordernumber" class="float_right">Order Number :</label></td>
+			<td><input type="text" class="broad_text" name="ordernumber" id="ordernumber"></td>
+			<td><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><label for="multiordershipment">Multiple Order Numbers</label></td>
+		</tr>
+		<tr>
+			<td><label for="enteredweight" class="float_right">Weight :</label></td>
+			<td><input type="text" class="broad_text" name="enteredweight" id="enteredweight"></td>
+			<td><input type="checkbox" name="variableweightshipment" id="variableweightshipment" value="1"/><label for="variableweightshipment">Multiple Shipment Weights</label></td>
+		</tr>
+		<tr>
+			<td><label for="quantity" class="float_right">Packages :</label></td>
+			<td><input type="text" class="broad_text" name="quantity" id="quantity"></td>
+			<td><input type="checkbox" name="overrideautoprocess" id="overrideautoprocess" value="1"/><label for="overrideautoprocess">Manually Process Shipment</label></td>
+		</tr>
+	</table>
+	<center><input type="submit" class="button" value="Submit"/></center>
+</form>
+
+<script>
+
+$(document).ready(function(){
+
+	var requireHash = {
+			ordernumber : { minlength: 1 , description: "Please enter order number" },
+			enteredweight : { minlength: 1, description: "Please enter total weight" },
+			quantity : { minlength: 1, description: "Please enter total packages" },
+			};
+
+	$("#frm_ship_packages").submit(function() {
+		return validateForm(requireHash);
+		});
+	});
+
+</script>

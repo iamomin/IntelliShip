@@ -1,0 +1,125 @@
+
+<h2>Batch Shipping</h2>
+<form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
+	<table class="center_app">
+		<tr>
+			<td><label for="excludeshipped" class="float_right">Exclude Shipped :</label></td>
+			<td><input type="checkbox" onclick=checkExclude() name="excludeshipped" id="excludeshipped" value=1 checked/></td>
+		</tr>
+		<tr>
+			<td><label for="orderlimit" class="float_right">Order Number Limit :</label></td>
+			<td><input type="text" class="text" name="orderlimit" id="orderlimit"></td>
+		</tr>
+		<tr>
+			<td><label for="carrier" class="float_right">Carrier :</label></td>
+			<td><select name="carrier" id="carrier">
+				[% FOREACH item IN carrier_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+				</select></td>
+		</tr>
+		<tr>
+			<td><label for="csid" class="float_right">Carrier/Service :</label></td>
+			<td><select name="csid" id="csid">
+				[% FOREACH item IN carrierservice_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+				</select></td>
+		</tr>
+		<tr>
+			<td><label for="address" class="float_right">Destination Address :</label></td>
+			<td><select name="address" id="address">
+				[% FOREACH item IN destination_address_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+				</select></td>
+		</tr>
+		<tr>
+			<td><label for="datetoship" class="float_right">Ship Date :</label></td>
+			<td><input type="text" class="text" name="datetoship" id="datetoship"/></td>
+		</tr>
+		<tr>
+			<td><label for="dateneeded" class="float_right">Delivery Date :</label></td>
+			<td><input type="text" class="text" name="dateneeded" id="dateneeded"/></td>
+		</tr>
+		<tr>
+			<td><label for="batchstate" class="float_right">Destination State :</label></td>
+			<td><input type="text" class="text" name="batchstate" id="batchstate"/></td>
+		</tr>
+		<tr>
+			<td><label for="startzip" class="float_right">Zip range :</label></td>
+			<td>
+			<input type="text" name="startzip" id="startzip" size="6">
+			&nbsp;-&nbsp;
+			<input type="text" name="stopzip" id="stopzip" size="6">
+			</td>
+		</tr>
+		<tr>
+			<td><label for="extcd" class="float_right">Product Description :</label></td>
+			<td><select name="extcd" id="extcd">
+				[% FOREACH item IN extcd_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select></td>
+		</tr>
+		<tr>
+			<td><label for="startordernumber" class="float_right">Order Numbers :</label></td>
+			<td>
+			<input type="text" class="text" name="startordernumber" id="startordernumber"/>
+			&nbsp;-&nbsp;
+			<input type="text" class="text" name="stopordernumber" id="stopordernumber"/>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="department" class="float_right">Department :</label></td>
+			<td><select name="department" id="department">
+				[% FOREACH item IN department_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select></td>
+		</tr>
+		<tr>
+			<td><label for="custnum" class="float_right">Customer Number :</label></td>
+			<td><select name="custnum" id="custnum">
+				[% FOREACH item IN customernumber_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select></td>
+		</tr>
+		<tr>
+			<td colspan=2">&nbsp;</td>
+		</tr>
+	</table>
+	<center><input type="submit" class="button" value="Submit"/></center>
+</form>
+
+<script>
+
+$(document).ready(function(){
+
+	$("#datetoship").datepicker();
+	$("#dateneeded").datepicker();
+
+	var requireHash = {
+			orderlimit : { minlength: 1 },
+			carrier : { minlength: 1 },
+			csid : { minlength: 1 },
+			address : { minlength: 1 },
+			datetoship : { date: true },
+			dateneeded : { date: true },
+			batchstate : { minlength: 2 },
+			startzip : { minlength: 5 },
+			stopzip : { minlength: 5 },
+			extcd : { minlength: 1 },
+			startordernumber : { minlength: 1 },
+			stopordernumber : { minlength: 1 },
+			department : { minlength: 1 },
+			custnum : { minlength: 1 },
+			};
+
+	$("#frm_batch_shipping").submit(function() {
+		return validateForm(requireHash);
+		});
+	});
+
+</script>

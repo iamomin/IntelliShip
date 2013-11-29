@@ -3,7 +3,7 @@ package IntelliShip::Errors;
 use Moose;
 use namespace::autoclean;
 
-has 'errors' => ( is => 'rw', isa => 'ArrayRef' );
+BEGIN { has 'errors' => ( is => 'rw', isa => 'ArrayRef' ); }
 
 sub BUILD
 	{

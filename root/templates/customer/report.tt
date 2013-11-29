@@ -29,7 +29,6 @@
 		<td colspan=2>&nbsp;</td>
 	</tr>
 
-	[% IF report_name == 'SHIPMENT' %]
 	<tr>
 		<td ><label for="startdate" class="float_right">Start Date:</label></td>
 		<td ><input type="text" name="startdate" id="startdate" readonly/></td>
@@ -46,6 +45,8 @@
 			<div id="carriersDiv"></div>
 		</td>
 	</tr>
+
+	[% IF report_name == 'MANIFEST' || report_name == 'SUMMARY_SERVICE' %]
 	<tr>
 		<td><label class="float_right">Status:</label></td>
 		<td style="min-width: 380px"><table><tr><td>
@@ -62,8 +63,7 @@
 		<select name="format" id="format">
 			<option value="HTML">HTML
 			<option value="CSV">Excel
-			<option value="MANIFEST">Manifest
-			<option value="SUMMARY_SERVICE">Summary Service Report
+			<option value="PDF">PDF
 		</select>
 		</td>
 	</tr>
@@ -76,7 +76,7 @@
 	</tr>
 </table>
 
-<center><input type="submit" class="large" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="large" id="back" value="Back" onclick="javascript:history.back();"/></center>
+<center><input type="submit" class="button" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></center>
 </form>
 
 <script>
@@ -87,6 +87,9 @@ $("#frm_report").submit(function () {
 	});
 
 $(document).ready(function(){
+	$("#back").attr("disabled", false);
+	$("#run_report").attr("disabled", false);
+
 	var currentDate = new Date();
 
 	$("#startdate, #enddate").datepicker({
@@ -111,6 +114,7 @@ $(document).ready(function(){
 			}
 		});
 
+	[% IF report_name == 'MANIFEST' || report_name == 'SUMMARY_SERVICE' %]
 	$("#all_costatus").click(function () {
 		if($("#all_costatus").is(":checked")) {
 			$("#costatusDiv").slideUp(1000);
@@ -123,8 +127,8 @@ $(document).ready(function(){
 				$("#costatusDiv").slideDown(1000);
 			}
 		});
-	$("#back").attr("disabled", false);
-	$("#run_report").attr("disabled", false);
+	[% END %]
+
 	});
 </script>
 [% END %]
@@ -134,14 +138,23 @@ $(document).ready(function(){
 [% #---------------------------------------------------------- %]
 
 [% #---------------------------------------------------------- %]
-[% # REPORT OUTPUT START %]
+[% # HTML REPORT FORMAT START %]
 [% #---------------------------------------------------------- %]
-[% IF report_output %]
-<h2>[% report_name %]</h2>
+[% IF HTML %]
+
+<h2>[% report_name %] REPORT</h2>
 
 	[% UNLESS report_output_row_loop %]
 	<div class="notice">No record found.</div>
 	[% END %]
+
+	<div style="clear: both;">&nbsp;</div>
+	<div class="float_right DoNotPrint">
+		[% IF report_output_row_loop %]
+		<input type="button" class="button" id="print" value="Print Report" onclick="javascript:window.print();"/>
+		[% END %]
+		<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/>
+	</div>
 
 	<table><tr>
 	[% IF filter_criteria_loop %]
@@ -151,7 +164,7 @@ $(document).ready(function(){
 	[% END %]
 	</tr></table>
 
-	<table class="report">
+	<table class="report Print">
 
 		[% IF report_heading_loop %]
 		<tr>
@@ -176,11 +189,8 @@ $(document).ready(function(){
 		[% END %]
 
 	</table>
-
-	<input type="button" class="large" id="back" value="Back" onclick="javascript:history.back();"/>
-
 [% END %]
 [% #---------------------------------------------------------- %]
-[% # REPORT OUTPUT END %]
+[% # HTML REPORT FORMAT %]
 [% #---------------------------------------------------------- %]
 
