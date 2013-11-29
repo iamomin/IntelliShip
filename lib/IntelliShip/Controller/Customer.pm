@@ -1,5 +1,6 @@
 package IntelliShip::Controller::Customer;
 use Moose;
+use IO::File;
 use Data::Dumper;
 use Math::BaseCalc;
 use IntelliShip::DateUtils;
@@ -251,8 +252,10 @@ sub get_customer_contact
 	my $contact_search = { username => $contactUser };
 	$contact_search->{password} = $password unless $self->token;
 
-	my $Customer = $c->model('MyDBI::Customer')->find({ username => $customerUser });
-	my $Contact = $c->model('MyDBI::Contact')->find($contact_search);
+	my @customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
+	my $Customer = $customerArr[0] if @customerArr;
+	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
+	my $Contact = $contactArr[0] if @contactArr;
 
 	return ($Customer, $Contact);
 	}
@@ -586,6 +589,38 @@ sub get_select_list
 	return $list;
 	}
 
+sub download :Private
+	{
+	my $self = shift;
+	my $file = shift;
+	my $directory = shift;
+
+	my $c = $self->context;
+
+	$c->log->debug('DOWNLOAD FILE' . $file . ', FROM DIR: ' . $directory);
+
+	my $file_path = $directory .'/' . $file;
+
+	my @file_parts = split(/\./,$file);
+	my $File_extension = pop @file_parts;
+	my $File_name = $file_parts[0] . '.' . $File_extension if @file_parts;
+	$File_name =~ s/\s+//g;
+
+	# create an IO::File for Catalyst
+	my $FH = new IO::File;
+	open $FH, $File_name;
+	binmode $FH;
+
+	my $data;
+	$data .= $_ while <$FH>;
+
+	# output header
+	$c->response->content_type('text/' . $File_extension);
+	$c->response->header(Content_Disposition => 'attachment;filename=' . $File_name);
+
+	# output file data
+	$c->response->body($data);
+	}
 
 =encoding utf8
 

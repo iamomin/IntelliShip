@@ -764,7 +764,7 @@ __PACKAGE__->many_to_many("shipmentids", "shipmentcoassocs", "shipmentid");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9gb1XDCzBKUV29zu3sUxdg
 
 __PACKAGE__->belongs_to(
-	from_address => 
+	to_address => 
 	"IntelliShip::SchemaClass::Result::Address",
 	"addressid"
 	);

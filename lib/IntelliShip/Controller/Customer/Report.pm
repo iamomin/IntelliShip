@@ -2,6 +2,10 @@ package IntelliShip::Controller::Customer::Report;
 use Moose;
 use Data::Dumper;
 use namespace::autoclean;
+use IntelliShip::Utils;
+use IntelliShip::MyConfig;
+use IntelliShip::DateUtils;
+use Spreadsheet::WriteExcel;
 use IntelliShip::Controller::Customer::ReportDriver;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
@@ -58,8 +62,6 @@ sub run :Local
 
 	if (scalar @$report_output_row_loop > 0)
 		{
-		#$self->save_report($report_heading_loop,$report_output_row_loop,$filter_criteria_loop);
-		$c->stash->{report_heading_loop} = $report_heading_loop;
 		$c->stash->{report_output_row_loop} = $report_output_row_loop;
 		}
 
@@ -102,6 +104,74 @@ sub format_HTML
 sub format_CSV
 	{
 	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $REPORT_dir = IntelliShip::MyConfig->report_file_directory;
+
+	unless (IntelliShip::Utils->check_for_directory($REPORT_dir))
+		{
+		$self->add_error("Unable to create report directory");
+		return;
+		}
+
+	my $EXCEL_file = $params->{'report'} . '_' . IntelliShip::DateUtils->timestamp . '.xls';
+
+	$c->log->debug("REPORT EXCEL FILE: " . $REPORT_dir . '/' . $EXCEL_file);
+
+	# Create a new Excel workbook
+	my $workbook = Spreadsheet::WriteExcel->new($REPORT_dir . '/' . $EXCEL_file);
+
+	# Add a worksheet
+	my $worksheet = $workbook->add_worksheet();
+	$worksheet->set_column('A:M', 20);
+
+	my $report_heading_loop = $c->stash->{report_heading_loop};
+
+	# Write a formatted and unformatted string, row and column notation.
+	my ($col,$row)=(0,1);
+
+	# Report Title
+	my $format = $workbook->add_format(border  => 0, valign  => 'vcenter', align   => 'left');
+	$format->set_bold();
+	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_name}, $format);
+
+	# Report Date
+	$row++;
+	$worksheet->merge_range("A$row:M$row", "Date: " . IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-')), $format);
+
+	# Report header row format
+	$format = $workbook->add_format(); # Add a format
+	$format->set_bold();
+	$format->set_color('black');
+	$format->set_align('center');
+
+	$row++;
+	foreach my $Column (@$report_heading_loop)
+		{
+		$worksheet->write($row, $col++, uc $Column->{name}, $format);
+		}
+
+	# Report header row format
+	$format = $workbook->add_format(); # Add a format
+	$format->set_align('center');
+
+	my $report_output_row_loop = $c->stash->{report_output_row_loop};
+	foreach my $report_output_columns (@$report_output_row_loop)
+		{
+		$col=0;$row++;
+		foreach my $Column (@$report_output_columns)
+			{
+			$worksheet->write($row, $col++, $Column->{value}, $format);
+			}
+		}
+
+	unless ($workbook->close)
+		{
+		$c->log->debug("Error closing file: $!");
+		}
+
+	$self->download($EXCEL_file,$REPORT_dir);
 	}
 
 sub format_PDF

@@ -403,13 +403,11 @@ sub populate_order
 	my $coid = $params->{'coid'};
 	my $ordernumber = $params->{'ordernumber'};
 
-	my $c = $self->context;
 	$c->log->debug("populate_order, coid: $coid, ordernumber: $ordernumber");
 
-	my $where = {};
-	$where->{'customerid'}  = $self->customer->customerid;
-	$where->{'coid'}        = $coid if ($coid);
-	$where->{'ordernumber'} = $ordernumber if ($ordernumber);
+	my $where = { customerid => $self->customer->customerid };
+	$where->{'coid'} = $coid if $coid;
+	$where->{'ordernumber'} = $ordernumber if $ordernumber;
 
 	my @cos = $c->model('MyDBI::Co')->search($where);
 	$c->log->debug("total customer order found: " . @cos);

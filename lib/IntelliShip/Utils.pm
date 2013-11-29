@@ -211,6 +211,24 @@ sub clean_json_data
 	return $item;
 	}
 
+sub check_for_directory
+	{
+	my $self = shift;
+	my $destination_dir = shift;
+
+	my @dirs = split(/\//,$destination_dir);
+
+	my $qualified_location;
+	foreach my $dir (@dirs)
+		{
+		next unless $dir;
+		$qualified_location .= '/' . $dir;
+		mkdir $qualified_location or return unless stat $qualified_location;
+		}
+
+	return $qualified_location;
+	}
+
 1;
 
 __END__

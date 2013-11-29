@@ -1,6 +1,6 @@
 package IntelliShip::DateUtils;
 
-use strict;
+use Moose;
 use DateTime;
 use Date::Business;
 use Date::Calendar;
@@ -48,7 +48,8 @@ sub american_date_time
 	my $self = shift;
 	my $date_time = shift;
 
-	$date_time = $self->get_db_format_date_time unless $date_time;
+	$date_time = $self->get_formatted_timestamp unless $date_time;
+
 	my ($date,$time) = split(/\ /, $date_time);
 	my ($yy, $mm, $dd) = split(/\-/, $date);
 
@@ -86,19 +87,33 @@ sub current_date
 	return ($date);
 	}
 
+sub get_db_format_date
+	{
+	my $self = shift;
+	my $date = shift;
+
+	return unless $date;
+
+	my ($mm, $dd, $yy) = split(/\//, $date);
+	$mm = '0' . $mm if length $mm == 1;
+	$dd = '0' . $dd if length $dd == 1;
+
+	return "$yy-$mm-$dd";
+	}
+
 sub get_db_format_date_time
 	{
 	my $self = shift;
 	my $datetime = shift;
 
+	return unless $datetime;
+
 	my ($date, $time) = split(/\ /, $datetime);
 	my ($mm, $dd, $yy) = split(/\//, $date);
-	$mm = '0' . $mm if (length($mm) == 1);
-	$dd = '0' . $dd if (length($dd) == 1);
+	$mm = '0' . $mm if length $mm == 1;
+	$dd = '0' . $dd if length $dd == 1;
 
-	$datetime = "$yy-$mm-$dd $time";
-
-	return $datetime;
+	return "$yy-$mm-$dd $time";
 	}
 
 =head2 timestamp
@@ -187,7 +202,7 @@ sub get_formatted_timestamp
 	$min	= substr($timestamp, 10, 2);
 	$sec	= substr($timestamp, 12, 2);
 
-	$timestamp = "$year$separator$month$separator$day $hours:$min:$sec" if($separator);
+	$timestamp = "$year$separator$month$separator$day $hours:$min:$sec" if $separator;
 
 	return $timestamp;
 	}
@@ -586,6 +601,10 @@ sub parse_date
 	$dateStr = ParseDate($dateStr);
 	return (substr($dateStr,0,4), substr($dateStr,4,2), substr($dateStr,6,2), substr($dateStr,9,2), substr($dateStr,12,2), substr($dateStr,15,2));
 	}
+
+__PACKAGE__->meta()->make_immutable();
+
+no Moose;
 
 1;
 
