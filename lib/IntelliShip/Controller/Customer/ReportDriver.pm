@@ -61,8 +61,8 @@ sub generate_shipment_report
 		$carriers= (ref $params->{'carriers'} eq 'ARRAY' ? $params->{'carriers'} : [$params->{'carriers'}]);
 		}
 
-	my $start_date = IntelliShip::DateUtils->get_db_format_date_time($params->{'startdate'});
-	my $stop_date  = IntelliShip::DateUtils->get_db_format_date_time($params->{'enddate'});
+	my $start_date = IntelliShip::DateUtils->get_db_format_date($params->{'startdate'});
+	my $stop_date  = IntelliShip::DateUtils->get_db_format_date($params->{'enddate'});
 
 	$c->log->debug("Filter Criteria, start_date: " . $start_date .
 					", stop_date: " . $stop_date .
@@ -107,7 +107,7 @@ sub generate_shipment_report
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
 
-	my $and_status_id_sql;# = " AND sh.statusid IN (10,100) ";
+	my $and_status_id_sql = " AND sh.statusid IN (10,100) ";
 	my $and_ownertypeid_sql = " AND ppd.ownertypeid = 2000 ";
 	my $and_datatypeid_sql = " AND ppd.datatypeid = 1000 ";
 
@@ -496,7 +496,7 @@ sub get_filter_details
 sub get_value_description
 	{
 	my $self = shift;
-	my $key = shift;
+	my $key = shift || '';
 	my $value = shift;
 
 	$value =~ s/(^[\'\s]+|[\'\s]+$)//g;
@@ -542,7 +542,7 @@ sub get_co_status_sql
 
 	return '' if $params->{'costatus'} eq 'all';
 
-	my $and_status_id_sql; #" AND sh.statusid IN (10,100) "
+	my $and_status_id_sql = ''; #" AND sh.statusid IN (10,100) "
 	if (ref $params->{'costatus'} eq 'ARRAY')
 		{
 		$and_status_id_sql = " AND sh.statusid IN ('" . join("','", @{$params->{'costatus'}}) . "') ";

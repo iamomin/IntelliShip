@@ -172,6 +172,24 @@ sub getActiveDatabaseList
 	return @active_db_list;
 	}
 
+sub no_reply_email
+	{
+	my $self = shift;
+	return 'NO_REPLY@engagetechnology.com';
+	}
+
+sub file_directory
+	{
+	my $self = shift;
+	return '/var/log/intelliship/files';
+	}
+
+sub report_file_directory
+	{
+	my $self = shift;
+	return '/var/log/intelliship/reports';
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;

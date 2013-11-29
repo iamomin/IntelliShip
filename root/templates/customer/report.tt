@@ -81,9 +81,11 @@
 
 <script>
 $("#frm_report").submit(function () {
-	$("#run_report").val("Please Wait...");
-	$("#run_report").attr("disabled", true);
-	$("#back").attr("disabled", true);
+	if ($("#format").val() == "HTML") {
+		$("#run_report").val("Please Wait...");
+		$("#run_report").attr("disabled", true);
+		$("#back").attr("disabled", true);
+		}
 	});
 
 $(document).ready(function(){

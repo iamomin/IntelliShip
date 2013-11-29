@@ -25,6 +25,7 @@ requires 'Date::Calc';
 requires 'Email::Stuff';
 requires 'Sys::Hostname';
 requires 'XML::Simple';
+requires 'Spreadsheet::WriteExcel';
 test_requires 'Test::More' => '0.88';
 catalyst;
 
