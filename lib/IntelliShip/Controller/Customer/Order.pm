@@ -33,7 +33,8 @@ sub setup :Private
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
-	$c->stash->{default_country} = "US";
+	$c->stash->{tocountry} = "US";
+	$c->stash->{package_detail_row_count} = "1";
 
 	$c->stash(template => "templates/customer/order.tt");
 	}
@@ -156,7 +157,7 @@ sub save_address
 		$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
 		}
 
-	$coData->{dropaddressid} = $ToAddress->id;
+	$coData->{addressid} = $ToAddress->id;
 
 	## Sort out return address/id
 	if (length $params->{'rtaddress1'})
@@ -244,6 +245,7 @@ sub save_package_product_details
 				class             => $params->{'class_' . $PackageIndex },
 				dimweight         => $params->{'dimweight_' . $PackageIndex },
 				unittypeid        => $params->{'unittype_' . $PackageIndex },
+				partnumber        => $params->{'sku_' . $PackageIndex },
 				description       => $params->{'description_' . $PackageIndex },
 				quantity          => $params->{'quantity_' . $PackageIndex },
 				boxnum            => $params->{'quantity_' . $PackageIndex },
@@ -390,6 +392,151 @@ sub get_order
 	$c->log->debug("coid: $coid , statusid: $statusid, ordernumber: $ordernumber");
 
 	return($coid,$statusid,$ordernumber);
+	}
+
+sub populate_order
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $coid = $params->{'coid'};
+	my $ordernumber = $params->{'ordernumber'};
+
+	my $c = $self->context;
+	$c->log->debug("populate_order, coid: $coid, ordernumber: $ordernumber");
+
+	my $where = {};
+	$where->{'customerid'}  = $self->customer->customerid;
+	$where->{'coid'}        = $coid if ($coid);
+	$where->{'ordernumber'} = $ordernumber if ($ordernumber);
+
+	my @cos = $c->model('MyDBI::Co')->search($where);
+	$c->log->debug("total customer order found: " . @cos);
+
+	my $COData = $cos[0];
+	$c->log->debug("populate_order, co:" . $COData->coid);
+	$c->log->debug("populate_order, co:" . $COData->addressid);
+
+	my $ToAddress = $COData->to_address;
+
+	## Initialize Screen
+	$self->setup;
+	$c->stash->{title} = 'Edit Order';
+
+	## Ship From Section
+	$c->stash->{fromemail} = $COData->deliverynotification;
+
+	## Ship To Section
+	$c->stash->{toname} = $ToAddress->addressname;
+	$c->stash->{toaddress1} = $ToAddress->address1;
+	$c->stash->{toaddress2} = $ToAddress->address2;
+	$c->stash->{tocity} = $ToAddress->city;
+	$c->stash->{tostate} = $ToAddress->state;
+	$c->stash->{tozip} = $ToAddress->zip;
+	$c->stash->{tocountry} = $ToAddress->country;
+	$c->stash->{tocontact} = $COData->contactname;
+	$c->stash->{tophone} = $COData->contactphone;
+	$c->stash->{toemail} = $COData->shipmentnotification;
+	$c->stash->{ordernumber} = $COData->ordernumber;
+
+	# Ship Information
+	$c->stash->{comments} = $COData->description;
+
+	# Package Details
+	$self->populate_package_detail_section($COData);
+	}
+
+sub populate_package_detail_section
+	{
+	my $self = shift;
+	my $COData = shift;
+	my $c = $self->context;
+
+	my $rownum_id = 0;
+	my $package_detail_section_html;
+
+	# Step 1: Find Packages belog to Order 
+	my $find_package = {};
+	$find_package->{'ownerid'} = $COData->coid;
+	$find_package->{'ownertypeid'} = '1000';
+	$find_package->{'datatypeid'} = '1000';
+
+	my @packages = $c->model('MyDBI::Packprodata')->search($find_package);
+
+	foreach my $PackageData (@packages)
+		{
+		$rownum_id++;
+		$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $PackageData);
+
+		# Step 3: Find Product belog to Package 
+		my $find_product = {};
+		$find_product->{'ownerid'}      = $PackageData->packprodataid;
+		$find_product->{'ownertypeid'}  = '3000';
+		$find_product->{'datatypeid'}   = '2000';
+
+		my @products = $c->model('MyDBI::Packprodata')->search($find_product);
+		$c->log->debug("total package products found: " . @products);
+
+		foreach my $ProductData (@products)
+			{
+			$rownum_id++;
+			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
+			}
+		}
+
+	# Step 3: Find product belog to Order 
+	my $find_product = {};
+	$find_product->{'ownerid'}      = $COData->coid;
+	$find_product->{'ownertypeid'}  = '1000';
+	$find_product->{'datatypeid'}   = '2000';
+
+	my @products = $c->model('MyDBI::Packprodata')->search($find_product);
+	$c->log->debug("total order prdt found: " . @products);
+
+	foreach my $ProductData (@products)
+		{
+		$rownum_id++;
+		$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
+		}
+
+	$c->stash->{package_detail_section} = $package_detail_section_html;
+	$c->stash->{package_detail_row_count} = $rownum_id;
+	}
+
+sub add_detail_row
+	{
+	my $self = shift;
+	my $type = shift;
+	my $row_num_id = shift;
+	my $PackProData = shift;
+	my $c = $self->context;
+
+	$c->stash->{PKG_DETAIL_ROW} = 1;
+	$c->stash->{ROW_COUNT} = $row_num_id;
+	$c->stash->{DETAIL_TYPE} = $type;
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+
+	$c->stash->{'weight'}      = $PackProData->weight;
+	$c->stash->{'class'}       = $PackProData->class;
+	$c->stash->{'dimweight'}   = $PackProData->dimweight;
+	$c->stash->{'unittype'}    = $PackProData->unittypeid;
+	$c->stash->{'sku'}         = $PackProData->partnumber;
+	$c->stash->{'description'} = $PackProData->description;
+	$c->stash->{'quantity'}    = $PackProData->quantity;
+	$c->stash->{'quantity'}    = $PackProData->boxnum;
+	$c->stash->{'frtins'}      = $PackProData->frtins;
+	$c->stash->{'nmfc'}        = $PackProData->nmfc;
+	$c->stash->{'decval'}      = $PackProData->decval;
+	$c->stash->{'dimlength'}   = $PackProData->dimlength;
+	$c->stash->{'dimwidth'}    = $PackProData->dimwidth;
+	$c->stash->{'dimheight'}   = $PackProData->dimheight;
+	$c->stash->{'density'}     = $PackProData->density;
+
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
+	$c->stash->{PKG_DETAIL_ROW} = 0;
+
+	return $row_HTML;
 	}
 
 __PACKAGE__->meta->make_immutable;

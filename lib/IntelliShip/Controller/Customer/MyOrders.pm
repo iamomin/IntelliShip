@@ -1,8 +1,9 @@
 package IntelliShip::Controller::Customer::MyOrders;
 use Moose;
 use namespace::autoclean;
+use Data::Dumper;
 
-BEGIN { extends 'IntelliShip::Controller::Customer'; }
+BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
 =head1 NAME
 
@@ -34,9 +35,8 @@ sub index :Path :Args(0) {
 	else
 		{
 		$self->display_my_orders;
+		$c->stash(template => "templates/customer/my-orders.tt");
 		}
-
-	$c->stash(template => "templates/customer/my-orders.tt");
 	}
 
 sub display_my_orders
@@ -80,7 +80,7 @@ sub display_my_orders
 		'voided'  => 'Recently Voided',
 		};
 
-	$c->stash->{refresh_interval_sec} = 30;
+	$c->stash->{refresh_interval_sec} = 60;
 	$c->stash->{list_title} = $title->{$params->{'view'}};
 	$c->stash->{myorder_list_count} = @$myorder_list;
 	$c->stash->{myorder_list} = $myorder_list;
@@ -477,8 +477,8 @@ sub get_allowed_ext_cust_num_sql :Private
 sub review_order :Private
 	{
 	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
+
+	$self->populate_order;
 	}
 
 =encoding utf8

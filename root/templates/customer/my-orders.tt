@@ -60,7 +60,7 @@
 
 	function reviewOrder(coid) {
 		$("#do").val("review");
-		$("#coid").val($coid);
+		$("#coid").val(coid);
 		$('#frm_my_ordres').submit();
 		}
 

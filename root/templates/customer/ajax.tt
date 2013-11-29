@@ -135,20 +135,20 @@
 	<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value=""/> 
 	<table>
 	<tr>
-		<td style="width:  4%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="1" size="1"[% IF DETAIL_TYPE == 'product' %]style="margin-left: 15px; width: 20px;"[% END %]/></td>
-		<td style="width:  5%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width: 20%"><input type="text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" readonly/></td>
-		<td style="width: 10%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width:  5%"><input type="text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" size="5"/></td>
-		<td style="width:  5%"><input type="text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width:  5%"><input type="text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]" size="1"/></td>
-		<td style="width: 10%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" size="5"/></td>
-		<td style="width: 10%"><input type="text" name="frtins_[% ROW_COUNT %]" class="total_pkg_detail" id="frtins_[% ROW_COUNT %]" size="1"/></td>
+		<td style="width:  4%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]" size="1"[% IF DETAIL_TYPE == 'product' %]style="margin-left: 15px; width: 20px;"[% END %]/></td>
+		<td style="width:  5%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" size="1" value="[% sku %]"/></td>
+		<td style="width: 20%"><input type="text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>
+		<td style="width: 10%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %] selected [% END %]>[% item.name %]</option>[% END %]</select></td>
+		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" size="1" value="[% weight %]"/></td>
+		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" size="1" value="[% dimweight %]"/></td>
+		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" size="1" value="[% dimlength %]"/></td>
+		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" size="1" value="[% dimwidth %]"/></td>
+		<td style="width:  5%"><input type="text" class="total_pkg_detail" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" size="1" value="[% dimheight %]"/></td>
+		<td style="width:  5%"><input type="text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" size="5" value="[% density %]"/></td>
+		<td style="width:  5%"><input type="text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" size="1" value="[% nmfc %]"/></td>
+		<td style="width:  5%"><input type="text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]" size="1" value="[% class %]"/></td>
+		<td style="width: 10%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" size="5" value="[% decval %]"/></td>
+		<td style="width: 10%"><input type="text" name="frtins_[% ROW_COUNT %]" class="total_pkg_detail" id="frtins_[% ROW_COUNT %]" size="1" value="[% frtins %]"/></td>
 		<td style="width:  1%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% IF DETAIL_TYPE == 'product' %]product[% ELSE %]package[% END %]"/><a href="javascript:void(0);" class="remove_pkg_link">X</a></td>
 	</tr>
 	</table>
@@ -192,7 +192,7 @@
 		</td>
 	</tr>
 	<tr class="tp">
-		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account"/></td>
+		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account" value="account"/></td>
 	</tr>
 [% END %]
 
