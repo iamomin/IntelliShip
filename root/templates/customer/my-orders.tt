@@ -11,8 +11,8 @@
 		<input type="hidden" name="coid" id="coid"/>
 		<table>
 		<tr>
-			<td><input type="submit" class="button" id="new_order" value="Add"/></td>
-			<td><input type="button" class="button" id="quick_ship" value="Quick Ship"/></td>
+			<td><input type="submit" class="button" id="new_order" value="Add" onclick="$('#frm_my_ordres').attr('action', '/customer/order/new');"/></td>
+			<td><input type="submit" class="button" id="quick_ship" value="Quick Ship" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"/></td>
 			<td width="65%">&nbsp;</td>
 			<td><label class="float_right" for="view">Type:</td>
 			<td><select name="view" id="view" onChange="$('#frm_my_ordres').submit();">
