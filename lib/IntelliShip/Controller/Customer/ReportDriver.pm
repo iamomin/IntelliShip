@@ -20,29 +20,26 @@ sub make_report
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if ($params->{'report'} eq 'CUSTOMER')
-		{
-		return $self->generate_customer_report;
-		}
-	elsif ($params->{'report'} eq 'SHIPMENT')
+	if ($params->{'report'} eq 'SHIPMENT')
 		{
 		return $self->generate_shipment_report;
+		}
+	elsif ($params->{'report'} eq 'MANIFEST')
+		{
+		return $self->generate_manifest_report;
+		}
+	elsif ($params->{'report'} eq 'SUMMARY_SERVICE')
+		{
+		return $self->generate_summary_service_report;
+		}
+	elsif ($params->{'report'} eq 'EOD')
+		{
+		return $self->generate_eod_report;
 		}
 	#else
 	#	{
 	#	$self->error([{MESSAGE => 'Unable To Run Requested Report'}]);
 	#	}
-	}
-
-sub generate_customer_report
-	{
-	my $self= shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $Contact = $self->contact;
-	my $Customer = $self->customer;
-
 	}
 
 sub generate_shipment_report
@@ -110,11 +107,11 @@ sub generate_shipment_report
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
 
+	my $and_status_id_sql;# = " AND sh.statusid IN (10,100) ";
 	my $and_ownertypeid_sql = " AND ppd.ownertypeid = 2000 ";
 	my $and_datatypeid_sql = " AND ppd.datatypeid = 1000 ";
 
 	my $and_carrier_sql = $self->get_carrier_sql;
-	my $and_status_id_sql = $self->get_co_status_sql;
 
 	my $and_username_sql = '';
 	unless ($Customer->superuser)
@@ -384,6 +381,39 @@ sub generate_shipment_report
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
 	}
 
+sub generate_manifest_report
+	{
+	my $self= shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Contact = $self->contact;
+	my $Customer = $self->customer;
+
+	}
+
+sub generate_summary_service_report
+	{
+	my $self= shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Contact = $self->contact;
+	my $Customer = $self->customer;
+
+	}
+
+sub generate_eod_report
+	{
+	my $self= shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Contact = $self->contact;
+	my $Customer = $self->customer;
+
+	}
+
 sub get_filter_details
 	{
 	my $self= shift;
@@ -521,6 +551,8 @@ sub get_co_status_sql
 		{
 		$and_status_id_sql = " AND sh.statusid = '" . $params->{'costatus'} . "' ";
 		}
+
+	return $and_status_id_sql;
 	}
 
 __PACKAGE__->meta->make_immutable;

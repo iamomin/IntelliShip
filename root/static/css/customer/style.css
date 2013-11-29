@@ -224,6 +224,9 @@ table.app {
     padding: 10px;
     background: #e9e9e9;
     border: solid 1px #ccc;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 .equal {display: table}
@@ -238,6 +241,9 @@ table.app caption {
     background: #1875ba;
     text-align: left;
     text-transform: uppercase;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 table.center_app {
@@ -248,10 +254,9 @@ table.center_app {
     text-align: left;
     font-size: 11px;
     border: solid 1px #ccc;
-    border-collapse: collapse;
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 table.report {width: 100%; margin: 10px 0; border-spacing: 1px}
@@ -447,48 +452,6 @@ input.auto_width {
 /* Buttons */
 
 input.button {
-    width: auto;
-    padding: 0px 2px;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: bold;
-    text-transform: uppercase;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-}
-
-input.submit {
-    color: #fff;
-    background: #afafaf;
-    border: 1px solid #afafaf;
-}
-
-input.cancel {
-    color: #fff;
-    background: #afafaf;
-    border: 1px solid #afafaf;
-}
-
-input.delete {
-    color: #fff;
-    background: #ee4f3c;
-    border: 1px solid #ee4f3c;
-}
-
-input.review {
-    color: #fff;
-    background: #2f62a3;
-    border: 1px solid #2f62a3;
-}
-
-input.create {
-    color: #fff;
-    background: #4fbd4a;
-    border: 1px solid #4fbd4a;
-}
-
-input.large {
     position: relative;
     display: inline-block;
     padding: 7px 15px;
@@ -515,6 +478,40 @@ input.large {
     -ms-user-select: none;
     user-select: none;
     -webkit-appearance: none;
+}
+
+input.package {
+    width: auto;
+    position: relative;
+    display: inline-block;
+    padding: 3px 10px;
+    cursor: pointer;
+    color: #333;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background: #fbf9ee;
+    border: 1px solid #fcefa1;
+}
+
+input.product {
+    width: auto;
+    position: relative;
+    display: inline-block;
+    padding: 3px 10px;
+    cursor: pointer;
+    color: #333;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background: #ededed;
+    border: 1px solid #d3d3d3;
 }
 
 .float_right {

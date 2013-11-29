@@ -180,7 +180,7 @@ function validateForm( requireFields ) {
 			else if ( proerty == "date" )
 				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "minlength" )
-				boolRequired = ( $('#'+control).val().length < value );
+				boolRequired = ( $('#'+control).val() == null || $('#'+control).val().length < value );
 			else if ( proerty == "method" )
 				if (value != null) boolRequired = value();
 			else if ( proerty == "passwordmatch" )

@@ -15,10 +15,9 @@ sub index :Path :Args(0)
 	## Display reports
 	my $report_list = [
 				{ name => 'Shipment Report', url => '/customer/report/setup?report=SHIPMENT' },
-				{ name => 'New ABC Report', url => '/customer/report/setup?report=SHIPMENT' },
-				{ name => 'New DEF Report', url => '/customer/report/setup?report=SHIPMENT' },
-				{ name => 'New GHI Report', url => '/customer/report/setup?report=SHIPMENT' },
-				{ name => 'New XYZ Report', url => '/customer/report/setup?report=SHIPMENT' },
+				{ name => 'Manifest Report', url => '/customer/report/setup?report=MANIFEST' },
+				{ name => 'Summary Service Report', url => '/customer/report/setup?report=SUMMARY_SERVICE' },
+#				{ name => 'EOD Report', url => '/customer/report/setup?report=EOD' },
 			];
 
 	$c->stash->{report_list} = $report_list;
@@ -29,11 +28,6 @@ sub setup :Local
 	{
 	my ( $self, $c ) = @_;
 	my $params = $c->req->params;
-
-	if ($params->{'report'} eq 'SHIPMENT')
-		{
-		#
-		}
 
 	$c->stash->{report_setup} = 1;
 	$c->stash->{report_name} = $params->{'report'};
@@ -46,56 +40,6 @@ sub run :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if ($params->{'format'} eq 'HTML')
-		{
-		$self->run_HTML_report;
-		}
-	elsif ($params->{'format'} eq 'CSV')
-		{
-		$self->run_CSV_report;
-		}
-	elsif ($params->{'format'} eq 'MANIFEST')
-		{
-		$self->run_MANIFEST_report;
-		}
-	elsif ($params->{'format'} eq 'SUMMARY_SERVICE')
-		{
-		$self->run_SUMMARY_SERVICE_report;
-		}
-	}
-
-sub run_HTML_report
-	{
-	my $self = shift;
-	$self->generate_report;
-	}
-
-sub run_CSV_report
-	{
-	my $self = shift;
-	$self->generate_report;
-	}
-
-sub run_MANIFEST_report
-	{
-	my $self = shift;
-	$self->generate_report;
-	}
-
-sub run_SUMMARY_SERVICE_report
-	{
-	my $self = shift;
-	$self->generate_report;
-	}
-
-sub generate_report
-	{
-	my $self = shift;
-	my $msg = shift;
-
-	my $c = $self->context;
-	my $params = $c->req->params;
-
 	my $ReportDriver = IntelliShip::Controller::Customer::ReportDriver->new;
 	$ReportDriver->context($self->context);
 	$ReportDriver->contact($self->contact);
@@ -103,11 +47,11 @@ sub generate_report
 
 	my ($report_heading_loop,$report_output_row_loop,$filter_criteria_loop) = $ReportDriver->make_report;
 
-	#if ($ReportDriver->has_errors)
-	#	{
-	#	$c->log->debug('Error ' . Dumper $ReportDriver->error);
-	#	$c->detach("index",$params);
-	#	}
+	if ($ReportDriver->has_errors)
+		{
+		$c->log->debug('Error ' . Dumper $ReportDriver->error);
+		$c->detach("index",$params);
+		}
 
 	$c->stash->{filter_criteria_loop} = $filter_criteria_loop;
 	$c->stash->{report_heading_loop} = $report_heading_loop;
@@ -119,14 +63,50 @@ sub generate_report
 		$c->stash->{report_output_row_loop} = $report_output_row_loop;
 		}
 
-	$c->stash->{message} = $msg if ($msg);
-
 	my $report_name = $params->{'report'};
 	$report_name =~ s/\_/\ /g;
 	$c->stash->{report_name} = $report_name;
-	$c->stash->{report_output} = 1;
 
-	$c->stash(template => "templates/customer/report.tt");
+	$self->format_report;
+	}
+
+sub format_report
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	if ($params->{'format'} eq 'HTML')
+		{
+		$self->format_HTML;
+		}
+	elsif ($params->{'format'} eq 'CSV')
+		{
+		$self->format_CSV;
+		}
+	elsif ($params->{'format'} eq 'PDF')
+		{
+		$self->format_PDF;
+		}
+	}
+
+sub format_HTML
+	{
+	my $self = shift;
+	my $c = $self->context;
+	$c->stash->{HTML} = 1;
+	$c->stash->{MEDIA_PRINT} = 1;
+	$c->stash->{template} = "templates/customer/report.tt";
+	}
+
+sub format_CSV
+	{
+	my $self = shift;
+	}
+
+sub format_PDF
+	{
+	my $self = shift;
 	}
 
 =encoding utf8

@@ -4,6 +4,10 @@
 		<title>Engage Technology IntelliShip</title>
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
 
+		[% IF MEDIA_PRINT %]
+		<link rel="stylesheet" type="text/css" href="/static/css/customer/print.css" media="print"/>
+		[% END %]
+
 		<!-- All jQuery Sources -->
 
 		<!-- The jQuery 1.10.2 Plugin -->
@@ -74,17 +78,17 @@
 		  <input type="hidden" name="action">
 		  <input type="hidden" name="do">
 		  <ul>
-			<li><a href="/customer/dashboard" >DASHBOARD</a>
-			<li><a href="/customer/myorders" >MY ORDERS</a>
-			<li><a href="/customer/order/new" >NEW ORDER</a>
-			<!-- <li><a href="/customer/order/address" >NEW ORDER</a> -->
-			<li><a href="/customer/order/quickship" >QUICK SHIP</a>
-			<li><a href="javascript:void(0);" onclick="javascript:void(0);">SHIP PACKAGES</a>
-			<li><a href="javascript:void(0);" onclick="javascript:void(0);">BATCH SHIPPING</a>
-			<li><a href="javascript:void(0);" onclick="javascript:void(0);">UPLOAD ORDER</a>
-			<li><a href="/customer/report" >REPORTS</a>
-			<li><a href="/customer/settings" onclick="javascript:void(0);">SETTINGS</a>
-			<li><a href="/customer/logout" >LOGOUT</a>
+			<li><a href="/customer/dashboard"> DASHBOARD </a>
+			<li><a href="/customer/myorders"> MY ORDERS </a>
+			<li><a href="/customer/order/new"> NEW ORDER </a>
+			<!-- <li><a href="/customer/order/address"> NEW ORDER </a> -->
+			<li><a href="/customer/order/quickship"> QUICK SHIP </a>
+			<li><a href="/customer/shippackages">SHIP PACKAGES</a>
+			<li><a href="/customer/batchshipping"> BATCH SHIPPING </a>
+			<li><a href="/customer/uploadorder"> UPLOAD ORDER </a>
+			<li><a href="/customer/report"> REPORTS </a>
+			<li><a href="/customer/settings"> SETTINGS </a>
+			<li><a href="/customer/logout"> LOGOUT </a>
 			<li>&nbsp;User:&nbsp;[% username %]&nbsp;&nbsp;
 		  </ul>
 		</form>

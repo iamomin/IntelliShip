@@ -9,18 +9,20 @@
 	<form id="frm_my_ordres" method="post" action="/customer/myorders">
 		<input type="hidden" name="do" id="do"/>
 		<input type="hidden" name="coid" id="coid"/>
-		<div class="float_right">
-			<table><tr>
-				<td><label class="float_right" for="view">Type:</td>
-				<td><select name="view" id="view" onChange="$('#frm_my_ordres').submit();">
-						[% FOREACH item IN view_list %]
-						<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
-						[% END %]
-				</select></td>
-				<td><input type="submit" class="large" id="refresh" value="Refresh"/></td>
-				<td><input type="button" class="large" id="back" value="Back" onclick="javascript:history.back();"/></td>
-			</tr></table>
-		</div>
+		<table>
+		<tr>
+			<td><input type="submit" class="button" id="new_order" value="Add"/></td>
+			<td><input type="button" class="button" id="quick_ship" value="Quick Ship"/></td>
+			<td width="65%">&nbsp;</td>
+			<td><label class="float_right" for="view">Type:</td>
+			<td><select name="view" id="view" onChange="$('#frm_my_ordres').submit();">
+					[% FOREACH item IN view_list %]
+					<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+			</select></td>
+			<td><input type="submit" class="button" id="refresh" value="Refresh"/></td>
+			<td><input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></td>
+		</tr></table>
 	</form>
 
 	<h3>[% list_title %] Count [% myorder_list_count %]</h3>

@@ -114,10 +114,10 @@
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" readonly/></td>
+					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship"/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" readonly/></td>
+					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded"/></td>
 				</tr>
 				<tr>
 					<td><label for="comments" class="float_right">Comments:</label></td><td><input type="text" class="text" name="comments" id="comments"/></td>
@@ -152,7 +152,7 @@
 
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<ul class="sortable" id="package_detail_list">
-		<li class="ui-state-fixed">
+		<li class="pkg-detail-heading">
 		<table>
 			<tr>
 				<th style="width:  4%">QTY</th>
@@ -201,8 +201,8 @@
 
 	<table>
 		<tr>
-		<td><input type="button" id = "add_pkg_row" class="button submit" value="Add Package"/></td>
-		<td><input type="button" id = "add_product_row" class="button submit" value="Add Product"/></td>
+		<td><input type="button" id = "add_pkg_row" class="package" value="Add Package"/></td>
+		<td><input type="button" id = "add_product_row" class="product" value="Add Product"/></td>
 		<td>Multiply Qty*Weight</td>
 		<td><input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label></td>
 		<td><input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label></td>
@@ -303,9 +303,9 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float_right">
-		<input type="button" class="large" id="save" value="Save"/>
-		[% IF quickship %]<input type="button" class="large" id="ship" value="Ship"/>[% END %]
-		<input type="button" class="large" id="cancel" value="Cancel"/>
+		<input type="button" class="button" id="save" value="Save"/>
+		[% IF quickship %]<input type="button" class="button" id="ship" value="Ship"/>[% END %]
+		<input type="button" class="button" id="cancel" value="Cancel"/>
 	</div>
 
 	</form>
@@ -703,9 +703,7 @@ $(document).ready(function(){
 		add_pkg_detail_row('product');
 		});
 
-	//$("#package_detail_list").disableSelection();
-	//$("#package_detail_list").sortable({cancel: ".ui-state-fixed", items: "li:not('.ui-state-fixed')"});
-	$("#package_detail_list").sortable();
+	$("#package_detail_list").sortable({ items: "li:not('.pkg-detail-heading')" });
 
 	$(document).on('click', '.remove_pkg_link', function() {
 		$(this).parent().parent().parent().parent().parent().remove();
