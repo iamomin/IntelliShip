@@ -236,16 +236,16 @@ sub email_report
 		$Email->add_line('<p>');
 		$Email->add_line('Please find attached report');
 		$Email->add_line('</p>');
-
-		$c->detach("setup",$params);
 		}
 
 	$self->set_company_template($Email);
 
 	if ($Email->send)
 		{
-		$c->stash->{MESSAGE} = "Email successfully sent to " . $c->req->params->{'toemail'} . "!..";
+		$c->stash->{MESSAGE} = "Email successfully sent to " . $c->req->params->{'toemail'};
 		}
+
+	$c->detach("setup",$params) if $params->{'format'} =~ /(CSV|PDF)/i;
 	}
 
 =encoding utf8
