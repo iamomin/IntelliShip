@@ -9,28 +9,48 @@
 	<p>Valid file formats are plain text/csv and Zip compressed files. Files compressed in Windows .EXE format are not allowed.</p>
 </div>
 
+[% IF MESSAGE %]
+<div class="notice">[% MESSAGE %]</div>
+[% END %]
+
 <!-- <p class="validateTips"></p> -->
 
 <form id="frm_upload_order" enctype="multipart/form-data" method="post" action="/customer/uploadorder">
-
+	<input type="hidden" name="do" id="do" value="upload"/> 
 	<table class="center_app">
 		<tr>
 			<td><label for="orderfile" class="float_right">Order File :</label></td>
-			<td><input type="file" class="button" name="orderfile" id="orderfile" size="35"></td>
+			<td><input type="file" class="button" name="orderfile" id="orderfile" size="35"/></td>
 		</tr>
 	</table>
-	<center><input type="submit" class="button" value="Upload File"/></center>
+	<center><input type="submit" class="button" id="submit" value="Upload File"/></center>
 </form>
+
+[% IF directory_file_list %]
+<h3>Server Order Files</h3>
+	<table>
+	[% FOREACH list IN directory_file_list %]
+		<tr><th>[% list.caption %]</th></tr>
+		[% FOREACH item IN list.items %]
+		<tr><td>[% item %]</td></tr>
+		[% END %]
+	[% END %]
+	</table>
+[% END %]
 
 <script>
 
-$(document).ready(function(){
+$(document).ready(function() {
+	$("#submit").val("Upload File");
+	$("#submit").attr("disabled", false);
 
 	var requireHash = {
 			orderfile : { minlength: 1 , description: "Please select file to be uploaded" },
 			};
 
 	$("#frm_upload_order").submit(function() {
+		$("#submit").val("Please wait...");
+		$("#submit").attr("disabled", true);
 		return validateForm(requireHash);
 		});
 	});

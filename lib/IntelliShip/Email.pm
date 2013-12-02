@@ -108,24 +108,24 @@ sub send
 		$from = $from_address;
 		}
 
-	#print "\n From   : " . $from;
-	#print "\n To     : " . $to_list;
-	#print "\n CC     : " . $cc_list if $cc_list;
-	#print "\n BCC    : " . $bcc_list if $bcc_list;
-	#print "\n Subject: " . $self->subject;
-	#print "\n Body   : \n" . $self->body;
+	#print STDERR "\n From   : " . $from;
+	#print STDERR "\n To     : " . $to_list;
+	#print STDERR "\n CC     : " . $cc_list if $cc_list;
+	#print STDERR "\n BCC    : " . $bcc_list if $bcc_list;
+	#print STDERR "\n Subject: " . $self->subject;
+	#print STDERR "\n Body   : \n" . $self->body;
 	#return;
 
 	if (IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT')
 		{
 		if ($self->allow_send_from_dev)
 			{
-			$to_list  = 'imranm@alohatechnology.com';
-			$cc_list  = 'tsharp@engagetechnology.com';
+			#$to_list  = 'imranm@alohatechnology.com';
+			#$cc_list  = 'tsharp@engagetechnology.com';
 			}
 		else
 			{
-			return 1;
+			#return 1;
 			}
 		}
 
@@ -178,32 +178,6 @@ sub send
 		}
 
 	return 1;
-	}
-
-sub set_company_template
-	{
-	my $self = shift;
-
-	my $body = $self->body;
-	$self->body('');
-
-	$self->from_address('No_REPLY@engagetechnology.com');
-	$self->from_name('IntelliShip Admin');
-	$self->content_type('text/html');
-	$self->add_line('<!DOCTYPE HTML>');
-	$self->add_line('<html>');
-	$self->add_line('<body>');
-	$self->add_line('<table width=90% align=center bgcolor=#9f9f9f cellpadding=10><tr><td>');
-	$self->add_line('<table width=100% align=center bgcolor=#ffffff cellpadding=10><tr><td>');
-	$self->add_line('<img src="#" vspace=5 hspace=10>');
-	$self->add_line('<pre><span style="font-size:11px">');
-	$self->add_line('');
-	$self->add_line($body);
-	$self->add_line('');
-	$self->add_line('</span></pre>');
-	$self->add_line('</td></tr></table>');
-	$self->add_line('</td></tr></table>');
-	$self->add_line('</body></html>');
 	}
 
 __PACKAGE__->meta()->make_immutable();

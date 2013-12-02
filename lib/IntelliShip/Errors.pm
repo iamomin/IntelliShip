@@ -36,14 +36,9 @@ sub add_error
 sub print_errors
 	{
 	my $self = shift;
-	my $type = shift; ### HTML, COMMENTS, TEXT
+	my $type = shift || "COMMENTS"; ### HTML, COMMENTS, TEXT
 
-	my $errors_output;
-
-	if (!$type)
-		{
-		$type = "COMMENTS";
-		}
+	my $errors_output = "";
 
 	if ($self->errors)
 		{

@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<form id="login" name="login" method="post" action="/customer/login">
-			<h1>Log In</h1>
+			<h1>IntelliShip Log In</h1>
 			<fieldset id="message">
 				&nbsp;[% IF error %] [% error %] [% END %]
 			</fieldset>

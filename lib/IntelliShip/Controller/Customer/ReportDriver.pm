@@ -401,6 +401,93 @@ sub generate_summary_service_report
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
+	my $carriers;
+	unless ($params->{'carriers'} =~ /all/i)
+		{
+		$carriers= (ref $params->{'carriers'} eq 'ARRAY' ? $params->{'carriers'} : [$params->{'carriers'}]);
+		}
+
+	my $start_date = IntelliShip::DateUtils->get_db_format_date($params->{'startdate'});
+	my $stop_date  = IntelliShip::DateUtils->get_db_format_date($params->{'enddate'});
+
+	$c->log->debug("Filter Criteria, start_date: " . $start_date .
+					", stop_date: " . $stop_date .
+					", customerid: " . $Customer->customerid .
+					", Carriers: " . Dumper($params->{'carriers'}));
+
+	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
+
+	$report_heading_loop = [
+				{name => 'shipment id'},
+				{name => 'carrier'},
+				{name => 'service'},
+				{name => 'total charge'},
+				{name => 'total weight'},
+			];
+
+
+	my $and_customerid_sql = " AND co.customerid = '" . $Customer->customerid . "'";
+	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
+	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
+
+	my $and_status_id_sql = $self->get_co_status_sql;
+	my $and_carrier_sql = $self->get_carrier_sql;
+
+	my $WHERE =
+			$and_customerid_sql .
+			$and_start_date_sql .
+			$and_stop_date_sql .
+			$and_carrier_sql .
+			$and_status_id_sql;
+
+	$WHERE =~ s/^\ *AND//;
+	$WHERE = " WHERE " . $WHERE if $WHERE;
+
+	my $report_SQL = "
+		SELECT
+			sh.shipmentid,
+			SUM(sc.chargeamount) AS total_chargeamount,
+			SUM(ppd.weight) AS total_weight
+		FROM
+			shipment sh
+			INNER JOIN co ON co.coid = sh.coid
+			INNER JOIN shipmentcharge sc ON sc.shipmentid = sh.shipmentid
+			INNER JOIN packprodata ppd ON ppd.ownerid = sh.shipmentid
+				AND ppd.ownertypeid = 2000
+				AND ppd.datatypeid = 1000
+		$WHERE
+		GROUP BY
+			sh.shipmentid
+		ORDER BY
+			3,2,1
+	";
+
+	$c->log->debug("SUMMARY SERVICE REPORT SQL: \n" . $report_SQL);
+
+	my $report_sth = $c->model('MyDBI')->select($report_SQL);
+
+	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
+
+	for (my $row=0; $row < $report_sth->numrows; $row++)
+		{
+		my $row_data = $report_sth->fetchrow($row);
+
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $row_data->{shipmentid} });
+
+		my $report_output_column_loop = [
+				{ value => $row_data->{'shipmentid'} },
+				{ value => $Shipment->carrier },
+				{ value => $Shipment->service },
+				{ value => $row_data->{'total_chargeamount'} },
+				{ value => $row_data->{'total_weight'} },
+			];
+
+		push(@$report_output_row_loop, $report_output_column_loop);
+		}
+
+	my $filter_criteria_loop = $self->get_filter_details($WHERE);
+
+	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
 	}
 
 sub generate_eod_report

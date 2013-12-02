@@ -3,6 +3,7 @@ package IntelliShip::Utils;
 use strict;
 use bignum;
 use XML::Simple;
+use Email::Valid;
 
 =pod
 
@@ -227,6 +228,13 @@ sub check_for_directory
 		}
 
 	return $qualified_location;
+	}
+
+sub is_valid_email
+	{
+	my $self = shift;
+	my $email = shift;
+	return Email::Valid->address($email);
 	}
 
 1;
