@@ -592,34 +592,48 @@ sub get_select_list
 sub download :Private
 	{
 	my $self = shift;
-	my $file = shift;
-	my $directory = shift;
 
 	my $c = $self->context;
 
-	$c->log->debug('DOWNLOAD FILE' . $file . ', FROM DIR: ' . $directory);
+	my $file_path = $c->stash->{FILE};
 
-	my $file_path = $directory .'/' . $file;
+	$c->log->debug('DOWNLOAD FILE' . $file_path);
+
+	my $file = (split(/\//, $file_path))[-1];
 
 	my @file_parts = split(/\./,$file);
 	my $File_extension = pop @file_parts;
 	my $File_name = $file_parts[0] . '.' . $File_extension if @file_parts;
 	$File_name =~ s/\s+//g;
 
-	# create an IO::File for Catalyst
-	my $FH = new IO::File;
-	open $FH, $File_name;
-	binmode $FH;
-
-	my $data;
-	$data .= $_ while <$FH>;
-
 	# output header
 	$c->response->content_type('text/' . $File_extension);
-	$c->response->header(Content_Disposition => 'attachment;filename=' . $File_name);
+	$c->response->header('Content-Disposition' => 'attachment;filename="' . $File_name . '"');
+
+	# create an IO::File for Catalyst
+	my $FH = new IO::File;
+	open($FH, $file_path) or return $c->log->debug('ERROR OPENING FILE: ' . $!);
 
 	# output file data
-	$c->response->body($data);
+	$c->response->body($FH);
+	}
+
+sub set_company_template
+	{
+	my $self = shift;
+	my $Email = shift;
+
+	return unless $Email;
+
+	my $c = $self->context;
+
+	$c->stash->{email_content} = $Email->body;
+	$Email->body($c->forward($c->view('Email'), "render", [ $c->stash->{template} ]));
+	$c->stash->{email_content} = undef;
+
+	$Email->content_type('text/html');
+	$Email->from_name('IntelliShip Admin') unless $Email->from_name;
+	$Email->from_address('No_REPLY@engagetechnology.com') unless $Email->from_address;
 	}
 
 =encoding utf8

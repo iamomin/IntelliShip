@@ -3,6 +3,7 @@ use Moose;
 use Data::Dumper;
 use namespace::autoclean;
 use IntelliShip::Utils;
+use IntelliShip::Email;
 use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
 use Spreadsheet::WriteExcel;
@@ -31,10 +32,11 @@ sub index :Path :Args(0)
 sub setup :Local
 	{
 	my ( $self, $c ) = @_;
-	my $params = $c->req->params;
 
+	$self->set_report_title;
+
+	$c->stash($c->req->params);
 	$c->stash->{report_setup} = 1;
-	$c->stash->{report_name} = $params->{'report'};
 	$c->stash->{template} = "templates/customer/report.tt";
 	}
 
@@ -43,6 +45,15 @@ sub run :Local
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	$self->set_report_title;
+
+	if ($params->{'toemail'} and !IntelliShip::Utils->is_valid_email($params->{'toemail'}))
+		{
+		$c->stash->{error} = "Invalid email address";
+		$c->detach("setup",$params);
+		return;
+		}
 
 	my $ReportDriver = IntelliShip::Controller::Customer::ReportDriver->new;
 	$ReportDriver->context($self->context);
@@ -53,23 +64,31 @@ sub run :Local
 
 	if ($ReportDriver->has_errors)
 		{
-		$c->log->debug('Error ' . Dumper $ReportDriver->error);
-		$c->detach("index",$params);
+		$c->log->debug('Error ' . Dumper $ReportDriver->print_errors('TEXT'));
+		$c->stash->{error} = $ReportDriver->errors->[0];
+		$c->detach("setup",$params);
+		return;
 		}
 
 	$c->stash->{filter_criteria_loop} = $filter_criteria_loop;
 	$c->stash->{report_heading_loop} = $report_heading_loop;
+	$c->stash->{column_count} = scalar @$report_heading_loop;
 
 	if (scalar @$report_output_row_loop > 0)
 		{
 		$c->stash->{report_output_row_loop} = $report_output_row_loop;
 		}
 
-	my $report_name = $params->{'report'};
-	$report_name =~ s/\_/\ /g;
-	$c->stash->{report_name} = $report_name;
-
 	$self->format_report;
+
+	if ($params->{'toemail'})
+		{
+		$self->email_report;
+		}
+	elsif ($params->{'format'} =~ /(CSV|PDF)/i)
+		{
+		$self->download($c->stash->{FILE});
+		}
 	}
 
 sub format_report
@@ -129,16 +148,17 @@ sub format_CSV
 	my $report_heading_loop = $c->stash->{report_heading_loop};
 
 	# Write a formatted and unformatted string, row and column notation.
-	my ($col,$row)=(0,1);
+	my ($col,$row)=(0,0);
+
+	my $format = $workbook->add_format(border  => 0, valign  => 'vcenter', align   => 'left', bold => 1);
 
 	# Report Title
-	my $format = $workbook->add_format(border  => 0, valign  => 'vcenter', align   => 'left');
-	$format->set_bold();
-	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_name}, $format);
+	$row++;
+	$worksheet->merge_range("A$row:M$row", "Date: " . IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-')), $format);
 
 	# Report Date
 	$row++;
-	$worksheet->merge_range("A$row:M$row", "Date: " . IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-')), $format);
+	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_name}, $format);
 
 	# Report header row format
 	$format = $workbook->add_format(); # Add a format
@@ -171,12 +191,61 @@ sub format_CSV
 		$c->log->debug("Error closing file: $!");
 		}
 
-	$self->download($EXCEL_file,$REPORT_dir);
+	$c->stash->{FILE} = $REPORT_dir . '/' . $EXCEL_file;
 	}
 
 sub format_PDF
 	{
 	my $self = shift;
+	my $c = $self->context;
+	$c->stash->{MESSAGE} = "PDF formatting is under construction";
+	$c->detach("setup",$c->req->params);
+	}
+
+sub set_report_title
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $report_title = $c->req->params->{'report'};
+	$report_title =~ s/\_/\ /g;
+	$c->stash->{report_title} = $report_title;
+	}
+
+sub email_report
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("Sending Email To: " . $params->{'toemail'});
+
+	$c->stash->{template} = "templates/customer/report.tt";
+
+	my $Email = IntelliShip::Email->new;
+	$Email->add_to($params->{'toemail'});
+	$Email->subject('IntelliShip Report');
+
+	if ($params->{'format'} eq 'HTML')
+		{
+		$Email->body($c->forward($c->view('Email'), "render", [ $c->stash->{template} ]));
+		}
+	elsif ($params->{'format'} =~ /(CSV|PDF)/i)
+		{
+		$Email->attach($c->stash->{FILE}) if $c->stash->{FILE};
+		$Email->add_line('<h3>' . uc $c->stash->{report_title} . ' REPORT</h3>');
+		$Email->add_line('<p>');
+		$Email->add_line('Please find attached report');
+		$Email->add_line('</p>');
+
+		$c->detach("setup",$params);
+		}
+
+	$self->set_company_template($Email);
+
+	if ($Email->send)
+		{
+		$c->stash->{MESSAGE} = "Email successfully sent to " . $c->req->params->{'toemail'} . "!..";
+		}
 	}
 
 =encoding utf8

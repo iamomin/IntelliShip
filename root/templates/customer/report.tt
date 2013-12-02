@@ -2,137 +2,138 @@
 [% # DISPLAY REPORTS %]
 [% #---------------------------------------------------------- %]
 [% IF report_list %]
-<h2>Reports</h2>
-<div ID="list">
-	<ul>
-		[% FOREACH item IN report_list %]
-		<li><a href="[% item.url %]">[% item.name %]</a></li>
-		[% END %]
-	</ul>
-</div>
+	<h2>Reports</h2>
+	<div ID="list">
+		<ul>
+			[% FOREACH item IN report_list %]
+			<li><a href="[% item.url %]">[% item.name %]</a></li>
+			[% END %]
+		</ul>
+	</div>
 [% END %]
 
 [% #---------------------------------------------------------- %]
 [% # REPORT SETUP START %]
 [% #---------------------------------------------------------- %]
 [% IF report_setup %]
-<h2>[% report_name %] REPORT SETUP</h2>
+	<h2>[% report_title %] REPORT SETUP</h2>
 
-[% IF MESSAGE %]
-	<div class="notice">[% MESSAGE %]</div>
-[% END %]
-
-<form id="frm_report" method="post" action="/customer/report/run">
-<input type="hidden" id="report" name="report" value="[% report_name %]" />
-<table class="center_app" >
-	<tr> 
-		<td colspan=2>&nbsp;</td>
-	</tr>
-
-	<tr>
-		<td ><label for="startdate" class="float_right">Start Date:</label></td>
-		<td ><input type="text" name="startdate" id="startdate" readonly/></td>
-	</tr>
-	<tr>
-		<td><label for="enddate" class="float_right">End Date:</label></td>
-		<td><input type="text" name="enddate" id="enddate" readonly/></td>
-	</tr>
-	<tr>
-		<td><label class="float_right">Carrier:</label></td>
-		<td style="min-width: 380px"><table><tr><td>
-			<input type="checkbox" id="all_carriers" name="carriers" value="all" checked/>&nbsp;<label for="all_carriers">All</label>
-			</td></tr></table>
-			<div id="carriersDiv"></div>
-		</td>
-	</tr>
-
-	[% IF report_name == 'MANIFEST' || report_name == 'SUMMARY_SERVICE' %]
-	<tr>
-		<td><label class="float_right">Status:</label></td>
-		<td style="min-width: 380px"><table><tr><td>
-			<input type="checkbox" id="all_costatus" name="costatus" value="all" checked/>&nbsp;<label for="all_costatus">All</label>
-			</td></tr></table>
-			<div id="costatusDiv"></div>
-		</td>
-	</tr>
+	[% IF MESSAGE %]
+		<div class="notice">[% MESSAGE %]</div>
 	[% END %]
 
-	<tr>
-		<td><label for="format" class="float_right">Report Format:</label></td>
-		<td>
-		<select name="format" id="format">
-			<option value="HTML">HTML
-			<option value="CSV">Excel
-			<option value="PDF">PDF
-		</select>
-		</td>
-	</tr>
-	<tr>
-		<td><label for="toemail" class="float_right">Email Address:</label></td>
-		<td><input type="text" class="broad_text" name="toemail" id="toemail"/></td>
-	</tr>
-	<tr> 
-		<td>&nbsp;</td>
-	</tr>
-</table>
+	<form id="frm_report" method="post" action="/customer/report/run">
+	<input type="hidden" id="report" name="report" value="[% report %]" />
+	<table class="center_app" >
+		<tr> 
+			<td colspan=2>&nbsp;</td>
+		</tr>
 
-<center><input type="submit" class="button" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></center>
-</form>
+		<tr>
+			<td ><label for="startdate" class="float_right">Start Date:</label></td>
+			<td ><input type="text" name="startdate" id="startdate" value="[% startdate %]"/></td>
+		</tr>
+		<tr>
+			<td><label for="enddate" class="float_right">End Date:</label></td>
+			<td><input type="text" name="enddate" id="enddate" value="[% enddate %]"/></td>
+		</tr>
+		<tr>
+			<td><label class="float_right">Carrier:</label></td>
+			<td style="min-width: 380px"><table><tr><td>
+				<input type="checkbox" id="all_carriers" name="carriers" value="all" checked/>&nbsp;<label for="all_carriers">All</label>
+				</td></tr></table>
+				<div id="carriersDiv"></div>
+			</td>
+		</tr>
 
-<script>
-$("#frm_report").submit(function () {
-	if ($("#format").val() == "HTML") {
-		$("#run_report").val("Please Wait...");
-		$("#run_report").attr("disabled", true);
-		$("#back").attr("disabled", true);
-		}
-	});
+		[% IF report == 'MANIFEST' || report == 'SUMMARY_SERVICE' %]
+		<tr>
+			<td><label class="float_right">Status:</label></td>
+			<td style="min-width: 380px"><table><tr><td>
+				<input type="checkbox" id="all_costatus" name="costatus" value="all" checked/>&nbsp;<label for="all_costatus">All</label>
+				</td></tr></table>
+				<div id="costatusDiv"></div>
+			</td>
+		</tr>
+		[% END %]
 
-$(document).ready(function(){
-	$("#back").attr("disabled", false);
-	$("#run_report").attr("disabled", false);
+		<tr>
+			<td><label for="format" class="float_right">Report Format:</label></td>
+			<td>
+			<select name="format" id="format">
+				<option value="HTML">HTML
+				<option value="CSV">Excel
+				<option value="PDF">PDF
+			</select>
+			</td>
+		</tr>
+		<tr>
+			<td><label for="toemail" class="float_right">Email Address:</label></td>
+			<td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
+		</tr>
+		<tr> 
+			<td>&nbsp;</td>
+		</tr>
+	</table>
 
-	var currentDate = new Date();
+	<center><input type="submit" class="button" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></center>
+	</form>
 
-	$("#startdate, #enddate").datepicker({
-		inline: true,
-		maxDate:(7),
+	<script>
+	$("#frm_report").submit(function () {
+		if ($("#format").val() == "HTML") {
+			$("#run_report").val("Please Wait...");
+			$("#run_report").attr("disabled", true);
+			$("#back").attr("disabled", true);
+			}
 		});
 
-	$("#enddate").datepicker("setDate", currentDate);
-	currentDate.setDate('1');
-	$("#startdate").datepicker("setDate", currentDate);
+	$(document).ready(function(){
+		$("#back").attr("disabled", false);
+		$("#run_report").val("Run Report");
+		$("#run_report").attr("disabled", false);
 
-	$("#all_carriers").click(function () {
-		if($("#all_carriers").is(":checked")) {
-			$("#carriersDiv").slideUp(1000);
-			} else {
-			if ($("#carriersDiv").html().length == 0)
-				send_ajax_request("carriersDiv", "HTML", "", "customer_carrier_chkbox", "", function (){
+		var currentDate = new Date();
+
+		$("#startdate, #enddate").datepicker({
+			inline: true,
+			maxDate:(7),
+			});
+
+		if ($("#enddate").val() == "") $("#enddate").datepicker("setDate", currentDate);
+		currentDate.setDate('1');
+		if ($("#startdate").val() == "") $("#startdate").datepicker("setDate", currentDate);
+
+		$("#all_carriers").click(function () {
+			if($("#all_carriers").is(":checked")) {
+				$("#carriersDiv").slideUp(1000);
+				} else {
+				if ($("#carriersDiv").html().length == 0)
+					send_ajax_request("carriersDiv", "HTML", "", "customer_carrier_chkbox", "", function (){
+						$("#carriersDiv").slideDown(1000);
+						});
+				else
 					$("#carriersDiv").slideDown(1000);
-					});
-			else
-				$("#carriersDiv").slideDown(1000);
-			}
-		});
+				}
+			});
 
-	[% IF report_name == 'MANIFEST' || report_name == 'SUMMARY_SERVICE' %]
-	$("#all_costatus").click(function () {
-		if($("#all_costatus").is(":checked")) {
-			$("#costatusDiv").slideUp(1000);
-			} else {
-			if ($("#costatusDiv").html().length == 0)
-				send_ajax_request("costatusDiv", "HTML", "", "costatus_chkbox", "", function (){
+		[% IF report == 'MANIFEST' || report == 'SUMMARY_SERVICE' %]
+		$("#all_costatus").click(function () {
+			if($("#all_costatus").is(":checked")) {
+				$("#costatusDiv").slideUp(1000);
+				} else {
+				if ($("#costatusDiv").html().length == 0)
+					send_ajax_request("costatusDiv", "HTML", "", "costatus_chkbox", "", function (){
+						$("#costatusDiv").slideDown(1000);
+						});
+				else
 					$("#costatusDiv").slideDown(1000);
-					});
-			else
-				$("#costatusDiv").slideDown(1000);
-			}
-		});
-	[% END %]
+				}
+			});
+		[% END %]
 
-	});
-</script>
+		});
+	</script>
 [% END %]
 
 [% #---------------------------------------------------------- %]
@@ -144,10 +145,10 @@ $(document).ready(function(){
 [% #---------------------------------------------------------- %]
 [% IF HTML %]
 
-<h2>[% report_name %] REPORT</h2>
+	<h2>[% report_title %] REPORT</h2>
 
-	[% UNLESS report_output_row_loop %]
-	<div class="notice">No record found.</div>
+	[% IF MESSAGE %]
+		<div class="notice">[% MESSAGE %]</div>
 	[% END %]
 
 	<div style="clear: both;">&nbsp;</div>
@@ -180,6 +181,7 @@ $(document).ready(function(){
 		</tr>
 		[% END %]
 
+	[% IF report_output_row_loop %]
 		[% FOREACH column_loop IN report_output_row_loop %]
 		<tr>
 			[% FOREACH column IN column_loop %]
@@ -189,6 +191,9 @@ $(document).ready(function(){
 			[% END %]
 		</tr>
 		[% END %]
+	[% ELSE %]
+		<tr><td colspan="[% column_count %]">No record found</td></tr>
+	[% END %]
 
 	</table>
 [% END %]
@@ -196,3 +201,6 @@ $(document).ready(function(){
 [% # HTML REPORT FORMAT %]
 [% #---------------------------------------------------------- %]
 
+[% IF email_content %]
+	[% email_content %]
+[% END %]

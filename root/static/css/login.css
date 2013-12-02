@@ -47,13 +47,11 @@ box-shadow: 10px 10px 5px #888;
 
 h1
 {
-text-shadow: 0 1px 0 rgba(255, 255, 255, .7), 0px 2px 0 rgba(0, 0, 0, .5);
-text-transform: uppercase;
 text-align: center;
 color: #666;
 margin: 0 0 20px 0;
 letter-spacing: 4px;
-font: normal 26px/1 Verdana, Helvetica;
+font: 26px/1 avenir_lt_std_55_romanregular, Verdana, Helvetica;
 position: relative;
 }
 

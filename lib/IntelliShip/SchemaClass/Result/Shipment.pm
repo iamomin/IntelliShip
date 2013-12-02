@@ -855,6 +855,39 @@ sub get_freight_charges
 	return $freight_charge;
 	}
 
+sub get_charges
+	{
+	my $self = shift;
+	my @charges = $self->shipment_charges;
+	my $charge_sum = 0;
+	$charge_sum += $_->chargeamount foreach @charges;
+	return $charge_sum;
+	}
+
+=as
+sub sum_shipment_package_value
+	{
+	my $self = shift;
+	my $value_type = shift;
+
+	my $rs = $self->resultset('Packprodata')->search(
+				{
+					ownerid => $self->shipmentid,
+					ownertypeid => 2000,
+					datatypeid => 1000,
+				},
+				{
+				   select => [ { sum => $value_type } ],
+				   as     => [ 'total' ], # remember this 'as' is for DBIx::Class::ResultSet not SQL
+				}
+			  );
+
+	my $value_sum = $rs->first->get_column('total');
+
+	return $value_sum;
+	}
+=cut
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
