@@ -252,7 +252,7 @@
 					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
 					<td>
 						[% FOREACH item IN deliverymethod_loop %]
-						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.selected %]/><label for="[% item.value %]">[% item.name %]</label>
+						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod %]/><label for="[% item.value %]">[% item.name %]</label>
 						[% END %]
 					</td>
 					</tr>
@@ -643,8 +643,6 @@ function checkCarrierServiceSection()
 	}
 
 $(document).ready(function(){
-
-	alert('we are here');
 	[% IF ordernumber %]
 		calculate_total_packages();
 		calculate_total_weight();

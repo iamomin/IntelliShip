@@ -85,7 +85,7 @@
 			<li><a href="/customer/order/quickship"> QUICK SHIP </a>
 			<li><a href="/customer/shippackages">SHIP PACKAGES</a>
 			<li><a href="/customer/batchshipping"> BATCH SHIPPING </a>
-			<li><a href="/customer/uploadorder"> UPLOAD ORDER </a>
+			<li><a href="/customer/uploadfile"> UPLOAD FILE </a>
 			<li><a href="/customer/report"> REPORTS </a>
 			<li><a href="/customer/settings"> SETTINGS </a>
 			<li><a href="/customer/logout"> LOGOUT </a>

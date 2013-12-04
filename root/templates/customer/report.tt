@@ -81,6 +81,15 @@
 
 	<script>
 	$("#frm_report").submit(function () {
+
+		var requireHash = {
+				startdate  : { date: true },
+				enddate    : { date: true },
+				toemail    : { email: false }
+				};
+
+		if (validateForm(requireHash) == false) return false;
+
 		if ($("#format").val() == "HTML") {
 			$("#run_report").val("Please Wait...");
 			$("#run_report").attr("disabled", true);

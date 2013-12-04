@@ -354,36 +354,7 @@ sub get_select_list
 	my $list_name = shift;
 
 	my $list = [];
-	if ($list_name eq 'ACTIVE_INACTIVE')
-		{
-		$list = [
-			{ name => 'Active', value => 'ACTIVE'},
-			{ name => 'Inactive', value => 'INACTIVE'},
-			];
-		}
-	elsif ($list_name eq 'YES_NO')
-		{
-		$list = [
-			{ name => 'Yes', value => 'Y'},
-			{ name => 'No', value => 'N'},
-			];
-		}
-	elsif ($list_name eq 'YES_NO_BLANK')
-		{
-		$list = [
-			{ name => '', value => ''},
-			{ name => 'Yes', value => 'Y'},
-			{ name => 'No', value => 'N'},
-			];
-		}
-	elsif ($list_name eq 'YES_NO_NUMERIC')
-		{
-		$list = [
-			{ name => 'Yes', value => '1'},
-			{ name => 'No', value => '0'},
-			];
-		}
-	elsif ($list_name eq 'COSTATUS')
+	if ($list_name eq 'COSTATUS')
 		{
 		my @records = $self->context->model('MyDBI::Costatus')->all;
 		foreach my $CoStatus (@records)
@@ -435,6 +406,131 @@ sub get_select_list
 			my $data = $sth->fetchrow($row);
 			push(@$list, { name => $data->{'carrier'}, value => $data->{'carrier'} });
 			}
+		}
+	elsif ($list_name eq 'PRODUCT_DESCRIPTION')
+		{
+		my $product_desc_rs = $self->context->model('MyDBI::Co')->search(
+			{
+			customerid => $self->customer->customerid,
+			statusid => { '<' => 5},
+			cotypeid => 1,
+			},
+			{
+			select => 'extcd',
+			distinct => 1,
+			order_by => 'extcd',
+			});
+		 while( my $obj = $product_desc_rs->next) 
+			{
+			push(@$list, { name => $obj->extcd(), value => $obj->extcd()});
+			}
+		}
+
+	elsif ($list_name eq 'DEPARTMENT')
+		{
+		my $product_desc_rs = $self->context->model('MyDBI::Co')->search(
+			{
+			customerid => $self->customer->customerid,
+			statusid => { '<' => 5},
+			cotypeid => 1,
+			},
+			{
+			select => 'department',
+			distinct => 1,
+			order_by => 'department',
+			});
+		 while( my $obj = $product_desc_rs->next) 
+			{
+			push(@$list, { name => $obj->department(), value => $obj->department()});
+			}
+		}
+	elsif ($list_name eq 'CUSTOMER_NUMBER')
+		{
+		my $product_desc_rs = $self->context->model('MyDBI::Co')->search(
+								{
+								customerid => $self->customer->customerid,
+								statusid => { '<' => 5},
+								cotypeid => 1,
+								},
+								{
+								select => 'custnum',
+								distinct => 1,
+								order_by => 'custnum',
+								});
+		 while (my $Co = $product_desc_rs->next) 
+			{
+			push(@$list, { name => $Co->custnum, value => $Co->custnum });
+			}
+		}
+	elsif ($list_name eq 'CARRIER_SERVICE')
+		{
+		my $myDBI = $self->context->model('MyDBI');
+		my $sql = "SELECT
+						DISTINCT coalesce(extcarrier,'') || ' - ' || coalesce(extservice,'') as carrierservice 
+					FROM 
+						co
+					WHERE
+						co.customerid = '" . $self->customer->customerid . "'
+					ORDER BY 
+						carrierservice";
+		my $sth = $myDBI->select($sql);
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			push(@$list, { name => $data->{'carrierservice'}, value => $data->{'carrierservice'} });
+			}
+		}
+	elsif ($list_name eq 'DESTINATION_ADDRESS')
+		{
+		my $myDBI = $self->context->model('MyDBI');
+		my $sql = "
+			SELECT
+				DISTINCT
+				coalesce(addressname,'') || ':' || coalesce(address1,'') || ':' || coalesce(address2,'') || ':' || coalesce(city,'') || ':' || coalesce(state,'') || ':' || coalesce (zip,'') as address,
+				coalesce(addressname,'') || ':' || coalesce(address1,'') || ':' || coalesce(address2,'') || ':' || coalesce(city,'') || ':' || coalesce(state,'') || ':' || coalesce (zip,'')
+			FROM
+				co INNER JOIN address a ON a.addressid = co.addressid
+			WHERE
+				co.customerid = '" . $self->customer->customerid . "'
+				AND co.statusid < 5
+				AND co.cotypeid = 1
+			ORDER BY
+				address";
+		my $sth = $myDBI->select($sql);
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			push(@$list, { name => $data->{'address'}, value => $data->{'address'} });
+			}
+		}
+	elsif ($list_name eq 'ACTIVE_INACTIVE')
+		{
+		$list = [
+			{ name => 'Active', value => 'ACTIVE'},
+			{ name => 'Inactive', value => 'INACTIVE'},
+			];
+		}
+	elsif ($list_name eq 'YES_NO')
+		{
+		$list = [
+			{ name => 'Yes', value => 'Y'},
+			{ name => 'No', value => 'N'},
+			];
+		}
+	elsif ($list_name eq 'YES_NO_BLANK')
+		{
+		$list = [
+			{ name => '', value => ''},
+			{ name => 'Yes', value => 'Y'},
+			{ name => 'No', value => 'N'},
+			];
+		}
+	elsif ($list_name eq 'YES_NO_NUMERIC')
+		{
+		$list = [
+			{ name => 'Yes', value => '1'},
+			{ name => 'No', value => '0'},
+			];
 		}
 	elsif ($list_name eq 'UNIT_OF_MEASURE')
 		{
@@ -580,9 +676,24 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => 'prepaid' , name => 'Prepaid' , selected => 'checked' },
+			{ value => 'prepaid' , name => 'Prepaid' },
 			{ value => 'collect' , name => 'Collect' },
 			{ value => '3rdparty' , name => '3rd Party' },
+			];
+		}
+	elsif ($list_name eq 'RECORDS_PER_PAGE')
+		{
+		$list = [
+			{ value =>   0 , name => 'All' },
+			{ value =>  10 , name => ' 10' },
+			{ value =>  50 , name => ' 50' },
+			{ value => 100 , name => '100' },
+			{ value => 150 , name => '150' },
+			{ value => 200 , name => '200' },
+			{ value => 250 , name => '250' },
+			{ value => 300 , name => '300' },
+			{ value => 450 , name => '450' },
+			{ value => 500 , name => '500' },
 			];
 		}
 
@@ -634,6 +745,22 @@ sub set_company_template
 	$Email->content_type('text/html');
 	$Email->from_name('IntelliShip Admin') unless $Email->from_name;
 	$Email->from_address('No_REPLY@engagetechnology.com') unless $Email->from_address;
+	}
+
+sub spawn_batches
+	{
+	my $self = shift;
+	my $matching_ids = shift;
+	my $batch_size = shift || @$matching_ids;
+
+	#$Template::Directive::WHILE_MAX = scalar @$matching_ids if $matching_ids and @$matching_ids > 1000 and !$batch_size;
+
+	my $batches = [];
+	push @$batches, [ splice @$matching_ids, 0, $batch_size ] while @$matching_ids;
+
+	#$Template::Directive::WHILE_MAX = 1000;
+
+	return $batches;
 	}
 
 =encoding utf8

@@ -34,6 +34,7 @@ sub setup :Private
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	$c->stash->{tocountry} = "US";
+	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash->{package_detail_row_count} = "1";
 
 	$c->stash(template => "templates/customer/order.tt");

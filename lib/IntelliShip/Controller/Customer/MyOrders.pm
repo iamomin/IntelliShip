@@ -35,22 +35,46 @@ sub index :Path :Args(0) {
 	else
 		{
 		$self->display_my_orders;
-		$c->stash(template => "templates/customer/my-orders.tt");
 		}
 	}
 
-sub display_my_orders
+my $TITLE = {
+	''        => 'Not Shipped',
+	'shipped' => 'Recently Shipped',
+	'voided'  => 'Recently Voided',
+	};
+
+sub display_my_orders :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$self->populate_my_order_list;
+
+	$c->stash->{view_list} = [
+			{ name => 'Not Shipped', value => '' },
+			{ name => 'Recently Shipped', value => 'shipped' },
+			{ name => 'Recently Voided', value => 'voided' },
+			];
+
+	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
+
+	$c->stash(template => "templates/customer/my-orders.tt");
+	}
+
+sub populate_my_order_list
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	my $view = $params->{'view'} || "";
 	my $SQL;
-	if ($params->{'view'} eq 'shipped')
+	if ($view eq 'shipped')
 		{
 		$SQL = $self->get_shipped_sql;
 		}
-	elsif ($params->{'view'} eq 'voided')
+	elsif ($view eq 'voided')
 		{
 		$SQL = $self->get_voided_sql;
 		}
@@ -59,7 +83,7 @@ sub display_my_orders
 		$SQL = $self->get_not_shipped_sql; ## Not shipped / Open orders
 		}
 
-	#$c->log->debug("MY ORDER SQL : " . $SQL);
+	$c->log->debug("MY ORDER SQL : " . $SQL);
 
 	my $myDBI = $c->model("MyDBI");
 	my $sth = $myDBI->select($SQL);
@@ -70,32 +94,48 @@ sub display_my_orders
 	for (my $row=0; $row < $sth->numrows; $row++)
 		{
 		my $row_data = $sth->fetchrow($row);
-
 		push(@$myorder_list, $row_data);
 		}
 
-	my $title = {
-		''        => 'Not Shipped',
-		'shipped' => 'Recently Shipped',
-		'voided'  => 'Recently Voided',
-		};
+	my $my_orders_batches = $self->process_pagination($myorder_list);
+	my $first_batch = $my_orders_batches->[0];
 
-	$c->stash->{refresh_interval_sec} = 60;
-	$c->stash->{list_title} = $title->{$params->{'view'}};
-	$c->stash->{myorder_list_count} = @$myorder_list;
+	$myorder_list = [splice @$myorder_list, 0, scalar @$first_batch] if $first_batch;
+
 	$c->stash->{myorder_list} = $myorder_list;
+	$c->stash->{myorder_list_count} = @$myorder_list;
+	$c->stash->{myorder_batches} = $my_orders_batches;
 
-	$c->stash->{view} = $params->{'view'};
-	$c->stash->{view_list} = [
-			{ name => 'Not Shipped', value => ''},
-			{ name => 'Recently Shipped', value => 'shipped'},
-			{ name => 'Recently Voided', value => 'voided'},
-			];
-
+	$c->stash($params);
 	$c->stash->{MY_ORDERS} = 1;
+	$c->stash->{refresh_interval_sec} = 60;
+	$c->stash->{list_title} = $TITLE->{$params->{'view'}} if $params->{'view'};
 	}
 
-sub get_not_shipped_sql
+sub process_pagination
+	{
+	my $self = shift;
+	my $my_orders = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("PROCESS PAGINATION");
+
+	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
+	$c->stash->{records_per_page} = $batch_size;
+
+	my @matching_ids = map { $_->{coid} } @$my_orders;
+	my $my_orders_batch = $self->spawn_batches(\@matching_ids,$batch_size);
+
+	$c->log->debug("TOTAL PAGES: " . @$my_orders_batch);
+	#$c->log->debug("TOTAL PAGES: " . Dumper $my_orders_batch);
+
+	$c->stash->{no_batches} = @$my_orders_batch == 0;
+
+	return $my_orders_batch;
+	}
+
+sub get_not_shipped_sql :Private
 	{
 	my $self = shift;
 
@@ -104,10 +144,11 @@ sub get_not_shipped_sql
 
 	my $CustomerID = $self->customer->customerid;
 
-	my $COTypeIDSQL = $self->get_co_type_sql;
-	my $AllowedExtCustNumSQL = $self->get_allowed_ext_cust_num_sql;
+	my $and_coid_in_sql = $self->get_coid_in_sql;
+	my $and_COTypeID_SQL = $self->get_co_type_sql;
+	my $and_AllowedExtCustNum_SQL = $self->get_allowed_ext_cust_num_sql;
 
-	my $SQL = "
+	my $SQL_1 = "
 		SELECT
 		co.coid,
 		co.ordernumber,
@@ -144,36 +185,26 @@ sub get_not_shipped_sql
 		'' as dateshipped,
 			co.extcustnum
 	 FROM
-		customer cu,
-		co,
-		address oa,
-		address da
+		co
+		INNER JOIN customer cu ON cu.customerid = co.customerid AND cu.customerid = '$CustomerID'
+		INNER JOIN address oa ON cu.addressid = oa.addressid
+		INNER JOIN address da ON co.addressid = da.addressid
 	 WHERE
-		cu.customerid = co.customerid
-		AND cu.addressid = oa.addressid
-		AND co.addressid = da.addressid
-		AND cu.customerid = '$CustomerID'
-		AND co.statusid in (1,50,300,999,100)
+		co.statusid in (1,50,300,999,100)
+		$and_coid_in_sql
 		AND keep = 0
 		AND (isdropship is null or isdropship = 0)
+		$and_COTypeID_SQL
+		$and_AllowedExtCustNum_SQL
 	";
 
-	# Add cotypeid sql
-	$SQL .= $COTypeIDSQL;
-
-	if ($params->{'view'} eq 'openorders')
+	if ($params->{'view'} and $params->{'view'} eq 'openorders')
 		{
-		$SQL .= " AND (daterouted is not null or datepacked is not null) ";
-		}
-
-	if ($params->{'restrictedcontact'} and $params->{'restrictedcontact'} > 0)
-		{
-		$SQL .= " AND upper(co.extcustnum) in " . $AllowedExtCustNumSQL;
+		$SQL_1 .= " AND (daterouted is not null or datepacked is not null) ";
 		}
 
 	# add drop ship sql
-	$SQL .= "
-		UNION
+	my $SQL_2 = "
 	 	SELECT
 		co.coid,
 		co.ordernumber,
@@ -198,37 +229,34 @@ sub get_not_shipped_sql
 		'' as dateshipped,
 			co.extcustnum
 	 FROM
-		customer cu,
-		co,
-		address oa,
-		address da
+		co
+		INNER JOIN customer cu ON cu.customerid = co.customerid AND cu.customerid = '$CustomerID'
+		INNER JOIN address oa ON cu.addressid = oa.addressid
+		INNER JOIN address da ON co.addressid = da.addressid
 	 WHERE
-		cu.customerid = co.customerid
-		AND co.dropaddressid = oa.addressid
-		AND co.addressid = da.addressid
-		AND cu.customerid = '$CustomerID'
-		AND co.statusid in (1,50,300,999,100)
+		co.statusid in (1,50,300,999,100)
+		$and_coid_in_sql
 		AND keep = 0
 		AND co.isdropship = 1
+		$and_COTypeID_SQL
+		$and_AllowedExtCustNum_SQL
 	";
 
-	# Add cotypeid sql
-	$SQL .= $COTypeIDSQL;
-
-	if ($params->{'view'} eq 'openorders')
+	if ($params->{'view'} and $params->{'view'} eq 'openorders')
 		{
-		$SQL .= " AND (daterouted is not null or datepacked is not null) ";
+		$SQL_2 .= " AND (daterouted is not null or datepacked is not null) ";
 		}
 
-	if ($params->{'restrictedcontact'} and $params->{'restrictedcontact'} > 0)
-		{
-		$SQL .= " AND upper(co.extcustnum) in " . $AllowedExtCustNumSQL;
-		}
+	my $SQL = "
+	$SQL_1
+	UNION
+	$SQL_2
+	";
 
 	return $SQL;
 	}
 
-sub get_shipped_sql
+sub get_shipped_sql :Private
 	{
 	my $self = shift;
 
@@ -238,9 +266,8 @@ sub get_shipped_sql
 	my $Contact = $self->contact;
 
 	my $CustomerID = $Customer->customerid;
-
-	my $COTypeIDSQL = $self->get_co_type_sql;
-	my $AllowedExtCustNumSQL = $self->get_allowed_ext_cust_num_sql;
+	my $and_coid_in_sql = $self->get_coid_in_sql;
+	my $and_AllowedExtCustNum_SQL = $self->get_allowed_ext_cust_num_sql;
 
 	my $SQL = "
 		SELECT
@@ -266,29 +293,22 @@ sub get_shipped_sql
 			s.podname,
 			to_char(s.datedelivered,'MM/DD/YY') as datedelivered
 		FROM
-			shipment s,
-			co,
-			address oa,
-			address da
+			shipment s
+			INNER JOIN co ON s.coid = co.coid AND co.customerid = '$CustomerID'
+			INNER JOIN address oa ON oa.addressid = s.addressidorigin
+			INNER JOIN address da ON da.addressid = s.addressiddestin
 		WHERE
-			s.coid = co.coid
-			AND s.addressidorigin = oa.addressid
-			AND s.addressiddestin = da.addressid
-			AND co.customerid = '$CustomerID'
+			s.statusid IN (10,100)
+			$and_coid_in_sql
 			AND s.dateshipped IS NOT NULL
 			AND (s.dateshipped - interval '5 days') <= date('now')
-			AND s.statusid in (10,100)
+			$and_AllowedExtCustNum_SQL
 	";
-
-	if ($Contact->is_restricted)
-		{
-		$SQL .= " AND upper(s.custnum) in " . $AllowedExtCustNumSQL;
-		}
 
 	return $SQL;
 	}
 
-sub get_voided_sql
+sub get_voided_sql :Private
 	{
 	my $self = shift;
 
@@ -297,12 +317,12 @@ sub get_voided_sql
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
 
-	my $COTypeIDSQL = $self->get_co_type_sql;
-	my $AllowedExtCustNumSQL = $self->get_allowed_ext_cust_num_sql;
-
 	my $CustomerID = $Customer->customerid;
+	my $and_coid_in_sql = $self->get_coid_in_sql;
+	my $and_COTypeID_SQL = $self->get_co_type_sql;
+	my $and_AllowedExtCustNum_SQL = $self->get_allowed_ext_cust_num_sql;
 
-	my $SQL = "
+	my $SQL_1 = "
 		SELECT
 			co.coid,
 			co.ordernumber,
@@ -326,30 +346,20 @@ sub get_voided_sql
 			s.podname,
 			to_char(s.datedelivered,'MM/DD/YY') as datedelivered
 		FROM
-			shipment s,
-			co,
-			address oa,
-			address da
+			shipment s
+			INNER JOIN co ON co.coid = s.coid AND co.customerid = '$CustomerID'
+			INNER JOIN address oa ON oa.addressid = s.addressidorigin
+			INNER JOIN address da ON da.addressid = s.addressiddestin
 		WHERE
-			s.coid = co.coid
-			AND s.addressidorigin = oa.addressid
-			AND s.addressiddestin = da.addressid
-			AND co.customerid = '$CustomerID'
+			s.statusid IN (5,6,7)
+			$and_coid_in_sql
 			AND s.dateshipped IS NOT NULL
 			AND s.dateshipped >= (date('now') - interval '5 days')
-			AND s.statusid in (5,6,7)
+			$and_COTypeID_SQL
+			$and_AllowedExtCustNum_SQL
 	";
 
-	# Add cotypeid sql
-	$SQL .= $COTypeIDSQL;
-
-	if ($Contact->is_restricted)
-		{
-		$SQL .= " AND upper(s.custnum) in " . $AllowedExtCustNumSQL;
-		}
-
-	$SQL .= "
-		UNION
+	my $SQL_2 = "
 		SELECT
 			co.coid,
 			co.ordernumber,
@@ -385,29 +395,19 @@ sub get_voided_sql
 			'' as podname,
 			'' as datedelivered
 		FROM
-			customer cu,
-			co,
-			address oa,
-			address da
+			co
+			INNER JOIN customer cu ON cu.customerid = co.customerid AND cu.customerid = '$CustomerID'
+			INNER JOIN address oa ON cu.addressid = oa.addressid
+			INNER JOIN address da ON co.addressid = da.addressid
 		WHERE
-			cu.customerid = co.customerid
-			AND cu.addressid = oa.addressid
-			AND co.addressid = da.addressid
-			AND cu.customerid = '$CustomerID'
-			AND co.statusid = 200
+			co.statusid = 200
+			$and_coid_in_sql
 			AND (isdropship is null or isdropship = 0)
+			$and_COTypeID_SQL
+			$and_AllowedExtCustNum_SQL
 	";
 
-	# Add cotypeid sql
-	$SQL .= $COTypeIDSQL;
-
-	if ($Contact->is_restricted)
-		{
-		$SQL .= " AND upper(co.extcustnum) in " . $AllowedExtCustNumSQL;
-		}
-
-	$SQL .= "
-		UNION
+	my $SQL_3 = "
 		SELECT
 			co.coid,
 			co.ordernumber,
@@ -431,26 +431,25 @@ sub get_voided_sql
 			'' as podname,
 			'' as datedelivered
 		FROM
-			customer cu,
-			co,
-			address oa,
-			address da
+			co
+			INNER JOIN customer cu ON cu.customerid = co.customerid AND cu.customerid = '$CustomerID'
+			INNER JOIN address oa ON cu.addressid = oa.addressid
+			INNER JOIN address da ON co.addressid = da.addressid
 		WHERE
-			cu.customerid = co.customerid
-			AND co.dropaddressid = oa.addressid
-			AND co.addressid = da.addressid
-			AND cu.customerid = '$CustomerID'
-			AND co.statusid = 200
+			co.statusid = 200
+			$and_coid_in_sql
 			AND co.isdropship = 1
+			$and_COTypeID_SQL
+			$and_AllowedExtCustNum_SQL
 	";
 
-	# Add cotypeid sql
-	$SQL .= $COTypeIDSQL;
-
-	if ($Contact->is_restricted)
-		{
-		$SQL .= " AND upper(co.extcustnum) in " . $AllowedExtCustNumSQL;
-		}
+	my $SQL = "
+	$SQL_1
+	UNION
+	$SQL_2
+	UNION
+	$SQL_3
+	";
 
 	return $SQL;
 	}
@@ -463,7 +462,14 @@ sub get_co_type_sql :Private
 	my $login_level = $Contact->get_contact_data_value('loginlevel');
 	my $COType = ($login_level == 35 or $login_level == 40) ? 2 : 1;
 
-	return " AND cotypeid = " . $COType;
+	return "AND cotypeid = " . $COType;
+	}
+
+sub get_coid_in_sql
+	{
+	my $self = shift;
+	my $params = $self->context->req->params;
+	return ($params->{'coids'} ? "AND co.coid IN ('" . join("','", split(',', $params->{'coids'})) . "') " : "") ;
 	}
 
 sub get_allowed_ext_cust_num_sql :Private
@@ -471,14 +477,27 @@ sub get_allowed_ext_cust_num_sql :Private
 	my $self = shift;
 	my $Contact = $self->contact;
 	my $arr = $Contact->get_restricted_values('extcustnum') if $Contact->is_restricted;
-	return ($arr ? " AND upper(co.extcustnum) IN (" . join(',', @$arr) . ")" : '');
+	return ($arr ? "AND upper(co.extcustnum) IN (" . join(',', @$arr) . ")" : '');
 	}
 
 sub review_order :Private
 	{
 	my $self = shift;
-
 	$self->populate_order;
+	}
+
+sub ajax :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("SETTINGS MYORDER AJAX");
+
+	$self->populate_my_order_list;
+
+	$c->stash->{ajax} = 1;
+	$c->stash(template => "templates/customer/my-orders.tt");
 	}
 
 =encoding utf8
