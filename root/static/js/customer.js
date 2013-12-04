@@ -169,12 +169,12 @@ function validateForm( requireFields ) {
 		//alert("control= " + control);
 		Object.keys(properties).forEach(function (proerty) {
 			var value = properties[proerty];
-			//alert("proerty= " + proerty + ", value = " + value);
+			//alert("proerty= " + proerty + ", value = " + value + ", boolRequired = " + boolRequired);
 
 			//if (boolRequired && proerty != "description") return false;
 
 			if ( proerty == "email" )
-				boolRequired = ( value && !validateEmail($('#'+control).val()) );
+				boolRequired = ( value ? !validateEmail($('#'+control).val()) : ($('#'+control).val().length > 0 && !validateEmail($('#'+control).val())));
 			else if ( proerty == "phone" )
 				boolRequired = ( value && !validPhoneNumber($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "date" )
@@ -185,12 +185,11 @@ function validateForm( requireFields ) {
 				if (value != null) boolRequired = value();
 			else if ( proerty == "passwordmatch" )
 				boolRequired = ( $('#'+control).val() != $('#'+value).val());
-			else if ( proerty == "description" && boolRequired)
-				if (messageStr.length == 0)
-					messageStr = "<p>" + value + "</p>";
-				else
-					messageStr = messageStr + "<p>" + value + "</p>";
+
+			if ( proerty == "description" && boolRequired) messageStr += "<p>" + value + "</p>";
 			});
+
+		//alert("messageStr= " + messageStr);
 
 		if (boolRequired) {
 			boolResult = false;

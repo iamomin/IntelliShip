@@ -50,7 +50,7 @@ sub run :Local
 
 	if ($params->{'toemail'} and !IntelliShip::Utils->is_valid_email($params->{'toemail'}))
 		{
-		$c->stash->{error} = "Invalid email address";
+		$c->stash->{MESSAGE} = "Invalid email address, please enter valid email address";
 		$c->detach("setup",$params);
 		return;
 		}
@@ -65,14 +65,14 @@ sub run :Local
 	if ($ReportDriver->has_errors)
 		{
 		$c->log->debug('Error ' . Dumper $ReportDriver->print_errors('TEXT'));
-		$c->stash->{error} = $ReportDriver->errors->[0];
+		$c->stash->{MESSAGE} = $ReportDriver->errors->[0];
 		$c->detach("setup",$params);
 		return;
 		}
 
 	$c->stash->{filter_criteria_loop} = $filter_criteria_loop;
 	$c->stash->{report_heading_loop} = $report_heading_loop;
-	$c->stash->{column_count} = scalar @$report_heading_loop;
+	$c->stash->{column_count} = scalar @$report_heading_loop if $report_heading_loop;
 
 	if (scalar @$report_output_row_loop > 0)
 		{

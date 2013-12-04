@@ -130,7 +130,8 @@ sub skumanagement :Local
 	my $productskus_batches = $self->process_pagination;
 
 	my $ORDER_BY = { order_by => 'description' };
-	my $WHERE = { customerid => $self->customer->customerid, productskuid => $productskus_batches->[0] };
+	my $WHERE = { customerid => $self->customer->customerid };
+	$WHERE->{productskuid} = $productskus_batches->[0] if $productskus_batches;
 	#$c->log->debug("WHERE: " . Dumper $WHERE);
 
 	my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
@@ -139,6 +140,7 @@ sub skumanagement :Local
 	$c->stash->{productskulist} = \@productskus;
 	$c->stash->{productsku_count} = scalar @productskus;
 	$c->stash->{productskus_batches} = $productskus_batches;
+	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
 
 	$c->stash->{PRODUCT_SKU_LIST} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
@@ -313,33 +315,24 @@ sub process_pagination
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	$c->log->debug("PROCESS PAGINATION");
 
+	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
+	$c->stash->{records_per_page} = $batch_size;
+
 	my $sql = "SELECT productskuid FROM productsku WHERE customerid = '" . $self->customer->customerid . "' ORDER BY description";
-	my $product_sku_batch = $self->spawn_batches($sql,100);
+	my $sth = $c->model('MyDBI')->select($sql);
+
+	$c->log->debug("TOTAL RECORDS: " . $sth->numrows);
+
+	my @matching_ids = map { @$_ } @{ $sth->query_data };
+	my $product_sku_batch = $self->spawn_batches(\@matching_ids,$batch_size);
+
 	$c->log->debug("TOTAL PAGES: " . @$product_sku_batch);
 	#$c->log->debug("TOTAL PAGES: " . Dumper $product_sku_batch);
 	return $product_sku_batch;
-	}
-
-sub spawn_batches
-	{
-	my $self = shift;
-	my $sql = shift;
-	my $batch_size = shift || 1000;
-
-	my $c = $self->context;
-	my $myDBI = $c->model('MyDBI');
-
-	my $sth = $myDBI->select($sql);
-
-	my @matching_ids = map { @$_ } @{ $sth->query_data };
-
-	my $batches = [];
-	push @$batches, [ splice @matching_ids, 0, $batch_size ] while @matching_ids;
-
-	return $batches;
 	}
 
 =encoding utf8

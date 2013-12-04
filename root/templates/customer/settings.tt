@@ -104,6 +104,14 @@ $(document).ready(function(){
 				<td><input type="button" class="button" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="button" id="sku_add" value="Add New" /></td>
 				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
+				<td><label class="float_right" for="records_per_page">Records Per Page:</td>
+				<td>
+					<select name="records_per_page" id="records_per_page">
+					[% FOREACH item IN recordsperpage_list %]
+						<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+					[% END %]
+					</select>
+				</td>
 				<td>
 					<select name="sku_page" id="sku_page">
 					[% FOREACH ids IN productskus_batches %]
@@ -121,6 +129,7 @@ $(document).ready(function(){
 
 	<table class="report">
 		<tr>
+			<th>&nbsp;</th>
 			<th>Description</th>
 			<th>UPC</th>
 			<th>hazardous</th>
@@ -132,10 +141,10 @@ $(document).ready(function(){
 			<th>unit of measure</th>
 			<th>unit type</th>
 			<th>balance on hand</th>
-			<th>&nbsp;</th>
 		</tr>
 		[% FOREACH item IN productskulist %]
 			<tr>
+				<td><a href="javascript:editProductSku('[% item.productskuid %]');">edit</a></td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
 				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
@@ -147,7 +156,6 @@ $(document).ready(function(){
 				<td>[% item.unitofmeasure %]</td>
 				<td>[% item.unittypedescription %]</td>
 				<td>[% item.balanceonhand %]</td>
-				<td><a href="javascript:editProductSku('[% item.productskuid %]');">edit</a></td>
 			</tr>
 		[% END %]
 	</table>
@@ -192,6 +200,12 @@ $(document).ready(function(){
 		$("#sku_add").click(function() {
 			$("#productsku").val("");
 			$("#productskuid").val("");
+			$("#frm_sku_management").submit();
+			});
+
+		$("#records_per_page").change(function() {
+			$('#frm_sku_management').attr('action', '/customer/settings/skumanagement');
+			$("#sku_page").prop('disabled','disabled');
 			$("#frm_sku_management").submit();
 			});
 

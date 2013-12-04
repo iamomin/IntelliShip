@@ -2,9 +2,10 @@
 [% # DISPLAY MY ORDERS - START %]
 [% #---------------------------------------------------------- %]
 [% IF MY_ORDERS %]
+	[% UNLESS ajax %]
 	<h2>My Orders</h2>
 
-	<div class="notice">This page will automatically refresh in [% refresh_interval_sec %] seconds</div>
+	<div class="notice">Order list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
 
 	<form id="frm_my_ordres" method="post" action="/customer/myorders">
 		<input type="hidden" name="do" id="do"/>
@@ -15,33 +16,51 @@
 			<td><input type="submit" class="button" id="quick_ship" value="Quick Ship" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"/></td>
 			<td width="65%">&nbsp;</td>
 			<td><label class="float_right" for="view">Type:</td>
-			<td><select name="view" id="view" onChange="$('#frm_my_ordres').submit();">
+			<td><select name="view" id="view" onChange="refreshMyOrders()">
 					[% FOREACH item IN view_list %]
 					<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
 					[% END %]
 			</select></td>
 			<td><input type="submit" class="button" id="refresh" value="Refresh"/></td>
-			<td><input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></td>
+			<td><input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></td><td><label class="float_right" for="records_per_page">Records Per Page:</td>
+				<td>
+					<select name="records_per_page" id="records_per_page">
+					[% FOREACH item IN recordsperpage_list %]
+						<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+					[% END %]
+					</select>
+				</td>
+				<td>
+					<select name="coids" id="coids">
+					[% FOREACH ids IN myorder_batches %]
+						<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+					[% END %]
+					[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
+					</select>
+				</td>
 		</tr></table>
 	</form>
 
-	<h3>[% list_title %] Count [% myorder_list_count %]</h3>
+	<div id="divMyOrders">
+	[% END %]
 
-	<table class="report">
-		<tr>
-			<th>Order Number</th>
-			<th>Customer</th>
-			<th>Origin</th>
-			<th>Destination</th>
-			<th>Date</th>
-			<th>Due Date</th>
-			<th>Carrier</th>
-			<th>Service</th>
-			<th>Mode</th>
-			<th>&nbsp;</th>
-		</tr>
-		[% FOREACH item IN myorder_list %]
+		<h3>[% list_title %] Count [% myorder_list_count %]</h3>
+		<table class="report">
 			<tr>
+				<th>&nbsp;</th>
+				<th>Order Number</th>
+				<th>Customer</th>
+				<th>Origin</th>
+				<th>Destination</th>
+				<th>Date</th>
+				<th>Due Date</th>
+				<th>Carrier</th>
+				<th>Service</th>
+				<th>Mode</th>
+			</tr>
+			[% FOREACH item IN myorder_list %]
+			<tr>
+				<td><a href="javascript:reviewOrder('[% item.coid %]');">view</a></td>
 				<td>[% item.ordernumber %]</td>
 				<td>[% item.customer %]</td>
 				<td>[% item.origin %]</td>
@@ -51,24 +70,50 @@
 				<td>[% item.carrier %]</td>
 				<td>[% item.service %]</td>
 				<td>[% item.mode %]</td>
-				<td><a href="javascript:reviewOrder('[% item.coid %]');">view</a></td>
 			</tr>
-		[% END %]
-	</table>
+			[% END %]
+			[% IF myorder_list_count == 0 %]
+				<tr><td colspan="11">No qualified orders found</td></tr>
+			[% END %]
+		</table>
+
+	[% UNLESS ajax %]
+	</div>
+	[% END %]
 
 	<script>
 
+	[% UNLESS ajax %]
 	function reviewOrder(coid) {
 		$("#do").val("review");
 		$("#coid").val(coid);
 		$('#frm_my_ordres').submit();
 		}
 
+	function refreshMyOrders () {
+		$("#coids").prop('disabled','disabled');
+		$('#frm_my_ordres').submit();
+		}
+	[% END %]
+
 	$(document).ready(function(){
-		setInterval("$('#frm_my_ordres').submit()", [% refresh_interval_sec %] * 1000);
+		var refresh_interval_minutes = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
+		setInterval("refreshMyOrders()", refresh_interval_minutes * 1000);
+		$("#refresh_interval").text(refresh_interval_minutes);
+
+		$("#records_per_page").change(function () {
+			$("#coids").prop('disabled','disabled');
+			$('#frm_my_ordres').submit();
+			});
+
+		$("#coids").change(function () {
+			var query_param = "&view=" + $("#view").val() + "&coids=" + $("#coids").val();
+			send_ajax_request('divMyOrders', 'HTML', 'myorders', '', query_param);
+			});
 		});
 
 	</script>
+
 [% END %]
 [% #---------------------------------------------------------- %]
 [% #  DISPLAY MY ORDERS - END %]

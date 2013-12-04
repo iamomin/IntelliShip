@@ -3,6 +3,7 @@ package IntelliShip::Email;
 use Moose;
 use IO qw(File);
 use Email::Stuff;
+use IntelliShip::MyConfig;
 
 has 'to'			=> ( is => 'rw', isa => 'ArrayRef' );
 has 'cc'			=> ( is => 'rw', isa => 'ArrayRef' );

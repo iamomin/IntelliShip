@@ -33,15 +33,24 @@ sub index :Path :Args(0) {
 		}
 	else
 		{
-		$self->setup_batch_shipping;
+		$self->setup;
 		}
 	}
 
-sub setup_batch_shipping :Private
+sub setup :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	$c->stash->{carrier_list} = $self->get_select_list('CARRIER');
+	$c->stash->{carrierservice_list} = $self->get_select_list('CARRIER_SERVICE');
+	$c->stash->{extcd_list} = $self->get_select_list('PRODUCT_DESCRIPTION');
+	$c->stash->{customernumber_list} = $self->get_select_list('CUSTOMER_NUMBER');
+	$c->stash->{department_list} = $self->get_select_list('DEPARTMENT');
+	$c->stash->{destination_address_list} = $self->get_select_list('DESTINATION_ADDRESS');
+	$c->stash->{destination_state_list} = $self->get_select_list('US_STATES');
+
 	$c->stash(template => "templates/customer/batch-shipping.tt");
 	}
 

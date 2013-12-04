@@ -7,7 +7,7 @@
 			<td><input type="checkbox" onclick=checkExclude() name="excludeshipped" id="excludeshipped" value=1 checked/></td>
 		</tr>
 		<tr>
-			<td><label for="orderlimit" class="float_right">Order Number Limit :</label></td>
+			<td><label for="orderlimit" class="float_right" maxlength="4">Order Number Limit :</label></td>
 			<td><input type="text" class="text" name="orderlimit" id="orderlimit"></td>
 		</tr>
 		<tr>
@@ -35,23 +35,27 @@
 				</select></td>
 		</tr>
 		<tr>
-			<td><label for="datetoship" class="float_right">Ship Date :</label></td>
+			<td><label for="datetoship" class="float_right">Ship On :</label></td>
 			<td><input type="text" class="text" name="datetoship" id="datetoship"/></td>
 		</tr>
 		<tr>
-			<td><label for="dateneeded" class="float_right">Delivery Date :</label></td>
+			<td><label for="dateneeded" class="float_right">Deliver By :</label></td>
 			<td><input type="text" class="text" name="dateneeded" id="dateneeded"/></td>
 		</tr>
 		<tr>
 			<td><label for="batchstate" class="float_right">Destination State :</label></td>
-			<td><input type="text" class="text" name="batchstate" id="batchstate"/></td>
+			<td><select name="batchstate" id="batchstate">
+				[% FOREACH item IN destination_state_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+				</select></td>
 		</tr>
 		<tr>
 			<td><label for="startzip" class="float_right">Zip range :</label></td>
 			<td>
-			<input type="text" name="startzip" id="startzip" size="6">
+			<input type="text" name="startzip" id="startzip" size="6" maxlength="5"/>
 			&nbsp;-&nbsp;
-			<input type="text" name="stopzip" id="stopzip" size="6">
+			<input type="text" name="stopzip" id="stopzip" size="6" maxlength="5"/>
 			</td>
 		</tr>
 		<tr>
@@ -97,8 +101,11 @@
 
 $(document).ready(function(){
 
+	$("#orderlimit").mask("9999");
 	$("#datetoship").datepicker();
 	$("#dateneeded").datepicker();
+	$("#startzip").mask("99999");
+	$("#stopzip").mask("99999");
 
 	var requireHash = {
 			orderlimit : { minlength: 1 },

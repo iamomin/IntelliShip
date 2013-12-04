@@ -1,4 +1,4 @@
-package IntelliShip::Controller::Customer::UploadOrder;
+package IntelliShip::Controller::Customer::UploadFile;
 use Moose;
 use IO::File;
 use Data::Dumper;
@@ -8,7 +8,7 @@ BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
 =head1 NAME
 
-IntelliShip::Controller::Customer::UploadOrder - Catalyst Controller
+IntelliShip::Controller::Customer::UploadFile - Catalyst Controller
 
 =head1 DESCRIPTION
 
@@ -25,27 +25,30 @@ Catalyst Controller.
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-	my $params = $c->req->params;
 
-    #$c->response->body('Matched IntelliShip::Controller::Customer::UploadOrder in Customer::UploadOrder.');$c->log->debug("BATCH SHIPPINH");
-	my $do_value = $params->{'do'} || '';
-	if ($do_value eq 'upload')
-		{
-		$self->upload_order_file;
-		}
-	else
-		{
-		$self->setup_upload_order;
-		}
+    #$c->response->body('Matched IntelliShip::Controller::Customer::UploadFile in Customer::UploadFile.');$c->log->debug("BATCH SHIPPINH");
+
+	## Display file upload type link
+	my $links = [
+				{ name => 'Order File Upload', url => '/customer/uploadfile/setup?type=ORDER'},
+				{ name => 'Product Sku Upload', url => '/customer/uploadfile/setup?type=PRODUCTSKU'},
+			];
+
+	$c->stash->{UPLOADFILE_LINKS} = $links;
+	$c->stash(template => "templates/customer/upload-file.tt");
 	}
 
-sub setup_upload_order :Private
+sub setup :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	$c->stash($params);
+	$c->stash->{SETUP_UPLOAD_FILE} = 1;
 	$self->display_uploaded_order_files;
-	$c->stash(template => "templates/customer/upload-order.tt");
+	$c->stash->{TITLE} = 'Upload ' . ucfirst(lc($params->{type})) . ' File';
+	$c->stash(template => "templates/customer/upload-file.tt");
 	}
 
 sub display_uploaded_order_files
@@ -53,7 +56,7 @@ sub display_uploaded_order_files
 	my $self = shift;
 	my $c = $self->context;
 
-	my $dir = $self->get_order_directory;
+	my $dir = $self->get_directory;
 	return unless $dir;
 
 	my $DH = new IO::File;
@@ -86,7 +89,7 @@ sub display_uploaded_order_files
 		];
 	}
 
-sub upload_order_file :Private
+sub upload :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -103,7 +106,7 @@ sub upload_order_file :Private
 	my $FILE_name = $Upload->filename;
 	$FILE_name =~ s/\s+/\_/g;
 
-	my $TARGET_dir = $self->get_order_directory;
+	my $TARGET_dir = $self->get_directory;
 
 	return unless $TARGET_dir;
 
@@ -115,13 +118,17 @@ sub upload_order_file :Private
 		$c->log->debug("Order File Upload Full Path, " . $TARGET_file);
 		}
 
-	$self->setup_upload_order;
+		$c->detach("setup",$params);
 	}
 
-sub get_order_directory :Private
+sub get_directory :Private
 	{
 	my $self = shift;
-	my $TARGET_dir = IntelliShip::MyConfig->file_directory . '/orders';
+	my $params = $self->context->req->params;
+
+	my $TARGET_dir = IntelliShip::MyConfig->file_directory;
+	$TARGET_dir .= '/' . 'co' if $params->{type} eq 'ORDER';
+	$TARGET_dir .= '/' . 'productsku' if $params->{type} eq 'PRODUCTSKU';
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
