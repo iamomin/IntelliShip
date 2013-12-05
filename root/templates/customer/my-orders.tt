@@ -5,7 +5,9 @@
 	[% UNLESS ajax %]
 	<h2>My Orders</h2>
 
+	[% IF refresh_interval_sec %]
 	<div class="notice">Order list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
+	[% END %]
 
 	<form id="frm_my_ordres" method="post" action="/customer/myorders">
 		<input type="hidden" name="do" id="do"/>
@@ -60,7 +62,7 @@
 			</tr>
 			[% FOREACH item IN myorder_list %]
 			<tr>
-				<td><a href="javascript:reviewOrder('[% item.coid %]');">view</a></td>
+				<td><a class="[% item.a_class %]" href="javascript:reviewOrder('[% item.coid %]');">[% item.a_text %]</a></td>
 				<td>[% item.ordernumber %]</td>
 				<td>[% item.customer %]</td>
 				<td>[% item.origin %]</td>
@@ -97,9 +99,11 @@
 	[% END %]
 
 	$(document).ready(function(){
+		[% IF refresh_interval_sec %]
 		var refresh_interval_minutes = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
 		setInterval("refreshMyOrders()", refresh_interval_minutes * 1000);
 		$("#refresh_interval").text(refresh_interval_minutes);
+		[% END %]
 
 		$("#records_per_page").change(function () {
 			$("#coids").prop('disabled','disabled');

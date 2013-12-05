@@ -758,8 +758,6 @@ sub spawn_batches
 	my $batches = [];
 	push @$batches, [ splice @$matching_ids, 0, $batch_size ] while @$matching_ids;
 
-	#$Template::Directive::WHILE_MAX = 1000;
-
 	return $batches;
 	}
 
