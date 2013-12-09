@@ -1,0 +1,95 @@
+<h1>SHIPMENT MAINTENANCE</h1>
+
+[% IF SETUP_SCREEN %]
+<div class="notice">
+	<p>Please enter a tracking number or select a carrier below.</p>
+	<p>Shipment Maintenance is for voiding and reprinting shipment labels and documents.</p>
+	<p>&nbsp;</p>
+</div>
+
+<!-- <p class="validateTips"></p> -->
+
+<form id="frm_shipment_maintenance" method="post" action="/customer/shipmentmaintenance">
+<input type="hidden" id="do" name="do" value="Submit" />
+	<table class="center_app">
+		<tr>
+			<td><label for="trackingnumber" class="float_right">Tracking Number :</label></td>
+			<td><input type="text" class="broad_text" name="trackingnumber" id="trackingnumber"></td>
+		</tr>
+		<tr>
+			<td><label for="csid" class="float_right">Carrier :</label></td>
+			<td><select name="csid" id="csid">
+				<option value="">-----</option>
+				[% FOREACH item IN carrierservice_list %]
+					<option value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+				</select></td>
+		</tr>
+	</table>
+	<center><input type="submit" class="button" value="Submit"/></center>
+</form>
+[% END %]
+
+[% IF IS_MANIFEST %]
+	<h3>[% list_title %] Count [% shipment_list_count %]</h3>
+	<table class="report">
+		<tr>
+			<th>Reprint</th>
+			<th>Tracking #</th>
+			<th>Manifest ID</th>
+			<th>Carrier</th>
+			<th>Date Created</th>
+		</tr>
+		[% FOREACH item IN shipment_list %]
+		<tr>
+			<td></td>
+			<td>[% item.tracking1 %]</td>
+			<td>[% item.manifestid %]</td>
+			<td>[% item.carrier %]</td>
+			<td>[% item.datecreated %]</td>
+		</tr>
+		[% END %]
+		[% IF shipment_list_count == 0 %]
+			<tr><td colspan="11">No record found</td></tr>
+		[% END %]
+	</table>
+[% END %]
+
+[% IF IS_CARRIER %]
+	<h3>[% list_title %] Count [% shipment_list_count %]</h3>
+	<table class="report">
+		<tr>
+			<th>Void</th>
+			<th>Reprint</th>
+			<th>Tracking #</th>
+			<th>Order Number</th>
+			<th>Customer</th>
+			<th>Destination</th>
+			<th>Carrier</th>
+			<th>Service</th>
+			<th>Ship Date</th>
+		</tr>
+		[% FOREACH item IN shipment_list %]
+		<tr>
+			<td></td>
+			<td></td>
+			<td>[% item.tracking1 %]</td>
+			<td>[% item.ordernumber %]</td>
+			<td>[% item.addressname %]</td>
+			<td>[% item.carrier %]</td>
+			<td>[% item.service %]</td>
+			<td>[% item.datecreated %]</td>
+		</tr>
+		[% END %]
+		[% IF shipment_list_count == 0 %]
+			<tr><td colspan="11">No record found</td></tr>
+		[% END %]
+	</table>
+[% END %]
+
+<script>
+$(document).ready(function(){
+	$("#frm_ship_packages").submit(function() {});
+	});
+
+</script>
