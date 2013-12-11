@@ -2,6 +2,7 @@
 	<h1>[% title %]</h1>
 
 	<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
 	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
 	<input type="hidden" name="do" value="save"/>
 
@@ -149,8 +150,6 @@
 		</tr>
 	</table>
 
-
-	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="[% package_detail_row_count %]"/>
 	<ul class="sortable" id="package_detail_list">
 		<li class="pkg-detail-heading">
 		<table>
@@ -331,17 +330,14 @@ function check_due_date()
 		});
 	}
 
-function add_pkg_detail_row(detail_type) {
-	var pkg_detail_row_ID = $("#pkg_detail_row_count").val();
-	pkg_detail_row_ID++;
+var pkg_detail_row_count = [% package_detail_row_count ? package_detail_row_count : 1 %];
 
-	var query_param = '&row_ID=' + pkg_detail_row_ID + '&detail_type=' + detail_type;
+function add_pkg_detail_row(detail_type) {
+	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + detail_type;
 
 	send_ajax_request('', 'JSON', '', 'add_pkg_detail_row', query_param, function (){
 			add_new_row('package_detail_list', JSON_data.rowHTML);
 			});
-
-	$("#pkg_detail_row_count").val(pkg_detail_row_ID);
 	}
 
 function calculate_density(row_num)
@@ -571,34 +567,31 @@ function setCityAndState()
 
 function validate_package_details()
 	{
-	var boolResult=true;
+	var boolInvalidData=false;
 	var controls = ['quantity', 'sku', 'weight', 'dimlength', 'dimwidth', 'dimheight'];
 	$('#package_detail_list li').each(function() {
 		var row_id = this.id;
 
-		if (row_id.match(/^new_/))
-			{
+		if (row_id.match(/^new_/)) {
 			var row_num = row_id.split('_')[2];
 
-			for (var i = 0; i < controls.length; i++) 
-				{
-				 var element = controls[i];
-
-				 if (validNumericField(element+'_'+row_num))
-						{
-						if ($("#"+element+"_"+row_num).hasClass('ui-state-error')) 
-							$("#"+element+"_"+row_num).removeClass('ui-state-error');
-						}
-					else
-						{
-						$("#"+element+"_"+row_num).addClass( "ui-state-error" );
-						boolResult=false;
-						}
+			for (var i=0; i<controls.length; i++) {
+				var element = controls[i];
+				if (validNumericField(element+'_'+row_num))
+					{
+					if ($("#"+element+"_"+row_num).hasClass('ui-state-error'))
+						$("#"+element+"_"+row_num).removeClass('ui-state-error');
+					}
+				else
+					{
+					$("#"+element+"_"+row_num).addClass( "ui-state-error" );
+					boolInvalidData=true;
+					}
 				}
 			}
 		});
 
-	return boolResult;
+	return boolInvalidData;
 	}
 
 var has_FC=false;
@@ -753,21 +746,16 @@ $(document).ready(function(){
 		});
 
 	$("#frm_order").submit(function() {
-
-		var rownumid=0;
-		$('#package_detail_list li').each(function() {
+		$('#package_detail_list li').each(function( index ) {
 			var row_id = this.id;
-
 			if (row_id.match(/^new_/))
 				{
 				var row_num = row_id.split('_')[2];
-
-				rownumid++;
-				$("#rownum_id_"+row_num).val(rownumid);
+				$("#rownum_id_"+row_num).val(index);
 				}
 			});
 
-		$("#pkg_detail_row_count").val('Package_Row_'+rownumid);
+		$("#pkg_detail_row_count").val(pkg_detail_row_count);
 
 		var requireHash = {
 				datetoship         : { date: true },

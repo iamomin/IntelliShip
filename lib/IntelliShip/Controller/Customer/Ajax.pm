@@ -384,8 +384,7 @@ sub get_carrrier_service_rate_list
 
 	if ($params->{'pkg_detail_row_count'} > 0)
 		{
-		my $total_row_count = $params->{'pkg_detail_row_count'};
-		$total_row_count =~ s/^Package_Row_//;
+		my $total_row_count = int $params->{'pkg_detail_row_count'};
 
 		for (my $index=1; $index <= $total_row_count; $index++)
 			{
@@ -494,8 +493,7 @@ sub OrderHasWeight
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $total_row_count = $params->{'pkg_detail_row_count'};
-	$total_row_count =~ s/^Package_Row_//;
+	my $total_row_count = int $params->{'pkg_detail_row_count'};
 
 	for (my $index=1; $index <= $total_row_count; $index++)
 		{

@@ -237,6 +237,22 @@ sub is_valid_email
 	return Email::Valid->address($email);
 	}
 
+sub trim_hash_ref_values ## Trims all multiple internal whitespace down to a single space
+	{
+	my $self = shift;
+	my $HashRef = shift;
+
+	foreach my $Key (keys %$HashRef)
+		{
+		$HashRef->{$Key} =~ s/(.*?)\s*$/$1/;
+		$HashRef->{$Key} =~ s/^\s*(.*)/$1/;
+		$HashRef->{$Key} =~ s/\\//;
+		$HashRef->{$Key} =~ s/\s+/ /g;
+		}
+
+	return $HashRef;
+	}
+
 1;
 
 __END__

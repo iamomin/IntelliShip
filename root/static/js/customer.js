@@ -125,11 +125,10 @@ function validPhoneNumber( Phone ) {
 
 function validNumericField( control )
 	{
-	if ($("#" + control ).val().match(/\D+/g)) return 0;
-	if ($("#" + control ).val() == undefined) return 0;
-	if ($("#" + control ).val() == 0) return 0;
-
-	return 1;
+	if ($("#" + control ).val() == undefined) return false;
+	if ($("#" + control ).val() == 0) return false;
+	if ($("#" + control ).val().match(/\D+/g)) return false;
+	return true;
 	}
 
 function validDate( DateStr ) {

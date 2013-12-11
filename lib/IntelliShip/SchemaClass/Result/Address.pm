@@ -146,6 +146,24 @@ __PACKAGE__->belongs_to(
 		{ join_type => 'inner' },
 	);
 
+sub insert
+	{
+	my $self = shift;
+	my @args = @_;
+	$self->set_address_code_details;
+	$self->next::method(@args);
+	return $self;
+	}
+
+sub update
+	{
+	my $self = shift;
+	my @args = @_;
+	$self->set_address_code_details;
+	$self->next::method(@args);
+	return $self;
+	}
+
 sub set_address_code_details
 	{
 	my $self = shift;

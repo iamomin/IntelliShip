@@ -35,7 +35,6 @@ sub setup :Private
 
 	$c->stash->{tocountry} = "US";
 	$c->stash->{deliverymethod} = "prepaid";
-	$c->stash->{package_detail_row_count} = "1";
 
 	$c->stash(template => "templates/customer/order.tt");
 	}
@@ -64,9 +63,6 @@ sub save_order :Private
 
 	## SAVE ADDRESS DETAILS
 	$self->save_address;
-
-	## SAVE PACKAGE & PRODUCT DETAILS
-	# $self->save_package_product_details;
 
 	$coData->{'estimatedweight'} = $params->{'estimatedweight'};
 	$coData->{'density'} = $params->{'density'};
@@ -106,13 +102,20 @@ sub save_order :Private
 		{
 		$CO = $c->model('MyDBI::Co')->find({ coid => $params->{'coid'} });
 		$CO->update($coData);
+
+		$c->log->debug("Existing CO Found, ID: " . $CO->coid);
 		}
 	else
 		{
 		$CO = $c->model('MyDBI::Co')->new($coData);
 		$CO->coid($self->get_token_id);
 		$CO->insert;
+
+		$c->log->debug("New CO Inserted, ID: " . $CO->coid);
 		}
+
+	## SAVE PACKAGE & PRODUCT DETAILS
+	$self->save_package_product_details($CO);
 	}
 
 sub save_address
@@ -122,6 +125,8 @@ sub save_address
 	my $params = $c->req->params;
 
 	$c->log->debug("save address details");
+
+	IntelliShip::Utils->trim_hash_ref_values($params);
 
 	my $Order = $self->get_order;
 	my $fromAddress = $self->customer->address;
@@ -147,15 +152,14 @@ sub save_address
 	if (@addresses)
 		{
 		$ToAddress = $addresses[0];
-		$c->log->debug("existing address found, ID" . $ToAddress->addressid);
+		$c->log->debug("Existing Address Found, ID: " . $ToAddress->addressid);
 		}
 	else
 		{
 		$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
 		$ToAddress->addressid($self->get_token_id);
-		$ToAddress->set_address_code_details;
 		$ToAddress->insert;
-		$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
+		$c->log->debug("New Address Inserted, ID: " . $ToAddress->addressid);
 		}
 
 	$coData->{addressid} = $ToAddress->id;
@@ -178,56 +182,45 @@ sub save_address
 		if (@addresses)
 			{
 			$ReturnAddress = $addresses[0];
-			$c->log->debug("existing address found, ID" . $ToAddress->addressid);
+			$c->log->debug("Existing Address Found, ID: " . $ToAddress->addressid);
 			}
 		else
 			{
 			$ReturnAddress = $c->model("MyDBI::Address")->new($toAddressData);
 			$ReturnAddress->addressid($self->get_token_id);
-			$ReturnAddress->set_address_code_details;
 			$ReturnAddress->insert;
-			$c->log->debug("no address found, inserted new address, ID" . $ToAddress->addressid);
+			$c->log->debug("New Address Inserted, ID: " . $ToAddress->addressid);
 			}
 
 		$coData->{rtaddressid} = $ReturnAddress->id;
 		}
-
 	}
 
 sub get_row_id
 	{
 	my $self = shift;
 	my $index = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
 
-	my $rownum_id;
+	my $params = $self->context->req->params;
 
-	my @keys = grep { $params->{$_} == $index } keys %$params;
-	foreach my $key (@keys)
+	foreach (keys %$params)
 		{
-		if ($key =~ m/^rownum_id_/ and $params->{$key} == $index)
-			{
-			$rownum_id = $key;
-			last;
-			}
+		return $1 if $_ =~ m/^rownum_id_(\d+)$/ and $params->{$_} == $index;
 		}
-
-	return $rownum_id;
 	}
 
 sub save_package_product_details
 	{
 	my $self = shift;
+	my $CO = shift;
+
 	my $c = $self->context;
 	my $params = $c->req->params;
 
 	$c->log->debug("save package details");
-	my $coData = $c->stash->{CO_DATA};
 
 	my $Order = $self->get_order;
-	my $total_row_count = $params->{'pkg_detail_row_count'};
-	$total_row_count =~ s/^Package_Row_//;
+	my $total_row_count = int $params->{'pkg_detail_row_count'};
 
 	my $last_package_id=0;
 	for (my $index=1; $index <= $total_row_count; $index++)
@@ -235,35 +228,40 @@ sub save_package_product_details
 		# If we're a package...the last id we got back was the id of a package.
 		# Save it out so following products will get owned by it.
 		# If this is a product, and we have a packageid, the ownertype needs to be a package
-		my $PackageIndex = $self->get_row_id($index);
-		$PackageIndex =~ s/^rownum_id_//;
+		my $PackageIndex = int $self->get_row_id($index);
 
-		my $ownerid = $coData->{coid};
+		$c->log->debug("PackageIndex: " . $PackageIndex);
+
+		my $ownerid = $CO->coid;
 		$ownerid = $last_package_id if ($params->{'type_' . $PackageIndex } eq 'product');
 
 		my $PackProData = {
-				weight            => $params->{'weight_' . $PackageIndex },
-				class             => $params->{'class_' . $PackageIndex },
-				dimweight         => $params->{'dimweight_' . $PackageIndex },
-				unittypeid        => $params->{'unittype_' . $PackageIndex },
-				partnumber        => $params->{'sku_' . $PackageIndex },
-				description       => $params->{'description_' . $PackageIndex },
-				quantity          => $params->{'quantity_' . $PackageIndex },
-				boxnum            => $params->{'quantity_' . $PackageIndex },
-				frtins            => $params->{'frtins_' . $PackageIndex},
-				nmfc              => $params->{'nmfc_' . $PackageIndex },
-				decval            => $params->{'decval_' . $PackageIndex },
-				dimlength         => $params->{'dimlength_' . $PackageIndex },
-				dimwidth          => $params->{'dimwidth_' . $PackageIndex },
-				dimheight         => $params->{'dimheight_' . $PackageIndex },
-				density           => $params->{'density_' . $PackageIndex },
-				ownerid           => $ownerid,
+				ownerid     => $ownerid,
+				boxnum      => $params->{'quantity_' . $PackageIndex },
+				quantity    => $params->{'quantity_' . $PackageIndex },
+				partnumber  => $params->{'sku_' . $PackageIndex },
+				description => $params->{'description_' . $PackageIndex },
+				unittypeid  => $params->{'unittype_' . $PackageIndex },
+				weight      => $params->{'weight_' . $PackageIndex },
+				dimweight   => $params->{'dimweight_' . $PackageIndex },
+				dimlength   => $params->{'dimlength_' . $PackageIndex },
+				dimwidth    => $params->{'dimwidth_' . $PackageIndex },
+				dimheight   => $params->{'dimheight_' . $PackageIndex },
+				density     => $params->{'density_' . $PackageIndex },
+				class       => int $params->{'class_' . $PackageIndex },
+				frtins      => int $params->{'frtins_' . $PackageIndex},
+				nmfc        => int $params->{'nmfc_' . $PackageIndex },
+				decval      => int $params->{'decval_' . $PackageIndex },
 			};
+
+		$c->log->debug("PackProData: " . Dumper $PackProData);
 
 		my $PackProDataObj = $c->model("MyDBI::Packprodata")->new($PackProData);
 		$PackProDataObj->packprodataid($self->get_token_id);
 		$PackProDataObj->insert;
-		$c->log->debug("inserted new Packprodata, ID" . $PackProDataObj->packprodataid);
+
+		$c->log->debug("New Packprodata Inserted, ID: " . $PackProDataObj->packprodataid);
+
 		$last_package_id = $PackProDataObj->packprodataid if ($params->{'type_' . $PackageIndex } eq 'package');
 		}
 =a
@@ -279,7 +277,6 @@ sub save_package_product_details
 		my $DGPackingGroup    = $ItemRef->{'dgpackinggroup' . $PackageIndex };
 		my $DGPkgInstructions = $ItemRef->{'dgpkginstructions' . $PackageIndex };
 =cut
-
 	}
 
 sub get_shipment_count
@@ -320,7 +317,7 @@ sub get_auto_order_number
 		$OrderNumber = "QS" . $myDBI->select($SQL)->fetchrow_array;
 		}
 
-	$c->log->debug("get_auto_order_number OUT ordernumber=$OrderNumber");
+	$c->log->debug("get_auto_order_number OUT ordernumber=$OrderNumber") if $OrderNumber;
 
 	return ($OrderNumber,$HasAutoOrderNumber);
 	}
@@ -351,7 +348,7 @@ sub get_order
 		WHERE
 			customerid = '$customerid' AND
 			upper(ordernumber) = upper('$ordernumber') AND
-			cotypeid IN ($cotypeid) 
+			cotypeid IN ($cotypeid)
 			$allowed_ext_cust_nums
 		ORDER BY
 			cotypeid,
@@ -455,7 +452,7 @@ sub populate_package_detail_section
 	my $rownum_id = 0;
 	my $package_detail_section_html;
 
-	# Step 1: Find Packages belog to Order 
+	# Step 1: Find Packages belog to Order
 	my $find_package = {};
 	$find_package->{'ownerid'} = $COData->coid;
 	$find_package->{'ownertypeid'} = '1000';
@@ -468,23 +465,22 @@ sub populate_package_detail_section
 		$rownum_id++;
 		$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $PackageData);
 
-		# Step 3: Find Product belog to Package 
-		my $find_product = {};
-		$find_product->{'ownerid'}      = $PackageData->packprodataid;
-		$find_product->{'ownertypeid'}  = '3000';
-		$find_product->{'datatypeid'}   = '2000';
+		# Step 3: Find Product belog to Package
+		my $WHERE = { ownerid => $PackageData->packprodataid };
+		$WHERE->{'ownertypeid'}  = '3000';
+		$WHERE->{'datatypeid'}   = '2000';
 
-		my @products = $c->model('MyDBI::Packprodata')->search($find_product);
-		$c->log->debug("total package products found: " . @products);
+		my @arr = $c->model('MyDBI::Packprodata')->search($WHERE);
+		$c->log->debug("total package products found: " . @arr);
 
-		foreach my $ProductData (@products)
+		foreach my $Packprodata (@arr)
 			{
 			$rownum_id++;
-			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
+			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
 			}
 		}
 
-	# Step 3: Find product belog to Order 
+	# Step 3: Find product belog to Order
 	my $find_product = {};
 	$find_product->{'ownerid'}      = $COData->coid;
 	$find_product->{'ownertypeid'}  = '1000';
