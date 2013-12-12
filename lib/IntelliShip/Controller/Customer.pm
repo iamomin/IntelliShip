@@ -43,6 +43,46 @@ sub index :Path :Args(0) {
 	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
+
+=head1
+
+auto : Private
+
+auto actions will be run after any begin, but before your URL-matching action is processed.
+Unlike the other built-ins, multiple auto actions can be called; they will be called in turn,
+starting with the application class and going through to the most specific class.
+
+=cut
+
+sub auto :Private
+	{
+	my($self, $c) = @_;
+
+	$c->log->debug('Auto Divert to ' . $c->action);
+
+	## Catalyst context is not accessible in every user defined function
+	$self->context($c);
+	####################
+
+	return 1 if $c->request->action =~ /login$/;
+
+	#$c->log->debug("c->request->cookies: " . Dumper $c->request->cookies);
+	#$c->log->debug("c->response->cookies: " . Dumper $c->response->cookies);
+
+	unless ($self->authorize_user)
+		{
+		#$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
+		$c->response->redirect($c->uri_for('/customer/login'));
+		$c->stash->{template} = undef;
+		return 0;
+		}
+
+	#$c->log->debug("**** User Authorized Successfully");
+	$c->response->cookies->{'TokenID'} = { value => $self->token->tokenid, expires => '+20M' };
+
+	return 1;
+	}
+
 =head2 default
 
 Standard 404 error page
