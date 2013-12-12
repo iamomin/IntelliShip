@@ -40,6 +40,7 @@ sub index :Path :Args(0) {
 
 	$c->log->debug('In ' . __PACKAGE__ . ', index');
     #$c->response->body('Matched IntelliShip::Controller::Customer in Customer.');
+	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
 =head2 default
@@ -52,134 +53,6 @@ sub default :Path
 	{
 	my ( $self, $c ) = @_;
 	$c->response->redirect($c->uri_for('/customer/login'));
-	}
-
-sub access_denied :Private
-	{
-	my ( $self, $c ) = @_;
-	my $params = $c->request->parameters;
-
-	$c->response->body( "Access Denied" );
-	}
-
-sub logout :Local :Args(0)
-	{
-	my ( $self, $c ) = @_;
-
-	$c->log->debug('@@@@@@@@ DELETING TOKEN ID: ' . $self->token->tokenid);
-	$self->token->delete;
-	$self->token(undef);
-
-	$c->response->redirect($c->uri_for('/customer/login'));
-	}
-
-sub login :Local :Args(0)
-	{
-	my ( $self, $c ) = @_;
-
-	$c->log->debug("********* LOG IN CUSTOMER USER *********");
-
-	$self->flush_expired_tokens;
-
-	my $params = $c->request->parameters;
-	my $Token = $self->get_token;
-
-	if ($Token)
-		{
-		$c->log->debug('--------- TOKEN FOUND ---------');
-		$self->token($Token);
-
-		$c->log->debug('redirect to customer dashboard');
-		$c->response->redirect($c->uri_for('/customer/dashboard'));
-		}
-	elsif (defined $params->{'username'} and defined $params->{'password'})
-		{
-		my $TokenID = $self->authenticate_user($params->{'username'}, $params->{'password'});
-
-		unless ($TokenID)
-			{
-			$c->log->debug('$$$$$$ CUSTOMER USER NOT FOUND $$$$$$');
-			$c->stash(template => "templates/customer/login.tt");
-			$c->stash(error => "Invalid username or password");
-			return 0;
-			}
-
-		$c->res->cookies->{'TokenID'} = { value => $TokenID, expires => '+3600' };
-
-		$c->stash(template => "templates/customer/dashboard.tt");
-		}
-	else
-		{
-		$c->stash(template => "templates/customer/login.tt"); ## SHOW LOGIN PAGE FIRST
-		}
-
-	return 1;
-	}
-
-sub dashboard :Local :Args(0)
-	{
-	my ( $self, $c ) = @_;
-	$c->stash(template => "templates/customer/dashboard.tt");
-	return 1;
-	}
-
-sub authenticate_user :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	my ($Username, $Password, $BrandingID, $SSOUsername, $SSOAuth) = @_;
-
-	my ($Customer, $Contact ) = $self->get_customer_contact($Username,$Password);
-
-	my ($CustomerID, $ContactID, $ActiveUser);
-
-	if ($Customer and $Contact)
-		{
-		$ContactID = $Contact->contactid;
-		$CustomerID = $Customer->customerid;
-
-		#$ActiveUser = ($Contact->firstname ? $Contact->firstname : $Contact->username);
-		$ActiveUser = $Contact->username;
-		$BrandingID = $self->get_branding_id;
-
-		$c->log->debug("ActiveUser: " . $ActiveUser);
-		$c->log->debug("BrandingID: " . $BrandingID) if $BrandingID;
-
-		$self->contact($Contact);
-		$self->customer($Customer);
-		}
-	else
-		{
-		$self->token(undef);
-		}
-
-	my $TokenID = undef;
-	my $myDBI = $c->model("MyDBI");
-
-	if ($ContactID)
-		{
-		$TokenID = $self->get_token_id;
-
-		$c->stash->{TokenID} = $TokenID;
-
-		$c->log->debug("#### Creating new TOKEN: " . $TokenID);
-
-		($BrandingID, $SSOUsername, $SSOAuth) = ('','',''); ##**
-
-		my $sql = "INSERT INTO token
-					(tokenid, customerid, datecreated, dateexpires,active_username,brandingid,ssoid)
-				VALUES
-					('$TokenID', '$ContactID', timestamp 'now', timestamp 'now' + '2 hours', '$Username', '$BrandingID', '$SSOAuth')";
-
-		$myDBI->dbh->do($sql);
-
-		$self->token($c->model("MyDBI::Token")->find($TokenID));
-		}
-
-	$self->flush_expired_tokens;
-
-	return $TokenID;
 	}
 
 sub flush_expired_tokens :Private
@@ -252,10 +125,11 @@ sub get_customer_contact
 	my $contact_search = { username => $contactUser };
 	$contact_search->{password} = $password unless $self->token;
 
-	my @customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
-	my $Customer = $customerArr[0] if @customerArr;
 	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 	my $Contact = $contactArr[0] if @contactArr;
+
+	my @customerArr = $c->model('MyDBI::Customer')->search({ customerid => $Contact->customerid, username => $customerUser });
+	my $Customer = $customerArr[0] if @customerArr;
 
 	return ($Customer, $Contact);
 	}
