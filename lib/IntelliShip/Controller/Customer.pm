@@ -164,6 +164,7 @@ sub get_customer_contact
 
 	my $contact_search = { username => $contactUser };
 	$contact_search->{password} = $password unless $self->token;
+	$contact_search->{customerid} = $self->token->customerid if $self->token;
 
 	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 	my $Contact = $contactArr[0] if @contactArr;
@@ -180,7 +181,13 @@ sub get_token :Private
 	my $c = $self->context;
 	my $TokenID = $c->stash->{TokenID};
 	$TokenID = $c->req->cookies->{'TokenID'}->value if !$TokenID and $c->req->cookies->{'TokenID'};
-	return $c->model("MyDBI::Token")->find({ tokenid => $TokenID });
+
+	if ($TokenID)
+		{
+		return $c->model("MyDBI::Token")->find({ tokenid => $TokenID });
+		}
+
+	return undef;
 	}
 
 sub get_login_token :Private

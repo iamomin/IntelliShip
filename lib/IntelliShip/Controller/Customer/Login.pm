@@ -100,7 +100,7 @@ sub authenticate_user :Private
 	my $TokenID = undef;
 	my $myDBI = $c->model("MyDBI");
 
-	if ($ContactID)
+	if ($CustomerID)
 		{
 		$TokenID = $self->get_token_id;
 
@@ -113,7 +113,7 @@ sub authenticate_user :Private
 		my $sql = "INSERT INTO token
 					(tokenid, customerid, datecreated, dateexpires,active_username,brandingid,ssoid)
 				VALUES
-					('$TokenID', '$ContactID', timestamp 'now', timestamp 'now' + '2 hours', '$Username', '$BrandingID', '$SSOAuth')";
+					('$TokenID', '$CustomerID', timestamp 'now', timestamp 'now' + '1 hour', '$Username', '$BrandingID', '$SSOAuth')";
 
 		$myDBI->dbh->do($sql);
 
