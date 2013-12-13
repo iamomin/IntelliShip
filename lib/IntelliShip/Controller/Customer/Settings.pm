@@ -37,6 +37,11 @@ sub index :Path :Args(0) {
 				{ name => 'Sku Management', url => '/customer/settings/skumanagement'},
 			];
 
+	if ($self->has_extid_droplist_data > 0)
+		{
+		push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'})
+		}
+
 	$c->stash->{settings_loop} = $settings;
 	$c->stash(template => "templates/customer/settings.tt");
 }
@@ -127,7 +132,7 @@ sub skumanagement :Local
 
 	$c->log->debug("SKU MANAGEMENT");
 
-	my $productskus_batches = $self->process_pagination;
+	my $productskus_batches = $self->process_pagination('skumanagement');
 
 	my $ORDER_BY = { order_by => 'description' };
 	my $WHERE = { customerid => $self->customer->customerid };
@@ -144,6 +149,48 @@ sub skumanagement :Local
 
 	$c->stash->{PRODUCT_SKU_LIST} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
+
+	$c->stash(template => "templates/customer/settings.tt");
+	}
+
+sub has_extid_droplist_data
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Customer = $self->customer;
+
+	my $customer_id = $Customer->get_contact_data_value('sopid');
+	$customer_id = $Customer->customerid unless ($customer_id);
+
+	my $sth = $c->model("MyDBI")->select("SELECT count(*) FROM droplistdata WHERE field = 'extid' AND customerid = '" . $self->customer->customerid . "'");
+	my $count = $sth->fetchrow(0)->{'count'};
+	return $count;
+	}
+
+sub extidmanagement :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $extid_droplist_batches = $self->process_pagination('extidmanagement');
+
+	my $ORDER_BY = { order_by => 'fieldorder desc,fieldtext' };
+	my $WHERE = { customerid => $self->customer->customerid };
+	$WHERE->{field} = "extid";
+	$WHERE->{droplistdataid} = $extid_droplist_batches->[0] if (scalar @$extid_droplist_batches > 0);
+
+	my @droplistdata = $c->model('MyDBI::Droplistdata')->search($WHERE, $ORDER_BY);
+
+	$c->stash->{extiddroplist} = \@droplistdata;
+	$c->stash->{extid_droplist_count} = scalar @droplistdata;
+	$c->stash->{extid_droplist_batches} = $extid_droplist_batches;
+	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
+
+	$c->stash->{EXTID_DROP_LIST} = 1;
+	$c->stash->{EXTID_MANAGEMENT} = 1;
 
 	$c->stash(template => "templates/customer/settings.tt");
 	}
@@ -173,6 +220,20 @@ sub ajax :Local
 
 		$c->stash->{PRODUCT_SKU_LIST} = 1;
 		$c->stash->{SKU_MANAGEMENT} = 1;
+		}
+	elsif ($params->{'droplistdata'})
+		{
+		my $WHERE = { customerid => $self->customer->customerid };
+		my $ORDER_BY = { order_by => 'fieldorder desc,fieldtext' };
+
+		$WHERE->{droplistdataid} = [split(',', $params->{'page'})];
+		my @droplistdata = $c->model('MyDBI::Droplistdata')->search($WHERE, $ORDER_BY);
+
+		$c->stash->{extiddroplist} = \@droplistdata;
+		$c->stash->{extid_droplist_count} = scalar @droplistdata;
+
+		$c->stash->{EXTID_DROP_LIST} = 1;
+		$c->stash->{EXTID_MANAGEMENT} = 1;
 		}
 
 	$c->stash($params);
@@ -311,9 +372,92 @@ sub get_product_sku
 	return $c->model('MyDBI::Productsku')->find($WHERE);
 	}
 
+sub extidsetup :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $DropListData = $self->get_drop_list_data;
+	if ($params->{'do'} eq 'configure')
+		{
+		$DropListData = $c->model('MyDBI::Droplistdata')->new({}) unless $DropListData;
+
+		$DropListData->fieldvalue($params->{fieldvalue});
+		$DropListData->fieldtext($params->{fieldtext});
+		$DropListData->fieldorder($params->{fieldorder});
+		$DropListData->datemodified('now');
+
+		if ($DropListData->droplistdataid)
+			{
+			$DropListData->update;
+			$c->stash->{MESSAGE} = "Extid updated successfully!";
+			}
+		else
+			{
+			$DropListData->field('extid');
+			$DropListData->customerid($self->customer->customerid);
+			$DropListData->droplistdataid($self->get_token_id);
+			$DropListData->insert;
+
+			$c->stash->{MESSAGE} = "New Extid added successfully!";
+			}
+
+		$c->detach("extidmanagement",$params);
+		}
+	else
+		{
+		$c->stash($DropListData->{'_column_data'}) if ($DropListData);
+
+		$c->stash->{yesno_list} = $self->get_select_list('YES_NO_NUMERIC');
+		$c->stash->{SETUP_EXTID} = 1;
+		}
+
+	$c->stash->{EXTID_MANAGEMENT} = 1;
+	$c->stash->{template} = "templates/customer/settings.tt";
+	}
+
+sub finddroplistdata :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	$c->log->debug("FIND DropListData: " . Dumper $params);
+
+	my $term  = uc($params->{'term'});
+	my $sql = "SELECT fieldvalue FROM droplistdata WHERE field = 'extid' and customerid = '" . $self->customer->customerid . "' AND fieldvalue LIKE '%" . $term . "%' ORDER BY 1";
+	my $sth = $c->model('MyDBI')->select($sql);
+
+	my $arr = [];
+	push(@$arr, $_->[0]) foreach @{$sth->query_data};
+	$c->response->body(IntelliShip::Utils->jsonify($arr));
+	}
+
+sub get_drop_list_data
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = {};
+	if (length $params->{'droplistdataid'})
+		{
+		$WHERE->{droplistdataid} = $params->{'droplistdataid'};
+		}
+	elsif (length $params->{'fieldvalue'})
+		{
+		$WHERE->{fieldvalue} = uc($params->{'fieldvalue'});
+		}
+
+	return undef unless scalar keys %$WHERE;
+	return $c->model('MyDBI::Droplistdata')->find($WHERE);
+	}
+
 sub process_pagination
 	{
 	my $self = shift;
+	my $type = shift;
+
 	my $c = $self->context;
 	my $params = $c->req->params;
 
@@ -322,17 +466,26 @@ sub process_pagination
 	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
 	$c->stash->{records_per_page} = $batch_size;
 
-	my $sql = "SELECT productskuid FROM productsku WHERE customerid = '" . $self->customer->customerid . "' ORDER BY description";
+	my $sql;
+	if ($type eq 'skumanagement')
+		{
+		$sql = "SELECT productskuid FROM productsku WHERE customerid = '" . $self->customer->customerid . "' ORDER BY description";
+		}
+	elsif ($type eq 'extidmanagement')
+		{
+		$sql = "SELECT droplistdataid FROM droplistdata WHERE field = 'extid' and customerid = '" . $self->customer->customerid . "' ORDER BY fieldorder desc,fieldtext";
+		}
+
 	my $sth = $c->model('MyDBI')->select($sql);
 
-	$c->log->debug("TOTAL RECORDS: " . $sth->numrows);
+	#$c->log->debug("TOTAL RECORDS: " . $sth->numrows);
 
 	my @matching_ids = map { @$_ } @{ $sth->query_data };
-	my $product_sku_batch = $self->spawn_batches(\@matching_ids,$batch_size);
+	my $batches = $self->spawn_batches(\@matching_ids,$batch_size);
 
-	$c->log->debug("TOTAL PAGES: " . @$product_sku_batch);
-	#$c->log->debug("TOTAL PAGES: " . Dumper $product_sku_batch);
-	return $product_sku_batch;
+	#$c->log->debug("TOTAL PAGES: " . @$batches);
+	#$c->log->debug("TOTAL PAGES: " . Dumper $batches);
+	return $batches;
 	}
 
 =encoding utf8
