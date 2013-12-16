@@ -33,14 +33,13 @@ sub index :Path :Args(0) {
 		}
 	elsif ( $do_value eq 'quick')
 		{
+		$self->setup;
 		}
 	else
 		{
 		$self->setup;
-		$c->stash->{title} = 'New Order';
 		}
 
-	$c->stash(template => "templates/customer/order.tt");
 	}
 
 =encoding utf8

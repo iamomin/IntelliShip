@@ -604,6 +604,27 @@ __PACKAGE__->has_many(
 		'customerid'
 	);
 
+__PACKAGE__->has_many(
+	contact_data => 
+		'IntelliShip::SchemaClass::Result::Custcondata',
+		'ownerid'
+	);
+
+sub get_contact_data_value
+	{
+	my $self = shift;
+	my $data_type_name = shift;
+	my $data_type_id = shift;
+
+	my $WHERE = { ownertypeid => '1', datatypename => $data_type_name };
+	$WHERE->{datatypeid} = $data_type_id if $data_type_id;
+
+	my @custcondata_arr = $self->contact_data($WHERE);
+	return unless @custcondata_arr;
+
+	return $custcondata_arr[0]->value;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

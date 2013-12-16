@@ -23,6 +23,7 @@ sub setup :Private
 
 	($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
+	$c->stash->{neworder} = 1;
 	$c->stash->{ordernumber} = $params->{'ordernumber'};
 	$c->stash->{customer} = $self->customer;
 	$c->stash->{customerAddress} = $self->customer->address;
@@ -52,8 +53,9 @@ sub save_order :Private
 
 	my $coData = {
 		customerid => $self->customer->customerid,
-		contactid => $self->contact->contactid,
-		addressid => $fromAddress->addressid
+		contactid  => $self->contact->contactid,
+		addressid  => $fromAddress->addressid,
+		statusid   => 1
 		};
 
 	$c->stash->{CO_DATA} = $coData;
@@ -63,6 +65,28 @@ sub save_order :Private
 
 	## SAVE ADDRESS DETAILS
 	$self->save_address;
+
+	$coData->{'datetoship'} = $params->{'datetoship'};
+	$coData->{'dateneeded'} = $params->{'dateneeded'};
+	$coData->{'extcd'} = $params->{'comments'};
+	$coData->{'extloginid'} = $self->customer->username;
+	$coData->{'contactname'} = $params->{'tocontact'};
+	$coData->{'contactphone'} = $params->{'tophone'};
+	$coData->{'department'} = $params->{'fromdepartment'};
+	$coData->{'shipmentnotification'} = $params->{'toemail'};
+	$coData->{'deliverynotification'} = $params->{'fromemail'};
+	$coData->{'clientdatecreated'} = "now";
+
+		#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
+        #
+		#if (
+		#	$HashRef->{'loginlevel'} == 35 ||
+		#	$HashRef->{'loginlevel'} == 40 ||
+		#	( $HashRef->{'cotypeid'} && $HashRef->{'cotypeid'} == 2 )
+		#)
+		#{
+		#	$OrderRef->{'cotypeid'} = 2;
+		#}
 
 	$coData->{'estimatedweight'} = $params->{'estimatedweight'};
 	$coData->{'density'} = $params->{'density'};
@@ -116,6 +140,9 @@ sub save_order :Private
 
 	## SAVE PACKAGE & PRODUCT DETAILS
 	$self->save_package_product_details($CO);
+
+	## Display Order Review Page
+	$self->setup_summary_page($CO->coid);
 	}
 
 sub save_address
@@ -392,13 +419,29 @@ sub get_order
 	return($coid,$statusid,$ordernumber);
 	}
 
-sub populate_order
+sub setup_summary_page
 	{
 	my $self = shift;
+	my $coid = shift;
+
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $coid = $params->{'coid'};
+	$c->stash->{review_order} = 1;
+	$self->populate_order($coid);
+
+	$c->stash->{title} = 'Review Order';
+	$c->stash(template => "templates/customer/order-review.tt");
+	}
+
+sub populate_order
+	{
+	my $self = shift;
+	my $coid = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$coid = $params->{'coid'} unless ($coid);
 	my $ordernumber = $params->{'ordernumber'};
 
 	$c->log->debug("populate_order, coid: $coid, ordernumber: $ordernumber");
@@ -408,17 +451,15 @@ sub populate_order
 	$where->{'ordernumber'} = $ordernumber if $ordernumber;
 
 	my @cos = $c->model('MyDBI::Co')->search($where);
-	$c->log->debug("total customer order found: " . @cos);
 
 	my $COData = $cos[0];
-	$c->log->debug("populate_order, co:" . $COData->coid);
-	$c->log->debug("populate_order, co:" . $COData->addressid);
 
 	my $ToAddress = $COData->to_address;
 
 	## Initialize Screen
 	$self->setup;
-	$c->stash->{title} = 'Edit Order';
+	$c->stash->{coid} = $coid;
+	$c->stash->{edit_order} = 1;
 
 	## Ship From Section
 	$c->stash->{fromemail} = $COData->deliverynotification;
@@ -435,12 +476,18 @@ sub populate_order
 	$c->stash->{tophone} = $COData->contactphone;
 	$c->stash->{toemail} = $COData->shipmentnotification;
 	$c->stash->{ordernumber} = $COData->ordernumber;
+	$c->stash->{dateneeded} = $COData->dateneeded;
 
 	# Ship Information
 	$c->stash->{comments} = $COData->description;
 
 	# Package Details
+	$c->stash->{'totalweight'} = 0;
+	$c->stash->{'totalpackages'} = 0;
 	$self->populate_package_detail_section($COData);
+
+	# ASSESSORIALS SECTION 1000 for co and 2000 for shipment
+	$c->stash->{specialservice_loop} = $self->populate_assessorials_section($COData);
 	}
 
 sub populate_package_detail_section
@@ -463,6 +510,7 @@ sub populate_package_detail_section
 	foreach my $PackageData (@packages)
 		{
 		$rownum_id++;
+		$c->stash->{'totalpackages'}++;
 		$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $PackageData);
 
 		# Step 3: Find Product belog to Package
@@ -471,8 +519,6 @@ sub populate_package_detail_section
 		$WHERE->{'datatypeid'}   = '2000';
 
 		my @arr = $c->model('MyDBI::Packprodata')->search($WHERE);
-		$c->log->debug("total package products found: " . @arr);
-
 		foreach my $Packprodata (@arr)
 			{
 			$rownum_id++;
@@ -487,7 +533,6 @@ sub populate_package_detail_section
 	$find_product->{'datatypeid'}   = '2000';
 
 	my @products = $c->model('MyDBI::Packprodata')->search($find_product);
-	$c->log->debug("total order prdt found: " . @products);
 
 	foreach my $ProductData (@products)
 		{
@@ -507,15 +552,28 @@ sub add_detail_row
 	my $PackProData = shift;
 	my $c = $self->context;
 
-	$c->stash->{PKG_DETAIL_ROW} = 1;
 	$c->stash->{ROW_COUNT} = $row_num_id;
 	$c->stash->{DETAIL_TYPE} = $type;
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+
+	my $Unittype;
+	if ($c->stash->{review_order})
+		{
+		$c->stash->{REVIEW_PKG_DETAIL_ROW} = 1;
+		$c->stash->{'totalweight'} += $PackProData->weight;
+		$Unittype = $self->context->model('MyDBI::Unittype')->find({unittypeid => $PackProData->unittypeid});
+		}
+	else
+		{
+		$c->stash->{PKG_DETAIL_ROW} = 1;
+
+		$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+		}
 
 	$c->stash->{'weight'}      = $PackProData->weight;
 	$c->stash->{'class'}       = $PackProData->class;
 	$c->stash->{'dimweight'}   = $PackProData->dimweight;
 	$c->stash->{'unittype'}    = $PackProData->unittypeid;
+	$c->stash->{'unittype'}    = $Unittype->unittypename if ($c->stash->{review_order});
 	$c->stash->{'sku'}         = $PackProData->partnumber;
 	$c->stash->{'description'} = $PackProData->description;
 	$c->stash->{'quantity'}    = $PackProData->quantity;
@@ -528,10 +586,40 @@ sub add_detail_row
 	$c->stash->{'dimheight'}   = $PackProData->dimheight;
 	$c->stash->{'density'}     = $PackProData->density;
 
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
-	$c->stash->{PKG_DETAIL_ROW} = 0;
+	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
+	}
 
-	return $row_HTML;
+sub populate_assessorials_section
+	{
+	my $self = shift;
+	my $COID = shift;
+	my $c = $self->context;
+
+	my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
+	my $specialService = $self->get_special_services($COID->coid);
+
+	foreach my $SpecialService (@$special_service_loop)
+		{
+		$SpecialService->{'checked'} = 'CHECKED' if $specialService->{$SpecialService->{'value'}};
+		}
+
+	return $special_service_loop;
+	}
+
+sub get_special_services
+	{
+	my $self = shift;
+	my $COID = shift;
+
+	return unless $COID;
+
+	my $specialService = {};
+	my $sql = "SELECT assname FROM assdata WHERE ownerid = '$COID'";
+	my $STH = $self->context->model("MyDBI")->select("$sql");
+	my $data = $STH->query_data;
+
+	$specialService->{$_} = 1 foreach @$data;
+	return $specialService;
 	}
 
 __PACKAGE__->meta->make_immutable;
