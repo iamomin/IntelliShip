@@ -100,7 +100,7 @@ sub flush_expired_tokens :Private
 	my $self = shift;
 	my $c = $self->context;
 	$c->log->debug("#### FLUSH EXPIRED TOKEN FROM DB");
-	$c->model("MyDBI")->dbh->do("DELETE FROM token WHERE dateexpires <= timestamp 'now'");
+	$c->model("MyDBI")->dbh->do("DELETE FROM token WHERE dateexpires <= timestamp with time zone 'now'");
 	}
 
 sub authorize_user :Private
