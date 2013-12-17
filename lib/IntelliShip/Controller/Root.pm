@@ -66,6 +66,8 @@ sub auto :Private
 
 	$c->log->debug('Auto Divert to ' . $c->action);
 
+	return 1 unless $c->request->action =~ /customer/;
+
 	my $Controller = $c->controller;
 
 	## Catalyst context is not accessible in every user defined function
