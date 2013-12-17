@@ -155,6 +155,25 @@
 </li>
 [% END %]
 
+[% IF REVIEW_PKG_DETAIL_ROW %]
+	<tr class="[% IF DETAIL_TYPE == 'product' %]ui-state-default[% ELSE %]ui-state-highlight[% END %]">
+		<td style="width:  5%"><div class="default_text">[% quantity %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% sku %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% description %]</div></td>
+		<td style="width: 10%"><div class="default_text">[% unittype %]</div></td>
+		<td style="width:  4%"><div class="default_text">[% weight %]</div></td>
+		<td style="width: 20%"><div class="default_text">[% dimweight %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% dimlength %]</div></td>
+		<td style="width: 10%"><div class="default_text">[% dimwidth %]</div></td>
+		<td style="width: 10%"><div class="default_text">[% dimheight %]</div></td>
+		<td style="width: 10%"><div class="default_text">[% density %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% nmfc %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% class %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% frtins %]</div></td>
+		<td style="width:  5%"><div class="default_text">[% decval %]</div></td>
+	</tr>
+[% END %]
+
 [% IF THIRD_PARTY_DELIVERY %]
 	<tr class="tp">
 		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="text" name="tpcompanyname" id="tpcompanyname"/></td>

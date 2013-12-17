@@ -763,6 +763,12 @@ __PACKAGE__->many_to_many("shipmentids", "shipmentcoassocs", "shipmentid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9gb1XDCzBKUV29zu3sUxdg
 
+sub set_datecreated
+	{
+	my $self = shift;
+	$self->datecreated('now');
+	}
+
 __PACKAGE__->belongs_to(
 	to_address => 
 	"IntelliShip::SchemaClass::Result::Address",

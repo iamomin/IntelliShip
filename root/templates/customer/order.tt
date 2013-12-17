@@ -3,6 +3,7 @@
 
 	<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
 	<input type="hidden" name="do" value="save"/>
 
@@ -228,7 +229,7 @@
 			[% count = 0 %]
 			[% ELSE %]
 				<td>
-				<input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">[% item.name %]</label>
+				<input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><label for="[% item.value %]">[% item.name %]</label>
 				</td>
 			[% END %]
 		[% END %]

@@ -397,3 +397,179 @@ $(document).ready(function(){
 	[% #---------------------------------------------------------- %]
 
 [% END %]
+
+[% #---------------------------------------------------------- %]
+[% # EXTID MANAGEMENT %]
+[% #---------------------------------------------------------- %]
+
+[% IF EXTID_MANAGEMENT %]
+	[% UNLESS ajax %]<h2>Extid Management</h2>[% END %]
+
+	[% #---------------------------------------------------------- %]
+	[% # EXTID_DROP_LIST START %]
+	[% #---------------------------------------------------------- %]
+	[% IF EXTID_DROP_LIST %]
+
+		[% UNLESS ajax %]
+			[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
+			<p class="validateTips"></p>
+
+			<form id="frm_extid_management" method="post" action="/customer/settings/extidsetup">
+				<input type="hidden" id="do" name="do" value="setup"/>
+				<input type="hidden" id="droplistdataid" name="droplistdataid"/>
+				<div class="float_right">
+					<table>
+						<tr>
+							<td><label class="float_right" for="extidvalue">Value:</td>
+							<td><input type="text" class="text" id="fieldvalue" name="fieldvalue" /></td>
+							<td><input type="button" class="button" id="extid_add" value="Add" /></td>
+							<td><input type="button" class="button" id="extid_edit" value="Edit" /></td>
+
+							<td><label class="float_right" for="records_per_page">Records Per Page:</td>
+							<td>
+								<select name="records_per_page" id="records_per_page">
+									[% FOREACH item IN recordsperpage_list %]
+										<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+									[% END %]
+								</select>
+							</td>
+							<td>
+								<select name="droplist_page" id="droplist_page">
+									[% FOREACH ids IN extid_droplist_batches %]
+										<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+									[% END %]
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</form>
+		[% END %]
+
+		[% UNLESS ajax %]<div id="divDropListData">[% END %]
+		<h3>Total Count: [% extid_droplist_count %]</h3>
+
+		<table class="report">
+			<tr>
+				<th>&nbsp;</th>
+				<th>Value</th>
+				<th>Description</th>
+				<th>Sort To Top</th>
+			</tr>
+			[% FOREACH item IN extiddroplist %]
+				<tr>
+					<td><a href="javascript:editExtId('[% item.droplistdataid %]');">edit</a></td>
+					<td>[% item.fieldvalue %]</td>
+					<td>[% item.fieldtext %]</td>
+					<td>[% item.fieldorder == 1 ? 'Yes' : 'No' %]</td>
+				</tr>
+			[% END %]
+		</table>
+
+		<script>
+			function editExtId(droplistdataid) {
+				$("#fieldvalue").val("");
+				$("#droplistdataid").val(droplistdataid);
+				$("#frm_extid_management").submit();
+				}
+
+			var cachedFieldValue = {};
+			$(document).ready(function(){
+				$("#fieldvalue").autocomplete({
+					minLength: 2,
+					source: function ( request, response ) {
+							var term = request.term;
+							if ( term in cachedFieldValue ) {
+								response( cachedFieldValue[ term ] );
+								return;
+								}
+							$('#preload').show();
+							$.getJSON( "/customer/settings/finddroplistdata", request, function( data, status, xhr ) {
+								cachedFieldValue[ term ] = data;
+								response( data );
+								$('#preload').hide();
+								});
+							}
+					});
+
+				$("#extid_edit").click(function() {
+					if (validateForm({ fieldvalue : { minlength: 1, description: "Please specify valid value" } })) {
+						$("#frm_extid_management").submit();
+						}
+					});
+
+				$("#extid_add").click(function() {
+					$("#fieldvalue").val("");
+					$("#droplistdataid").val("");
+					$("#frm_extid_management").submit();
+					});
+
+				$("#records_per_page").change(function() {
+					$('#frm_extid_management').attr('action', '/customer/settings/extidmanagement');
+					$("#droplist_page").prop('disabled','disabled');
+					$("#frm_extid_management").submit();
+					});
+
+				$("#droplist_page").change(function() {
+					var query_param = "&droplistdata=1&page=" + $(this).val();
+					send_ajax_request('divDropListData', 'HTML', 'settings', '', query_param);
+					});
+			});
+		</script>
+	[% END %]
+
+	[% #---------------------------------------------------------- %]
+	[% # SETUP_EXTID START %]
+	[% #---------------------------------------------------------- %]
+	[% IF SETUP_EXTID %]
+
+		<h3>[% IF droplistdataid %]Edit[% ELSE %]Add New[% END %] EXTID </h3>
+
+		<form id="frm_setup_sku" method="post" action="/customer/settings/extidsetup">
+			<input type="hidden" id="do" name="do" value="configure"/>
+			<input type="hidden" id="droplistdataid" name="droplistdataid" value="[% droplistdataid %]"/>
+			<table class="center_app">
+				<tr>
+					<td>Ext Value:</td>
+					<td><input type="text" name="fieldvalue" id="fieldvalue" value="[%fieldvalue%]" size="30" maxlength="50"></td>
+				</tr>
+				<tr>
+					<td>Ext Description:</td>
+					<td><input type="text" name="fieldtext" id="fieldtext" value="[%fieldtext%]" size="30" maxlength="50"></td>
+				</tr>
+				<tr>
+					<td>Sort To Top:</td>
+					<td><select name="fieldorder" id="fieldorder">
+							[% FOREACH item IN yesno_list %]
+							<option [% IF fieldorder == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+							[% END %]
+						</select></td>
+				</tr>
+			</table>
+			<center><input type="submit" class="button" id="update_extid" value="[% IF droplistdataid %]Update[% ELSE %]Add[% END %]" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+		</form>
+
+		<script>
+		$("#frm_setup_sku").submit(function () {
+			var requireHash = {
+				fieldvalue : { minlength: 1, description: "Please specify value" },
+				fieldtext : { minlength: 1, description: "Please specify description" }
+				};
+			if (validateForm(requireHash)) {
+				$("#update_extid").val("Please Wait...");
+				$("#update_extid").attr("disabled", true);
+				return true;
+				} else {
+				return false;
+				}
+			});
+
+		$(document).ready(function(){
+			$("#update_extid").attr("disabled", false);
+			});
+		</script>
+	[% END %]
+	[% #---------------------------------------------------------- %]
+	[% # EXTID_DROP_LIST END %]
+	[% #---------------------------------------------------------- %]
+[% END %]
