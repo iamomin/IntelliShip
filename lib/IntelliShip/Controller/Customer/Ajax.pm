@@ -114,13 +114,17 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->set_third_party_delivery;
 		}
-	elsif ($c->req->param('action') eq 'get_customer_service_list')
+	elsif ($c->req->param('action') eq 'get_carrier_service_list')
 		{
-		$dataHash = $self->get_customer_service_list;
+		$dataHash = $self->get_carrier_service_list;
 		}
 	elsif ($c->req->param('action') eq 'get_city_state')
 		{
 		$dataHash = $self->get_city_state;
+		}
+	elsif ($c->req->param('action') eq 'get_address_detail')
+		{
+		$dataHash = $self->get_address_detail;
 		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
@@ -288,22 +292,30 @@ sub get_city_state
 			$component->{type} = join(' | ', @{$component->{type}}) if (ref $component->{type}) =~ /array/gi;
 			#$c->log->debug("component->{type}: " . $component->{type});
 
-			$address1 = $component->{short_name} if $component->{type} =~ /administrative_area_level_1/;
-			$address2 = $component->{short_name} if $component->{type} =~ /locality/;
-			$city = $component->{short_name} if $component->{type} =~ /administrative_area_level_2/;
+			$city = $component->{short_name} if $component->{type} =~ /locality/;
 			$state = $component->{short_name} if $component->{type} =~ /administrative_area_level_1/;
 			$zip = $component->{short_name} if $component->{type} =~ /postal_code/;
 			$country = $component->{short_name} if $component->{type} =~ /country/;
-			;
 			}
 		}
 
 	#$c->log->debug("address1: $address1, address2: $address2, city: $city, state: $state, zip: $zip, country: $country");
 
-	return { address1 => $address1, address2 => $address2, city => $city, state => $state, zip => $zip, country => $country };
+	return { city => $city, state => $state, zip => $zip, country => $country };
 	}
 
-sub get_customer_service_list
+sub get_address_detail
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $addressid = $params->{'addressid'};
+	my $Address = $self->context->model('MyDBI::Address')->find({addressid => $addressid});
+
+	return { address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country };
+	}
+
+sub get_carrier_service_list
 	{
 	my $self = shift;
 	my $c = $self->context;
