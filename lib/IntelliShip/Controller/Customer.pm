@@ -43,46 +43,6 @@ sub index :Path :Args(0) {
 	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
-
-=head1
-
-auto : Private
-
-auto actions will be run after any begin, but before your URL-matching action is processed.
-Unlike the other built-ins, multiple auto actions can be called; they will be called in turn,
-starting with the application class and going through to the most specific class.
-
-=cut
-
-sub auto :Private
-	{
-	my($self, $c) = @_;
-
-	$c->log->debug('Auto Divert to ' . $c->action);
-
-	## Catalyst context is not accessible in every user defined function
-	$self->context($c);
-	####################
-
-	return 1 if $c->request->action =~ /login$/;
-
-	#$c->log->debug("c->request->cookies: " . Dumper $c->request->cookies);
-	#$c->log->debug("c->response->cookies: " . Dumper $c->response->cookies);
-
-	unless ($self->authorize_user)
-		{
-		#$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
-		$c->response->redirect($c->uri_for('/customer/login'));
-		$c->stash->{template} = undef;
-		return 0;
-		}
-
-	#$c->log->debug("**** User Authorized Successfully");
-	$c->response->cookies->{'TokenID'} = { value => $self->token->tokenid, expires => '+20M' };
-
-	return 1;
-	}
-
 =head2 default
 
 Standard 404 error page
@@ -136,10 +96,15 @@ sub authenticate_token :Private
 
 		$c->stash->{customer} = $Customer;
 		$c->stash->{contact} = $Contact;
+
+		## Update token expire time
+		$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp with time zone 'now' + '2 hours' WHERE tokenid = '$TokenID'");
+		}
+	else
+		{
+		$c->log->debug("NO TOKEN FOUND IN DB");
 		}
 
-	## Update token expire time
-	$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp 'now' + '2 hours' WHERE tokenid = '$TokenID'");
 
 	return ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
 	}
@@ -159,8 +124,8 @@ sub get_customer_contact
 
 	$contactUser = $customerUser unless $contactUser;
 
-	$c->log->debug("Customer user: " . $customerUser);
-	$c->log->debug("Contact  user: " . $contactUser) if $contactUser;
+	#$c->log->debug("Customer user: " . $customerUser);
+	#$c->log->debug("Contact  user: " . $contactUser) if $contactUser;
 
 	my $contact_search = { username => $contactUser };
 	$contact_search->{password} = $password unless $self->token;
@@ -169,8 +134,12 @@ sub get_customer_contact
 	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 	my $Contact = $contactArr[0] if @contactArr;
 
+	#$c->log->debug($Contact ? "Contact customerid: " . $Contact->customerid : Dumper $contact_search);
+
 	my @customerArr = $c->model('MyDBI::Customer')->search({ customerid => $Contact->customerid, username => $customerUser });
 	my $Customer = $customerArr[0] if @customerArr;
+
+	#$c->log->debug("Customer customerid: " . $Customer->customerid);
 
 	return ($Customer, $Contact);
 	}

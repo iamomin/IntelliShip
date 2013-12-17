@@ -26,11 +26,16 @@ sub index :Path :Args(0) {
 
     #$c->response->body('Matched IntelliShip::Controller::Customer::Logout in Customer::Logout.');
 
-	$c->log->debug('@@@@@@@@ DELETING TOKEN ID: ' . $self->token->tokenid);
-	$self->token->delete;
-	$self->token(undef);
+	if ($self->token)
+		{
+		$c->log->debug('@@@@@@@@ DELETING TOKEN ID: ' . $self->token->tokenid);
+		$self->token->delete;
+		$self->token(undef);
 
-	$c->response->redirect($c->uri_for('/customer/login'));
+		$c->response->cookies->{'TokenID'} = { value => '', expires => '-20M' };
+		}
+
+	$c->stash(template => "templates/customer/login.tt");
 }
 
 

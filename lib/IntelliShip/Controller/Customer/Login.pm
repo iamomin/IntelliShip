@@ -60,6 +60,7 @@ sub index :Path :Args(0)
 		}
 	else
 		{
+		$self->token(undef);
 		$c->stash(template => "templates/customer/login.tt"); ## SHOW LOGIN PAGE FIRST
 		}
 
@@ -106,21 +107,20 @@ sub authenticate_user :Private
 
 		$c->stash->{TokenID} = $TokenID;
 
-		$c->log->debug("#### Creating new TOKEN: " . $TokenID);
+		#$c->log->debug("#### Creating new TOKEN: " . $TokenID);
 
 		($BrandingID, $SSOUsername, $SSOAuth) = ('','',''); ##**
 
 		my $sql = "INSERT INTO token
 					(tokenid, customerid, datecreated, dateexpires,active_username,brandingid,ssoid)
 				VALUES
-					('$TokenID', '$CustomerID', timestamp 'now', timestamp 'now' + '1 hour', '$Username', '$BrandingID', '$SSOAuth')";
+					('$TokenID', '$CustomerID', timestamp 'now', timestamp with time zone 'now' + '1 hour', '$Username', '$BrandingID', '$SSOAuth')";
 
+		#$c->log->debug("sql: " . $sql);
 		$myDBI->dbh->do($sql);
 
 		$self->token($c->model("MyDBI::Token")->find($TokenID));
 		}
-
-	$self->flush_expired_tokens;
 
 	return $TokenID;
 	}

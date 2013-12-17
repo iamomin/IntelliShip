@@ -37,7 +37,7 @@ sub index :Path :Args(0) {
 				{ name => 'Sku Management', url => '/customer/settings/skumanagement'},
 			];
 
-	if ($self->has_extid_droplist_data > 0)
+	if ($self->customer->has_extid_data)
 		{
 		push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'})
 		}
@@ -151,22 +151,6 @@ sub skumanagement :Local
 	$c->stash->{SKU_MANAGEMENT} = 1;
 
 	$c->stash(template => "templates/customer/settings.tt");
-	}
-
-sub has_extid_droplist_data
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $Customer = $self->customer;
-
-	my $customer_id = $Customer->get_contact_data_value('sopid');
-	$customer_id = $Customer->customerid unless ($customer_id);
-
-	my $sth = $c->model("MyDBI")->select("SELECT count(*) FROM droplistdata WHERE field = 'extid' AND customerid = '" . $self->customer->customerid . "'");
-	my $count = $sth->fetchrow(0)->{'count'};
-	return $count;
 	}
 
 sub extidmanagement :Local
@@ -292,7 +276,7 @@ sub productskusetup :Local
 		}
 	elsif ($params->{'do'} eq 'configure')
 		{
-		$ProductSku = $c->model('MyDBI::Productsku')->new unless $ProductSku;
+		$ProductSku = $c->model('MyDBI::Productsku')->new({}) unless $ProductSku;
 
 		$ProductSku->description($params->{description});
 		$ProductSku->customerskuid($params->{customerskuid});
@@ -338,6 +322,7 @@ sub productskusetup :Local
 			}
 		else
 			{
+			$ProductSku->customerid($self->customer->customerid);
 			$ProductSku->productskuid($self->get_token_id);
 			$ProductSku->insert;
 			$c->log->debug("NEW PRODUCT SKU INSERTED, ID: ".$ProductSku->productskuid);
@@ -395,9 +380,9 @@ sub extidsetup :Local
 			}
 		else
 			{
-			$DropListData->field('extid');
 			$DropListData->customerid($self->customer->customerid);
 			$DropListData->droplistdataid($self->get_token_id);
+			$DropListData->field('extid');
 			$DropListData->insert;
 
 			$c->stash->{MESSAGE} = "New Extid added successfully!";

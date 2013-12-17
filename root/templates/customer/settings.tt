@@ -422,8 +422,8 @@ $(document).ready(function(){
 						<tr>
 							<td><label class="float_right" for="extidvalue">Value:</td>
 							<td><input type="text" class="text" id="fieldvalue" name="fieldvalue" /></td>
-							<td><input type="button" class="button" id="extid_add" value="Add" /></td>
 							<td><input type="button" class="button" id="extid_edit" value="Edit" /></td>
+							<td><input type="button" class="button" id="extid_add" value="Add New" /></td>
 
 							<td><label class="float_right" for="records_per_page">Records Per Page:</td>
 							<td>
@@ -525,6 +525,7 @@ $(document).ready(function(){
 
 		<h3>[% IF droplistdataid %]Edit[% ELSE %]Add New[% END %] EXTID </h3>
 
+		<p class="validateTips"></p>
 		<form id="frm_setup_sku" method="post" action="/customer/settings/extidsetup">
 			<input type="hidden" id="do" name="do" value="configure"/>
 			<input type="hidden" id="droplistdataid" name="droplistdataid" value="[% droplistdataid %]"/>

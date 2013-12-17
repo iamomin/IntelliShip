@@ -50,6 +50,51 @@ sub default :Path {
     $c->response->status(404);
 }
 
+=head1
+
+auto : Private
+
+auto actions will be run after any begin, but before your URL-matching action is processed.
+Unlike the other built-ins, multiple auto actions can be called; they will be called in turn,
+starting with the application class and going through to the most specific class.
+
+=cut
+
+sub auto :Private
+	{
+	my($self, $c) = @_;
+
+	$c->log->debug('Auto Divert to ' . $c->action);
+
+	my $Controller = $c->controller;
+
+	## Catalyst context is not accessible in every user defined function
+	$Controller->context($c);
+	####################
+
+	return 1 if $c->request->action =~ /login$/;
+
+	#$c->log->debug("c->request->cookies: " . Dumper $c->request->cookies);
+	#$c->log->debug("c->response->cookies: " . Dumper $c->response->cookies);
+
+	my $tokenid = ($Controller->token ? $Controller->token->tokenid : '');
+
+	unless ($Controller->authorize_user)
+		{
+		$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
+		$c->response->redirect($c->uri_for('/customer/login'));
+		$c->stash->{template} = undef;
+		return 0;
+		}
+
+	#$c->log->debug("**** User Authorized Successfully");
+
+
+	$c->response->cookies->{'TokenID'} = { value => $tokenid, expires => '+20M' };
+
+	return 1;
+	}
+
 =head2 end
 
 Attempt to render a view, if needed.
@@ -70,6 +115,7 @@ sub end : Private {
 
 	my $Token = $c->controller->token;
 	my $ajax = $c->req->param('ajax') || 0;
+
 	if ($Token and $ajax)
 		{
 		$c->forward($c->view('Ajax'));

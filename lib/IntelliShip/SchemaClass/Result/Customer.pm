@@ -610,6 +610,12 @@ __PACKAGE__->has_many(
 		'ownerid'
 	);
 
+__PACKAGE__->has_many(
+	droplist_data => 
+		'IntelliShip::SchemaClass::Result::Droplistdata',
+		{ "foreign.customerid" => "self.customerid" },
+	);
+
 sub get_contact_data_value
 	{
 	my $self = shift;
@@ -623,6 +629,18 @@ sub get_contact_data_value
 	return unless @custcondata_arr;
 
 	return $custcondata_arr[0]->value;
+	}
+
+sub has_extid_data
+	{
+	my $self = shift;
+
+	my $customer_id = $self->get_contact_data_value('sopid');
+	$customer_id = $self->customerid unless $customer_id;
+
+	my $RS = $self->droplist_data({ field => 'extid' });
+
+	return $RS->count;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
