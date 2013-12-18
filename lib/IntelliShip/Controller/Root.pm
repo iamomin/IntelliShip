@@ -79,19 +79,17 @@ sub auto :Private
 	#$c->log->debug("c->request->cookies: " . Dumper $c->request->cookies);
 	#$c->log->debug("c->response->cookies: " . Dumper $c->response->cookies);
 
-	my $tokenid = ($Controller->token ? $Controller->token->tokenid : '');
-
-	unless ($Controller->authorize_user)
+	my $tokenid;
+	unless ($tokenid = $Controller->authorize_user)
 		{
-		$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
+		#$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
 		$c->response->redirect($c->uri_for('/customer/login'));
 		$c->stash->{template} = undef;
 		return 0;
 		}
 
-	#$c->log->debug("**** User Authorized Successfully");
-
-
+	$tokenid = '' unless $tokenid;
+	#$c->log->debug("**** User Authorized Successfully, set TokenID in cookies: " . $tokenid);
 	$c->response->cookies->{'TokenID'} = { value => $tokenid, expires => '+20M' };
 
 	return 1;
@@ -113,6 +111,7 @@ sub end : Private {
 
 	return unless $c->stash->{template};
 
+	$c->stash->{selected_mnu} = 'mnu_' . (split(/\//,$c->action))[1];
 	$c->response->body($c->stash->{template});
 
 	my $Token = $c->controller->token;

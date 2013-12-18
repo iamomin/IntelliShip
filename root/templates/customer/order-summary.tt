@@ -1,0 +1,87 @@
+<h2>SHIP PACKAGES</h2>
+
+<table style="width: 100%">
+	<tr>
+	<td class="rounded5 inactive bold_text">ADDRESS</td>
+	<td class="rounded5 inactive bold_text">SHIPMENT DETAILS</td>
+	<td class="rounded5 active bold_text">FINAL REVIEW</td>
+	</tr>
+</table>
+
+<div class="equal">
+	<div class="row">
+		<div>
+		<table class="app">
+			<caption>ADDRESS SUMMARY <div class="float_right"><a href="#">edit</a></div></caption>
+			<tr>
+				<td>SHIP FROM</td><td><div class="default_text">[% customer.customername %]</div></td>
+				<td>SHIP TO</td><td><div class="default_text">[% toname %]</div></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td><div class="default_text">[% customerAddress.address1 %][% IF customerAddress.address2 %], customerAddress.address2[% END %]</div></td>
+				<td>&nbsp;</td><td><div class="default_text">[% toAddress.address1 %][% IF toAddress.address2 %], [% toAddress.address2 %][% END %]</div></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
+				<td>&nbsp;</td><td><div class="default_text">[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</div></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td><div class="default_text">[% customerAddress.country_description %]</div></td>
+				<td>&nbsp;</td><td><div class="default_text">[% toAddress.country_description %]</div></td>
+			</tr>
+			</tr>
+				<td>&nbsp;</td><td><div class="default_text">[% customer.phone %]</div></td>
+				<td>&nbsp;</td><td><div class="default_text">[% tophone %]</div></td>
+			<tr>
+			<tr>
+				<td>&nbsp;</td><td><div class="default_text">[% fromemail %]</div></td>
+				<td>&nbsp;</td><td><div class="default_text">[% toemail %]</div></td>
+			</tr>
+		</table>
+		</div>
+
+		<div>
+		<table class="app">
+			<caption>SHIPMENT DETAIL SUMMARY<div class="float_right"><a href="#">edit</a></div></caption>
+			<tr>
+				<td><label class="float_right">Due Date:</label></td><td><div class="default_text">[% dateneeded %]</div></td>
+			</tr>
+			<tr>
+				<td><label class="float_right">#Packages:</label></td><td><div class="default_text">[% total_packages %]</div></td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Total Weight:</label></td><td><div class="default_text">[% total_weight ? total_weight : '0.00' %]</div></td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Declared Value:</label></td><td><div class="default_text">[% insurance ? insurance : '0.00' %]</div></td>
+			</tr>
+			<tr>
+				<td><label class="float_right">International:</label></td><td><div class="default_text">[% international ? international : '0.00' %]</div></td>
+			</tr>
+		</table>
+		</div>
+	</div>
+</div>
+
+<div style="clear: both;">&nbsp;</div>
+
+<table class="app" style="width: 100%;">
+	<caption>Service Level Summary</caption>
+	<tr>
+		<th>&nbsp;</th><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSACTION DAYS</th><th>EST. DELIVERY</th><th>EST. COST</th><th>DECLD VAL/INSUR</th><th>EST. TOTAL COST</th>
+	</tr>
+	<tr>
+		<td><input type="checkbox"/></td><td>UPS</td><td>NEXT DAY AIR A.M.(8:30)</td><td>1</td><td>01/01/2014</td><td>$25.00</td><td>$25.00</td><td>$25.00</td>
+	</tr>
+</table>
+
+<div style="clear: both;">&nbsp;</div>
+
+<form id="frm_order_review" name="frm_order_review" method="post" action="/customer/order/new">
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" name="do" value="step3"/>
+	<div class="float_right">
+		<input type="button" class="button" id="cancel" value="CANCEL"/>
+		<input type="button" class="button" id="shipNow" value="SHIP NOW"/>
+	</div>
+</form>

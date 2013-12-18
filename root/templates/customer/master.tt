@@ -51,6 +51,7 @@
 		 <!-- Customer Portal Javascript -->
 		<script src="/static/js/customer.js"></script>
 
+		<script>$(document).ready(function(){ $("#[% selected_mnu %]").addClass("selected "); $("#[% selected_mnu %]").removeAttr('href'); });</script>
 	</head>
 
 	<body>
@@ -78,18 +79,18 @@
 		  <input type="hidden" name="action">
 		  <input type="hidden" name="do">
 		  <ul>
-			<li><a href="/customer/dashboard"> DASHBOARD </a>
-			<li><a href="/customer/myorders"> MY ORDERS </a>
-			<li><a href="/customer/order/new"> NEW ORDER </a>
-			<!-- <li><a href="/customer/order/address"> NEW ORDER </a> -->
-			<li><a href="/customer/order/quickship"> QUICK SHIP </a>
-			<li><a href="/customer/shippackages">SHIP PACKAGES</a>
-			<li><a href="/customer/batchshipping"> BATCH SHIPPING </a>
-			<li><a href="/customer/uploadfile"> UPLOAD FILE </a>
-			<li><a href="/customer/shipmentmaintenance"> SHIPMENT MAINTENANCE  </a>
-			<li><a href="/customer/report"> REPORTS </a>
-			<li><a href="/customer/settings"> SETTINGS </a>
-			<li><a href="/customer/logout"> LOGOUT </a>
+			<li><a id="mnu_dashboard" href="/customer/dashboard"> DASHBOARD </a>
+			<li><a id="mnu_myorders" href="/customer/myorders"> MY ORDERS </a>
+			<li><a id="mnu_new" href="/customer/order/new"> NEW ORDER </a>
+			<li><a id="mnu_multipage" href="/customer/order/multipage"> MULTIPAGE ORDER </a>
+			<li><a id="mnu_quickship" href="/customer/order/quickship"> QUICK SHIP </a>
+			<li><a id="mnu_shippackages" href="/customer/shippackages">SHIP PACKAGES</a>
+			<li><a id="mnu_batchshipping" href="/customer/batchshipping"> BATCH SHIPPING </a>
+			<li><a id="mnu_uploadfile" href="/customer/uploadfile"> UPLOAD FILE </a>
+			<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance"> SHIPMENT MAINTENANCE  </a>
+			<li><a id="mnu_report" href="/customer/report"> REPORTS </a>
+			<li><a id="mnu_settings" href="/customer/settings"> SETTINGS </a>
+			<li><a id="mnu_logout" href="/customer/logout"> LOGOUT </a>
 			<li>&nbsp;User:&nbsp;[% username %]&nbsp;&nbsp;
 		  </ul>
 		</form>

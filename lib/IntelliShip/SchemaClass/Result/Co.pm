@@ -787,6 +787,19 @@ __PACKAGE__->belongs_to(
 	"rtaddressid"
 	);
 
+__PACKAGE__->has_many(
+	shipments =>
+	"IntelliShip::SchemaClass::Result::Shipment",
+	{ "foreign.coid" => "self.coid" }
+	);
+
+sub shipment_count
+	{
+	my $self = shift;
+	my $RS = $self->shipments({ statusid => { 'NOT IN' => ['5','6','7'] }});
+	return $RS->count;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

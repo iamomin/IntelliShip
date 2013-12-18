@@ -4,7 +4,7 @@ use Data::Dumper;
 use IntelliShip::Utils;
 use namespace::autoclean;
 
-BEGIN { extends 'IntelliShip::Controller::Customer'; }
+BEGIN { extends 'IntelliShip::Controller::Customer'; has 'CO' => ( is => 'rw' ); }
 
 sub quickship :Local
 	{
@@ -17,7 +17,7 @@ sub quickship :Local
 
 sub setup :Private
 	{
-    my $self = shift;
+	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
@@ -48,42 +48,32 @@ sub save_order :Private
 
 	$c->log->debug("check order in");
 
-	my $Order = $self->get_order;
-	my $fromAddress = $self->customer->address;
+	my $CO = $self->get_order;
 
-	my $coData = {
-		customerid => $self->customer->customerid,
-		contactid  => $self->contact->contactid,
-		addressid  => $fromAddress->addressid,
-		statusid   => 1
-		};
+	my $coData = {};
 
-	$c->stash->{CO_DATA} = $coData;
+	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'});
+	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'});
 
-	## Set default cotypeid (Default to vanilla 'Order')
-	$coData->{'cotypeid'} = (length $params->{'cotypeid'} ? $params->{'cotypeid'} : 1);
-
-	$coData->{'datetoship'} = $params->{'datetoship'};
-	$coData->{'dateneeded'} = $params->{'dateneeded'};
-	$coData->{'extcd'} = $params->{'comments'};
+	$coData->{'description'} = $params->{'description'};
+	#$coData->{'extcd'} = $params->{'comments'};
 	$coData->{'extloginid'} = $self->customer->username;
 	$coData->{'contactname'} = $params->{'tocontact'};
 	$coData->{'contactphone'} = $params->{'tophone'};
 	$coData->{'department'} = $params->{'fromdepartment'};
 	$coData->{'shipmentnotification'} = $params->{'toemail'};
 	$coData->{'deliverynotification'} = $params->{'fromemail'};
-	$coData->{'clientdatecreated'} = "now";
 
-		#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
-        #
-		#if (
-		#	$HashRef->{'loginlevel'} == 35 ||
-		#	$HashRef->{'loginlevel'} == 40 ||
-		#	( $HashRef->{'cotypeid'} && $HashRef->{'cotypeid'} == 2 )
-		#)
-		#{
-		#	$OrderRef->{'cotypeid'} = 2;
-		#}
+	#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
+	#
+	#if (
+	#	$HashRef->{'loginlevel'} == 35 ||
+	#	$HashRef->{'loginlevel'} == 40 ||
+	#	( $HashRef->{'cotypeid'} && $HashRef->{'cotypeid'} == 2 )
+	#)
+	#{
+	#	$OrderRef->{'cotypeid'} = 2;
+	#}
 
 	# $coData->{'estimatedweight'} = $params->{'estimatedweight'};
 	# $coData->{'density'} = $params->{'density'};
@@ -118,31 +108,16 @@ sub save_order :Private
 		$coData->{'extcarrier'} = 'Other - ' . $Other->othername if $Other;
 		}
 
-	my $CO;
-	if ($params->{'coid'})
-		{
-		$CO = $c->model('MyDBI::Co')->find({ coid => $params->{'coid'} });
-		$CO->update($coData);
-
-		$c->log->debug("Existing CO Found, ID: " . $CO->coid);
-		}
-	else
-		{
-		$CO = $c->model('MyDBI::Co')->new($coData);
-		$CO->coid($self->get_token_id);
-		$CO->insert;
-
-		$c->log->debug("New CO Inserted, ID: " . $CO->coid);
-		}
+	$CO->update($coData);
 
 	## SAVE ADDRESS DETAILS
 	$self->save_address;
 
 	## SAVE PACKAGE & PRODUCT DETAILS
-	$self->save_package_product_details($CO);
+	$self->save_package_product_details;
 
 	## Display Order Review Page
-	$self->setup_summary_page($CO->coid);
+	$self->setup_summary_page;
 	}
 
 sub save_address
@@ -151,48 +126,48 @@ sub save_address
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("save address details");
+	$c->log->debug("... save address details");
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
-	my $Order = $self->get_order;
-	my $fromAddress = $self->customer->address;
+	my $CO = $self->get_order;
 
-	my $coData = $c->stash->{CO_DATA};
-
-	my $toAddressData = {
-			addressname => $params->{'toname'},
-			address1    => $params->{'toaddress1'},
-			address2    => $params->{'toaddress2'},
-			city        => $params->{'tocity'},
-			state       => $params->{'tostate'},
-			zip         => $params->{'tozip'},
-			country     => $params->{'tocountry'},
-			};
-
-	$c->log->debug("checking for dropship address availability");
-
-	## Fetch ship from address
-	my @addresses = $c->model('MyDBI::Address')->search($toAddressData);
-
-	my $ToAddress;
-	if (@addresses)
+	if (defined $params->{'toaddress1'})
 		{
-		$ToAddress = $addresses[0];
-		$c->log->debug("Existing Address Found, ID: " . $ToAddress->addressid);
-		}
-	else
-		{
-		$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
-		$ToAddress->addressid($self->get_token_id);
-		$ToAddress->insert;
-		$c->log->debug("New Address Inserted, ID: " . $ToAddress->addressid);
-		}
+		my $toAddressData = {
+				addressname => $params->{'toname'},
+				address1    => $params->{'toaddress1'},
+				address2    => $params->{'toaddress2'},
+				city        => $params->{'tocity'},
+				state       => $params->{'tostate'},
+				zip         => $params->{'tozip'},
+				country     => $params->{'tocountry'},
+				};
 
-	$coData->{addressid} = $ToAddress->id;
+		$c->log->debug("checking for dropship address availability");
+
+		## Fetch ship from address
+		my @addresses = $c->model('MyDBI::Address')->search($toAddressData);
+
+		my $ToAddress;
+		if (@addresses)
+			{
+			$ToAddress = $addresses[0];
+			$c->log->debug("Existing Address Found, ID: " . $ToAddress->addressid);
+			}
+		else
+			{
+			$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
+			$ToAddress->addressid($self->get_token_id);
+			$ToAddress->insert;
+			$c->log->debug("New Address Inserted, ID: " . $ToAddress->addressid);
+			}
+
+		$CO->addressid($ToAddress->id);
+		}
 
 	## Sort out return address/id
-	if (length $params->{'rtaddress1'})
+	if (defined $params->{'rtaddress1'})
 		{
 		$c->log->debug("checking for return address availability");
 		my $returnAddressData = {
@@ -205,22 +180,27 @@ sub save_address
 			country     => $params->{'rtcountry'},
 			};
 
+		## Fetch return address
+		my @addresses = $c->model('MyDBI::Address')->search($returnAddressData);
+
 		my $ReturnAddress;
 		if (@addresses)
 			{
 			$ReturnAddress = $addresses[0];
-			$c->log->debug("Existing Address Found, ID: " . $ToAddress->addressid);
+			$c->log->debug("Existing Address Found, ID: " . $ReturnAddress->addressid);
 			}
 		else
 			{
-			$ReturnAddress = $c->model("MyDBI::Address")->new($toAddressData);
+			$ReturnAddress = $c->model("MyDBI::Address")->new($returnAddressData);
 			$ReturnAddress->addressid($self->get_token_id);
 			$ReturnAddress->insert;
-			$c->log->debug("New Address Inserted, ID: " . $ToAddress->addressid);
+			$c->log->debug("New Address Inserted, ID: " . $ReturnAddress->addressid);
 			}
 
-		$coData->{rtaddressid} = $ReturnAddress->id;
+		$CO->rtaddressid($ReturnAddress->id);
 		}
+
+	$CO->update;
 	}
 
 sub get_row_id
@@ -239,14 +219,13 @@ sub get_row_id
 sub save_package_product_details
 	{
 	my $self = shift;
-	my $CO = shift;
 
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("save package details");
+	$c->log->debug("... save package product details");
 
-	my $Order = $self->get_order;
+	my $CO = $self->get_order;
 	my $total_row_count = int $params->{'pkg_detail_row_count'};
 
 	my $last_package_id=0;
@@ -355,114 +334,132 @@ sub get_order
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $cotypeid = $params->{'cotypeid'} || 1;
-	my $ordernumber = $params->{'ordernumber'};
-	my $customerid = $self->customer->customerid;
+	return $self->CO if $self->CO;
 
-	$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
-
-	my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
-
-	my $allowed_ext_cust_nums = [];
-	push(@$allowed_ext_cust_nums, $_->{'fieldvalue'}) foreach @r_c;
-=as
-	$allowed_ext_cust_nums = 'AND upper(extcustnum) in (' . $allowed_ext_cust_nums . ')' if length $allowed_ext_cust_nums;
-	my $myDBI = $c->model('MyDBI');
-	my $SQLString = "
-		SELECT coid, statusid
-		FROM
-			co
-		WHERE
-			customerid = '$customerid' AND
-			upper(ordernumber) = upper('$ordernumber') AND
-			cotypeid IN ($cotypeid)
-			$allowed_ext_cust_nums
-		ORDER BY
-			cotypeid,
-			datecreated DESC
-		LIMIT 1";
-	my $sth = $myDBI->select($SQLString);
-	if ($sth->numrows)
+	if ($params->{'coid'})
 		{
-		my $data = $sth->fetchrow(0);
-		my ($coid, $statusid, $ordernumber) = ($data->{'coid'},$data->{'statusid'},$data->{''});
+		my $CO = $c->model('MyDBI::Co')->find({ coid => $params->{'coid'} });
+		$c->log->debug("Existing CO Found, ID: " . $CO->coid);
+		$self->CO($CO);
 		}
+	else
+		{
+		## Set default cotypeid (Default to vanilla 'Order')
+		my $cotypeid = $params->{'cotypeid'} || 1;
+		my $ordernumber = $params->{'ordernumber'};
+		my $customerid = $self->customer->customerid;
+
+		$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
+
+		my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
+
+		my $allowed_ext_cust_nums = [];
+		push(@$allowed_ext_cust_nums, $_->{'fieldvalue'}) foreach @r_c;
+=as
+		$allowed_ext_cust_nums = 'AND upper(extcustnum) in (' . $allowed_ext_cust_nums . ')' if length $allowed_ext_cust_nums;
+		my $myDBI = $c->model('MyDBI');
+		my $SQLString = "
+			SELECT coid, statusid
+			FROM
+				co
+			WHERE
+				customerid = '$customerid' AND
+				upper(ordernumber) = upper('$ordernumber') AND
+				cotypeid IN ($cotypeid)
+				$allowed_ext_cust_nums
+			ORDER BY
+				cotypeid,
+				datecreated DESC
+			LIMIT 1";
+		my $sth = $myDBI->select($SQLString);
+		if ($sth->numrows)
+			{
+			my $data = $sth->fetchrow(0);
+			my ($coid, $statusid, $ordernumber) = ($data->{'coid'},$data->{'statusid'},$data->{''});
+			}
 =cut
 
-	my @cos = $c->model('MyDBI::Co')->search({
-						customerid => $self->customer->customerid,
-						ordernumber => uc($ordernumber),
-						cotypeid => $cotypeid,
-						extcustnum => $allowed_ext_cust_nums
-						});
+		my @cos = $c->model('MyDBI::Co')->search({
+							customerid => $customerid,
+							ordernumber => uc($ordernumber),
+							cotypeid => $cotypeid,
+							extcustnum => $allowed_ext_cust_nums
+							});
 
-	unless (@cos)
-		{
-		@cos = $c->model('MyDBI::Co')->search({
-						customerid => $self->customer->customerid,
-						ordernumber => uc($ordernumber),
-						cotypeid => $cotypeid
-						});
+		unless (@cos)
+			{
+			@cos = $c->model('MyDBI::Co')->search({
+							customerid => $customerid,
+							ordernumber => uc($ordernumber),
+							cotypeid => $cotypeid
+							});
+			}
+
+		$c->log->debug("total customer order found: " . @cos);
+
+		my ($coid, $statusid) = (0,0);
+		if (@cos)
+			{
+			my $CO = $cos[0];
+			$self->CO($CO);
+			($coid, $statusid, $ordernumber) = ($CO->coid,$CO->statusid,$CO->ordernumber);
+			$c->log->debug("coid: $coid , statusid: $statusid, ordernumber: $ordernumber");
+			}
+		else
+			{
+			$c->log->debug("_______ NO CO FOUND _______");
+			my $coData = {
+				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
+				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
+				customerid => $customerid,
+				contactid  => $self->contact->contactid,
+				addressid  => $self->customer->address->addressid,
+				cotypeid => $cotypeid,
+				statusid   => 1
+				};
+
+			my $CO = $c->model('MyDBI::Co')->new($coData);
+			$CO->coid($self->get_token_id);
+			$CO->insert;
+
+			$c->log->debug("New CO Inserted, ID: " . $CO->coid);
+			$self->CO($CO);
+			}
 		}
 
-	$c->log->debug("total customer order found: " . @cos);
-
-	my ($coid, $statusid) = (0,0);
-	if (@cos)
-		{
-		my $data = $cos[0];
-		($coid, $statusid, $ordernumber) = ($data->{'coid'},$data->{'statusid'},$data->{'ordernumber'});
-		}
-
-	$c->log->debug("coid: $coid , statusid: $statusid, ordernumber: $ordernumber");
-
-	return($coid,$statusid,$ordernumber);
+	$c->stash->{coid} = $self->CO->coid;
+	return $self->CO;
 	}
 
 sub setup_summary_page
 	{
 	my $self = shift;
-	my $coid = shift;
-
 	my $c = $self->context;
-	my $params = $c->req->params;
 
 	$c->stash->{review_order} = 1;
-	$self->populate_order($coid);
-
-	$c->stash->{title} = 'Review Order';
+	$self->populate_order;
 	$c->stash(template => "templates/customer/order-review.tt");
 	}
 
 sub populate_order
 	{
 	my $self = shift;
-	my $coid = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$coid = $params->{'coid'} unless ($coid);
-	my $ordernumber = $params->{'ordernumber'};
+	my $CO = $self->get_order;
 
-	$c->log->debug("populate_order, coid: $coid, ordernumber: $ordernumber");
+	my $ToAddress = $CO->to_address;
 
-	my $where = { customerid => $self->customer->customerid };
-	$where->{'coid'} = $coid if $coid;
-	$where->{'ordernumber'} = $ordernumber if $ordernumber;
-
-	my @cos = $c->model('MyDBI::Co')->search($where);
-
-	my $COData = $cos[0];
-
-	my $ToAddress = $COData->to_address;
+	$c->stash->{toAddress} = $ToAddress;
 
 	## Initialize Screen
 	$self->setup;
-	$c->stash->{coid} = $coid;
+	$c->stash->{coid} = $CO->coid;
 	$c->stash->{edit_order} = 1;
 
 	## Ship From Section
-	$c->stash->{fromemail} = $COData->deliverynotification;
+	$c->stash->{fromemail} = $CO->deliverynotification;
 
 	## Ship To Section
 	$c->stash->{toname} = $ToAddress->addressname;
@@ -472,36 +469,37 @@ sub populate_order
 	$c->stash->{tostate} = $ToAddress->state;
 	$c->stash->{tozip} = $ToAddress->zip;
 	$c->stash->{tocountry} = $ToAddress->country;
-	$c->stash->{tocontact} = $COData->contactname;
-	$c->stash->{tophone} = $COData->contactphone;
-	$c->stash->{toemail} = $COData->shipmentnotification;
-	$c->stash->{ordernumber} = $COData->ordernumber;
-	$c->stash->{dateneeded} = $COData->dateneeded;
+	$c->stash->{tocontact} = $CO->contactname;
+	$c->stash->{tophone} = $CO->contactphone;
+	$c->stash->{toemail} = $CO->shipmentnotification;
+	$c->stash->{ordernumber} = $CO->ordernumber;
+	$c->stash->{dateneeded} = $CO->dateneeded;
 
 	# Ship Information
-	$c->stash->{comments} = $COData->description;
+	$c->stash->{comments} = $CO->description;
 
 	# Package Details
 	$c->stash->{'totalweight'} = 0;
 	$c->stash->{'totalpackages'} = 0;
-	$self->populate_package_detail_section($COData);
+	$self->populate_package_detail_section;
 
 	# ASSESSORIALS SECTION 1000 for co and 2000 for shipment
-	$c->stash->{specialservice_loop} = $self->populate_assessorials_section($COData);
+	$c->stash->{specialservice_loop} = $self->populate_assessorials_section;
 	}
 
 sub populate_package_detail_section
 	{
 	my $self = shift;
-	my $COData = shift;
 	my $c = $self->context;
+
+	my $CO = $self->get_order;
 
 	my $rownum_id = 0;
 	my $package_detail_section_html;
 
 	# Step 1: Find Packages belog to Order
 	my $find_package = {};
-	$find_package->{'ownerid'} = $COData->coid;
+	$find_package->{'ownerid'} = $CO->coid;
 	$find_package->{'ownertypeid'} = '1000';
 	$find_package->{'datatypeid'} = '1000';
 
@@ -528,7 +526,7 @@ sub populate_package_detail_section
 
 	# Step 3: Find product belog to Order
 	my $find_product = {};
-	$find_product->{'ownerid'}      = $COData->coid;
+	$find_product->{'ownerid'}      = $CO->coid;
 	$find_product->{'ownertypeid'}  = '1000';
 	$find_product->{'datatypeid'}   = '2000';
 
@@ -592,11 +590,10 @@ sub add_detail_row
 sub populate_assessorials_section
 	{
 	my $self = shift;
-	my $COID = shift;
 	my $c = $self->context;
 
 	my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
-	my $specialService = $self->get_special_services($COID->coid);
+	my $specialService = $self->get_special_services;
 
 	foreach my $SpecialService (@$special_service_loop)
 		{
@@ -609,7 +606,7 @@ sub populate_assessorials_section
 sub get_special_services
 	{
 	my $self = shift;
-	my $COID = shift;
+	my $COID = $self->CO->coid;
 
 	return unless $COID;
 

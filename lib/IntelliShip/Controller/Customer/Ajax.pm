@@ -309,7 +309,7 @@ sub get_address_detail
 	my $self = shift;
 	my $c = $self->context;
 
-	my $addressid = $params->{'addressid'};
+	my $addressid = $c->req->params->{'addressid'};
 	my $Address = $self->context->model('MyDBI::Address')->find({addressid => $addressid});
 
 	return { address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country };

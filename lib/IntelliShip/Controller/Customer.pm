@@ -59,14 +59,13 @@ sub flush_expired_tokens :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
-	$c->log->debug("#### FLUSH EXPIRED TOKEN FROM DB");
+	#$c->log->debug("#### FLUSH EXPIRED TOKEN FROM DB");
 	$c->model("MyDBI")->dbh->do("DELETE FROM token WHERE dateexpires <= timestamp with time zone 'now'");
 	}
 
 sub authorize_user :Private
 	{
 	my $self = shift;
-	my $c = $self->context;
 	my ($NewTokenID, $CustomerID, $ContactID, $ActiveUser,$MyBrandingID) = $self->authenticate_token;
 	return $NewTokenID;
 	}
@@ -78,15 +77,14 @@ sub authenticate_token :Private
 
 	my $TokenID = $self->get_login_token;
 
-	$c->log->debug("**** Authorize Customer User, Token ID: " . $TokenID);
+	#$c->log->debug("**** Authorize Customer User, Token ID: " . $TokenID);
 
 	my ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
 
 	my $Token = $c->model("MyDBI::Token")->find({ tokenid => $TokenID });
 
-	if ($Token)
+	if ($Token and $NewTokenID = $Token->tokenid)
 		{
-		$NewTokenID = $Token->tokenid;
 		$self->token($Token);
 
 		my ($Customer,$Contact) = $self->get_customer_contact;
@@ -98,11 +96,11 @@ sub authenticate_token :Private
 		$c->stash->{contact} = $Contact;
 
 		## Update token expire time
-		$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp with time zone 'now' + '2 hours' WHERE tokenid = '$TokenID'");
+		$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp with time zone 'now' + '2 hours' WHERE tokenid = '$NewTokenID'");
 		}
 	else
 		{
-		$c->log->debug("NO TOKEN FOUND IN DB");
+		$c->log->debug("NO TOKEN ($TokenID) FOUND IN DB");
 		}
 
 
@@ -118,7 +116,7 @@ sub get_customer_contact
 	my $c = $self->context;
 
 	$username = $self->token->active_username if $self->token;
-	$c->log->debug("Authenticated user: " . $username);
+	#$c->log->debug("Authenticated user: " . $username);
 
 	my ($customerUser, $contactUser) = split(/\//,$username);
 
@@ -190,7 +188,7 @@ sub get_token_id :Private
 	my $SeqID = $BaseCalc->to_base($RawToken);
 
 	#print STDERR "\n********** SeqID: " . $SeqID;
-	$c->log->debug("get_token_id, Token ID: " . $SeqID);
+	#$c->log->debug("get_token_id, Token ID: " . $SeqID);
 
 	return $SeqID;
 	}
@@ -323,8 +321,10 @@ sub get_select_list
 		my @records = $self->context->model('MyDBI::Country')->all;
 		#my @records = $self->context->model('MyDBI::Country')->search({ countryiso2 => 'US' });
 
+		push(@$list, { name => '', value => ''});
 		foreach my $Country (@records)
 			{
+			next unless $Country->countryiso2;
 			push(@$list, { name => $Country->countryname, value => $Country->countryiso2});
 			}
 		}
