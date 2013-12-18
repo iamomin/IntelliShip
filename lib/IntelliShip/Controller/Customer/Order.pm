@@ -21,7 +21,7 @@ sub setup :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
+	#($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
 	$c->stash->{neworder} = 1;
 	$c->stash->{ordernumber} = $params->{'ordernumber'};
@@ -63,9 +63,6 @@ sub save_order :Private
 	## Set default cotypeid (Default to vanilla 'Order')
 	$coData->{'cotypeid'} = (length $params->{'cotypeid'} ? $params->{'cotypeid'} : 1);
 
-	## SAVE ADDRESS DETAILS
-	$self->save_address;
-
 	$coData->{'datetoship'} = $params->{'datetoship'};
 	$coData->{'dateneeded'} = $params->{'dateneeded'};
 	$coData->{'extcd'} = $params->{'comments'};
@@ -88,31 +85,31 @@ sub save_order :Private
 		#	$OrderRef->{'cotypeid'} = 2;
 		#}
 
-	$coData->{'estimatedweight'} = $params->{'estimatedweight'};
-	$coData->{'density'} = $params->{'density'};
-	$coData->{'volume'} = $params->{'volume'};
-	$coData->{'class'} = $params->{'class'};
+	# $coData->{'estimatedweight'} = $params->{'estimatedweight'};
+	# $coData->{'density'} = $params->{'density'};
+	# $coData->{'volume'} = $params->{'volume'};
+	# $coData->{'class'} = $params->{'class'};
 
-	# Sort out volume/density/class issues - if we have volume (and of course weight), and nothing
-	# else, calculate density.  If we have density and no class, get class.
-	# Volume assumed to be in cubic feet - density would of course be #/cubic foot
-	if ($params->{'estimatedweight'} and $params->{'volume'} and !$params->{'density'} )
-		{
-		$coData->{'density'} = int($params->{'estimatedweight'} / $params->{'volume'});
-		}
+	# # Sort out volume/density/class issues - if we have volume (and of course weight), and nothing
+	# # else, calculate density.  If we have density and no class, get class.
+	# # Volume assumed to be in cubic feet - density would of course be #/cubic foot
+	# if ($params->{'estimatedweight'} and $params->{'volume'} and !$params->{'density'} )
+		# {
+		# $coData->{'density'} = int($params->{'estimatedweight'} / $params->{'volume'});
+		# }
 
-	if ($params->{'density'} and !$params->{'class'})
-		{
-		$coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($params->{'estimatedweight'}, undef, undef, undef, $params->{'density'});
-		}
+	# if ($params->{'density'} and !$params->{'class'})
+		# {
+		# $coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($params->{'estimatedweight'}, undef, undef, undef, $params->{'density'});
+		# }
 
-	$coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
+	# $coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
 
-	## If this order has non-voided shipments, keep it's status as 'shipped' (statusid = 5)
-	if ($params->{'coid'} and $self->get_shipment_count > 0)
-		{
-		$coData->{'statusid'} = 5;
-		}
+	# ## If this order has non-voided shipments, keep it's status as 'shipped' (statusid = 5)
+	# if ($params->{'coid'} and $self->get_shipment_count > 0)
+		# {
+		# $coData->{'statusid'} = 5;
+		# }
 
 	## Sort out 'Other' carrier nonsense
 	if ($params->{'customerserviceid'} and $params->{'customerserviceid'} =~ /^OTHER_(\w{13})/)
@@ -137,6 +134,9 @@ sub save_order :Private
 
 		$c->log->debug("New CO Inserted, ID: " . $CO->coid);
 		}
+
+	## SAVE ADDRESS DETAILS
+	$self->save_address;
 
 	## SAVE PACKAGE & PRODUCT DETAILS
 	$self->save_package_product_details($CO);
@@ -269,12 +269,12 @@ sub save_package_product_details
 				partnumber  => $params->{'sku_' . $PackageIndex },
 				description => $params->{'description_' . $PackageIndex },
 				unittypeid  => $params->{'unittype_' . $PackageIndex },
-				weight      => $params->{'weight_' . $PackageIndex },
-				dimweight   => $params->{'dimweight_' . $PackageIndex },
-				dimlength   => $params->{'dimlength_' . $PackageIndex },
-				dimwidth    => $params->{'dimwidth_' . $PackageIndex },
-				dimheight   => $params->{'dimheight_' . $PackageIndex },
-				density     => $params->{'density_' . $PackageIndex },
+				weight      => int $params->{'weight_' . $PackageIndex },
+				dimweight   => int $params->{'dimweight_' . $PackageIndex },
+				dimlength   => int $params->{'dimlength_' . $PackageIndex },
+				dimwidth    => int $params->{'dimwidth_' . $PackageIndex },
+				dimheight   => int $params->{'dimheight_' . $PackageIndex },
+				density     => int $params->{'density_' . $PackageIndex },
 				class       => int $params->{'class_' . $PackageIndex },
 				frtins      => int $params->{'frtins_' . $PackageIndex},
 				nmfc        => int $params->{'nmfc_' . $PackageIndex },

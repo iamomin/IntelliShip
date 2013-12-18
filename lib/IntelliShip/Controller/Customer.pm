@@ -238,6 +238,64 @@ sub get_branding_id
 	return $branding_id;
 	}
 
+sub get_address_dropdown_list
+	{
+	my $self = shift;
+	my $list = [];
+
+	my $c = $self->context;
+
+	my $myDBI = $self->context->model('MyDBI');
+	my $customerid = $self->customer->customerid;
+	my $smartaddressbook = $self->customer->smartaddressbook; # 0 = keep only 1,2,3 etc is interval
+
+	my $where = '';
+
+	if ( defined($smartaddressbook) and $smartaddressbook > 0 )
+		{
+		$where = " AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '- $smartaddressbook days'))";
+		}
+	else
+		{
+		$where = " AND ( keep = 1) ";
+		}
+
+	# TODO ::: join to addresses table on either addressid or dropaddressid to split into origin/destination
+
+	my $orderby = "";
+	if ( $customerid =~ /VOUGHT/ )
+		{
+		$orderby = "  ORDER BY extcustnum, addressname, address1, address2, city";
+		}
+	else
+		{
+		$orderby = "  ORDER BY addressname, address1, address2, city";
+		}
+
+	my $sql = "SELECT 
+					DISTINCT ON (addressname,address1,
+						address2,city,state,zip,country) address.addressid as addressid,
+					addressname as addressname
+				FROM co 
+					INNER JOIN address on co.addressid = address.addressid AND co.customerid = '$customerid'
+				WHERE
+				co.cotypeid in (1,2,10)
+					$where
+					$orderby";
+
+	$c->log->debug('list is' . $sql);
+
+	my $sth = $myDBI->select($sql);
+	for (my $row=0; $row < $sth->numrows; $row++)
+		{
+		my $data = $sth->fetchrow($row);
+		push(@$list, { name => $data->{'addressname'}, value => $data->{'addressid'} });
+		}
+
+	$c->log->debug('list is' . Dumper($list));
+	return $list;
+	}
+
 sub get_select_list
 	{
 	my $self = shift;
@@ -257,7 +315,7 @@ sub get_select_list
 		my @records = $self->context->model('MyDBI::Customer')->all;
 		foreach my $Country (@records)
 			{
-			push(@$list, { name => $Country->customername, value => $Country->customerid});
+			push(@$list, { name => $Country->customername, value => $Country->addressid});
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')

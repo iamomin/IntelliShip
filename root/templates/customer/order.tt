@@ -4,7 +4,6 @@
 	<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
 	<input type="hidden" name="do" value="save"/>
 
 	<table>
@@ -636,6 +635,24 @@ function checkCarrierServiceSection()
 		}
 	}
 
+function populate_ship_to_address(addressid)
+	{
+	var query_param = '&addressid='+addressid;
+
+	if (addressid.length > 0) {
+		send_ajax_request('', 'JSON', '', 'get_address_detail', query_param, function (){
+			if (JSON_data.address1) {
+				$("#toaddress1").val(JSON_data.address1);
+				$("#toaddress2").val(JSON_data.address2);
+				$("#tocity").val(JSON_data.city);
+				$("#tostate").val(JSON_data.state);
+				$("#tozip").val(JSON_data.zip);
+				$("#tocountry").val(JSON_data.country);
+				}
+			});
+		}
+	}
+
 $(document).ready(function(){
 	[% IF ordernumber %]
 		calculate_total_packages();
@@ -655,9 +672,20 @@ $(document).ready(function(){
 	$("#dateneeded").datepicker({ minDate: '-0d' });
 
 	var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
+	var arrCompanyAddress = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[%item.value%]",[% END %]];
 
 	$("#toname").autocomplete({
-		source: availableCustomers
+		source: availableCustomers,
+		select: function( event, ui ) {
+				var SelectedComapny = ui.item.value
+				$.each( arrCompanyAddress, function( index, value ){
+					var availableCompany = value.split(":");
+					if (availableCompany[0] == SelectedComapny)
+						{
+						populate_ship_to_address(availableCompany[1]);
+						}
+					});
+			}
 		});
 
 	$("#tpcompanyname").autocomplete({
