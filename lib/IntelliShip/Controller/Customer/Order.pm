@@ -36,11 +36,12 @@ sub setup :Private
 
 	$c->stash->{tocountry} = "US";
 	$c->stash->{deliverymethod} = "prepaid";
+	$c->stash->{tooltips} = $self->get_tooltips;
 
 	$c->stash(template => "templates/customer/order.tt");
 	}
 
-sub save_order :Private
+sub save_CO_details :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -50,19 +51,27 @@ sub save_order :Private
 
 	my $CO = $self->get_order;
 
-	my $coData = {};
+	my $coData = { keep => '0' };
 
-	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'});
-	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'});
+	$coData->{'isdropship'} = $params->{'isdropship'} || '0';
+	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
+	$coData->{'department'} = $params->{'fromdepartment'} if $params->{'fromdepartment'};
+	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
+	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'}) if $params->{'datetoship'};
+	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'}) if $params->{'dateneeded'};
 
-	$coData->{'description'} = $params->{'description'};
+	$coData->{'description'} = $params->{'description'} if $params->{'description'};
 	#$coData->{'extcd'} = $params->{'comments'};
 	$coData->{'extloginid'} = $self->customer->username;
-	$coData->{'contactname'} = $params->{'tocontact'};
-	$coData->{'contactphone'} = $params->{'tophone'};
-	$coData->{'department'} = $params->{'fromdepartment'};
-	$coData->{'shipmentnotification'} = $params->{'toemail'};
-	$coData->{'deliverynotification'} = $params->{'fromemail'};
+	$coData->{'contactname'} = $params->{'tocontact'} if $params->{'tocontact'};
+
+	if ($params->{'datetoship'})
+		{
+		$params->{'tophone'} =~ s/\D//g;
+		$coData->{'contactphone'} = $params->{'tophone'};
+		}
+
+	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
 
 	#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
 	#
@@ -109,15 +118,6 @@ sub save_order :Private
 		}
 
 	$CO->update($coData);
-
-	## SAVE ADDRESS DETAILS
-	$self->save_address;
-
-	## SAVE PACKAGE & PRODUCT DETAILS
-	$self->save_package_product_details;
-
-	## Display Order Review Page
-	$self->setup_summary_page;
 	}
 
 sub save_address
@@ -226,6 +226,15 @@ sub save_package_product_details
 	$c->log->debug("... save package product details");
 
 	my $CO = $self->get_order;
+
+	$c->log->debug("___ Flush old PackProData for ownerid: " . $CO->coid);
+	my @packages = $c->model("MyDBI::Packprodata")->search({ ownerid => $CO->coid });
+	foreach my $Pkg (@packages)
+		{
+		$c->model("MyDBI::Packprodata")->search({ ownerid => $Pkg->packprodataid })->delete;
+		$Pkg->delete;
+		}
+
 	my $total_row_count = int $params->{'pkg_detail_row_count'};
 
 	my $last_package_id=0;
@@ -242,12 +251,13 @@ sub save_package_product_details
 		$ownerid = $last_package_id if ($params->{'type_' . $PackageIndex } eq 'product');
 
 		my $PackProData = {
+				ownertypeid => 1000,
 				ownerid     => $ownerid,
 				boxnum      => $params->{'quantity_' . $PackageIndex },
 				quantity    => $params->{'quantity_' . $PackageIndex },
 				partnumber  => $params->{'sku_' . $PackageIndex },
 				description => $params->{'description_' . $PackageIndex },
-				unittypeid  => $params->{'unittype_' . $PackageIndex },
+				unittypeid  => int $params->{'unittype_' . $PackageIndex },
 				weight      => int $params->{'weight_' . $PackageIndex },
 				dimweight   => int $params->{'dimweight_' . $PackageIndex },
 				dimlength   => int $params->{'dimlength_' . $PackageIndex },
@@ -256,11 +266,11 @@ sub save_package_product_details
 				density     => int $params->{'density_' . $PackageIndex },
 				class       => int $params->{'class_' . $PackageIndex },
 				frtins      => int $params->{'frtins_' . $PackageIndex},
-				nmfc        => int $params->{'nmfc_' . $PackageIndex },
+				nmfc        => $params->{'nmfc_' . $PackageIndex },
 				decval      => int $params->{'decval_' . $PackageIndex },
 			};
 
-		$c->log->debug("PackProData: " . Dumper $PackProData);
+		#$c->log->debug("PackProData: " . Dumper $PackProData);
 
 		my $PackProDataObj = $c->model("MyDBI::Packprodata")->new($PackProData);
 		$PackProDataObj->packprodataid($self->get_token_id);
@@ -270,7 +280,7 @@ sub save_package_product_details
 
 		$last_package_id = $PackProDataObj->packprodataid if ($params->{'type_' . $PackageIndex } eq 'package');
 		}
-=a
+=as
 		my $OriginalCOID      = $ItemRef->{'consolidatedcoid' . $PackageIndex };
 		my $UnitofMeasure     = $ItemRef->{'unitofmeasure' . $PackageIndex };
 		my $DryIceWt          = ceil($ItemRef->{'dryicewt' . $PackageIndex });
@@ -427,6 +437,7 @@ sub get_order
 			}
 		}
 
+	$c->log->debug("STASH coid _______");
 	$c->stash->{coid} = $self->CO->coid;
 	return $self->CO;
 	}
@@ -617,6 +628,46 @@ sub get_special_services
 
 	$specialService->{$_} = 1 foreach @$data;
 	return $specialService;
+	}
+
+sub get_tooltips
+	{
+	my $self = shift;
+	my $type = [
+		{ id => 'ordernumber'		, value => 'Order number please!' },
+		{ id => 'fromdepartment'	, value => 'From where to ship?' },
+		{ id => 'fromemail'			, value => 'Your email address will be used for shipment notification!' },
+		{ id => 'toname'			, value => 'Recipient company name' },
+		{ id => 'toaddress1'		, value => 'Steet Address' },
+		{ id => 'toaddress2'		, value => 'Apt, Floor, Suite, etc. (Optional)' },
+		{ id => 'tocity'			, value => 'Recipient city' },
+		{ id => 'tozip'				, value => 'Recipient zip code' },
+		{ id => 'tocontact'			, value => 'Recipient contact' },
+		{ id => 'tophone'			, value => 'Recipient phone number' },
+		{ id => 'tocustomernumber'	, value => '(Optional)' },
+		{ id => 'toemail'			, value => 'Recipient email address will be used for shipment notification!' },
+		{ id => 'datetoship'		, value => 'When to ship?' },
+		{ id => 'dateneeded'		, value => 'Delivery date' },
+		{ id => 'comments'			, value => '(Optional)' },
+		{ id => 'dryicewt'			, value => '(Optional)' },
+		{ id => 'insurance'			, value => '(Optional)' },
+		{ id => 'freightinsurance'	, value => '(Optional)' },
+		{ id => 'quantity'			, value => 'Product quantity' },
+		{ id => 'sku'				, value => 'Enter sku ID' },
+		{ id => 'weight'			, value => 'Provide weight' },
+		{ id => 'dimweight'			, value => '(Optional)' },
+		{ id => 'dimlength'			, value => 'Package length' },
+		{ id => 'dimwidth'			, value => 'Package width' },
+		{ id => 'dimheight'			, value => 'Package height' },
+		{ id => 'density'			, value => '(Optional)' },
+		{ id => 'nmfc'				, value => '(Optional)' },
+		{ id => 'class'				, value => '(Optional)' },
+		{ id => 'decval'			, value => '(Optional)' },
+		{ id => 'frtins'			, value => '(Optional)' },
+		{ id => 'type'				, value => 'Provide type' },
+		{ id => 'othercarrier'		, value => '(Optional)' },
+		];
+	return $type;
 	}
 
 __PACKAGE__->meta->make_immutable;

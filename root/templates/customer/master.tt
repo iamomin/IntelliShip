@@ -56,7 +56,7 @@
 
 	<body>
 	<!-- ajax loader -->
-	<div id="preload" style="display: none;"><img src="/static/images/loader-dots-blue.GIF" class="ajax-loader"/></div>
+	<div id="preload" style="display: none;"><img src="/static/images/ajax-loader-dots.gif" class="ajax-loader"/></div>
 	<!-- ajax loader -->
 
 	<!-- start Dialog -->

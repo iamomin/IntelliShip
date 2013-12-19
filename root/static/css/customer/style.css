@@ -40,8 +40,8 @@ body{
     position: fixed;
     top: 0%;
     left: 50%;
-    margin-left: -48px; /* image width / 2 */
-    margin-top:   5px;  /* image height / 2 */
+    margin-left: -64px; /* image width / 2 */
+    margin-top:   0px;  /* image height / 2 */
     display: block;
     cursor: wait;
 }
@@ -324,6 +324,8 @@ div.notice {
 }
 
 div.error {
+    position: relative;
+    border: 1px solid #811;
     color: #911;
     padding: 15px;
     background-color: #efd0d0;

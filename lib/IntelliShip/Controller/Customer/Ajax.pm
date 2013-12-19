@@ -126,6 +126,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->get_address_detail;
 		}
+	else
+		{
+		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
+		}
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);

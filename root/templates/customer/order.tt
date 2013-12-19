@@ -12,7 +12,7 @@
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8" title="Here is my sample help"/>
+			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8"/>
 			</td>
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
@@ -22,6 +22,8 @@
 			</td>
 		<tr>
 	</table>
+
+	<div class="notice">Enter the recipient's (Ship To) address and Shipment details</div>
 
 	<div class="equal">
 		<div class="row">
@@ -138,7 +140,11 @@
 			</div>
 		</div>
 	</div>
+
 	<h2>Package Detail</h2>
+
+	<div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
+
 	<table>
 		<tr>
 			<td><label>Total Weight:</label></td>
@@ -342,14 +348,13 @@ $(document).ready(function(){
 	$("#toname").autocomplete({
 		source: availableCustomers,
 		select: function( event, ui ) {
-				var SelectedComapny = ui.item.value
-				$.each( arrCompanyAddress, function( index, value ){
-					var availableCompany = value.split(":");
-					if (availableCompany[0] == SelectedComapny)
-						{
-						populate_ship_to_address(availableCompany[1]);
-						}
-					});
+			var SelectedComapny = ui.item.value
+			$.each( arrCompanyAddress, function( index, value ){
+				var availableCompany = value.split(":");
+				if (availableCompany[0] == SelectedComapny) {
+					populate_ship_to_address(availableCompany[1]);
+					}
+				});
 			}
 		});
 
@@ -473,6 +478,18 @@ $(document).ready(function(){
 
 	checkInternationalSection();
 	checkCarrierServiceSection();
+
+	[% IF tooltips %]
+	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+	setToolTip();
+	[% END %]
+/*
+	$("frm_order input, frm_order select").each(function(){
+			var input = $(this);
+			alert(input.attr('id'));
+			input.attr('title') = tooltip.
+		});
+*/
 	});
 
 </script>

@@ -2,9 +2,9 @@
 /* 2013 Aloha Technology Pvt Ltd. */
 /* Designed by: Imran Momin*/
 
-$(function() {
-	var tooltips = $( "[title]" ).tooltip();
-	});
+function setToolTip() {
+	$("[title]").tooltip({ track: true });
+	}
 
 function afterSuccessCallBack(response_type, result_div, call_back_function, responseStatus) {
 	var bollIsErrorResponse = false;
@@ -60,7 +60,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 			success: function(data) {
 				$('#preload').hide();
 
-				if (data.error) showMessage(data.error, "Reseponse Error");
+				if (data.error) showMessage("<div class='error'>" + data.error + "</div>", "Reseponse Error");
 				else JSON_data = data;
 
 				afterSuccessCallBack(type_value, "", call_back_function);

@@ -50,6 +50,7 @@ sub complete_step1
 	{
 	my $self = shift;
 	$self->save_address;
+	$self->save_CO_details;
 	$self->setup_package_detail;
 	}
 
@@ -57,12 +58,15 @@ sub complete_step2
 	{
 	my $self = shift;
 	$self->save_package_product_details;
+	$self->save_CO_details;
 	$self->setup_review;
 	}
 
 sub complete_step3
 	{
 	my $self = shift;
+	$self->save_CO_details;
+	$self->setup_address;
 	}
 
 sub setup_address
@@ -70,11 +74,14 @@ sub setup_address
 	my $self = shift;
 	my $c = $self->context;
 
+	$c->stash->{ordernumber} = $self->get_order->coid;
 	$c->stash->{customer} = $self->customer;
 	$c->stash->{customerAddress} = $self->customer->address;
 	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
+	$c->stash->{tooltips} = $self->get_tooltips;
+
 	$c->stash(template => "templates/customer/order-address.tt");
 	}
 
@@ -96,6 +103,8 @@ sub setup_package_detail
 		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
 		}
 
+	$c->stash->{tooltips} = $self->get_tooltips;
+
 	$c->stash(template => "templates/customer/order-shipment.tt");
 	}
 
@@ -104,6 +113,7 @@ sub setup_review
 	my $self = shift;
 	my $c = $self->context;
 	$self->populate_order;
+	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
 	$c->stash(template => "templates/customer/order-summary.tt");
 	}
 

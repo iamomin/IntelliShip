@@ -203,7 +203,7 @@ function setSkuDetails(row_num, sku_id)
 				$("#dimheight_"+row_num).val(JSON_data.height);
 				$("#nmfc_"+row_num).val(JSON_data.nmfc);
 				//$("#class_"+row_num).val(JSON_data.class);
-				$("#unittype_"+row_num+" option:selected").val(JSON_data.unittypeid);
+				if (JSON_data.unittypeid != "") $("#unittype_"+row_num+" option:selected").val(JSON_data.unittypeid);
 				}
 			});
 
@@ -240,11 +240,14 @@ function checkInternationalSection() {
 
 function setCityAndState()
 	{
+	var tozip = $("#tozip").val();
+	if (tozip.length < 5) return;
+
 	$("#tocity").val('');
 	$("#tostate").val('');
 	$("#tocountry").val('');
 
-	var query_param = "&zipcode=" + $("#tozip").val(); 
+	var query_param = "&zipcode=" + tozip;
 	if($("#tozip").val() != "") {
 		send_ajax_request('', 'JSON', '', 'get_city_state', query_param, function () {
 			$("#tocity").val(JSON_data.city);

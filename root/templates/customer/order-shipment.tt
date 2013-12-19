@@ -8,13 +8,15 @@
 	</tr>
 </table>
 
-<form id="frm_address" name="frm_shipment" method="post" action="/customer/order/multipage">
+<hr class="solid_line rounded5"/>
+
+<div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
+
+<form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step2"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
-
-	<hr class="solid_line rounded5"/>
 
 	<table>
 		<tr>
@@ -140,6 +142,7 @@
 		calculate_total_packages();
 		calculate_total_declared_value_insurance();
 		calculate_total_freight_insurance();
+		pkg_detail_row_count--;
 		});
 
 	$("input[name=quantityxweight]:radio").change(function () {
@@ -165,5 +168,12 @@
 
 		return validateForm(requireHash);
 		});
+
+$(document).ready(function(){
+	[% IF tooltips %]
+	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+	setToolTip();
+	[% END %]
+	});
 
 </script>

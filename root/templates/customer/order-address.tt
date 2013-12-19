@@ -1,19 +1,18 @@
 <h2>SHIP PACKAGES</h2>
 
+<table style="width: 100%">
+	<tr>
+	<td class="rounded5 active bold_text">ADDRESS</td>
+	<td class="rounded5 inactive bold_text">SHIPMENT DETAILS</td>
+	<td class="rounded5 inactive bold_text">FINAL REVIEW</td>
+	</tr>
+</table>
+
+<hr class="solid_line rounded5"/>
+
 <form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
-
-	<table style="width: 100%">
-		<tr>
-		<td class="rounded5 active bold_text">ADDRESS</td>
-		<td class="rounded5 inactive bold_text">SHIPMENT DETAILS</td>
-		<td class="rounded5 inactive bold_text">FINAL REVIEW</td>
-		</tr>
-	</table>
-
-	<hr class="solid_line rounded5"/>
 
 	<table>
 		<tr>
@@ -21,7 +20,7 @@
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8" title="Here is my sample help"/>
+			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8" />
 			</td>
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
@@ -31,6 +30,8 @@
 			</td>
 		<tr>
 	</table>
+
+	<div class="notice">Enter the recipient's (Ship To) address and Shipment details</div>
 
 	<div class="equal">
 		<div class="row">
@@ -158,51 +159,65 @@
 
 <script>
 
+$("#tophone").mask("999-999-9999");
+
+$("#fromzip").mask("99999");
+$("#tozip").mask("99999");
+$("#tpzip").mask("99999");
+
+$("#datetoship").datepicker({ minDate: '-0d' });
+$("#datetoship").datepicker('setDate', '+0d');
+$("#dateneeded").datepicker({ minDate: '-0d' });
+
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
+var arrCompanyAddress = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[%item.value%]",[% END %]];
+
+$("#toname").autocomplete({
+	source: availableCustomers,
+	select: function( event, ui ) {
+		var SelectedComapny = ui.item.value
+		$.each( arrCompanyAddress, function( index, value ){
+			var availableCompany = value.split(":");
+			if (availableCompany[0] == SelectedComapny) {
+				populate_ship_to_address(availableCompany[1]);
+				}
+			});
+		}
+	});
+
+$("#tozip").change(function() {
+	setCityAndState();
+	});
+
+$("#dateneeded").change(function() {
+	check_due_date();
+	});
+
+
+$("#frm_address").submit(function() {
+	var requireHash = {
+			fromdepartment : { minlength: 2 },
+			fromemail      : { email: true },
+			toname         : { minlength: 2 },
+			toaddress1     : { minlength: 2 },
+			tocity         : { minlength: 2 },
+			tostate        : { minlength: 2 },
+			tozip          : { minlength: 5 },
+			tocountry      : { minlength: 2 },
+			tocontact      : { minlength: 2 },
+			tophone        : { phone: true },
+			toemail        : { email: true },
+			dateneeded     : { date: true }
+			};
+
+	return validateForm(requireHash);
+	});
+
 $(document).ready(function(){
-
-	$("#tophone").mask("999-999-9999");
-
-	$("#fromzip").mask("99999");
-	$("#tozip").mask("99999");
-	$("#tpzip").mask("99999");
-
-	$("#datetoship").datepicker({ minDate: '-0d' });
-	$("#datetoship").datepicker('setDate', '+0d');
-	$("#dateneeded").datepicker({ minDate: '-0d' });
-
-	var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
-
-	$("#toname").autocomplete({
-		source: availableCustomers
-		});
-
-	$("#tozip").change(function() {
-		setCityAndState();
-		});
-
-	$("#dateneeded").change(function() {
-		check_due_date();
-		});
-
-
-	$("#frm_address").submit(function() {
-		var requireHash = {
-				fromdepartment : { minlength: 2 },
-				fromemail      : { email: true },
-				toname         : { minlength: 2 },
-				toaddress1     : { minlength: 2 },
-				tocity         : { minlength: 2 },
-				tostate        : { minlength: 2 },
-				tozip          : { minlength: 5 },
-				tocountry      : { minlength: 2 },
-				tocontact      : { minlength: 2 },
-				tophone        : { phone: true },
-				toemail        : { email: true },
-				dateneeded     : { date: true }
-				};
-
-		return validateForm(requireHash);
-		});
+	[% IF tooltips %]
+	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+	setToolTip();
+	[% END %]
 	});
 
 </script>

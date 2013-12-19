@@ -87,6 +87,16 @@ sub current_date
 	return ($date);
 	}
 
+sub current_time
+	{
+	my $self = shift;
+	my $timestamp = $self->timestamp;
+	my $hours = substr($timestamp, 8, 2);
+	my $min   = substr($timestamp, 10, 2);
+	my $sec   = substr($timestamp, 12, 2);
+	return "$hours:$min:$sec";
+	}
+
 sub get_db_format_date
 	{
 	my $self = shift;
@@ -112,6 +122,8 @@ sub get_db_format_date_time
 	my ($mm, $dd, $yy) = split(/\//, $date);
 	$mm = '0' . $mm if length $mm == 1;
 	$dd = '0' . $dd if length $dd == 1;
+
+	$time = $self->current_time unless $time;
 
 	return "$yy-$mm-$dd $time";
 	}
