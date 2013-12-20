@@ -98,12 +98,10 @@
 		}
 	[% END %]
 
+	var refresh_interval_sec = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
 	$(document).ready(function(){
-		[% IF refresh_interval_sec %]
-		var refresh_interval_minutes = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
-		setInterval("refreshMyOrders()", refresh_interval_minutes * 1000);
-		$("#refresh_interval").text(refresh_interval_minutes);
-		[% END %]
+		setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
+		$("#refresh_interval").text(refresh_interval_sec);
 
 		$("#records_per_page").change(function () {
 			$("#coids").prop('disabled','disabled');

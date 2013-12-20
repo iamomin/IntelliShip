@@ -12,13 +12,13 @@
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8"/>
+			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad_text"/>
 			</td>
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
 			</td>
-			<td>
-			<input type="checkbox" class="checkbox" id="combine" value="combine"><label for="combine">Combine</label>
+			<td class="css3-checkboxes">
+			<label><input type="checkbox" class="checkbox" id="combine" value="combine"><span><label for="combine">Combine</label></span></label>
 			</td>
 		<tr>
 	</table>
@@ -131,7 +131,14 @@
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
+				[% IF AMDELIVERY %]
+				<tr>
+					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
+					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
+				</tr>
+				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -208,14 +215,14 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
-	<table>
+	<table class="css3-radios css3-checkboxes">
 		<tr>
 		<td><input type="button" id = "add_pkg_row" class="package" value="Add Package"/></td>
 		<td><input type="button" id = "add_product_row" class="product" value="Add Product"/></td>
 		<td>Multiply Qty*Weight</td>
-		<td><input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><label for="quantityxweighty">Yes</label></td>
-		<td><input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><label for="quantityxweightn">No</label></td>
-		<td><input type="checkbox" name="printpackinglist" id="printpackinglist"/><label for="printpackinglist">Print Packing List</label></td>
+		<td><label><input type="radio" name="quantityxweight" id="quantityxweighty" value="1"/><span><label for="quantityxweighty">Yes</label></span></label></td>
+		<td><label><input type="radio" name="quantityxweight" id="quantityxweightn" value="0" checked="checked"/><span><label for="quantityxweightn">No</label></span></label></td>
+		<td><label><input type="checkbox" name="printpackinglist" id="printpackinglist"/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
 		</tr>
 	</table>
 
@@ -224,7 +231,7 @@
 
 	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
 
-	<table class="app">
+	<table class="app css3-checkboxes">
 		[% count=0 %]
 		<tr>
 		[% FOREACH item IN specialservice_loop %]
@@ -234,7 +241,7 @@
 			[% count = 0 %]
 			[% ELSE %]
 				<td>
-				<input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><label for="[% item.value %]">[% item.name %]</label>
+				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 				</td>
 			[% END %]
 		[% END %]
@@ -255,9 +262,9 @@
 				<table id="delivery_method_table">
 					<tr>
 					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-					<td>
+					<td class="css3-radios">
 						[% FOREACH item IN deliverymethod_loop %]
-						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod %]/><label for="[% item.value %]">[% item.name %]</label>
+						<label><input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 						[% END %]
 					</td>
 					</tr>

@@ -38,7 +38,7 @@
 			</select>
 			</td>
 		</tr>
-		<tr>
+		<tr class="css3-checkboxes">
 			<td><label for="manufacturecountry">Country of Manufacture:</label><br/>
 			<select name="manufacturecountry" id="manufacturecountry">
 				[% FOREACH item IN countrylist_loop %]
@@ -47,9 +47,9 @@
 			</select>
 			</td>
 			<td>
-			<input type="checkbox" class="checkbox" id="relatedparties" value="1"/><label for="relatedparties">Related Parties</label>
+			<label><input type="checkbox" id="relatedparties" value="1"/><span><label for="relatedparties">Related Parties</label></span></label>
 			<br/>
-			<input type="checkbox" class="checkbox" id="printcominv" value="1"/><label for="printcominv">Print Commercial Invoice</label>
+			<label><input type="checkbox" id="printcominv" value="1"/><span><label for="printcominv">Print Commercial Invoice</label></span></label>
 			</td>
 		</tr>
 	</table>
@@ -118,9 +118,9 @@
 		<th><label for="shippingcharge">Shipping Charge</label></th>
 	</tr>
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
-	<tr>
+	<tr class="css3-radios">
 		<td>
-			<input type="radio" name="freightcharge" id="customerserviceid" value="[% item.customerserviceid %]" />
+			<label><input type="radio" name="freightcharge" id="customerserviceid" value="[% item.customerserviceid %]" /></label>
 		</td>
 		<td><label for="carrier">[% item.carrier %]</label></td>
 		<td><label for="service">[% item.service %]</label></td>
@@ -217,7 +217,7 @@
 
 [% IF CARRIER_LIST %]
 	[% count=0 %]
-	<table><tr>
+	<table class="css3-checkboxes"><tr>
 	[% FOREACH item IN CARRIER_LIST %]
 		[% count=count+1 %]
 		[% IF count == 5 %]
@@ -225,7 +225,7 @@
 		[% count = 0 %]
 		[% ELSE %]
 			<td nowrap>
-			<input type="checkbox" name="carriers" id="[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">&nbsp;[% item.name %]</label>
+			<label><input type="checkbox" name="carriers" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">&nbsp;[% item.name %]</label></span></label>
 			</td>
 		[% END %]
 	[% END %]
@@ -234,7 +234,7 @@
 
 [% IF COSTATUS_LIST %]
 	[% count=0 %]
-	<table><tr>
+	<table class="css3-checkboxes"><tr>
 	[% FOREACH item IN COSTATUS_LIST %]
 		[% count=count+1 %]
 		[% IF count == 5 %]
@@ -242,7 +242,7 @@
 		[% count = 0 %]
 		[% ELSE %]
 			<td nowrap>
-			<input type="checkbox" name="costatus" id="[% item.value %]" value="[% item.value %]"/><label for="[% item.value %]">&nbsp;[% item.name %]</label>
+			<label><input type="checkbox" name="costatus" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">&nbsp;[% item.name %]</label></span></label>
 			</td>
 		[% END %]
 	[% END %]

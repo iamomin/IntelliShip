@@ -114,7 +114,7 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->set_third_party_delivery;
 		}
-	elsif ($c->req->param('action') eq 'get_carrier_service_list')
+	elsif ($c->req->param('action') eq 'get_customer_service_list')
 		{
 		$dataHash = $self->get_carrier_service_list;
 		}
@@ -249,18 +249,8 @@ sub get_freight_class :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-
-	my $density = $params->{'density'};
-	my $response_hash = {};
-	if ( my $freight_class = IntelliShip::Utils->get_freight_class_from_density(undef,undef,undef,undef,$density))
-		{
-		$response_hash->{ 'freight_class'} = $freight_class;
-		}
-	else
-		{
-		$response_hash->{ 'freight_class'} = '0';
-		}
-
+	my $response_hash = { freight_class => IntelliShip::Utils->get_freight_class_from_density(undef,undef,undef,undef,$params->{'density'}) };
+	#$c->log->debug("response_hash : " . Dumper $response_hash);
 	return $response_hash;
 	}
 

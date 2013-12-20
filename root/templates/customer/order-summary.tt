@@ -178,6 +178,11 @@
 		checkCarrierServiceSection();
 		});
 
+	$("#cancel").click(function() {
+		$("#do").val('cancel');
+		$("#frm_order_sumary").submit();
+		});
+
 	$(document).ready(function(){
 		[% IF tooltips %]
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]

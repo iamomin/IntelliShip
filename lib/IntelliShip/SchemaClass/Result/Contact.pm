@@ -217,7 +217,7 @@ sub full_name
 	$full_name = $self->username unless $full_name;
 	$full_name = $self->customer->customername unless $full_name;
 	$full_name = $self->customer->username unless $full_name;
-	return $full_name;
+	return uc $full_name;
 	}
 
 sub is_restricted

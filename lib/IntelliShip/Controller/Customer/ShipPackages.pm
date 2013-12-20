@@ -2,7 +2,7 @@ package IntelliShip::Controller::Customer::ShipPackages;
 use Moose;
 use namespace::autoclean;
 
-BEGIN { extends 'IntelliShip::Controller::Customer'; }
+BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
 =head1 NAME
 
@@ -30,6 +30,7 @@ sub index :Path :Args(0) {
 	my $do_value = $params->{'do'} || '';
 	if ($do_value eq 'shippackages')
 		{
+		$self->load_order;
 		}
 	else
 		{
@@ -45,6 +46,98 @@ sub setup_ship_packages :Private
 	$c->stash(template => "templates/customer/ship-packages.tt");
 	}
 
+sub load_order :Private
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	return unless $self->is_valid_detail;
+	$c->log->debug("Co is" . $self->CO->coid);
+	$self->setup_quickship_page;
+	}
+
+sub is_valid_detail :Private
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+	IntelliShip::Utils->trim_hash_ref_values($params);
+
+	my $cotypeid = $self->get_co_type;
+	if (!$self->find_order($params->{'ordernumber'},$cotypeid))
+		{
+		$c->stash($params);
+
+		$c->stash(ERROR => "Order not found");
+		$c->stash(template => "templates/customer/ship-packages.tt");
+		return undef;
+		}
+
+	return 1;
+	}
+
+sub find_order
+	{
+	my $self = shift;
+	my $ordernumber = shift;
+	my $cotypeid = shift || 1;
+
+	my $c = $self->context;
+
+	my $customerid = $self->customer->customerid;
+
+	return $self->CO if $self->CO;
+
+	my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
+
+	my $allowed_ext_cust_nums = [];
+	push(@$allowed_ext_cust_nums, $_->{'fieldvalue'}) foreach @r_c;
+
+	my @cos = $c->model('MyDBI::Co')->search({
+						customerid => $customerid,
+						ordernumber => uc($ordernumber),
+						cotypeid => $cotypeid,
+						extcustnum => $allowed_ext_cust_nums
+						});
+
+	unless (@cos)
+		{
+		my $strippedordernumber =  $ordernumber;
+		$strippedordernumber =~ s/^0*//g;
+
+		@cos = $c->model('MyDBI::Co')->search({
+						customerid => $customerid,
+						ordernumber => uc($strippedordernumber),
+						cotypeid => $cotypeid
+						});
+		}
+
+	if (@cos)
+		{
+		my $CO = $cos[0];
+		$self->CO($CO);
+		return $self->CO;
+		}
+	}
+
+sub get_co_type
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $Contact = $self->contact;
+
+	my $cotypeid = 1;
+	if (($Contact->get_contact_data_value('loginlevel') == 35) or 
+			($Contact->get_contact_data_value('loginlevel') == 40))
+		{
+		$cotypeid = 2; # If contact is PO loginlevel (35 or 40), set cotype to PO
+		}
+
+	return $cotypeid;
+	}
 
 =encoding utf8
 

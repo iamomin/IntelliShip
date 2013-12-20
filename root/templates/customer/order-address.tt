@@ -20,7 +20,7 @@
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" size="8" />
+			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad_text"/>
 			</td>
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>

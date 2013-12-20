@@ -39,15 +39,12 @@ function calculate_density(row_num)
 		$("#density_"+row_num).val(Density.toFixed(2));
 
 		var Class = $("#class_"+row_num).val();
-		if (Class.length == 0)
-			{
-			var query_param = '&density='+Density;
-			send_ajax_request('', 'JSON', '', 'get_freight_class', query_param, function (){
-				if (JSON_data.freight_class) {
-					$("#class_"+row_num).val(JSON_data.freight_class);
-					}
-				});
-			}
+		var query_param = '&density='+Density;
+		send_ajax_request('', 'JSON', '', 'get_freight_class', query_param, function (){
+			if (JSON_data.freight_class) {
+				$("#class_"+row_num).val(JSON_data.freight_class);
+				}
+			});
 		}
 	}
 
@@ -190,12 +187,12 @@ function setSkuDetails(row_num, sku_id)
 	{
 	var query_param = '&sku_id='+sku_id;
 
-	if(sku_id > 0) {
-		send_ajax_request('', 'JSON', '', 'get_sku_detail', query_param, function (){
+	if (sku_id > 0) {
+		$("#description_"+row_num).val('');
+		send_ajax_request('', 'JSON', '', 'get_sku_detail', query_param, function () {
 			if (JSON_data.error) {
 				clear_product_details(row_num);
-				}
-			else {
+				} else {
 				$("#description_"+row_num).val(JSON_data.description);
 				$("#weight_"+row_num).val(JSON_data.weight);
 				$("#dimlength_"+row_num).val(JSON_data.length);
@@ -208,8 +205,7 @@ function setSkuDetails(row_num, sku_id)
 			});
 
 		calculate_density(row_num);
-		} 
-	else {
+		} else {
 		clear_product_details(row_num);
 		}
 	}

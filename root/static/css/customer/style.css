@@ -525,30 +525,6 @@ input {
     border-radius: 3px;
 }
 
-input [type="checkbox"] {
-    margin: 0;
-    padding: 0;
-    border: none;
-    vertical-align: middle;
-    -webkit-appearance: none;
-    -webkit-transition: box-shadow 200ms;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-}
-
-input [type="radio"] {
-    margin: 0;
-    padding: 0;
-    border: none;
-    vertical-align: middle;
-    -webkit-appearance: none;
-    -webkit-transition: box-shadow 200ms;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-}
-
 input.text {
     width: 160px;
     -moz-border-radius: 3px;

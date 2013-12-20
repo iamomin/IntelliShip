@@ -6,33 +6,6 @@ function setToolTip() {
 	$("[title]").tooltip({ track: true });
 	}
 
-function afterSuccessCallBack(response_type, result_div, call_back_function, responseStatus) {
-	var bollIsErrorResponse = false;
-	var content = (response_type == "JSON" ? JSON_data.error : $('#response-content').html());
-
-	if (responseStatus == 'error'){
-		content = "ERROR:::Could not complete request.";
-		}
-
-	var re = new RegExp("(ERROR:::|Please See Errors Below|errors were encountered)","g");
-
-	if (content != undefined && content.match(re))
-		{
-		bollIsErrorResponse = true;
-		(content.match(/ERROR:::/) ? showMessage(content.replace(re,""), "Error") : showMessage(content, "Error"));
-		}
-	else
-		{
-		bollIsErrorResponse = false;
-		if (response_type == "HTML") $('#' + result_div).html($('#response-content').html());
-		}
-
-	if (response_type == "HTML") $('#response-content').empty();
-
-	// Make call to call back function on demand
-	if (call_back_function != null) {call_back_function();}
-	}
-
 var JSON_data;
 function send_ajax_request(result_div, type_value, section_value, action_value, optional_param, call_back_function) {
 
@@ -59,9 +32,9 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 			dataType: 'json',
 			success: function(data) {
 				$('#preload').hide();
+				JSON_data = data;
 
-				if (data.error) showMessage("<div class='error'>" + data.error + "</div>", "Reseponse Error");
-				else JSON_data = data;
+				if (JSON_data.error) showMessage("<div class='error'>" + JSON_data.error + "</div>", "Reseponse Error");
 
 				afterSuccessCallBack(type_value, "", call_back_function);
 				},
@@ -79,6 +52,34 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 			afterSuccessCallBack(type_value, result_div, call_back_function, textStatus);
 			});
 		}
+	}
+
+function afterSuccessCallBack(response_type, result_div, call_back_function, responseStatus) {
+
+	var bollIsErrorResponse = false;
+	var content = (response_type == "JSON" ? JSON_data.error : $('#response-content').html());
+
+	if (responseStatus == 'error'){
+		content = "ERROR:::Could not complete request.";
+		}
+
+	var re = new RegExp("(ERROR:::|Please See Errors Below|errors were encountered)","g");
+
+	if (content != undefined && content.match(re))
+		{
+		bollIsErrorResponse = true;
+		(content.match(/ERROR:::/) ? showMessage(content.replace(re,""), "Error") : showMessage(content, "Error"));
+		}
+	else
+		{
+		bollIsErrorResponse = false;
+		if (response_type == "HTML") $('#' + result_div).html($('#response-content').html());
+		}
+
+	if (response_type == "HTML") $('#response-content').empty();
+
+	// Make call to call back function on demand
+	if (call_back_function != null) {call_back_function();}
 	}
 
 $(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });

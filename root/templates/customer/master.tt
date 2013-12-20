@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<title>Engage Technology IntelliShip</title>
+		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
 
 		[% IF MEDIA_PRINT %]
@@ -91,7 +92,7 @@
 			<li><a id="mnu_report" href="/customer/report"> REPORTS </a>
 			<li><a id="mnu_settings" href="/customer/settings"> SETTINGS </a>
 			<li><a id="mnu_logout" href="/customer/logout"> LOGOUT </a>
-			<li>&nbsp;User:&nbsp;[% username %]&nbsp;&nbsp;
+			<li>&nbsp;Welcome&nbsp;<strong>[% username %]</strong>&nbsp;&nbsp;
 		  </ul>
 		</form>
 		</div> <!-- end menu -->

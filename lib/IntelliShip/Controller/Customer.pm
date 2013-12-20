@@ -130,11 +130,13 @@ sub get_customer_contact
 	$contact_search->{customerid} = $self->token->customerid if $self->token;
 
 	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
+	return unless @contactArr;
 	my $Contact = $contactArr[0] if @contactArr;
 
 	#$c->log->debug($Contact ? "Contact customerid: " . $Contact->customerid : Dumper $contact_search);
 
 	my @customerArr = $c->model('MyDBI::Customer')->search({ customerid => $Contact->customerid, username => $customerUser });
+	return unless @customerArr;
 	my $Customer = $customerArr[0] if @customerArr;
 
 	#$c->log->debug("Customer customerid: " . $Customer->customerid);

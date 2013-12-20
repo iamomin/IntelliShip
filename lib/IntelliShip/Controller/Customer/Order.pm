@@ -24,6 +24,7 @@ sub setup :Private
 	#($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
 	$c->stash->{neworder} = 1;
+	$c->stash->{AMDELIVERY} = 1 if $self->customer->amdelivery;
 	$c->stash->{ordernumber} = $params->{'ordernumber'};
 	$c->stash->{customer} = $self->customer;
 	$c->stash->{customerAddress} = $self->customer->address;
@@ -47,7 +48,7 @@ sub save_CO_details :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("check order in");
+	$c->log->debug("... SAVE CO DETAILS");
 
 	my $CO = $self->get_order;
 
@@ -336,6 +337,17 @@ sub get_auto_order_number
 	$c->log->debug("get_auto_order_number OUT ordernumber=$OrderNumber") if $OrderNumber;
 
 	return ($OrderNumber,$HasAutoOrderNumber);
+	}
+
+sub void_shipment
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->log->debug("___ CANCEL ORDER ___");
+
+	my $CO = $self->get_order;
+	$CO->update({ statusid => '200' });
 	}
 
 sub get_order

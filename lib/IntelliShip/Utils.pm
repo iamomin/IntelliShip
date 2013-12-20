@@ -1,7 +1,7 @@
 package IntelliShip::Utils;
 
 use strict;
-use bignum;
+#use bignum;
 use XML::Simple;
 use Email::Valid;
 

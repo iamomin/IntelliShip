@@ -15,7 +15,6 @@
 <form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step2"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" name="ordernumber" value="[% ordernumber %]"/>
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
 
 	<table>

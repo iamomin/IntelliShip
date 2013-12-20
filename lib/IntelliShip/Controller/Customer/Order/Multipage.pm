@@ -40,6 +40,10 @@ sub index :Path :Args(0) {
 		{
 		$self->complete_step3;
 		}
+	elsif ($do_value eq 'cancel')
+		{
+		$self->cancel_order;
+		}
 	else
 		{
 		$self->setup_address;
@@ -115,6 +119,13 @@ sub setup_review
 	$self->populate_order;
 	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
 	$c->stash(template => "templates/customer/order-summary.tt");
+	}
+
+sub cancel_order
+	{
+	my $self = shift;
+	$self->void_shipment;
+	$self->setup_address;
 	}
 
 =encoding utf8

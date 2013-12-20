@@ -390,7 +390,7 @@ sub generate_manifest_report
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	$self->add_error("Report under consutruction");
+	$self->add_error("Report under consutruction, will be available soon. Thank you!");
 
 	my ($report_heading_loop, $report_output_row_loop, $filter_criteria_loop)= ([],[],[]);
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
