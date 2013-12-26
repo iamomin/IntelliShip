@@ -56,6 +56,9 @@
 	</head>
 
 	<body>
+	<!-- start wrapper -->
+	<div id="wrapper">
+
 	<!-- ajax loader -->
 	<div id="preload" style="display: none;"><img src="/static/images/ajax-loader-dots.gif" class="ajax-loader"/></div>
 	<!-- ajax loader -->
@@ -66,33 +69,36 @@
 
 	<div id="response-content" style="display: none;"></div>
 
-	<div id="wrapper">
-
 		<div id="header"> <!-- start header -->
-			<!-- <div id="logo">IntelliShip</div> -->
-			<img src="/static/images/company-logo.png">
+			<img src="/static/images/company-logo-transperent.png">
+			<span>&nbsp;Welcome Back [% username %]</span>
+			<ul>
+				<li><a href="/customer/settings"><img src="/static/images/settings.png"><label>SETTINGS</label></a></li>
+				<li><a href="/customer/dashboard"><img src="/static/images/help.png"><label>HELP</label></a></li>
+				<li><a href="/customer/logout"><img src="/static/images/signout.png"><label>SIGNOUT</label></a></li>
+			</ul>
 		</div> <!-- end header -->
 
-		<div style="clear: both;">&nbsp;</div>
+		<!-- <div style="clear: both;">&nbsp;</div> -->
 
 		<div ID="menu"> <!-- start menu -->
 		<form method=post action="" name="menu">
 		  <input type="hidden" name="action">
 		  <input type="hidden" name="do">
 		  <ul>
-			<li><a id="mnu_dashboard" href="/customer/dashboard"> DASHBOARD </a>
-			<li><a id="mnu_myorders" href="/customer/myorders"> MY ORDERS </a>
-			<li><a id="mnu_new" href="/customer/order/new"> NEW ORDER </a>
-			<li><a id="mnu_multipage" href="/customer/order/multipage"> MULTIPAGE ORDER </a>
-			<li><a id="mnu_quickship" href="/customer/order/quickship"> QUICK SHIP </a>
-			<li><a id="mnu_shippackages" href="/customer/shippackages">SHIP PACKAGES</a>
-			<li><a id="mnu_batchshipping" href="/customer/batchshipping"> BATCH SHIPPING </a>
-			<li><a id="mnu_uploadfile" href="/customer/uploadfile"> UPLOAD FILE </a>
-			<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance"> SHIPMENT MAINTENANCE  </a>
-			<li><a id="mnu_report" href="/customer/report"> REPORTS </a>
-			<li><a id="mnu_settings" href="/customer/settings"> SETTINGS </a>
-			<li><a id="mnu_logout" href="/customer/logout"> LOGOUT </a>
-			<li>&nbsp;Welcome&nbsp;<strong>[% username %]</strong>&nbsp;&nbsp;
+			<li><a id="mnu_dashboard" href="/customer/dashboard" class="dashboard"><div>DASHBOARD</div></a></li>
+			<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
+			<li><a id="mnu_new" href="/customer/order/new" class="new"><div>NEW ORDER</div></a></li>
+			<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>MULTIPAGE ORDER</div></a></li>
+			<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>
+			<li><a id="mnu_shippackages" href="/customer/shippackages" class="sp"><div>SHIP PACKAGES</div></a></li>
+			<li><a id="mnu_batchshipping" href="/customer/batchshipping" class="batch"><div>BATCH SHIPPING</div></a></li>
+			<li><a id="mnu_uploadfile" href="/customer/uploadfile" class="upload"><div>UPLOAD FILE</div></a></li>
+			<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance" class="sm"><div>SHIPMENT MAINTENANCE</div></a></li>
+			<li><a id="mnu_report" href="/customer/report" class="reports"><div>REPORTS</div></a></li>
+			<li><label><select id="searchtype" name="searchtype"><option>Search Type</select></label></li>
+			<li><input type="text"id="searchterm" name="searchterm" placeholder="Search...." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></li>
+			<li>&nbsp;</li>
 		  </ul>
 		</form>
 		</div> <!-- end menu -->
@@ -115,7 +121,12 @@
 
 		<!-- start footer -->
 		<div id="footer">
-			<p id="legal">Copyright &copy; 2002 - 2013 Engage Technology, LLC.</p>
+			<ul>
+				<li><img src="/static/images/engage-logo.gif"></li>
+				<li>&copy; 2013 Engage Technology, LLC.</li>
+				<li>|&nbsp<a href="#">Privacy</a>&nbsp;</li>
+				<li>|&nbsp<a href="#">Legal</a></li>
+		  </ul>
 		</div>
 		<!-- end footer -->
 

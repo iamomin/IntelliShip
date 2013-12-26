@@ -453,6 +453,17 @@ sub get_select_list
 			push(@$list, { name => $data->{'address'}, value => $data->{'address'} });
 			}
 		}
+	elsif ($list_name eq 'CURRENCY')
+		{
+		my $myDBI = $self->context->model('MyDBI');
+		my $sql = "SELECT DISTINCT currency FROM country";my $sth = $myDBI->select($sql);
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			next unless $data->{'currency'};
+			push(@$list, { name => $data->{'currency'}, value => $data->{'currency'} });
+			}
+		}
 	elsif ($list_name eq 'ACTIVE_INACTIVE')
 		{
 		$list = [

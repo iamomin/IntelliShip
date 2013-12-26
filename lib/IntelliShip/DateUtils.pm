@@ -5,7 +5,7 @@ use DateTime;
 use Date::Business;
 use Date::Calendar;
 use Date::Manip qw(ParseDate UnixDate);
-use Date::Calc qw(check_date Delta_Days Add_Delta_Days Delta_DHMS Add_Delta_DHMS Day_of_Week N_Delta_YMD Add_Delta_YMDHMS Timezone);
+use Date::Calc qw(check_date Delta_Days Add_Delta_Days Delta_DHMS Add_Delta_DHMS Day_of_Week Add_Delta_YMDHMS Timezone);
 
 =head1 NAME
 
@@ -239,7 +239,7 @@ sub get_delta_days
 
 	return Delta_Days($d1yy, $d1mm, $d1dd, $d2yy, $d2mm, $d2dd);
 	}
-
+=as
 sub get_delta_YMD_from_this_date
 	{
 	my $self = shift;
@@ -260,7 +260,7 @@ sub get_delta_YMD_from_this_date
 
 	return N_Delta_YMD($cyy, $cmm, $cdd, $dyy, $dmm, $ddd);
 	}
-
+=cut
 sub get_date_delta_days_from_given_date
 	{
 	my $self = shift;

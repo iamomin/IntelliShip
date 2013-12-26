@@ -556,6 +556,7 @@ sub get_condition_info
 			}
 		}
 
+	$dataHash->{'conditiontext'} = '';
 	return ($dataHash->{'conditioncolor'},$dataHash->{'conditiontext'});
 	}
 

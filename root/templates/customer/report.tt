@@ -76,7 +76,7 @@
 		</tr>
 	</table>
 
-	<center><input type="submit" class="button" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></center>
+	<center><input type="submit" class="green" id="run_report" value="Run Report" />&nbsp;&nbsp;<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></center>
 	</form>
 
 	<script>

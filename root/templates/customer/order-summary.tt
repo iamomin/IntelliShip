@@ -1,10 +1,20 @@
 <h2>SHIP PACKAGES</h2>
 
-<table style="width: 100%">
+<table class="center" style="width: 100%">
+	<tr style="text-align: center;">
+	<td width="33%"><input type="button" class="inactive" value="ADDRESS"/></td>
+	<td width="33%"><input type="button" class="inactive" value="SHIPMENT DETAILS"/></td>
+	<td width="33%"><input type="button" class="active" value="FINAL REVIEW"/></td>
+	</tr>
 	<tr>
-	<td class="rounded5 inactive bold_text">ADDRESS</td>
-	<td class="rounded5 inactive bold_text">SHIPMENT DETAILS</td>
-	<td class="rounded5 active bold_text">FINAL REVIEW</td>
+	<td colspan="3">
+		<div style="position: relative;">
+			<hr class="solid_line"/>
+			<img style="z-index: 1; float: left; margin-left:13%;" src="/static/images/thumbs-up-grayed.png">
+			<img style="z-index: 2; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/thumbs-up-grayed.png">
+			<img style="z-index: 3; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/navigation-down.png">
+		</div>
+	</td>
 	</tr>
 </table>
 
@@ -15,52 +25,60 @@
 	<div class="equal">
 		<div class="row">
 			<div>
-			<table class="app">
-				<caption>ADDRESS SUMMARY <div class="float_right"><a href="#">edit</a></div></caption>
+			<table class="summary-app">
+				<caption>ADDRESS SUMMARY:<div class="float_right"><a href="#">edit</a></div></caption>
 				<tr>
-					<td>SHIP FROM</td><td><div class="default_text">[% customer.customername %]</div></td>
-					<td>SHIP TO</td><td><div class="default_text">[% toname %]</div></td>
+					<th>SHIP TO </th><td>[% toname %]</td>
+					<th>SHIP FROM </th><td>[% customer.customername %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td><div class="default_text">[% customerAddress.address1 %][% IF customerAddress.address2 %], customerAddress.address2[% END %]</div></td>
-					<td>&nbsp;</td><td><div class="default_text">[% toAddress.address1 %][% IF toAddress.address2 %], [% toAddress.address2 %][% END %]</div></td>
+					<td>&nbsp;</td><td>[% toAddress.address1 %][% IF toAddress.address2 %], [% toAddress.address2 %][% END %]</td>
+					<td>&nbsp;</td><td>[% customerAddress.address1 %][% IF customerAddress.address2 %], customerAddress.address2[% END %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
-					<td>&nbsp;</td><td><div class="default_text">[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</div></td>
+					<td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</td>
+					<td>&nbsp;</td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td><div class="default_text">[% customerAddress.country_description %]</div></td>
-					<td>&nbsp;</td><td><div class="default_text">[% toAddress.country_description %]</div></td>
+					<td>&nbsp;</td><td>[% toAddress.country_description %]</td>
+					<td>&nbsp;</td><td>[% customerAddress.country_description %]</td>
 				</tr>
 				</tr>
-					<td>&nbsp;</td><td><div class="default_text">[% customer.phone %]</div></td>
-					<td>&nbsp;</td><td><div class="default_text">[% tophone %]</div></td>
+					<td>&nbsp;</td><td>[% tophone %]</td>
+					<td>&nbsp;</td><td>[% customer.phone %]</td>
 				<tr>
 				<tr>
-					<td>&nbsp;</td><td><div class="default_text">[% fromemail %]</div></td>
-					<td>&nbsp;</td><td><div class="default_text">[% toemail %]</div></td>
+					<td>&nbsp;</td><td>[% toemail %]</td>
+					<td>&nbsp;</td><td>[% fromemail %]</td>
 				</tr>
 			</table>
 			</div>
 
 			<div>
-			<table class="app">
-				<caption>SHIPMENT DETAIL SUMMARY<div class="float_right"><a href="#">edit</a></div></caption>
+			<table class="summary-app">
+				<caption>SHIPMENT DETAIL SUMMARY:<div class="float_right"><a href="#">edit</a></div></caption>
 				<tr>
-					<td><label class="float_right">Due Date:</label></td><td><div class="default_text">[% dateneeded %]</div></td>
+					<th>Due Date: </th>
+					<td>[% dateneeded %]</td>
 				</tr>
 				<tr>
-					<td><label class="float_right">#Packages:</label></td><td><div class="default_text">[% total_packages %]</div></td>
+					<th>#Packages: </th>
+					<td>[% total_packages %]</td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Total Weight:</label></td><td><div class="default_text">[% total_weight ? total_weight : '0.00' %]</div></td>
+					<th>Total Weight: </th>
+					<td>[% total_weight ? total_weight : '0.00' %]</td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Declared Value:</label></td><td><div class="default_text">[% insurance ? insurance : '0.00' %]</div></td>
+					<th>Declared Value: </th>
+					<td>[% insurance ? insurance : '0.00' %]</td>
 				</tr>
 				<tr>
-					<td><label class="float_right">International:</label></td><td><div class="default_text">[% international ? international : '0.00' %]</div></td>
+					<th>International: </th>
+					<td>[% international ? international : '0.00' %]</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td><td>&nbsp;</td>
 				</tr>
 			</table>
 			</div>
@@ -69,9 +87,11 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
+	<h2>Special Services Requested</h2>
+
 	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
 
-	<table class="app">
+	<table class="app css3-checkboxes">
 		[% count=0 %]
 		<tr>
 		[% FOREACH item IN specialservice_loop %]
@@ -81,7 +101,7 @@
 			[% count = 0 %]
 			[% ELSE %]
 				<td>
-				<input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><label for="[% item.value %]">[% item.name %]</label>
+				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 				</td>
 			[% END %]
 		[% END %]
@@ -93,16 +113,16 @@
 	<div class="equal">
 		<div class="row">
 		<div>
-		<table class="app" style="width: 600px;">
+		<table class="app">
 			<caption>Carrier and Service Selection</caption>
 			<tr>
 				<td>
 				<table id="delivery_method_table">
 					<tr>
 					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-					<td>
+					<td class="css3-radios">
 						[% FOREACH item IN deliverymethod_loop %]
-						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod %]/><label for="[% item.value %]">[% item.name %]</label>
+						<label><input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 						[% END %]
 					</td>
 					</tr>
@@ -110,15 +130,10 @@
 						<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
 						<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
 					</tr>
-					<tr class="tp">
-						<td>&nbsp;</td><td><input type="button" class="submit" id="route" value="Route"/></td>
+					<tr>
+						<td>&nbsp;</td><td><input type="button" class="gray" id="route" value="Route"/></td>
 					</tr>
 				</table>
-				</td>
-			</tr>
-			<tr>
-				<td>
-				<table id="freight_charges_table" class="app fc"><tr><td>&nbsp;</td></tr></table>
 				</td>
 			</tr>
 		</table>
@@ -153,21 +168,18 @@
 		</div>
 		</div>
 	</div>
-	<table class="app" style="width: 100%;">
-		<caption>Service Level Summary</caption>
-		<tr>
-			<th>&nbsp;</th><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSACTION DAYS</th><th>EST. DELIVERY</th><th>EST. COST</th><th>DECLD VAL/INSUR</th><th>EST. TOTAL COST</th>
-		</tr>
-		<tr>
-			<td><input type="checkbox"/></td><td>UPS</td><td>NEXT DAY AIR A.M.(8:30)</td><td>1</td><td>01/01/2014</td><td>$25.00</td><td>$25.00</td><td>$25.00</td>
-		</tr>
-	</table>
+
+	<div style="clear: both;">&nbsp;</div>
+
+	<div id="divFreightCharges"></div>
 
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float_right">
-		<input type="button" class="button" id="cancel" value="CANCEL"/>
-		<input type="submit" class="button" id="shipNow" value="SHIP NOW"/>
+		<table><tr>
+		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
+		<td><div class="green-forward"><input type="submit" id="quick_ship" value="SHIP NOW"/></div></td>
+		</tr></table>
 	</div>
 </form>
 
@@ -184,6 +196,8 @@
 		});
 
 	$(document).ready(function(){
+		checkCarrierServiceSection();
+
 		[% IF tooltips %]
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();

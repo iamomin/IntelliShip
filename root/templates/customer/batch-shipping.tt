@@ -1,10 +1,10 @@
 
 <h2>Batch Shipping</h2>
 <form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
-	<table class="center_app">
+	<table class="center_app css3-checkboxes">
 		<tr>
 			<td><label for="excludeshipped" class="float_right">Exclude Shipped :</label></td>
-			<td><input type="checkbox" onclick=checkExclude() name="excludeshipped" id="excludeshipped" value=1 checked/></td>
+			<td><label><input type="checkbox" onclick=checkExclude() name="excludeshipped" id="excludeshipped" value=1 checked/><span></span></label></td>
 		</tr>
 		<tr>
 			<td><label for="orderlimit" class="float_right" maxlength="4">Order Number Limit :</label></td>
@@ -94,7 +94,7 @@
 			<td colspan=2">&nbsp;</td>
 		</tr>
 	</table>
-	<center><input type="submit" class="button" value="Submit"/></center>
+	<center><input type="submit" class="green" value="Submit"/></center>
 </form>
 
 <script>

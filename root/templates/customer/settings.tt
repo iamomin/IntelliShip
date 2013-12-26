@@ -53,7 +53,7 @@
 			<td colspan=2>&nbsp;</td>
 		</tr>
 	</table>
-	<center><input type="submit" class="button" id="change_password" value="Update Password" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+	<center><input type="submit" class="green" id="change_password" value="Update Password" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 </form>
 
 <script>
@@ -101,8 +101,8 @@ $(document).ready(function(){
 			<table><tr>
 				<td><label class="float_right" for="productsku">SKU:</td>
 				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
-				<td><input type="button" class="button" id="sku_edit" value="Edit" /></td>
-				<td><input type="button" class="button" id="sku_add" value="Add New" /></td>
+				<td><input type="button" class="blue" id="sku_edit" value="Edit" /></td>
+				<td><input type="button" class="green" id="sku_add" value="Add New" /></td>
 				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
 				<td><label class="float_right" for="records_per_page">Records Per Page:</td>
 				<td>
@@ -348,7 +348,7 @@ $(document).ready(function(){
 				<td><input type="text" name="casesperpallet" id="casesperpallet" value="[%casesperpallet%]" size="5"></td>
 			</tr>
 		</table>
-		<center><input type="submit" class="button" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+		<center><input type="submit" class="green" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 	</form>
 
 	<script>

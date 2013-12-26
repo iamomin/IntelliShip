@@ -1,14 +1,20 @@
 <h2>SHIP PACKAGES</h2>
 
-<table style="width: 100%">
+<table class="center" style="width: 100%">
+	<tr style="text-align: center;">
+	<td width="33%"><input type="button" class="active" value="ADDRESS"/></td>
+	<td width="33%"><input type="button" class="inactive" value="SHIPMENT DETAILS"/></td>
+	<td width="33%"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
+	</tr>
 	<tr>
-	<td class="rounded5 active bold_text">ADDRESS</td>
-	<td class="rounded5 inactive bold_text">SHIPMENT DETAILS</td>
-	<td class="rounded5 inactive bold_text">FINAL REVIEW</td>
+	<td colspan="3">
+		<div style="position: relative;">
+			<hr class="solid_line"/>
+			<img style="z-index: 1; float: left; margin-left:13%;" src="/static/images/navigation-down.png">
+		</div>
+	</td>
 	</tr>
 </table>
-
-<hr class="solid_line rounded5"/>
 
 <form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step1"/>
@@ -25,8 +31,8 @@
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
 			</td>
-			<td>
-			<input type="checkbox" class="checkbox" id="combine" value="combine"><label for="combine">Combine</label>
+			<td class="css3-checkboxes">
+			<label><input type="checkbox" class="checkbox" id="combine" value="combine"><span><label for="combine">Combine</label></span></label>
 			</td>
 		<tr>
 	</table>
@@ -139,7 +145,14 @@
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
+				[% IF AMDELIVERY %]
+				<tr>
+					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
+					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
+				</tr>
+				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -151,7 +164,7 @@
 
 	<br/>
 
-	<div class="float_right"><input type="submit" class="button" value="NEXT STEP"/></div>
+	<div class="green-forward float_right"><input type="submit" id="quick_ship" value="NEXT STEP"/></div>
 
 </form>
 
@@ -159,11 +172,8 @@
 
 <script>
 
-$("#tophone").mask("999-999-9999");
-
-$("#fromzip").mask("99999");
-$("#tozip").mask("99999");
-$("#tpzip").mask("99999");
+//$("#tophone").mask("999-999-9999");
+//$("#tozip").mask("99999");
 
 $("#datetoship").datepicker({ minDate: '-0d' });
 $("#datetoship").datepicker('setDate', '+0d');

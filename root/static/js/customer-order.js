@@ -14,14 +14,14 @@ function check_due_date()
 		});
 	}
 
-var pkg_detail_row_count = 1;
-
 function add_pkg_detail_row(detail_type)
 	{
+	var pkg_detail_row_count=0;
+	$('#package-detail-list li').each(function() { if (this.id.match(/^new_/)) pkg_detail_row_count++ });
 	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + detail_type;
 
 	send_ajax_request('', 'JSON', '', 'add_pkg_detail_row', query_param, function (){
-			add_new_row('package_detail_list', JSON_data.rowHTML);
+			add_new_row('package-detail-list', JSON_data.rowHTML);
 			});
 	}
 
@@ -53,7 +53,7 @@ function calculate_total_packages()
 	var TotalQuantity = 0;
 	TotalQuantity -= 0;
 
-	$('#package_detail_list li').each(function() {
+	$('#package-detail-list li').each(function() {
 		var row_id = this.id;
 
 		if (row_id.match(/^new_package/))
@@ -71,7 +71,7 @@ function calculate_total_packages()
 function calculate_total_weight()
 	{
 	var TotalWeight = 0;
-	$('#package_detail_list li').each(function() {
+	$('#package-detail-list li').each(function() {
 		var row_id = this.id;
 
 		if (row_id.match(/^new_/))
@@ -83,7 +83,7 @@ function calculate_total_weight()
 			var Quantity = $("#quantity_"+row_num).val();
 
 			EnteredWeight -= 0; DimWeight -= 0; Quantity -= 0;
-			if($('input[name=quantityxweight]:radio:checked').val() == 1) 
+			if ($("#quantityxweight").is(':checked'))
 				{
 				if (1 == 0)
 					{
@@ -142,7 +142,7 @@ function calculate_total_weight()
 function calculate_total_declared_value_insurance()
 	{
 	var TotalInsurance = 0;
-	$('#package_detail_list li').each(function() {
+	$('#package-detail-list li').each(function() {
 		var row_id = this.id;
 		if (row_id.match(/^new_/))
 			{
@@ -164,7 +164,7 @@ function calculate_total_declared_value_insurance()
 function calculate_total_freight_insurance()
 	{
 	var TotalInsurance = 0;
-	$('#package_detail_list li').each(function() {
+	$('#package-detail-list li').each(function() {
 		var row_id = this.id;
 		if (row_id.match(/^new_/))
 			{
@@ -257,7 +257,8 @@ function validate_package_details()
 	{
 	var boolInvalidData=false;
 	var controls = ['quantity', 'sku', 'weight', 'dimlength', 'dimwidth', 'dimheight'];
-	$('#package_detail_list li').each(function() {
+
+	$('#package-detail-list li').each(function() {
 		var row_id = this.id;
 
 		if (row_id.match(/^new_/)) {
@@ -282,45 +283,40 @@ function validate_package_details()
 	return boolInvalidData;
 	}
 
-var has_FC=false;
-function get_customer_service_list()
-	{
-	if (has_FC)
-			$(".fc").show();
-	else
-	send_ajax_request('', 'JSON', '', 'get_customer_service_list', "", function (){
-		if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#freight_charges_table tr");
-		$("#freight_charges_table").show();
-		has_FC = true;
-		});
-	}
-
 var has_TP=false;
 function checkCarrierServiceSection()
 	{
 	if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
 		{
 		if(has_TP) {
-			$(".tp").show();
-			get_customer_service_list();
+			$(".tp").show(1000, function () {get_customer_service_list();});
 		} else
 		send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function () {
 			if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
-			get_customer_service_list();
-			$(".tp").show();
 			has_TP = true;
+			get_customer_service_list();
 			});
 		}
 	else if($('input:radio[name=deliverymethod]:checked').val() == "collect") 
 		{
-		$(".tp").hide("slow");
-		get_customer_service_list();
+		$(".tp").slideUp(1000, function () {get_customer_service_list();});
 		}
 	else
 		{
-		$(".fc").hide("slow");
-		$(".tp").hide("slow");
+		$("#divFreightCharges").slideUp(1000, function () {$(".tp").slideUp();});
 		}
+	}
+
+var has_FC=false;
+function get_customer_service_list()
+	{
+	if (has_FC)
+		$("#divFreightCharges").slideDown(1000);
+	else
+	send_ajax_request('divFreightCharges', 'HTML', '', 'get_customer_service_list', "", function (){
+		$("#divFreightCharges").slideDown(1000);
+		has_FC = true;
+		});
 	}
 
 function populate_ship_to_address(addressid)

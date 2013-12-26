@@ -3,15 +3,36 @@
 [% #---------------------------------------------------------- %]
 [% IF MY_ORDERS %]
 	[% UNLESS ajax %]
-	<h2>My Orders</h2>
+	<form id="frm_my_ordres" method="post" action="/customer/myorders">
+		<input type="hidden" name="do" id="do"/>
+		<input type="hidden" name="coid" id="coid"/>
+	<h1>My Orders
+		<div class="float_right" style="white-space: nowrap;">
+			<select name="view" id="view" onChange="refreshMyOrders()">
+				[% FOREACH item IN view_list %]
+				<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select>
+			<label style="font-size: 10px;" for="records_per_page"><span id="myorder_count"></span> Records, Records Per Page&nbsp;</label>
+			<select name="records_per_page" id="records_per_page">
+				[% FOREACH item IN recordsperpage_list %]
+					<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+				[% END %]
+			</select>
+			<select name="coids" id="coids">
+				[% FOREACH ids IN myorder_batches %]
+					<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+				[% END %]
+				[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
+			</select>
+		</div>
+	</h1>
 
 	[% IF refresh_interval_sec %]
 	<div class="notice">Order list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
 	[% END %]
 
-	<form id="frm_my_ordres" method="post" action="/customer/myorders">
-		<input type="hidden" name="do" id="do"/>
-		<input type="hidden" name="coid" id="coid"/>
+<!--
 		<table>
 		<tr>
 			<td><input type="submit" class="button" id="new_order" value="Add" onclick="$('#frm_my_ordres').attr('action', '/customer/order/new');"/></td>
@@ -41,15 +62,14 @@
 					</select>
 				</td>
 		</tr></table>
-	</form>
+-->
 
-	<div id="divMyOrders">
+	<div id="myOrders">
 	[% END %]
 
-		<h3>[% list_title %] Count [% myorder_list_count %]</h3>
-		<table class="report">
+		<table>
 			<tr>
-				<th>&nbsp;</th>
+				<th>Status</th>
 				<th>Order Number</th>
 				<th>Customer</th>
 				<th>Origin</th>
@@ -81,6 +101,14 @@
 
 	[% UNLESS ajax %]
 	</div>
+	<table>
+		<tr>
+		<td style="width: 90%">&nbsp;</td>
+		<td><input type="submit" class="gray" id="new_order" value="ADD SHIPMENT" onclick="$('#frm_my_ordres').attr('action', '/customer/order/new');"/></td>
+		<td><div class="green-forward"><input type="submit" id="quick_ship" value="QUICK SHIP" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"/></div></td>
+		</tr>
+	</table>
+	</form>
 	[% END %]
 
 	<script>
@@ -100,6 +128,9 @@
 
 	var refresh_interval_sec = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
 	$(document).ready(function(){
+
+		$("#myorder_count").text('[% myorder_list_count %]');
+
 		setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
 		$("#refresh_interval").text(refresh_interval_sec);
 
@@ -110,7 +141,7 @@
 
 		$("#coids").change(function () {
 			var query_param = "&view=" + $("#view").val() + "&coids=" + $("#coids").val();
-			send_ajax_request('divMyOrders', 'HTML', 'myorders', '', query_param);
+			send_ajax_request('myOrders', 'HTML', 'myorders', '', query_param);
 			});
 		});
 

@@ -39,7 +39,7 @@
 		</table>
 		<center>
 			<table><tr>
-			<td><input type="submit" class="button" id="submit" value="Upload File"/></td>
+			<td><input type="submit" class="green" id="submit" value="Upload File"/></td>
 			<td><input type="button" class="button" id="back" value="Back" onClick="window.location.href='/customer/uploadfile';"></td>
 			</tr></table>
 		</center>

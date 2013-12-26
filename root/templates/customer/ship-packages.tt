@@ -15,24 +15,24 @@
 <form id="frm_ship_packages" method="post" action="/customer/shippackages">
 	<input type="hidden" id="do" name="do" value="shippackages"/>
 
-	<table class="center_app">
+	<table class="center_app css3-checkboxes">
 		<tr>
 			<td><label for="ordernumber" class="float_right">Order Number :</label></td>
 			<td><input type="text" class="broad_text" name="ordernumber" id="ordernumber" value="[% ordernumber %]"></td>
-			<td><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><label for="multiordershipment">Multiple Order Numbers</label></td>
+			<td><label><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><span><label for="multiordershipment">Multiple Order Numbers</label></span></label></td>
 		</tr>
 		<tr>
 			<td><label for="enteredweight" class="float_right">Weight :</label></td>
 			<td><input type="text" class="broad_text" name="enteredweight" id="enteredweight" value="[% enteredweight %]"></td>
-			<td><input type="checkbox" name="variableweightshipment" id="variableweightshipment" value="1"/><label for="variableweightshipment">Multiple Shipment Weights</label></td>
+			<td><label><input type="checkbox" name="variableweightshipment" id="variableweightshipment" value="1"/><span><label for="variableweightshipment">Multiple Shipment Weights</label></span></label></td>
 		</tr>
 		<tr>
 			<td><label for="quantity" class="float_right">Packages :</label></td>
 			<td><input type="text" class="broad_text" name="quantity" id="quantity" value="[% quantity %]"></td>
-			<td><input type="checkbox" name="overrideautoprocess" id="overrideautoprocess" value="1"/><label for="overrideautoprocess">Manually Process Shipment</label></td>
+			<td><label><input type="checkbox" name="overrideautoprocess" id="overrideautoprocess" value="1"/><span><label for="overrideautoprocess">Manually Process Shipment</label></span></label></td>
 		</tr>
 	</table>
-	<center><input type="submit" class="button" value="Submit"/></center>
+	<center><input type="submit" class="green" value="Submit"/></center>
 </form>
 
 <script>

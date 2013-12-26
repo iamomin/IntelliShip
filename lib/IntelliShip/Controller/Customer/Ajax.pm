@@ -58,6 +58,10 @@ sub get_HTML :Private
 		{
 		$self->set_costatus_chkbox;
 		}
+	elsif ($c->req->param('action') eq 'get_customer_service_list')
+		{
+		$self->get_carrier_service_list;
+		}
 
 	$c->stash(template => "templates/customer/ajax.tt");
 	}
@@ -67,8 +71,10 @@ sub set_international_details
 	my $self = shift;
 	my $c = $self->context;
 
-	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{INTERNATIONAL} = 1;
+	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
+	$c->stash->{currencylist_loop} = $self->get_select_list('CURRENCY');
+	$c->stash->{dimentionlist_loop} = $self->get_select_list('DIMENTION');
 	}
 
 sub set_customer_carrier_chkbox
@@ -85,6 +91,26 @@ sub set_costatus_chkbox
 	my $c = $self->context;
 
 	$c->stash->{COSTATUS_LIST} = $self->get_select_list('COSTATUS');
+	}
+
+sub get_carrier_service_list
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	#return {} unless ($self->OrderHasWeight);
+
+	my $carrier_service_list_loop = [
+			{customerserviceid => 'xx', carrier => 'UPS',   service => 'Ground',         days => '2', delivery => '11/29/2013', shipment_charge => '11.50',},
+			{customerserviceid => 'xx', carrier => 'FedEx', service => 'Ground',         days => '2', delivery => '11/29/2013', shipment_charge => '12.40',},
+			{customerserviceid => 'xx', carrier => 'UPS',   service => '3-Day Select',   days => '2', delivery => '11/28/2013', shipment_charge => '16.50',},
+			{customerserviceid => 'xx', carrier => 'FedEx', service => 'Express Server', days => '2', delivery => '11/27/2013', shipment_charge => '17.80',},
+		];
+
+	#my $carrier_service_list_loop = $self->get_carrrier_service_rate_list;
+
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $carrier_service_list_loop;
+	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	}
 
 sub get_JSON_DATA :Private
@@ -113,10 +139,6 @@ sub get_JSON_DATA :Private
 	elsif ($c->req->param('action') eq 'third_party_delivery')
 		{
 		$dataHash = $self->set_third_party_delivery;
-		}
-	elsif ($c->req->param('action') eq 'get_customer_service_list')
-		{
-		$dataHash = $self->get_carrier_service_list;
 		}
 	elsif ($c->req->param('action') eq 'get_city_state')
 		{
@@ -309,30 +331,6 @@ sub get_address_detail
 	return { address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country };
 	}
 
-sub get_carrier_service_list
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	#return {} unless ($self->OrderHasWeight);
-
-	my $carrier_service_list_loop = [
-			{customerserviceid => 'xx', carrier => 'UPS',   service => 'Ground',         delivery => '11/29', shipment_charge => '11.50',},
-			{customerserviceid => 'xx', carrier => 'FedEx', service => 'Ground',         delivery => '11/29', shipment_charge => '12.40',},
-			{customerserviceid => 'xx', carrier => 'UPS',   service => '3-Day Select',   delivery => '11/28', shipment_charge => '16.50',},
-			{customerserviceid => 'xx', carrier => 'FedEx', service => 'Express Server', delivery => '11/27', shipment_charge => '17.80',},
-		];
-
-	#my $carrier_service_list_loop = $self->get_carrrier_service_rate_list;
-
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $carrier_service_list_loop;
-	$c->stash->{CARRIERSERVICE_LIST} = 1;
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
-	$c->stash->{CARRIERSERVICE_LIST} = 0;
-	$c->log->debug("row_HTML: $row_HTML ");
-
-	return { rowHTML => $row_HTML };
-	}
 =a
 sub get_carrrier_service_rate_list
 	{
