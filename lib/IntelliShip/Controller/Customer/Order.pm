@@ -73,6 +73,7 @@ sub save_CO_details :Private
 		}
 
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
+	#$coData->{'tocustomernumber'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
 
 	#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
 	#
@@ -250,10 +251,13 @@ sub save_package_product_details
 
 		my $ownerid = $CO->coid;
 		$ownerid = $last_package_id if ($params->{'type_' . $PackageIndex } eq 'product');
+		my $datatypeid = "1000";
+		$datatypeid = "2000" if ($params->{'type_' . $PackageIndex } eq 'product');
 
 		my $PackProData = {
 				ownertypeid => 1000,
 				ownerid     => $ownerid,
+				datatypeid  => $datatypeid,
 				boxnum      => $params->{'quantity_' . $PackageIndex },
 				quantity    => $params->{'quantity_' . $PackageIndex },
 				partnumber  => $params->{'sku_' . $PackageIndex },
@@ -449,8 +453,8 @@ sub get_order
 			}
 		}
 
-	$c->log->debug("STASH coid _______");
 	$c->stash->{coid} = $self->CO->coid;
+
 	return $self->CO;
 	}
 
@@ -470,99 +474,107 @@ sub populate_order
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->log->debug("_______ POPULATE_ORDER _______");
+
 	my $CO = $self->get_order;
 
-	my $ToAddress = $CO->to_address;
+	my $populate = $c->stash->{populate};
 
-	$c->stash->{toAddress} = $ToAddress;
+	$c->stash->{edit_order} = 1 unless $populate;
 
-	## Initialize Screen
-	$self->setup;
-	$c->stash->{coid} = $CO->coid;
-	$c->stash->{edit_order} = 1;
+	## Address and Shipment Information
+	if (!$populate or $populate eq 'address' or $populate eq 'summary')
+		{
+		$self->setup;
+		my $ToAddress = $CO->to_address;
 
-	## Ship From Section
-	$c->stash->{fromemail} = $CO->deliverynotification;
+		$c->stash->{toAddress} = $ToAddress;
+		$c->stash->{coid} = $CO->coid;
 
-	## Ship To Section
-	$c->stash->{toname} = $ToAddress->addressname;
-	$c->stash->{toaddress1} = $ToAddress->address1;
-	$c->stash->{toaddress2} = $ToAddress->address2;
-	$c->stash->{tocity} = $ToAddress->city;
-	$c->stash->{tostate} = $ToAddress->state;
-	$c->stash->{tozip} = $ToAddress->zip;
-	$c->stash->{tocountry} = $ToAddress->country;
-	$c->stash->{tocontact} = $CO->contactname;
-	$c->stash->{tophone} = $CO->contactphone;
-	$c->stash->{toemail} = $CO->shipmentnotification;
-	$c->stash->{ordernumber} = $CO->ordernumber;
-	$c->stash->{dateneeded} = $CO->dateneeded;
+		## Ship From Section
+		$c->stash->{department} = $CO->department;
+		$c->stash->{fromemail} = $CO->deliverynotification;
 
-	# Ship Information
-	$c->stash->{comments} = $CO->description;
+		## Ship To Section
+		$c->stash->{toname} = $ToAddress->addressname;
+		$c->stash->{toaddress1} = $ToAddress->address1;
+		$c->stash->{toaddress2} = $ToAddress->address2;
+		$c->stash->{tocity} = $ToAddress->city;
+		$c->stash->{tostate} = $ToAddress->state;
+		$c->stash->{tozip} = $ToAddress->zip;
+		$c->stash->{tocountry} = $ToAddress->country;
+		$c->stash->{tocontact} = $CO->contactname;
+		$c->stash->{tophone} = $CO->contactphone;
+		#$c->stash->{tocustomernumber} = $CO->ordernumber;
+		$c->stash->{toemail} = $CO->shipmentnotification;
+		$c->stash->{ordernumber} = $CO->ordernumber;
 
-	# Package Details
-	$c->stash->{'totalweight'} = 0;
-	$c->stash->{'totalpackages'} = 0;
-	$self->populate_package_detail_section;
+		## Shipment Information
+		$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
+		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
+		$c->stash->{description} = $CO->description;
+		}
+
+	## Package Details
+	if (!$populate or $populate eq 'shipment')
+		{
+		$c->stash->{'totalweight'} = 0;
+		$c->stash->{'totalpackages'} = 0;my $rownum_id = 0;
+		my $package_detail_section_html;
+
+		# Step 1: Find Packages belog to Order
+		my $find_package = {};
+		$find_package->{'ownerid'} = $CO->coid;
+		$find_package->{'ownertypeid'} = '1000';
+		$find_package->{'datatypeid'} = '1000';
+
+		my @packages = $c->model('MyDBI::Packprodata')->search($find_package);
+
+		foreach my $PackageData (@packages)
+			{
+			$rownum_id++;
+			$c->stash->{'totalpackages'}++;
+			$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $PackageData);
+
+			# Step 3: Find Product belog to Package
+			my $WHERE = { ownerid => $PackageData->packprodataid };
+			$WHERE->{'ownertypeid'}  = '3000';
+			$WHERE->{'datatypeid'}   = '2000';
+
+			my @arr = $c->model('MyDBI::Packprodata')->search($WHERE);
+			foreach my $Packprodata (@arr)
+				{
+				$rownum_id++;
+				$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
+				}
+			}
+
+		# Step 3: Find product belog to Order
+		my $find_product = {};
+		$find_product->{'ownerid'}      = $CO->coid;
+		$find_product->{'ownertypeid'}  = '1000';
+		$find_product->{'datatypeid'}   = '2000';
+
+		my @products = $c->model('MyDBI::Packprodata')->search($find_product);
+
+		foreach my $ProductData (@products)
+			{
+			$rownum_id++;
+			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
+			}
+
+		$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
+		$c->stash->{package_detail_section} = $package_detail_section_html;
+		$c->stash->{package_detail_row_count} = $rownum_id;
+		}
+
+	if (!$populate or $populate eq 'summary')
+		{
+		}
+
 
 	# ASSESSORIALS SECTION 1000 for co and 2000 for shipment
 	$c->stash->{specialservice_loop} = $self->populate_assessorials_section;
-	}
-
-sub populate_package_detail_section
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	my $CO = $self->get_order;
-
-	my $rownum_id = 0;
-	my $package_detail_section_html;
-
-	# Step 1: Find Packages belog to Order
-	my $find_package = {};
-	$find_package->{'ownerid'} = $CO->coid;
-	$find_package->{'ownertypeid'} = '1000';
-	$find_package->{'datatypeid'} = '1000';
-
-	my @packages = $c->model('MyDBI::Packprodata')->search($find_package);
-
-	foreach my $PackageData (@packages)
-		{
-		$rownum_id++;
-		$c->stash->{'totalpackages'}++;
-		$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $PackageData);
-
-		# Step 3: Find Product belog to Package
-		my $WHERE = { ownerid => $PackageData->packprodataid };
-		$WHERE->{'ownertypeid'}  = '3000';
-		$WHERE->{'datatypeid'}   = '2000';
-
-		my @arr = $c->model('MyDBI::Packprodata')->search($WHERE);
-		foreach my $Packprodata (@arr)
-			{
-			$rownum_id++;
-			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
-			}
-		}
-
-	# Step 3: Find product belog to Order
-	my $find_product = {};
-	$find_product->{'ownerid'}      = $CO->coid;
-	$find_product->{'ownertypeid'}  = '1000';
-	$find_product->{'datatypeid'}   = '2000';
-
-	my @products = $c->model('MyDBI::Packprodata')->search($find_product);
-
-	foreach my $ProductData (@products)
-		{
-		$rownum_id++;
-		$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
-		}
-
-	$c->stash->{package_detail_section} = $package_detail_section_html;
-	$c->stash->{package_detail_row_count} = $rownum_id;
 	}
 
 sub add_detail_row

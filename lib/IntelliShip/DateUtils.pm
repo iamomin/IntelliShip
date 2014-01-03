@@ -37,8 +37,18 @@ sub american_date
 	my $date = shift;
 
 	my ($yy, $mm, $dd);
-	($yy, $mm, $dd) = split(/\-/, $date) if $date =~ /-/;
-	($mm, $dd, $yy) = split(/\//, $date) if $date =~ /\//;
+	if ($date =~ /\:/)
+		{
+		$date =~ s/\D//g;
+		$yy = substr($date, 0, 4);
+		$mm = substr($date, 4, 2);
+		$dd = substr($date, 6, 2);
+		}
+	else
+		{
+		($yy, $mm, $dd) = split(/\-/, $date) if $date =~ /-/;
+		($mm, $dd, $yy) = split(/\//, $date) if $date =~ /\//;
+		}
 
 	return "$mm/$dd/$yy";
 	}
@@ -48,10 +58,13 @@ sub american_date_time
 	my $self = shift;
 	my $date_time = shift;
 
-	$date_time = $self->get_formatted_timestamp unless $date_time;
+	$date_time = $self->timestamp unless $date_time;
+	$date_time =~ s/\D//g;
 
-	my ($date,$time) = split(/\ /, $date_time);
-	my ($yy, $mm, $dd) = split(/\-/, $date);
+	my $yy   = substr($date_time, 0, 4);
+	my $mm   = substr($date_time, 4, 2);
+	my $dd   = substr($date_time, 6, 2);
+	my $time = substr($date_time, 8, 2) . ':' . substr($date_time, 10, 2) . ':' . substr($date_time, 12, 2);
 
 	return "$mm/$dd/$yy $time";
 	}

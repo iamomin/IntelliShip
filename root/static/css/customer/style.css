@@ -523,6 +523,7 @@ div.error {
     background: #1875BA;
     text-align: center;
     border: 1px solid #1875BA;
+    cursor: pointer;
 }
 
 .inactive {
@@ -534,6 +535,7 @@ div.error {
     background: #9BA7AF;
     text-align: center;
     border: 1px solid #9BA7AF;
+    cursor: pointer;
 }
 
 .bold_text {

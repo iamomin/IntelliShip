@@ -2,15 +2,15 @@
 
 <table class="center" style="width: 100%">
 	<tr style="text-align: center;">
-	<td width="33%"><input type="button" class="inactive" value="ADDRESS"/></td>
-	<td width="33%"><input type="button" class="inactive" value="SHIPMENT DETAILS"/></td>
+	<td width="33%"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
+	<td width="33%"><input type="button" class="inactive" id="btn_shipment" value="SHIPMENT DETAILS"/></td>
 	<td width="33%"><input type="button" class="active" value="FINAL REVIEW"/></td>
 	</tr>
 	<tr>
 	<td colspan="3">
 		<div style="position: relative;">
 			<hr class="solid_line"/>
-			<img style="z-index: 1; float: left; margin-left:13%;" src="/static/images/thumbs-up-grayed.png">
+			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/images/thumbs-up-grayed.png">
 			<img style="z-index: 2; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/thumbs-up-grayed.png">
 			<img style="z-index: 3; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/navigation-down.png">
 		</div>
@@ -20,13 +20,13 @@
 
 <form id="frm_order_sumary" name="frm_order_sumary" method="post" action="/customer/order/multipage">
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" name="do" value="step3"/>
+	<input type="hidden" id="do" name="do" value="step3"/>
 
 	<div class="equal">
 		<div class="row">
 			<div>
 			<table class="summary-app">
-				<caption>ADDRESS SUMMARY:<div class="float_right"><a href="#">edit</a></div></caption>
+				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
 					<th>SHIP TO </th><td>[% toname %]</td>
 					<th>SHIP FROM </th><td>[% customer.customername %]</td>
@@ -36,7 +36,7 @@
 					<td>&nbsp;</td><td>[% customerAddress.address1 %][% IF customerAddress.address2 %], customerAddress.address2[% END %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</td>
+					<td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% SHIP.zip %]</td>
 					<td>&nbsp;</td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
 				</tr>
 				<tr>
@@ -56,7 +56,7 @@
 
 			<div>
 			<table class="summary-app">
-				<caption>SHIPMENT DETAIL SUMMARY:<div class="float_right"><a href="#">edit</a></div></caption>
+				<caption>SHIPMENT DETAIL SUMMARY:<div class="float_right"><a id="edit_shipment" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
 					<th>Due Date: </th>
 					<td>[% dateneeded %]</td>
@@ -185,6 +185,24 @@
 
 <script src="/static/js/customer-order.js"></script>
 <script>
+
+	$("#btn_address").click(function() {
+		$("#do").val('address');
+		$("#frm_order_sumary").submit();
+		});
+	$("#edit_address").click(function() {
+		$("#do").val('address');
+		$("#frm_order_sumary").submit();
+		});
+
+	$("#btn_shipment").click(function() {
+		$("#do").val('shipment');
+		$("#frm_order_sumary").submit();
+		});
+	$("#edit_shipment").click(function() {
+		$("#do").val('shipment');
+		$("#frm_order_sumary").submit();
+		});
 
 	$("input[name='deliverymethod']:radio").change(function () {
 		checkCarrierServiceSection();

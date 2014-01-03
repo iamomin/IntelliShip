@@ -116,16 +116,16 @@
 		<td style="width: 05%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" size="1" value="[% sku %]"/></td>
 		<td style="width: 20%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>
 		<td style="width: 10%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %] selected [% END %]>[% item.name %]</option>[% END %]</select></td>
-		<td style="width: 05%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" size="1" value="[% weight %]"/></td>
-		<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" size="1" value="[% dimweight %]"/></td>
+		<td style="width: 07%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" size="3" value="[% weight %]"/></td>
+		<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" size="3" value="[% dimweight %]"/></td>
 		<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" size="1" value="[% dimlength %]"/></td>
 		<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" size="1" value="[% dimwidth %]"/></td>
 		<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" size="1" value="[% dimheight %]"/></td>
 		<td style="width: 07%"><input type="text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" size="8" value="[% density %]"/></td>
 		<td style="width: 05%"><input type="text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" size="1" value="[% nmfc %]"/></td>
 		<td style="width: 05%"><input type="text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]" size="1" value="[% class %]"/></td>
-		<td style="width: 08%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" size="5" value="[% decval %]"/></td>
-		<td style="width: 08%"><input type="text" name="frtins_[% ROW_COUNT %]" class="total_pkg_detail" id="frtins_[% ROW_COUNT %]" size="5" value="[% frtins %]"/></td>
+		<td style="width: 07%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" size="5" value="[% decval %]"/></td>
+		<td style="width: 07%"><input type="text" name="frtins_[% ROW_COUNT %]" class="total_pkg_detail" id="frtins_[% ROW_COUNT %]" size="5" value="[% frtins %]"/></td>
 	</tr>
 	</table>
 </li>
@@ -198,11 +198,13 @@
 			<th>&nbsp;</th>
 			<th>CARRIER</th>
 			<th>SERVICE LEVEL</th>
+			[% IF IS_ROUTE %]
 			<th>TRANSIT DAYS</th>
 			<th>EST. DELIVERY</th>
 			<th>EST. COST</th>
 			<th>DECLD. VAL/INSUR</th>
 			<th>EST. TOTAL COST</th>
+			[% END %]
 		</tr>
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr>
@@ -211,11 +213,13 @@
 			</td>
 			<td>[% item.carrier %]</td>
 			<td>[% item.service %]</td>
+			[% IF IS_ROUTE %]
 			<td>[% item.days %]</td>
 			<td>[% item.delivery %]</td>
 			<td>[% item.shipment_charge %]</td>
 			<td>[% item.shipment_charge %]</td>
 			<td><green>$[% item.shipment_charge %]</green></td>
+			[% END %]
 		</tr>
 	[% END %]
 	</table>

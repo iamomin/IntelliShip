@@ -10,7 +10,7 @@
 	<td colspan="3">
 		<div style="position: relative;">
 			<hr class="solid_line"/>
-			<img style="z-index: 1; float: left; margin-left:13%;" src="/static/images/navigation-down.png">
+			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/images/navigation-down.png">
 		</div>
 	</td>
 	</tr>
@@ -67,7 +67,7 @@
 					<td><label for="fromphone" class="float_right">Phone:</label></td><td><div class="default_text">[% customer.phone %]</div></td>
 				<tr>
 				</tr>
-					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% fromdepartment %]"></td>
+					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
 				<tr>
 				<tr>
 					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
@@ -131,10 +131,10 @@
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" readonly/></td>
+					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" readonly/></td>
+					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
 				</tr>
 				<tr>
 					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
@@ -176,7 +176,7 @@
 //$("#tozip").mask("99999");
 
 $("#datetoship").datepicker({ minDate: '-0d' });
-$("#datetoship").datepicker('setDate', '+0d');
+[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
 $("#dateneeded").datepicker({ minDate: '-0d' });
 
 var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];

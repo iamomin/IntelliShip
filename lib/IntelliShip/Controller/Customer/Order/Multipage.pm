@@ -44,6 +44,10 @@ sub index :Path :Args(0) {
 		{
 		$self->cancel_order;
 		}
+	elsif ($do_value eq 'shipment')
+		{
+		$self->setup_package_detail;
+		}
 	else
 		{
 		$self->setup_address;
@@ -86,6 +90,12 @@ sub setup_address
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{tooltips} = $self->get_tooltips;
 
+	if ($c->req->param('do') eq 'address')
+		{
+		$c->stash->{populate} = 'address';
+		$self->populate_order;
+		}
+
 	$c->stash(template => "templates/customer/order-address.tt");
 	}
 
@@ -96,9 +106,11 @@ sub setup_package_detail
 	$c->log->debug("__ SETUP PACKAGE DETAIL");
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
-	#$c->log->debug("CA : " . $self->customer->address->country);
-	#$c->log->debug("COA: " . $self->CO->to_address->country);
-	if ($self->customer->address->country ne $self->CO->to_address->country)
+	my $CO = $self->get_order;
+	my $Customer = $self->customer;
+	#$c->log->debug("CA : " . $Customer->address->country);
+	#$c->log->debug("COA: " . $CO->to_address->country);
+	if ($Customer->address->country ne $CO->to_address->country)
 		{
 		$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
 		my $CA = IntelliShip::Controller::Customer::Ajax->new;
@@ -109,6 +121,9 @@ sub setup_package_detail
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
+	$c->stash->{populate} = 'shipment';
+	$self->populate_order;
+
 	$c->stash(template => "templates/customer/order-shipment.tt");
 	}
 
@@ -116,8 +131,14 @@ sub setup_review
 	{
 	my $self = shift;
 	my $c = $self->context;
+
+	$c->stash->{populate} = 'summary';
 	$self->populate_order;
+
+	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
+
+	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash(template => "templates/customer/order-summary.tt");
 	}
 
