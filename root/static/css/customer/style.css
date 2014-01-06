@@ -500,17 +500,19 @@ table.report th a:hover {text-decoration: underline;color: #97c1da}
 
 div.notice {
     position: relative;
+    margin: 10px 0px;
+    padding: 15px;
     border: 1px solid #97c1da;
     color: #264c72;
-    padding: 15px;
     background-color: #d0e3ef;
 }
 
 div.error {
     position: relative;
+    margin: 10px 0px;
+    padding: 15px;
     border: 1px solid #811;
     color: #911;
-    padding: 15px;
     background-color: #efd0d0;
 }
 

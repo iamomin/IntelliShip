@@ -1,3 +1,4 @@
+[% UNLESS one_page %]
 <h2>SHIP PACKAGES</h2>
 
 <form id="frm_nav" name="frm_nav" method="post" action="/customer/order/multipage">
@@ -19,14 +20,15 @@
 		</tr>
 	</table>
 </form>
-
+[% END %]
 <div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
 
 <br>
-
+[% UNLESS one_page %]
 <form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step2"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+[% END %]
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
 	<table class="css3-radios css3-checkboxes">
 		<tr>
@@ -117,6 +119,8 @@
 	</ul>
 
 	<div style="clear: both;">&nbsp;</div>
+
+[% UNLESS one_page %]
 	[% IF INTERNATIONAL_AND_COMMODITY %]
 		[% INTERNATIONAL_AND_COMMODITY %]
 		<div style="clear: both;">&nbsp;</div>
@@ -132,6 +136,7 @@
 </form>
 
 <script src="/static/js/customer-order.js"></script>
+[% END %]
 
 <script>
 
@@ -207,6 +212,7 @@
 	$('#insurance').change(distribute_insurance_among_products);
 	$('#freightinsurance').change(distribute_insurance_among_products);
 
+[% IF one_page %]
 	$("#frm_shipment").submit(function() {
 
 		var pkg_detail_row_count=0;
@@ -230,15 +236,16 @@
 		return validateForm(requireHash);
 		});
 
-$(document).ready(function(){
-	[% IF tooltips %]
-	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
-	setToolTip();
-	[% END %]
-	calculate_total_weight();
-	calculate_total_packages();
-	calculate_total_declared_value_insurance();
-	calculate_total_freight_insurance();
-	});
+	$(document).ready(function(){
+		[% IF tooltips %]
+		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+		setToolTip();
+		[% END %]
+		calculate_total_weight();
+		calculate_total_packages();
+		calculate_total_declared_value_insurance();
+		calculate_total_freight_insurance();
+		});
+[% END %]
 
 </script>

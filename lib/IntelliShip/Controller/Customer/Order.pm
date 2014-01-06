@@ -35,11 +35,16 @@ sub setup :Private
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
+	$c->stash->{one_page} = 1;
 	$c->stash->{tocountry} = "US";
 	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	$c->stash(template => "templates/customer/order.tt");
+	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment.tt" ]));
+	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-summary.tt" ]));
+
+	$c->stash(template => "templates/customer/order-one-page.tt");
 	}
 
 sub save_CO_details :Private

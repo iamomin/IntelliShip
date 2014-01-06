@@ -1,0 +1,92 @@
+
+<h1>Ship Packages</h1>
+
+<script src="/static/js/customer-order.js"></script>
+
+<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" name="do" value="save"/>
+
+	<h2>Address Information</h2>
+	[% ADDRESS_SECTION %]
+
+	<h2>Package Detail</h2>
+	[% SHIPMENT_SECTION %]
+
+	<h2>Special Services Requested</h2>
+	[% CARRIER_SERVICE_SECTION %]
+
+	<div style="clear: both;">&nbsp;</div>
+
+	<div class="float_right">
+		<input type="button" class="green" id="save" value="Save"/>
+		[% IF quickship %]<input type="button" class="green" id="ship" value="Ship"/>[% END %]
+		<input type="button" class="gray" id="cancel" value="Cancel"/>
+	</div>
+
+</form>
+
+<script>
+
+	$("#tocountry").change(function() {
+		checkInternationalSection();
+		});
+
+	$('#save').click(function() {
+		$("#frm_order").submit();
+		});
+
+	$('#ship').click(function() {
+		});
+
+	$('#cancel').click(function() {
+		});
+
+	$("#frm_order").submit(function() {
+
+		var pkg_detail_row_count=0;
+
+		$('#package-detail-list li').each(function( index ) {
+			var row_id = this.id;
+			if (row_id.match(/^new_/))
+				{
+				var row_num = row_id.split('_')[2];
+				$("#rownum_id_"+row_num).val(index);
+				pkg_detail_row_count++;
+				}
+			});
+
+		$("#pkg_detail_row_count").val(pkg_detail_row_count);
+
+		var requireHash = {
+				datetoship         : { date: true },
+				dateneeded         : { date: true },
+				fromdepartment     : { minlength: 2 },
+				fromemail          : { email: true },
+				toname             : { minlength: 2 },
+				toaddress1         : { minlength: 2 },
+				tocity             : { minlength: 2 },
+				tostate            : { minlength: 2 },
+				tozip              : { minlength: 5 },
+				tocountry          : { minlength: 2 },
+				tocontact          : { minlength: 2 },
+				tophone            : { phone: true },
+				toemail            : { email: true },
+				'package-detail-list' : { method: validate_package_details },
+				};
+
+		return validateForm(requireHash);
+		});
+
+	[% IF tooltips %]
+		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+		setToolTip();
+	[% END %]
+
+	$(document).ready(function(){
+		checkInternationalSection();
+		checkCarrierServiceSection();
+		});
+
+</script>

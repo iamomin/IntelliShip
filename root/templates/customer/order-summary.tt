@@ -1,3 +1,4 @@
+[% UNLESS one_page %]
 <h2>SHIP PACKAGES</h2>
 
 <table class="center" style="width: 100%">
@@ -88,6 +89,7 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<h2>Special Services Requested</h2>
+[% END %]
 
 	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
 
@@ -108,6 +110,10 @@
 		</tr>
 	</table>
 
+[% IF one_page %]
+	<div style="clear: both;">&nbsp;</div>
+	<div id="intlCommoditySec"></div>
+[% END %]
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="equal">
@@ -175,6 +181,7 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
+[% UNLESS one_page %]
 	<div class="float_right">
 		<table><tr>
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
@@ -184,8 +191,10 @@
 </form>
 
 <script src="/static/js/customer-order.js"></script>
+[% END %]
 <script>
 
+[% UNLESS one_page %]
 	$("#btn_address").click(function() {
 		$("#do").val('address');
 		$("#frm_order_sumary").submit();
@@ -199,13 +208,10 @@
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
 		});
+
 	$("#edit_shipment").click(function() {
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
-		});
-
-	$("input[name='deliverymethod']:radio").change(function () {
-		checkCarrierServiceSection();
 		});
 
 	$("#cancel").click(function() {
@@ -213,6 +219,13 @@
 		$("#frm_order_sumary").submit();
 		});
 
+[% END %]
+
+	$("input[name='deliverymethod']:radio").change(function () {
+		checkCarrierServiceSection();
+		});
+
+[% UNLESS one_page %]
 	$(document).ready(function(){
 		checkCarrierServiceSection();
 
@@ -221,5 +234,5 @@
 		setToolTip();
 		[% END %]
 		});
-
+[% END %]
 </script>

@@ -133,20 +133,20 @@
 
 [% IF REVIEW_PKG_DETAIL_ROW %]
 	<tr class="[% IF DETAIL_TYPE == 'product' %]ui-state-default[% ELSE %]ui-state-highlight[% END %]">
-		<td style="width:  5%"><div class="default_text">[% quantity %]</div></td>
-		<td style="width:  5%"><div class="default_text">[% sku %]</div></td>
-		<td style="width:  5%"><div class="default_text">[% description %]</div></td>
+		<td style="width: 05%"><div class="default_text">[% quantity %]</div></td>
+		<td style="width: 05%"><div class="default_text">[% sku %]</div></td>
+		<td style="width: 05%"><div class="default_text">[% description %]</div></td>
 		<td style="width: 10%"><div class="default_text">[% unittype %]</div></td>
-		<td style="width:  4%"><div class="default_text">[% weight %]</div></td>
-		<td style="width: 7%"><div class="default_text">[% dimweight %]</div></td>
-		<td style="width:  5%"><div class="default_text">[% dimlength %]</div></td>
+		<td style="width: 04%"><div class="default_text">[% weight %]</div></td>
+		<td style="width: 07%"><div class="default_text">[% dimweight %]</div></td>
+		<td style="width: 05%"><div class="default_text">[% dimlength %]</div></td>
 		<td style="width: 10%"><div class="default_text">[% dimwidth %]</div></td>
 		<td style="width: 10%"><div class="default_text">[% dimheight %]</div></td>
-		<td style="width: 7%"><div class="default_text">[% density %]</div></td>
-		<td style="width:  5%"><div class="default_text">[% nmfc %]</div></td>
-		<td style="width:  5%"><div class="default_text">[% class %]</div></td>
-		<td style="width:  8%"><div class="default_text">[% frtins %]</div></td>
-		<td style="width:  8%"><div class="default_text">[% decval %]</div></td>
+		<td style="width: 07%"><div class="default_text">[% density %]</div></td>
+		<td style="width: 05%"><div class="default_text">[% nmfc %]</div></td>
+		<td style="width: 05%"><div class="default_text">[% class %]</div></td>
+		<td style="width: 08%"><div class="default_text">[% frtins %]</div></td>
+		<td style="width: 08%"><div class="default_text">[% decval %]</div></td>
 	</tr>
 [% END %]
 
@@ -193,7 +193,7 @@
 
 [% IF CARRIERSERVICE_LIST %]
 	<table id="freight_charges" class="app" style="text-align: center;">
-		<caption>SERVICE LEVEL SUMMARY:<div class="float_right"><a href="#">edit</a></div></caption>
+		<caption>SERVICE LEVEL SUMMARY:</caption>
 		<tr>
 			<th>&nbsp;</th>
 			<th>CARRIER</th>

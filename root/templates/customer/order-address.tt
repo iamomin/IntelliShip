@@ -1,3 +1,4 @@
+[% UNLESS one_page %]
 <h2>SHIP PACKAGES</h2>
 
 <table class="center" style="width: 100%">
@@ -19,7 +20,7 @@
 <form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-
+[% END %]
 	<table>
 		<tr>
 			<td>
@@ -161,7 +162,7 @@
 			</div>
 		</div>
 	</div>
-
+[% UNLESS one_page %]
 	<br/>
 
 	<div class="green-forward float_right"><input type="submit" id="quick_ship" value="NEXT STEP"/></div>
@@ -169,7 +170,7 @@
 </form>
 
 <script src="/static/js/customer-order.js"></script>
-
+[% END %]
 <script>
 
 //$("#tophone").mask("999-999-9999");
@@ -203,7 +204,7 @@ $("#dateneeded").change(function() {
 	check_due_date();
 	});
 
-
+[% UNLESS one_page %]
 $("#frm_address").submit(function() {
 	var requireHash = {
 			fromdepartment : { minlength: 2 },
@@ -229,5 +230,5 @@ $(document).ready(function(){
 	setToolTip();
 	[% END %]
 	});
-
+[% END %]
 </script>
