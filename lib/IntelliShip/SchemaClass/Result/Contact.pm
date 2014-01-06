@@ -254,6 +254,11 @@ sub get_contact_data_value
 	return $contact_data_value;
 	}
 
+sub login_level
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('loginlevel');
+	}
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

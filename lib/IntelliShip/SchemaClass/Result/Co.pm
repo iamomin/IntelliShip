@@ -793,11 +793,53 @@ __PACKAGE__->has_many(
 	{ "foreign.coid" => "self.coid" }
 	);
 
+__PACKAGE__->has_many(
+	packprodata =>
+	"IntelliShip::SchemaClass::Result::Packprodata",
+	{ "foreign.ownerid" => "self.coid" }
+	);
+
 sub shipment_count
 	{
 	my $self = shift;
 	my $RS = $self->shipments({ statusid => { 'NOT IN' => ['5','6','7'] }});
 	return $RS->count;
+	}
+
+sub package_details
+	{
+	my $self = shift;
+	my $CO = shift;
+
+	my @packageArr;
+
+	# Step 1: Find Packages belog to Order
+	my $WHERE = { ownertypeid => '1000', datatypeid => '1000' };
+
+	my @packages = $self->packprodata($WHERE);
+
+	foreach my $PackageData (@packages)
+		{
+		push (@packageArr, $PackageData);
+
+		# Step 2: Find Product belog to Package
+		my @arr = $PackageData->child_product_details;
+		foreach my $Packprodata (@arr)
+			{
+			push (@packageArr, $Packprodata);
+			}
+		}
+
+	# Step 3: Find product belog to Order
+	$WHERE = { ownertypeid => '1000', datatypeid => '2000' };
+	my @products = $self->packprodata($WHERE);
+
+	foreach my $ProductData (@products)
+		{
+		push (@packageArr, $ProductData);
+		}
+
+	return @packageArr;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

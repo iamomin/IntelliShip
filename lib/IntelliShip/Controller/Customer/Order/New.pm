@@ -33,29 +33,12 @@ sub index :Path :Args(0) {
 		}
 	elsif ( $do_value eq 'quick')
 		{
-		$self->setup;
+		$self->setup_one_page;
 		}
 	else
 		{
-		$self->setup;
+		$self->setup_one_page;
 		}
-	}
-
-sub save_order
-	{
-	my $self = shift;
-
-	## SAVE CO DETAILS
-	$self->save_CO_details;
-
-	## SAVE ADDRESS DETAILS
-	$self->save_address;
-
-	## SAVE PACKAGE & PRODUCT DETAILS
-	$self->save_package_product_details;
-
-	## Display Order Review Page
-	$self->setup_summary_page;
 	}
 
 =encoding utf8

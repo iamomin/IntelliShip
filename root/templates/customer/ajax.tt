@@ -187,7 +187,7 @@
 		</td>
 	</tr>
 	<tr class="tp">
-		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account" value="[% account %]"/></td>
+		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account"/></td>
 	</tr>
 [% END %]
 
@@ -218,7 +218,7 @@
 			<td>[% item.delivery %]</td>
 			<td>[% item.shipment_charge %]</td>
 			<td>[% item.shipment_charge %]</td>
-			<td><green>$[% item.shipment_charge %]</green></td>
+			<td><green>[% item.shipment_charge %]</green></td>
 			[% END %]
 		</tr>
 	[% END %]
