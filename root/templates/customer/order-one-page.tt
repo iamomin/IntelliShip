@@ -1,5 +1,5 @@
 
-<h1>Ship Packages</h1>
+<h1>[% quickship ? 'Quick Ship Order' : 'Ship Packages' %]</h1>
 
 <script src="/static/js/customer-order.js"></script>
 
@@ -31,6 +31,10 @@
 
 	$("#tocountry").change(function() {
 		checkInternationalSection();
+		});
+
+	$("#route").click(function() {
+		get_customer_service_list($("#frm_order").serialize());
 		});
 
 	$('#save').click(function() {

@@ -2,6 +2,7 @@ package IntelliShip::Controller::Customer::Order;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::Arrs::API;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; has 'CO' => ( is => 'rw' ); }
@@ -10,9 +11,23 @@ sub quickship :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
-	$self->setup;
+	$self->setup_one_page;
 	$c->stash->{quickship} = 1;
-	$c->stash->{title} = 'Quick Ship Order';
+	}
+
+sub setup_one_page :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$self->setup;
+
+	$c->stash->{one_page} = 1;
+	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment.tt" ]));
+	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-summary.tt" ]));
+
+	$c->stash(template => "templates/customer/order-one-page.tt");
 	}
 
 sub setup :Private
@@ -21,11 +36,11 @@ sub setup :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	my $CO = $self->get_order;
 	#($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
-	$c->stash->{neworder} = 1;
 	$c->stash->{AMDELIVERY} = 1 if $self->customer->amdelivery;
-	$c->stash->{ordernumber} = $params->{'ordernumber'};
+	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid);
 	$c->stash->{customer} = $self->customer;
 	$c->stash->{customerAddress} = $self->customer->address;
 	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
@@ -35,16 +50,26 @@ sub setup :Private
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
-	$c->stash->{one_page} = 1;
 	$c->stash->{tocountry} = "US";
 	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash->{tooltips} = $self->get_tooltips;
+	}
 
-	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
-	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment.tt" ]));
-	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-summary.tt" ]));
+sub save_order
+	{
+	my $self = shift;
 
-	$c->stash(template => "templates/customer/order-one-page.tt");
+	## SAVE CO DETAILS
+	$self->save_CO_details;
+
+	## SAVE ADDRESS DETAILS
+	$self->save_address;
+
+	## SAVE PACKAGE & PRODUCT DETAILS
+	$self->save_package_product_details;
+
+	## SAVE SPECIAL SERVICES
+	$self->save_special_services;
 	}
 
 sub save_CO_details :Private
@@ -305,6 +330,51 @@ sub save_package_product_details
 =cut
 	}
 
+sub save_special_services
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $CO = $self->get_order;
+
+	$c->log->debug("___ Flush old Assdata for ownerid: " . $CO->coid);
+	my @assessorial_datas = $c->model("MyDBI::Assdata")->search({ ownerid => $CO->coid });
+	
+	foreach my $AssData (@assessorial_datas)
+		{
+		$c->log->debug("___ Flush old Assdata for assdataid: " . $AssData->assdataid);
+		$AssData->delete;
+		}
+
+	my $APIRequest = IntelliShip::Arrs::API->new;
+	$APIRequest->context($c);
+	my $AssRef = $APIRequest->get_sop_asslisting($self->customer->get_sop_id);
+
+	my @ass_names = split(/\t/,$AssRef->{'assessorial_names'});
+	my @ass_displays = split(/\t/,$AssRef->{'assessorial_display'});
+
+	for (my $row = 0; $row < scalar @ass_names; $row++)
+		{
+		my $ass_name = $ass_names[$row];
+		if (defined $params->{$ass_name})
+			{
+			my $AssData = {
+					ownertypeid => 1000,
+					ownerid     => $CO->coid,
+					assname     => $ass_names[$row],
+					assdisplay  => $ass_displays[$row],
+				};
+
+			my $AssDataObj = $c->model("MyDBI::Assdata")->new($AssData);
+			$AssDataObj->assdataid($self->get_token_id);
+			$AssDataObj->insert;
+
+			$c->log->debug("New AssDataObj Inserted, ID: " . $AssDataObj->assdataid);
+			}
+		}
+	}
+
 sub get_shipment_count
 	{
 	my $self = shift;
@@ -365,7 +435,11 @@ sub get_order
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return $self->CO if $self->CO;
+	if ($self->CO)
+		{
+		$c->stash->{coid} = $self->CO->coid;
+		return $self->CO;
+		}
 
 	if ($params->{'coid'})
 		{
@@ -471,6 +545,16 @@ sub setup_summary_page
 	$c->stash->{review_order} = 1;
 	$self->populate_order;
 	$c->stash(template => "templates/customer/order-review.tt");
+	}
+
+sub setup_quickship_page
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->stash->{quickship} = 1;
+	$c->stash->{title} = 'Quick Ship Order';
+	$self->populate_order;
 	}
 
 sub populate_order

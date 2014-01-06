@@ -130,8 +130,7 @@ sub get_co_type
 	my $Contact = $self->contact;
 
 	my $cotypeid = 1;
-	if (($Contact->get_contact_data_value('loginlevel') == 35) or 
-			($Contact->get_contact_data_value('loginlevel') == 40))
+	if ($Contact->login_level == 35 or $Contact->login_level == 40)
 		{
 		$cotypeid = 2; # If contact is PO loginlevel (35 or 40), set cotype to PO
 		}

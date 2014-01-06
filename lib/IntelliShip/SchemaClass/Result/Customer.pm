@@ -638,9 +638,39 @@ sub has_extid_data
 	my $customer_id = $self->get_contact_data_value('sopid');
 	$customer_id = $self->customerid unless $customer_id;
 
-	my $RS = $self->droplist_data({ field => 'extid' });
+	# my $RS = $self->droplist_data->search({ field = 'extid' });
+	# my $sth = $c->model("MyDBI")->select("SELECT count(*) FROM droplistdata WHERE field = 'extid' AND customerid = '" . $customer_id . "'");
+	# my $count = $sth->fetchrow(0)->{'count'};
+	# return $count;
+	}
 
-	return $RS->count;
+sub get_sop_id
+	{
+	my $self = shift;
+
+	my $usealtsop = $self->get_contact_data_value('usealtsop');
+	my $custnum = $self->get_contact_data_value('extcustnum');
+
+	# Allow for alternate sopid's (customerid in customerservice - we can't change the field at this point)
+	my $customerid = $self->get_contact_data_value('sopid');
+	$customerid = $self->customerid unless $customerid;
+
+	# Check if the customer is capable of alt sops, and if this is a 3rd party shipment.  If so, check for new sopid.
+	my $using_altsop = 0;
+	my $altsopid = '';
+	if ($usealtsop)
+		{
+		my $AltSOP = $self->contact->model('MyDBI::Altsop')->new({});
+		my $alt_sopid = $AltSOP->get_alt_sopid($self->customerid,'extcustnum',$custnum);
+
+		if ($alt_sopid)
+			{
+			$customerid = $alt_sopid;
+			$using_altsop = 1;
+			}
+		}
+
+	return ($customerid,$using_altsop,$altsopid);
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -5,6 +5,7 @@ use namespace::autoclean;
 use IntelliShip::HTTP;
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
+use IntelliShip::Arrs::API;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
@@ -45,7 +46,7 @@ sub get_HTML :Private
 	my $self = shift;
 	my $c = $self->context;
 
-	my $action = $c->req->param('action') || '';
+	my $action = $c->req->param('action');
 	if ($action eq 'display_international')
 		{
 		$self->set_international_details;
@@ -91,26 +92,6 @@ sub set_costatus_chkbox
 	my $c = $self->context;
 
 	$c->stash->{COSTATUS_LIST} = $self->get_select_list('COSTATUS');
-	}
-
-sub get_carrier_service_list
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	#return {} unless ($self->OrderHasWeight);
-
-	my $carrier_service_list_loop = [
-			{customerserviceid => 'xx', carrier => 'UPS',   service => 'Ground',         days => '2', delivery => '11/29/2013', shipment_charge => '11.50',},
-			{customerserviceid => 'xx', carrier => 'FedEx', service => 'Ground',         days => '2', delivery => '11/29/2013', shipment_charge => '12.40',},
-			{customerserviceid => 'xx', carrier => 'UPS',   service => '3-Day Select',   days => '2', delivery => '11/28/2013', shipment_charge => '16.50',},
-			{customerserviceid => 'xx', carrier => 'FedEx', service => 'Express Server', days => '2', delivery => '11/27/2013', shipment_charge => '17.80',},
-		];
-
-	#my $carrier_service_list_loop = $self->get_carrrier_service_rate_list;
-
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $carrier_service_list_loop;
-	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	}
 
 sub get_JSON_DATA :Private
@@ -329,187 +310,6 @@ sub get_address_detail
 	my $Address = $self->context->model('MyDBI::Address')->find({addressid => $addressid});
 
 	return { address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country };
-	}
-
-=a
-sub get_carrrier_service_rate_list
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	#my ($hash_customerserviceid, $defaultcsid, $packagecostlist, $CSShipmentValues, undef, $CSSecurityTypes, $defaultcsidtotalcost, $usingaltsop, $altsopid);
-	my $RequestRef = {};
-	$RequestRef->{'action'} = 'GetCSList';
-
-	## Add support for dropship & inbound
-	#if ( defined($CgiRef->{'isinbound'}) && $CgiRef->{'isinbound'} == 1 )
-	#	{
-	#	$RequestRef->{'fromzip'} = $CgiRef->{'addresszip'};
-	#	$RequestRef->{'fromstate'} = $CgiRef->{'addressstate'};
-	#	$RequestRef->{'fromcountry'} = $CgiRef->{'addresscountry'};
-	#	$RequestRef->{'tozip'} = $CgiRef->{'branchaddresszip'};
-	#	$RequestRef->{'tostate'} = $CgiRef->{'branchaddressstate'};
-	#	$RequestRef->{'tocountry'} = $CgiRef->{'branchaddresscountry'};
-	#	}
-	#elsif ( defined($CgiRef->{'isdropship'}) && $CgiRef->{'isdropship'} == 1 )
-	#	{
-	#	$RequestRef->{'fromzip'} = $CgiRef->{'dropzip'};
-	#	$RequestRef->{'fromstate'} = $CgiRef->{'dropstate'};
-	#	$RequestRef->{'fromcountry'} = $CgiRef->{'dropcountry'};
-	#	$RequestRef->{'tozip'} = $CgiRef->{'addresszip'};
-	#	$RequestRef->{'tostate'} = $CgiRef->{'addressstate'};
-	#	$RequestRef->{'tocountry'} = $CgiRef->{'addresscountry'};
-	#	}
-	#else
-	#	{
-	#	$RequestRef->{'fromzip'} = $CgiRef->{'branchaddresszip'};
-	#	$RequestRef->{'fromstate'} = $CgiRef->{'branchaddressstate'};
-	#	$RequestRef->{'fromcountry'} = $CgiRef->{'branchaddresscountry'};
-	#	$RequestRef->{'tozip'} = $CgiRef->{'addresszip'};
-	#	$RequestRef->{'tostate'} = $CgiRef->{'addressstate'};
-	#	$RequestRef->{'tocountry'} = $CgiRef->{'addresscountry'};
-	#	}
-
-	$RequestRef->{'fromzip'} = $CgiRef->{'branchaddresszip'};
-	$RequestRef->{'fromstate'} = $CgiRef->{'branchaddressstate'};
-	$RequestRef->{'fromcountry'} = $CgiRef->{'branchaddresscountry'};
-	$RequestRef->{'tozip'} = $CgiRef->{'addresszip'};
-	$RequestRef->{'tostate'} = $CgiRef->{'addressstate'};
-	$RequestRef->{'tocountry'} = $CgiRef->{'addresscountry'};
-
-	$RequestRef->{'datetoship'} = $CgiRef->{'datetoship'};
-	$RequestRef->{'dateneeded'} = $CgiRef->{'dateneeded'};
-
-	$RequestRef->{'hasrates'} = $self->{'customer'}->GetValueHashRef()->{'hasrates'};
-	$RequestRef->{'autocsselect'} = $CgiRef->{'autocsselect'};
-	$RequestRef->{'allowraterecalc'} = $CgiRef->{'allowraterecalc'};
-	$RequestRef->{'manroutingctrl'} = $CgiRef->{'manroutingctrl'};
-	$RequestRef->{'clientid'} = $CgiRef->{'clientid'};
-
-	if ($params->{'pkg_detail_row_count'} > 0)
-		{
-		my $total_row_count = int $params->{'pkg_detail_row_count'};
-
-		for (my $index=1; $index <= $total_row_count; $index++)
-			{
-			my $PackageIndex = $self->get_row_id($index);
-			$PackageIndex =~ s/^rownum_id_//;
-
-			$RequestRef->{'weightlist'}     .= $params->{'weight_' . $PackageIndex } . ",";
-			$RequestRef->{'quantitylist'}   .= $params->{'weight_' . $PackageIndex } . ",";
-			$RequestRef->{'unittypelist'}   .= $params->{'weight_' . $PackageIndex } . ",";
-			$RequestRef->{'dimlengthlist'}  .= $params->{'weight_' . $PackageIndex } . ",";
-			$RequestRef->{'dimwidthlist'}   .= $params->{'weight_' . $PackageIndex } . ",";
-			$RequestRef->{'dimheightlist'}  .= $params->{'weight_' . $PackageIndex } . ",";
-			$RequestRef->{'datatypeidlist'} .= $params->{'weight_' . $PackageIndex } . ",";
-			}
-		}
-
-	$RequestRef->{'productcount'} = $params->{'pkg_detail_row_count'};
-	$RequestRef->{'quantityxweight'} = $CgiRef->{'quantityxweight'};
-	$RequestRef->{'productparadigm'} = $CgiRef->{'productparadigm'};
-
-	# TODO: Implement route support
-	#$RequestRef->{'route'} = ( $CgiRef->{'action'} eq 'route' || $CgiRef->{'routeflag'} ) ? 1 : undef;
-
-	# Inbound and dropship flags
-	# $RequestRef->{'isinbound'} = ( defined($CgiRef->{'isinbound'}) && $CgiRef->{'isinbound'} == 1 ) ? 1 : 0;
-	# $RequestRef->{'isdropship'} = ( defined($CgiRef->{'isdropship'}) && $CgiRef->{'isdropship'} == 1 ) ? 1 : 0;
-
-	# Collect and thirdparty flags
-	$RequestRef->{'collect'} = ( defined($CgiRef->{'freightcharges'}) && $CgiRef->{'freightcharges'} == 1 ) ? 1 : 0;
-	$RequestRef->{'thirdparty'} = ( defined($CgiRef->{'freightcharges'}) && $CgiRef->{'freightcharges'} == 2 ) ? 1 : 0;
-
-	# Flag for sorting CS list in cost order - currently used for 'route only' login level
-	$RequestRef->{'sortcslist'} = $CgiRef->{'loginlevel'} eq '20' ? 1 : 0;
-
-	# Flag for attaching rates to CS listing - currently 'route only' login level doesn't get display
-	$RequestRef->{'displaychargesincslist'} = $CgiRef->{'loginlevel'} eq '20' ? 0 : 1;
-
-	# Need agg weight and total quantity for Assessorial calcs
-	$RequestRef->{'aggregateweight'} = $CgiRef->{'aggregateweight'};
-	$RequestRef->{'totalquantity'} = $CgiRef->{'totalquantity'};
-
-	($RequestRef->{'sopid'}, my $UsingAltSOP, my $AltSOPID) = $self->GetSOPID($CgiRef);
-
-	if ( my $AggFreightClass = $self->GetAggregateFreightClass($CgiRef) )
-		{
-		$RequestRef->{'class'} = $AggFreightClass;
-		}
-	elsif (my $FreightClass = $self->GetFreightClass($CgiRef->{'class'}, $CgiRef->{'classlist'}, $CgiRef->{'weight'}, $CgiRef->{'dimlength'}, $CgiRef->{'dimwidth'}, $CgiRef->{'dimlheight'}, $CgiRef->{'density'}))
-		{
-		$RequestRef->{'class'} = $FreightClass;
-		}
-
-	# Pass order csid in for rating on first pass - reclacs don't take this into account.
-	if ( !$CgiRef->{'allowraterecalc'} )
-		{
-		my %CSRef = %$RequestRef;
-		my $CSRef = \%CSRef;
-		$CSRef->{'coid'} = $CgiRef->{'coid'};
-		$RequestRef->{'csid'} = $self->GetCOCustomerService($CSRef);
-		}
-
-
-	$RequestRef->{'customerid'} = $self->{'customer'}->GetValueHashRef()->{'customerid'};
-
-	$RequestRef->{'required_assessorials'} = $self->GetRequiredAssessorials($CgiRef);
-
-
-	my $ReturnRef = &APIRequest($RequestRef);
-
-	my @CSIDs = split(/\t/,$ReturnRef->{'csids'}) if defined($ReturnRef->{'csids'});
-	my @CSNames = split(/\t/,$ReturnRef->{'csnames'}) if defined($ReturnRef->{'csnames'});
-
-	my $ListRef = {};
-	for ( my $i = 0; $i < scalar(@CSIDs); $i ++ )
-		{
-		$ListRef->{$i} = {'key' => $CSIDs[$i], 'value' => $CSNames[$i]};
-		}
-
-	if ( !$RequestRef->{'csid'} )
-		{
-		($ListRef,$ReturnRef) = $self->GetOtherCarrierData($ListRef,$ReturnRef,$RequestRef,scalar(@CSIDs));
-		}
-
-	my $DefaultCSID = $ReturnRef->{'defaultcsid'};
-	my $DefaultCost = $CgiRef->{'loginlevel'} eq '20' ? undef : $ReturnRef->{'defaultcost'};
-	my $DefaultTotalCost = $CgiRef->{'loginlevel'} eq '20' ? undef : $ReturnRef->{'defaulttotalcost'};
-
-	my $CostList = $CgiRef->{'loginlevel'} eq '20' ? undef : $ReturnRef->{'costlist'};
-
-	$RequestRef->{'action'} = 'GetCSJSArrays';
-	$RequestRef->{'csids'} = $ReturnRef->{'csids'};
-
-	my $CSDataRef = &APIRequest($RequestRef);
-
-	# Slip the cost weight list into the cs data ref
-	$CSDataRef->{'costweightlist'} = $ReturnRef->{'costweightlist'};
-
-	my $CSSecurityTypes = {};
-	return ($ListRef, $DefaultCSID, $CostList, $CSDataRef, $DefaultCost, $CSSecurityTypes, $DefaultTotalCost, $UsingAltSOP, $AltSOPID);
-	}
-=cut
-
-sub OrderHasWeight
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $total_row_count = int $params->{'pkg_detail_row_count'};
-
-	for (my $index=1; $index <= $total_row_count; $index++)
-		{
-		my $PackageIndex = $self->get_row_id($index);
-		$PackageIndex =~ s/^rownum_id_//;
-
-		next if ($params->{'type_' . $PackageIndex } eq 'product');
-
-
-		return 1 if ($params->{'weight_' . $PackageIndex } and $params->{'weight_' . $PackageIndex } > 0);
-		}
-	return undef;
 	}
 
 =encoding utf8

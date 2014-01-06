@@ -4,6 +4,7 @@ use IO::File;
 use Data::Dumper;
 use Math::BaseCalc;
 use IntelliShip::DateUtils;
+use IntelliShip::Arrs::API;
 use namespace::autoclean;
 
 BEGIN {
@@ -464,6 +465,20 @@ sub get_select_list
 			push(@$list, { name => $data->{'currency'}, value => $data->{'currency'} });
 			}
 		}
+	elsif ($list_name eq 'SPECIAL_SERVICE')
+		{
+		my $APIRequest = IntelliShip::Arrs::API->new;
+		$APIRequest->context($self->context);
+		my $AssRef = $APIRequest->get_sop_asslisting($self->customer->get_sop_id);
+
+		my @ass_names = split(/\t/,$AssRef->{'assessorial_names'});
+		my @ass_displays = split(/\t/,$AssRef->{'assessorial_display'});
+
+		for (my $row = 0; $row < scalar @ass_names; $row++)
+			{
+			push(@$list, { name => $ass_displays[$row], value => $ass_names[$row] });
+			}
+		}
 	elsif ($list_name eq 'ACTIVE_INACTIVE')
 		{
 		$list = [
@@ -593,25 +608,6 @@ sub get_select_list
 			{ name => 'July', value => '7'},{ name => 'August', value => '8'},
 			{ name => 'September', value => '9'},{ name => 'October', value => '10'},
 			{ name => 'November', value => '11'},{ name => 'December', value => '12'},
-			];
-		}
-	elsif ($list_name eq 'SPECIAL_SERVICE')
-		{
-		$list = [
-			{ value => 'adultsigreq' , name => 'Adult Signature Required' },
-			{ value => 'callforappointment' , name => 'Call for Delivery Appointment' },
-			{ value => 'cod' , name => 'COD Service' },
-			{ value => 'constructionsite' , name => 'Construction Site Delivery' },
-			{ value => 'dryice' , name => 'Dry Ice' },
-			{ value => 'guaranteeddelivery' , name => 'Guaranteed Delivery' },
-			{ value => 'insidepickupdelivery' , name => 'Inside Pickup or Delivery' },
-			{ value => 'liftgateservice' , name => 'Lift Gate Service' },
-			{ value => 'residential' , name => 'Residential' },
-			{ value => 'saturdaydelivery' , name => 'Saturday Delivery' },
-			{ value => 'saturdaypickup' , name => 'Saturday Pickup' },
-			{ value => 'sigreq' , name => 'Signature Required' },
-			{ value => 'sundaydelivery' , name => 'Sunday Delivery' },
-			{ value => 'sundaypickup' , name => 'Sunday Pickup' },
 			];
 		}
 	elsif ($list_name eq 'CARRIER')

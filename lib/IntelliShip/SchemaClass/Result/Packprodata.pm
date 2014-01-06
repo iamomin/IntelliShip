@@ -400,6 +400,18 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lD6eS3kpg8AlJhdVZBffcg
 
+__PACKAGE__->has_many(
+	packprochilds =>
+	"IntelliShip::SchemaClass::Result::Packprodata",
+	{ "foreign.ownerid" => "self.packprodataid" }
+	);
+
+sub child_product_details
+	{
+	my $self = shift;
+	my $WHERE = { ownertypeid => '3000', datatypeid => '2000' };
+	return $self->packprochilds($WHERE);
+	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

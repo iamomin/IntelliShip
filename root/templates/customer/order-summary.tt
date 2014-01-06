@@ -103,7 +103,7 @@
 			[% count = 0 %]
 			[% ELSE %]
 				<td>
-				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %] onclick='resetCSList();'/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 				</td>
 			[% END %]
 		[% END %]
@@ -208,7 +208,6 @@
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
 		});
-
 	$("#edit_shipment").click(function() {
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
@@ -219,6 +218,9 @@
 		$("#frm_order_sumary").submit();
 		});
 
+	$("#route").click(function() {
+		get_customer_service_list($("#frm_order_sumary").serialize());
+		});
 [% END %]
 
 	$("input[name='deliverymethod']:radio").change(function () {

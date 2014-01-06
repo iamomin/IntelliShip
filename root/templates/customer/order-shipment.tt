@@ -212,7 +212,7 @@
 	$('#insurance').change(distribute_insurance_among_products);
 	$('#freightinsurance').change(distribute_insurance_among_products);
 
-[% IF one_page %]
+[% UNLESS one_page %]
 	$("#frm_shipment").submit(function() {
 
 		var pkg_detail_row_count=0;
