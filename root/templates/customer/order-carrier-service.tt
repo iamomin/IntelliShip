@@ -185,7 +185,7 @@
 	<div class="float_right">
 		<table><tr>
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
-		<td><div class="green-forward"><input type="submit" id="quick_ship" value="SHIP NOW"/></div></td>
+		<td><div class="green-forward"><input type="submit" id="ship_now" value="SHIP NOW"/></div></td>
 		</tr></table>
 	</div>
 </form>
@@ -217,14 +217,19 @@
 		$("#frm_order_sumary").submit();
 		});
 
+	$("#route").click(function() {
+		get_customer_service_list($("#frm_order_sumary").serialize());
+		});
 	$("#cancel").click(function() {
 		$("#do").val('cancel');
 		$("#frm_order_sumary").submit();
 		});
-
-	$("#route").click(function() {
-		get_customer_service_list($("#frm_order_sumary").serialize());
+	$("#ship_now").click(function() {
+		return showError("Under construction!");
+		$("#do").val('ship');
+		$("#frm_order_sumary").submit();
 		});
+
 [% END %]
 
 	$("input[name='deliverymethod']:radio").change(function () {

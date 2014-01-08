@@ -40,13 +40,17 @@ sub index :Path :Args(0) {
 		{
 		$self->complete_step3;
 		}
+	elsif ($do_value eq 'shipment')
+		{
+		$self->setup_package_detail;
+		}
 	elsif ($do_value eq 'cancel')
 		{
 		$self->cancel_order;
 		}
-	elsif ($do_value eq 'shipment')
+	elsif ($do_value eq 'ship')
 		{
-		$self->setup_package_detail;
+		$self->ship_order;
 		}
 	else
 		{

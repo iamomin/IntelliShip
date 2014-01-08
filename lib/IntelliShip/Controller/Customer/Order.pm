@@ -12,7 +12,6 @@ sub onepage :Local
 	my $c = $self->context;
 
 	my $do_value = $c->req->param('do') || '';
-
 	if ($do_value eq 'save')
 		{
 		$self->save_order;
@@ -27,11 +26,20 @@ sub quickship :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
-	$self->setup_one_page;
-	$c->stash->{quickship} = 1;
+
+	my $do_value = $c->req->param('do') || '';
+	if ($do_value eq 'ship')
+		{
+		$self->ship_order;
+		}
+	else
+		{
+		$self->setup_one_page;
+		$c->stash->{quickship} = 1;
+		}
 	}
 
-sub setup_one_page :Local
+sub setup_one_page :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -53,7 +61,7 @@ sub setup_one_page :Local
 	$c->stash(template => "templates/customer/order-one-page.tt");
 	}
 
-sub setup_address
+sub setup_address :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -94,7 +102,7 @@ sub setup_address
 	$c->stash(template => "templates/customer/order-address.tt");
 	}
 
-sub setup_package_detail
+sub setup_package_detail :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -124,7 +132,7 @@ sub setup_package_detail
 	$c->stash(template => "templates/customer/order-shipment.tt");
 	}
 
-sub setup_carrier_service
+sub setup_carrier_service :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -144,7 +152,7 @@ sub setup_carrier_service
 	$c->stash(template => "templates/customer/order-carrier-service.tt");
 	}
 
-sub save_order
+sub save_order :Private
 	{
 	my $self = shift;
 
@@ -241,7 +249,7 @@ sub save_CO_details :Private
 	$CO->update($coData);
 	}
 
-sub save_address
+sub save_address :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -327,7 +335,7 @@ sub save_address
 	$CO->update;
 	}
 
-sub get_row_id
+sub get_row_id :Private
 	{
 	my $self = shift;
 	my $index = shift;
@@ -340,7 +348,7 @@ sub get_row_id
 		}
 	}
 
-sub save_package_product_details
+sub save_package_product_details :Private
 	{
 	my $self = shift;
 
@@ -423,7 +431,7 @@ sub save_package_product_details
 =cut
 	}
 
-sub save_special_services
+sub save_special_services :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -466,7 +474,7 @@ sub save_special_services
 		}
 	}
 
-sub get_shipment_count
+sub get_shipment_count :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -477,7 +485,7 @@ sub get_shipment_count
 	return $Count;
 	}
 
-sub get_auto_order_number
+sub get_auto_order_number :Private
 	{
 	my $self = shift;
 	my $OrderNumber = shift || "";
@@ -509,7 +517,7 @@ sub get_auto_order_number
 	return ($OrderNumber,$HasAutoOrderNumber);
 	}
 
-sub void_shipment
+sub void_shipment :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -520,7 +528,7 @@ sub void_shipment
 	$CO->update({ statusid => '200' });
 	}
 
-sub get_order
+sub get_order :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -630,7 +638,7 @@ sub get_order
 	return $self->CO;
 	}
 
-sub setup_quickship_page
+sub setup_quickship_page :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -640,7 +648,7 @@ sub setup_quickship_page
 	$self->populate_order;
 	}
 
-sub populate_order
+sub populate_order :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -727,7 +735,7 @@ sub populate_order
 			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
 			}
 
-		$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
+		#$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
 		$c->stash->{package_detail_section} = $package_detail_section_html;
 		$c->stash->{package_detail_row_count} = $rownum_id;
 		}
@@ -755,7 +763,7 @@ sub populate_order
 	$c->stash->{specialservice_loop} = $self->populate_assessorials_section;
 	}
 
-sub add_detail_row
+sub add_detail_row :Private
 	{
 	my $self = shift;
 	my $type = shift;
@@ -800,7 +808,7 @@ sub add_detail_row
 	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	}
 
-sub populate_assessorials_section
+sub populate_assessorials_section :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -816,7 +824,7 @@ sub populate_assessorials_section
 	return $special_service_loop;
 	}
 
-sub get_special_services
+sub get_special_services :Private
 	{
 	my $self = shift;
 	my $COID = $self->CO->coid;
@@ -832,7 +840,7 @@ sub get_special_services
 	return $specialService;
 	}
 
-sub get_tooltips
+sub get_tooltips :Private
 	{
 	my $self = shift;
 	my $type = [
@@ -872,7 +880,7 @@ sub get_tooltips
 	return $type;
 	}
 
-sub SendChargeThresholdEmail
+sub SendChargeThresholdEmail :Private
 	{
 	my $self = shift;
 	#my ($ToEmail,$ShipmentRef) = @_;
@@ -962,7 +970,7 @@ sub CheckChargeThreshold :Private
 		}
 	}
 
-sub SetThirdPartyAddress
+sub SetThirdPartyAddress :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -1005,7 +1013,7 @@ sub SetThirdPartyAddress
 		}
 	}
 
-sub ProcessFCOverride
+sub ProcessFCOverride :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -1058,7 +1066,7 @@ sub ProcessFCOverride
 		}
 	}
 
-sub BuildDryIceWt
+sub BuildDryIceWt :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -1153,33 +1161,29 @@ sub ship_order :Private
 			$params->{'customerserviceid'} = 'OTHER_' . $Other->otherid;
 			}
 
-		undef $params->{'enteredweight'};
-		undef $params->{'dimweight'};
-		undef $params->{'quantity'};
+		$params->{'quantity'}=0;
+		$params->{'dimweight'}=0;
+		$params->{'enteredweight'}=0;
 
-		#if ($params->{'productcount'} >= 1)
-		#	{
-		#	for ( my $i = 1; $i <= $params->{'productcount'}; $i ++ )
-		#		{
-		#		local $^W = 0;
-		#		$params->{'enteredweight'} += $params->{'weight' . $i};
-		#		$params->{'dimweight'} += $params->{'dimweight' . $i};
-		#		$params->{'quantity'} += $params->{'quantity' . $i};
-		#		local $^W = 1;
-		#		}
-		#	}
+		my @packages = $CO->packages;
+		foreach my $Package (@packages)
+			{
+			$params->{'enteredweight'} += $Package->weight;
+			$params->{'dimweight'} += $Package->dimweight;
+			$params->{'quantity'} += $Package->quantity;
+			}
 		}
 	else ## 'Normal' carriers
 		{
 		# Process small/freight shipments (mainly FedEx freight, on the freight end)
 		if ($ServiceTypeID < 3000)
 			{
-			undef $params->{'enteredweight'};
-			undef $params->{'dimweight'};
-			undef $params->{'dimlength'};
-			undef $params->{'dimwidth'};
-			undef $params->{'dimheight'};
-			undef $params->{'extcd'};
+			$params->{'enteredweight'}=0;
+			$params->{'dimweight'}=0;
+			$params->{'dimlength'}=0;
+			$params->{'dimwidth'}=0;
+			$params->{'dimheight'}=0;
+			$params->{'extcd'}=0;
 
 			# Get shipment charges and fsc's sorted out for overridden shipment.
 			if ($params->{'fcchanged'} and $params->{'fcoverride'})
@@ -1187,8 +1191,30 @@ sub ship_order :Private
 				$self->ProcessFCOverride;
 				}
 
-			# Save out all shipment packages.  Give them a dummy shipmentid, pass that around for continuity.
-			my $PPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
+			# Save out all shipment packages. Give them a dummy shipmentid, pass that around for continuity.
+			my $DummyShipmentID = $CO->coid . '-DSID';
+			my @packages = $CO->package_details;
+
+			foreach my $Package (@packages)
+				{
+				my $ShipmentPackage = $self->model('MyDBI::Packprodata')->new;
+				$ShipmentPackage->insert($Product->{'_column_data'});
+				$ShipmentPackage->packprodataid($DummyShipmentID);
+
+				$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
+
+				my @products = $Package->products;
+
+				foreach my $Product (@products)
+					{
+					my $ShipmentProduct = $self->model('MyDBI::Packprodata')->new;
+					$ShipmentProduct->insert($Product->{'_column_data'});
+					$ShipmentProduct->packprodataid($ShipmentPackage->packprodataid);
+
+					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
+					}
+				}
+
 			if
 				(( defined($params->{'productcount'}) && $params->{'productcount'} >= 1 ) &&
 					( !defined($params->{'fakeitemids'}) || $params->{'fakeitemids'} eq '' )
@@ -1211,20 +1237,16 @@ sub ship_order :Private
 			}
 		elsif ($ServiceTypeID == 3000) ## Process LTL shipments
 			{
-			undef $params->{'enteredweight'};
-			undef $params->{'dimweight'};
-			undef $params->{'quantity'};
+			$params->{'quantity'}=0;
+			$params->{'dimweight'}=0;
+			$params->{'enteredweight'}=0;
 
-			if ($params->{'productcount'} >= 1)
+			my @packages = $CO->packages;
+			foreach my $Package (@packages)
 				{
-				for ( my $i = 1; $i <= $params->{'productcount'}; $i ++ )
-					{
-					local $^W = 0;
-					$params->{'enteredweight'} += $params->{'weight' . $i};
-					$params->{'dimweight'} += $params->{'dimweight' . $i};
-					$params->{'quantity'} += $params->{'quantity' . $i};
-					local $^W = 1;
-					}
+				$params->{'enteredweight'} += $Package->weight;
+				$params->{'dimweight'} += $Package->dimweight;
+				$params->{'quantity'} += $Package->quantity;
 				}
 			}
 		}
@@ -1386,7 +1408,7 @@ sub ship_order :Private
 		}
 	}
 
-sub set_required_fields
+sub set_required_fields :Private
 	{
 	my $self = shift;
 	my $page = shift;

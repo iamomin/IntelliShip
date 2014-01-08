@@ -108,7 +108,7 @@
 					<label>
 					<select name="tocountry" id="tocountry">
 						[% FOREACH item IN countrylist_loop %]
-							<option value="[% item.value %]" [% IF item.value == toAddress.country %] selected [% END %]>[% item.name %]</option>
+							<option value="[% item.value %]" [% (toAddress.country and item.value == toAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>

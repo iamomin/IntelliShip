@@ -115,6 +115,23 @@ function showMessage( dialogMessage, dialogTitle ) {
 	$( "#dialog-message" ).dialog("open");
 	}
 
+function showError( dialogMessage, dialogTitle ) {
+	if (dialogTitle == undefined) dialogTitle = "Error";
+
+	$('#dialog-message').dialog( {
+		title: dialogTitle,
+		width: '400px',
+		buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+				}
+			}
+		});
+
+	$( "#dialog-message" ).html( "<div class='error'><p>" + dialogMessage + "</p>" );
+	$( "#dialog-message" ).dialog("open");
+	}
+
 function validateEmail( Email ) {
 	if (Email == undefined) return false;
 	var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;

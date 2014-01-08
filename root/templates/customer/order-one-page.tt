@@ -21,7 +21,7 @@
 
 	<div class="float_right">
 		<input type="button" class="green" id="save" value="Save"/>
-		[% IF quickship %]<input type="button" class="green" id="ship" value="Ship"/>[% END %]
+		[% IF quickship %]<input type="button" class="green" id="ship_now" value="Ship"/>[% END %]
 		<input type="button" class="gray" id="cancel" value="Cancel"/>
 	</div>
 
@@ -45,7 +45,10 @@
 		$("#frm_order").submit();
 		});
 
-	$('#ship').click(function() {
+	$("#ship_now").click(function() {
+		return showError("Under construction!");
+		$("#do").val('ship');
+		$("#frm_order").submit();
 		});
 
 	$('#cancel').click(function() {

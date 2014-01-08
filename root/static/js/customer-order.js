@@ -367,10 +367,9 @@ function validate_package_details()
 			if (element == 'description') requiredPkgProduct[element+'_'+row_ID] = { minlength: 2 };
 			if (element == 'weight') requiredPkgProduct[element+'_'+row_ID] = { numeric: true };
 			}
-
 		});
 
-	return validateForm(requiredPkgProduct);
+	return !validateForm(requiredPkgProduct);
 	}
 
 function update_package_product_details(event, ui)

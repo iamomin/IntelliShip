@@ -89,11 +89,11 @@ sub get_carrier_service_list
 	$is_route = 1 if ($params->{'route'} == 1);
 
 	my $freightcharges = 0;
-	$self->context->log->debug("deliverymethod :". $params->{'deliverymethod'});
+	#$self->context->log->debug("deliverymethod :". $params->{'deliverymethod'});
 	$freightcharges = 1 if ($params->{'deliverymethod'} eq 'collect');
 	$freightcharges = 2 if ($params->{'deliverymethod'} eq '3rdparty');
 
-	$self->context->log->debug("freightcharges :". $freightcharges);
+	#$self->context->log->debug("freightcharges :". $freightcharges);
 	my $carrier_service_list_loop = [];
 
 	my $APIRequest = IntelliShip::Arrs::API->new;
@@ -244,10 +244,10 @@ sub adjust_due_date
 	my $equal_offset = $params->{offset};
 	my $less_than_offset = $params->{lessthanoffset};
 
-	$c->log->debug("Ajax : adjust_due_date");
-	$c->log->debug("ship_date : $ship_date");
-	$c->log->debug("due_date : $due_date");
-	$c->log->debug("equal_offset : $equal_offset");
+	#$c->log->debug("Ajax : adjust_due_date");
+	#$c->log->debug("ship_date : $ship_date");
+	#$c->log->debug("due_date : $due_date");
+	#$c->log->debug("equal_offset : $equal_offset");
 	#$c->log->debug("less_than_offset : $less_than_offset");
 
 	my $delta_days = IntelliShip::DateUtils->get_delta_days($ship_date,$due_date);
@@ -270,7 +270,7 @@ sub adjust_due_date
 
 	$adjusted_datetime = IntelliShip::DateUtils->get_future_business_date($ship_date, $offset) if $offset;
 
-	$c->log->debug("adjusted_datetime : $adjusted_datetime");
+	#$c->log->debug("adjusted_datetime : $adjusted_datetime");
 
 	return { dateneeded => $adjusted_datetime };
 	}
