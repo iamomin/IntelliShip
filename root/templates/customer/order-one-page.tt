@@ -29,6 +29,10 @@
 
 <script>
 
+	[% FOREACH item IN requiredfield_list %]
+		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
 	$("#tocountry").change(function() {
 		checkInternationalSection();
 		});
@@ -63,24 +67,7 @@
 
 		$("#pkg_detail_row_count").val(pkg_detail_row_count);
 
-		var requireHash = {
-				datetoship         : { date: true },
-				dateneeded         : { date: true },
-				fromdepartment     : { minlength: 2 },
-				fromemail          : { email: true },
-				toname             : { minlength: 2 },
-				toaddress1         : { minlength: 2 },
-				tocity             : { minlength: 2 },
-				tostate            : { minlength: 2 },
-				tozip              : { minlength: 5 },
-				tocountry          : { minlength: 2 },
-				tocontact          : { minlength: 2 },
-				tophone            : { phone: true },
-				toemail            : { email: true },
-				'package-detail-list' : { method: validate_package_details },
-				};
-
-		return validateForm(requireHash);
+		return validateForm(requiredFieldHash);
 		});
 
 	[% IF tooltips %]

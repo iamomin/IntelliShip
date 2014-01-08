@@ -88,10 +88,10 @@
 		  <ul>
 			<li><a id="mnu_dashboard" href="/customer/dashboard" class="dashboard"><div>DASHBOARD</div></a></li>
 			<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
-			<!-- <li><a id="mnu_new" href="/customer/order/new" class="new"><div>NEW ORDER</div></a></li> -->
-			<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>NEW ORDER</div></a></li>
+			<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
+			<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>SHIP A PACKAGE</div></a></li>
 			<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>
-			<li><a id="mnu_shippackages" href="/customer/shippackages" class="sp"><div>SHIP PACKAGES</div></a></li>
+			<li><a id="mnu_shippackages" href="/customer/shippackages" class="sp"><div>PROCESS SHIPMENT</div></a></li>
 			<li><a id="mnu_batchshipping" href="/customer/batchshipping" class="batch"><div>BATCH SHIPPING</div></a></li>
 			<li><a id="mnu_uploadfile" href="/customer/uploadfile" class="upload"><div>UPLOAD FILE</div></a></li>
 			<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance" class="sm"><div>SHIPMENT MAINTENANCE</div></a></li>

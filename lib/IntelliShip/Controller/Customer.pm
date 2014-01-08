@@ -16,6 +16,7 @@ BEGIN {
 	has 'token' => ( is => 'rw' );
 	has 'contact' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
+	has 'arrs_api_context' => ( is => 'rw' );
 
 	}
 
@@ -297,6 +298,20 @@ sub get_address_dropdown_list
 	return $list;
 	}
 
+sub API
+	{
+	my $self = shift;
+
+	unless ($self->arrs_api_context)
+		{
+		my $APIRequest = IntelliShip::Arrs::API->new;
+		$APIRequest->context($self->context);
+		$self->arrs_api_context($APIRequest);
+		}
+
+	return $self->arrs_api_context;
+	}
+
 sub get_select_list
 	{
 	my $self = shift;
@@ -467,9 +482,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'SPECIAL_SERVICE')
 		{
-		my $APIRequest = IntelliShip::Arrs::API->new;
-		$APIRequest->context($self->context);
-		my $AssRef = $APIRequest->get_sop_asslisting($self->customer->get_sop_id);
+		my $AssRef = $self->API->get_sop_asslisting($self->customer->get_sop_id);
 
 		my @ass_names = split(/\t/,$AssRef->{'assessorial_names'});
 		my @ass_displays = split(/\t/,$AssRef->{'assessorial_display'});

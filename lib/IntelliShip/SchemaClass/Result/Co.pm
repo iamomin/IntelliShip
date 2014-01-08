@@ -799,6 +799,12 @@ __PACKAGE__->has_many(
 	{ "foreign.ownerid" => "self.coid" }
 	);
 
+sub is_shipped
+	{
+	my $self = shift;
+	return ($self->statusid != 1);
+	}
+
 sub shipment_count
 	{
 	my $self = shift;
@@ -806,10 +812,32 @@ sub shipment_count
 	return $RS->count;
 	}
 
+# OwnerTypeID:
+# 1000 = order (CO)
+# 2000 = shipment
+# 3000 = product (for packages)
+
+# DataTypeId
+# 1000 = Package
+# 2000 = Product
+
+sub packages
+	{
+	my $self = shift;
+	my $WHERE = { ownertypeid => '1000', datatypeid => '1000' };
+	return $self->packprodata($WHERE);
+	}
+
+sub products
+	{
+	my $self = shift;
+	my $WHERE = { ownertypeid => '1000', datatypeid => '2000' };
+	return $self->packprodata($WHERE);
+	}
+
 sub package_details
 	{
 	my $self = shift;
-	my $CO = shift;
 
 	my @packageArr;
 
@@ -818,15 +846,15 @@ sub package_details
 
 	my @packages = $self->packprodata($WHERE);
 
-	foreach my $PackageData (@packages)
+	foreach my $Package (@packages)
 		{
-		push (@packageArr, $PackageData);
+		push (@packageArr, $Package);
 
 		# Step 2: Find Product belog to Package
-		my @arr = $PackageData->child_product_details;
-		foreach my $Packprodata (@arr)
+		my @arr = $Package->products;
+		foreach my $Product (@arr)
 			{
-			push (@packageArr, $Packprodata);
+			push (@packageArr, $Product);
 			}
 		}
 
@@ -834,9 +862,9 @@ sub package_details
 	$WHERE = { ownertypeid => '1000', datatypeid => '2000' };
 	my @products = $self->packprodata($WHERE);
 
-	foreach my $ProductData (@products)
+	foreach my $Product (@products)
 		{
-		push (@packageArr, $ProductData);
+		push (@packageArr, $Product);
 		}
 
 	return @packageArr;

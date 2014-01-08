@@ -1,3 +1,4 @@
+var requiredFieldHash = {};
 
 function check_due_date()
 	{
@@ -7,7 +8,7 @@ function check_due_date()
 	var OffsetLessThan = -7;
 
 	var query_param = '&shipdate=' + ShipDate + '&duedate=' + DueDate + '&offset=' + OffsetEqual + '&lessthanoffset=' + OffsetLessThan;
-	send_ajax_request('', 'JSON', '', 'adjust_due_date', query_param, function (){
+	send_ajax_request('', 'JSON', 'order', 'adjust_due_date', query_param, function (){
 		if (JSON_data.dateneeded) {
 			$("#dateneeded").val(JSON_data.dateneeded);
 			}
@@ -21,7 +22,7 @@ function add_pkg_detail_row(detail_type)
 	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + detail_type;
 
 	$("#add_package_product").attr("disabled", true);
-	send_ajax_request('', 'JSON', '', 'add_pkg_detail_row', query_param, function (){
+	send_ajax_request('', 'JSON', 'order', 'add_pkg_detail_row', query_param, function (){
 			add_new_row('package-detail-list', JSON_data.rowHTML);
 			$("#add_package_product").attr("disabled", false);
 			});
@@ -42,7 +43,7 @@ function calculate_density(row_ID)
 
 		var Class = $("#class_"+row_ID).val();
 		var query_param = '&density='+Density;
-		send_ajax_request('', 'JSON', '', 'get_freight_class', query_param, function (){
+		send_ajax_request('', 'JSON', 'order', 'get_freight_class', query_param, function (){
 			if (JSON_data.freight_class) {
 				$("#class_"+row_ID).val(JSON_data.freight_class);
 				}
@@ -283,7 +284,7 @@ function setSkuDetails(row_ID, sku_id)
 
 	if (sku_id > 0) {
 		$("#description_"+row_ID).val('');
-		send_ajax_request('', 'JSON', '', 'get_sku_detail', query_param, function () {
+		send_ajax_request('', 'JSON', 'order', 'get_sku_detail', query_param, function () {
 			if (JSON_data.error) {
 				clear_product_details(row_ID);
 				} else {
@@ -319,7 +320,7 @@ function clear_product_details(row_ID)
 
 function checkInternationalSection() {
 	if($("#tocountry").val() != $("#fromcountry").val()) {
-		send_ajax_request('intlCommoditySec', 'HTML', '', 'display_international', '', function (){
+		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){
 			$("#intlCommoditySec").slideDown(1000);
 			});
 		} else {
@@ -339,7 +340,7 @@ function setCityAndState()
 
 	var query_param = "&zipcode=" + tozip;
 	if($("#tozip").val() != "") {
-		send_ajax_request('', 'JSON', '', 'get_city_state', query_param, function () {
+		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
 			$("#tocity").val(JSON_data.city);
 			$("#tostate").val(JSON_data.state);
 			$("#tocountry").val(JSON_data.country);
@@ -350,8 +351,10 @@ function setCityAndState()
 function validate_package_details()
 	{
 	var boolInvalidData=false;
-	var controls = ['quantity', 'sku', 'weight', 'dimlength', 'dimwidth', 'dimheight'];
+	//var controls = ['quantity', 'sku', 'weight', 'dimlength', 'dimwidth', 'dimheight'];
+	var controls = ['quantity', 'description', 'weight'];
 
+	var requiredPkgProduct = {};
 	$('#package-detail-list li').each(function() {
 
 		if (!this.id.match(/^new_/)) return;
@@ -360,21 +363,14 @@ function validate_package_details()
 
 		for (var i=0; i<controls.length; i++) {
 			var element = controls[i];
-			if (validNumericField(element+'_'+row_ID))
-				{
-				if ($("#"+element+"_"+row_ID).hasClass('ui-state-error'))
-					$("#"+element+"_"+row_ID).removeClass('ui-state-error');
-				}
-			else
-				{
-				$("#"+element+"_"+row_ID).addClass( "ui-state-error" );
-				boolInvalidData=true;
-				}
+			if (element == 'quantity') requiredPkgProduct[element+'_'+row_ID] = { numeric: true };
+			if (element == 'description') requiredPkgProduct[element+'_'+row_ID] = { minlength: 2 };
+			if (element == 'weight') requiredPkgProduct[element+'_'+row_ID] = { numeric: true };
 			}
 
 		});
 
-	return boolInvalidData;
+	return validateForm(requiredPkgProduct);
 	}
 
 function update_package_product_details(event, ui)
@@ -442,7 +438,7 @@ function checkCarrierServiceSection()
 		if(has_TP) {
 			$(".tp").show(1000);
 		} else
-		send_ajax_request('', 'JSON', '', 'third_party_delivery', "", function () {
+		send_ajax_request('', 'JSON', 'order', 'third_party_delivery', "", function () {
 			if (JSON_data.rowHTML) $(JSON_data.rowHTML).insertAfter("#delivery_method_table tr:first");
 			has_TP = true;
 			});
@@ -483,7 +479,7 @@ function populate_ship_to_address(addressid)
 	var query_param = '&addressid='+addressid;
 
 	if (addressid.length > 0) {
-		send_ajax_request('', 'JSON', '', 'get_address_detail', query_param, function (){
+		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
 			if (JSON_data.address1) {
 				$("#toaddress1").val(JSON_data.address1);
 				$("#toaddress2").val(JSON_data.address2);

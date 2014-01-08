@@ -29,7 +29,7 @@
 			<table class="summary-app">
 				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
-					<th>SHIP TO </th><td>[% toname %]</td>
+					<th>SHIP TO </th><td>[% toAddress.addressname %]</td>
 					<th>SHIP FROM </th><td>[% customer.customername %]</td>
 				</tr>
 				<tr>
@@ -195,6 +195,10 @@
 <script>
 
 [% UNLESS one_page %]
+	[% FOREACH item IN requiredfield_list %]
+		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
 	$("#btn_address").click(function() {
 		$("#do").val('address');
 		$("#frm_order_sumary").submit();

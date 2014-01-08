@@ -605,7 +605,7 @@ __PACKAGE__->has_many(
 	);
 
 __PACKAGE__->has_many(
-	contact_data => 
+	custcondata => 
 		'IntelliShip::SchemaClass::Result::Custcondata',
 		'ownerid'
 	);
@@ -625,10 +625,16 @@ sub get_contact_data_value
 	my $WHERE = { ownertypeid => '1', datatypename => $data_type_name };
 	$WHERE->{datatypeid} = $data_type_id if $data_type_id;
 
-	my @custcondata_arr = $self->contact_data($WHERE);
+	my @custcondata_arr = $self->custcondata($WHERE);
 	return unless @custcondata_arr;
 
 	return $custcondata_arr[0]->value;
+	}
+
+sub login_level
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('loginlevel');
 	}
 
 sub has_extid_data

@@ -21,6 +21,7 @@
 	<input type="hidden" name="do" value="step1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 [% END %]
+[% IF one_page %]
 	<table>
 		<tr>
 			<td>
@@ -37,7 +38,7 @@
 			</td>
 		<tr>
 	</table>
-
+[% END %]
 	<div class="notice">Enter the recipient's (Ship To) address and Shipment details</div>
 
 	<div class="equal">
@@ -80,26 +81,26 @@
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
-					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toname %]"/></td>
+					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1" value="[% toaddress1 %]"/></td>
+					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2" value="[% toaddress2 %]"/></td>
+					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
 				</tr>
 				<tr>
 					<td><label class="float_right"><label for="tocity">City</label>,<label for="tostate">State</label>,<label for="tozip">Zipcode:</label></label></td>
 					<td>
-					<input type="text" name="tocity" id="tocity" size="6" value="[% tocity %]"/>
+					<input type="text" name="tocity" id="tocity" size="6" value="[% toAddress.city %]"/>
 					<label>
 					<select name="tostate" id="tostate">
 						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]" [% IF item.value == tostate %] selected [% END %]>[% item.name %]</option>
+							<option value="[% item.value %]" [% IF item.value == toAddress.state %] selected [% END %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
-					<input type="text" name="tozip" id="tozip" size="2" value="[% tozip %]"/>
+					<input type="text" name="tozip" id="tozip" size="2" value="[% toAddress.zip %]"/>
 					</td>
 				</tr>
 				<tr>
@@ -107,7 +108,7 @@
 					<label>
 					<select name="tocountry" id="tocountry">
 						[% FOREACH item IN countrylist_loop %]
-							<option value="[% item.value %]" [% IF item.value == tocountry %] selected [% END %]>[% item.name %]</option>
+							<option value="[% item.value %]" [% IF item.value == toAddress.country %] selected [% END %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
@@ -140,12 +141,42 @@
 				<tr>
 					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
+				[% IF one_page %]
 				<tr>
 					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="0.00"/><div class="default_text" id="shipmentvalue_div">0.00</div></td>
 				</tr>
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
+				[% END %]
+				[% IF PONUMBER %]
+				<tr>
+					<td><label for="ponumber" class="float_right">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
+				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
+				[% IF EXTID %]
+				<tr>
+					<td><label for="extid" class="float_right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"/></td>
+				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
+				[% IF CUSTREF2 %]
+				<tr>
+					<td><label for="custref2" class="float_right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"/></td>
+				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
+				[% IF CUSTREF3 %]
+				<tr>
+					<td><label for="custref3" class="float_right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
+				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
 				[% IF AMDELIVERY %]
 				<tr>
 					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
@@ -154,10 +185,11 @@
 				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
+				[% UNLESS one_page %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				[% END %]
 			</table>
 			</div>
 		</div>
@@ -205,23 +237,12 @@ $("#dateneeded").change(function() {
 	});
 
 [% UNLESS one_page %]
-$("#frm_address").submit(function() {
-	var requireHash = {
-			fromdepartment : { minlength: 2 },
-			fromemail      : { email: true },
-			toname         : { minlength: 2 },
-			toaddress1     : { minlength: 2 },
-			tocity         : { minlength: 2 },
-			tostate        : { minlength: 2 },
-			tozip          : { minlength: 5 },
-			tocountry      : { minlength: 2 },
-			tocontact      : { minlength: 2 },
-			tophone        : { phone: true },
-			toemail        : { email: true },
-			dateneeded     : { date: true }
-			};
+[% FOREACH item IN requiredfield_list %]
+requiredFieldHash['[% item.name %]']=[% item.details %];
+[% END %]
 
-	return validateForm(requireHash);
+$("#frm_address").submit(function() {
+	return validateForm(requiredFieldHash);
 	});
 
 $(document).ready(function(){

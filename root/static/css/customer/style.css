@@ -792,23 +792,16 @@ input.package {
     border: 1px solid #fcefa1;
 }
 
-.ui-state-package {
-    border: 1px solid #EEE;
-    background-color: #F0F0F0;
-}
+.ui-state-package {border: 1px solid #EEE;background-color: #F0F0F0;}
+.ui-state-package input[type="text"] {width: 80%;}
+.ui-state-package select {width: 80%;}
 
-.ui-state-product {
-    border: 1px solid #FEFEFE;
-    background-color: #FFF;
-}
+.ui-state-product {border: 1px solid #EEE;background-color: #FFF;}
+.ui-state-product input[type="text"] {width: 80%;}
+.ui-state-product select {width: 80%;}
 
-.float_right {
-    float: right;
-}
-
-.float_left {
-    float: left;
-}
+.float_right {float: right;}
+.float_left {float: left;}
 
 /* jQuery autocomplete scrollable results */
 .ui-autocomplete {

@@ -183,8 +183,10 @@ function validateForm( requireFields ) {
 				boolRequired = ( value && !validPhoneNumber($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "date" )
 				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
+			else if ( proerty == "numeric" )
+				boolRequired = ( $('#'+control).val() == undefined || !validNumericField($('#'+control).val()) );
 			else if ( proerty == "minlength" )
-				boolRequired = ( $('#'+control).val() == null || $('#'+control).val().length < value );
+				boolRequired = ( $('#'+control).val() == undefined || $('#'+control).val().length < value );
 			else if ( proerty == "method" )
 				if (value != null) boolRequired = value();
 			else if ( proerty == "passwordmatch" )

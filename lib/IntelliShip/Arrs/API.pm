@@ -140,6 +140,22 @@ sub get_sop_asslisting
 	return $self->APIRequest($http_request);
 	}
 
+sub get_CS_value
+	{
+	my $self = shift;
+	my ($CSID,$ValueType,$CustomerID,$AllowNull) = @_;
+
+	my $http_request = {
+		action => 'GetCSValue',
+		customerserviceid => $CSID,
+		datatypename => $ValueType,
+		customerid => $CustomerID,
+		allownull => $AllowNull,
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub get_carrrier_service_rate_list
 	{
 	my $self = shift;

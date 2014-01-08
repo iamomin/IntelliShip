@@ -36,6 +36,8 @@ sub american_date
 	my $self = shift;
 	my $date = shift;
 
+	return '' unless $date;
+
 	my ($yy, $mm, $dd);
 	if ($date =~ /\:/)
 		{

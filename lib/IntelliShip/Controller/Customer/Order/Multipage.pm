@@ -52,7 +52,7 @@ sub index :Path :Args(0) {
 		{
 		$self->setup_address;
 		}
-}
+	}
 
 sub complete_step1
 	{
@@ -67,7 +67,7 @@ sub complete_step2
 	my $self = shift;
 	$self->save_package_product_details;
 	$self->save_CO_details;
-	$self->setup_review;
+	$self->setup_carrier_service;
 	}
 
 sub complete_step3
@@ -75,71 +75,6 @@ sub complete_step3
 	my $self = shift;
 	$self->save_CO_details;
 	$self->setup_address;
-	}
-
-sub setup_address
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	$c->stash->{ordernumber} = $self->get_order->coid;
-	$c->stash->{customer} = $self->customer;
-	$c->stash->{customerAddress} = $self->customer->address;
-	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
-	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
-	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
-	$c->stash->{tooltips} = $self->get_tooltips;
-
-	if ($c->req->param('do') eq 'address')
-		{
-		$c->stash->{populate} = 'address';
-		$self->populate_order;
-		}
-
-	$c->stash(template => "templates/customer/order-address.tt");
-	}
-
-sub setup_package_detail
-	{
-	my $self = shift;
-	my $c = $self->context;
-	$c->log->debug("__ SETUP PACKAGE DETAIL");
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-
-	my $CO = $self->get_order;
-	my $Customer = $self->customer;
-	#$c->log->debug("CA : " . $Customer->address->country);
-	#$c->log->debug("COA: " . $CO->to_address->country);
-	if ($Customer->address->country ne $CO->to_address->country)
-		{
-		$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
-		my $CA = IntelliShip::Controller::Customer::Ajax->new;
-		$CA->context($c);
-		$CA->set_international_details;
-		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
-		}
-
-	$c->stash->{tooltips} = $self->get_tooltips;
-
-	$c->stash->{populate} = 'shipment';
-	$self->populate_order;
-
-	$c->stash(template => "templates/customer/order-shipment.tt");
-	}
-
-sub setup_review
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	$c->stash->{populate} = 'summary';
-	$self->populate_order;
-
-	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
-	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
-
-	$c->stash->{deliverymethod} = "prepaid";
-	$c->stash(template => "templates/customer/order-summary.tt");
 	}
 
 sub cancel_order

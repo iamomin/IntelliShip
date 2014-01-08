@@ -1,7 +1,9 @@
 [% UNLESS one_page %]
+
 <h2>SHIP PACKAGES</h2>
 
 <form id="frm_nav" name="frm_nav" method="post" action="/customer/order/multipage">
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" name="do" value=""/>
 	<table class="center" style="width: 100%">
 		<tr style="text-align: center;">
@@ -21,15 +23,20 @@
 	</table>
 </form>
 [% END %]
+
 <div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
 
 <br>
+
 [% UNLESS one_page %]
 <form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step2"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 [% END %]
-	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
+
+<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
+
+[% IF one_page %]
 	<table class="css3-radios css3-checkboxes">
 		<tr>
 			<td><input type="button" id="add_package_product" class="add" value="ADD"/></td>
@@ -45,11 +52,13 @@
 		</tr>
 	</table>
 	<br>
+[% END %]
 
 	<ul class="sortable css3-checkboxes" id="package-detail-list">
 		<li class="ui-state-fixed">
 		<table>
 			<tr>
+			[% IF one_page %]
 				<th style="width: 01%"><label><input type="checkbox" id="all_packages" /><span></span></label></th>
 				<th style="width: 04%">QTY</th>
 				<th style="width: 05%">SKU#</th>
@@ -65,31 +74,45 @@
 				<th style="width: 05%">Class</th>
 				<th style="width: 07%">Dec. Value</th>
 				<th style="width: 07%">Freight Ins.</th>
+			[% ELSE %]
+				<th style="width: 06%">QTY</th>
+				<th style="width: 20%">Description</th>
+				<th style="width: 14%">Type</th>
+				<th style="width: 09%">Weight</th>
+				<th style="width: 07%">Dim Weight</th>
+				<th style="width: 07%">Length</th>
+				<th style="width: 08%">Width</th>
+				<th style="width: 09%">Height</th>
+				<th style="width: 10%">Density</th>
+				<th style="width: 10%">Dec. Value</th>
+			[% END %]
 			</tr>
 		</table>
 		</li>
-		[% IF package_detail_section %]
-			[% package_detail_section %]
-		[% ELSE %]
+
+	[% IF package_detail_section %]
+		[% package_detail_section %]
+	[% ELSE %]
+		[% IF one_page %]
 			<li id="new_package_1" class="ui-state-package ui-state-fixed">
 				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
 				<table>
 				<tr>
-					<td style="width: 01%"><label><input type="checkbox" name="type_1" id="type_1" value="package"/><span></span></label></td>
-					<td style="width: 04%"><input type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" size="1"/></td>
-					<td style="width: 05%"><input type="text" class="sku_id" name="sku_1" id="sku_1" size="1"/></td>
-					<td style="width: 20%"><input type="text" class="broad_text" name="description_1" id="description_1" readonly/></td>
+					<td style="width: 01%"><label><input  type="checkbox" name="type_1" id="type_1" value="package"/><span></span></label></td>
+					<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
+					<td style="width: 05%"><input  type="text" class="sku_id" name="sku_1" id="sku_1"/></td>
+					<td style="width: 20%"><input  type="text" class="broad_text" name="description_1" id="description_1" readonly/></td>
 					<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail" name="weight_1" id="weight_1" size="3"/></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" size="3"/></td>
-					<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" size="1"/></td>
-					<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" size="1"/></td>
-					<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" size="1"/></td>
-					<td style="width: 07%"><input type="text" name="density_1" id="density_1" size="8"/></td>
-					<td style="width: 05%"><input type="text" name="nmfc_1" id="nmfc_1" size="1"/></td>
-					<td style="width: 05%"><input type="text" name="class_1" id="class_1" size="1"/></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail" name="decval_1" id="decval_1" size="5"/></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" size="5"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"/></td>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"/></td>
+					<td style="width: 07%"><input  type="text" name="density_1" id="density_1"/></td>
+					<td style="width: 05%"><input  type="text" name="nmfc_1" id="nmfc_1"/></td>
+					<td style="width: 05%"><input  type="text" name="class_1" id="class_1"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1"/></td>
 				</tr>
 				</table>
 			</li>
@@ -97,26 +120,45 @@
 				<input type="hidden" id="rownum_id_2" name="rownum_id_2" value="2"/>
 				<table>
 				<tr>
-					<td style="width: 01%"><label><input type="checkbox" name="type_2" id="type_2" value="product"/><span></span></label></td>
-					<td style="width: 04%"><input type="text" class="total_pkg_detail float_right" name="quantity_2" id="quantity_2" value="1" size="1"/></td>
-					<td style="width: 05%"><input type="text" class="sku_id" name="sku_2" id="sku_2" size="1"/></td>
-					<td style="width: 20%"><input type="text" class="broad_text" name="description_2" id="description_2" readonly/></td>
+					<td style="width: 01%"><label><input  type="checkbox" name="type_2" id="type_2" value="product"/><span></span></label></td>
+					<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_2" id="quantity_2" value="1"/></td>
+					<td style="width: 05%"><input  type="text" class="sku_id" name="sku_2" id="sku_2"/></td>
+					<td style="width: 20%"><input  type="text" class="broad_text" name="description_2" id="description_2" readonly/></td>
 					<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail" name="weight_2" id="weight_2" size="3"/></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2" size="3"/></td>
-					<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimlength_2" id="dimlength_2" size="1"/></td>
-					<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimwidth_2" id="dimwidth_2" size="1"/></td>
-					<td style="width: 05%"><input type="text" class="total_pkg_detail" name="dimheight_2" id="dimheight_2" size="1"/></td>
-					<td style="width: 07%"><input type="text" name="density_2" id="density_2" size="8"/></td>
-					<td style="width: 05%"><input type="text" name="nmfc_2" id="nmfc_2" size="1"/></td>
-					<td style="width: 05%"><input type="text" name="class_2" id="class_2" size="1"/></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail" name="decval_2" id="decval_2" size="5"/></td>
-					<td style="width: 07%"><input type="text" class="total_pkg_detail"  name="frtins_2" id="frtins_2" size="5"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_2" id="weight_2"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2"/></td>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_2" id="dimlength_2"/></td>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_2" id="dimwidth_2"/></td>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_2" id="dimheight_2"/></td>
+					<td style="width: 07%"><input  type="text" name="density_2" id="density_2"/></td>
+					<td style="width: 05%"><input  type="text" name="nmfc_2" id="nmfc_2"/></td>
+					<td style="width: 05%"><input  type="text" name="class_2" id="class_2"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_2" id="decval_2"/></td>
+					<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_2" id="frtins_2"/></td>
+				</tr>
+				</table>
+			</li>
+		[% ELSE %]
+			<li id="new_package_1" class="ui-state-package ui-state-fixed">
+				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+				<table>
+				<tr>
+					<td style="width: 05%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
+					<td style="width: 20%"><input  type="text" class="broad_text" name="description_1" id="description_1"/></td>
+					<td style="width: 15%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
+					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
+					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
+					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"/></td>
+					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"/></td>
+					<td style="width: 10%"><input  type="text" name="density_1" id="density_1"/></td>
+					<td style="width: 10%"><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1"/></td>
 				</tr>
 				</table>
 			</li>
 		[% END %]
-	</ul>
+		</ul>
+	[% END %]
 
 	<div style="clear: both;">&nbsp;</div>
 
@@ -188,7 +230,7 @@
 
 		$('#package-detail-list input:checkbox:checked').each(function(){
 			var row_id = this.id.split('_')[1];
-			if (row_id == 1) return; // First package should be removed
+			if (row_id == 1) return; // First package should not be removed
 			$("#new_" + $(this).val() + "_" + row_id).remove();
 			});
 
@@ -213,27 +255,27 @@
 	$('#freightinsurance').change(distribute_insurance_among_products);
 
 [% UNLESS one_page %]
+	[% FOREACH item IN requiredfield_list %]
+		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
 	$("#frm_shipment").submit(function() {
 
-		var pkg_detail_row_count=0;
+		//var pkg_detail_row_count=0;
 
-		$('#package-detail-list li').each(function( index ) {
-			var row_id = this.id;
-			if (row_id.match(/^new_/))
-				{
-				var row_num = row_id.split('_')[2];
-				$("#rownum_id_"+row_num).val(index);
-				pkg_detail_row_count++;
-				}
-			});
+		//$('#package-detail-list li').each(function( index ) {
+		//	var row_id = this.id;
+		//	if (row_id.match(/^new_/))
+		//		{
+		//		var row_num = row_id.split('_')[2];
+		//		$("#rownum_id_"+row_num).val(index);
+		//		pkg_detail_row_count++;
+		//		}
+		//	});
 
-		$("#pkg_detail_row_count").val(pkg_detail_row_count);
+		//$("#pkg_detail_row_count").val(pkg_detail_row_count);
 
-		var requireHash = {
-				'package-detail-list': { method: validate_package_details },
-				};
-
-		return validateForm(requireHash);
+		return validateForm(requiredFieldHash);
 		});
 
 	$(document).ready(function(){

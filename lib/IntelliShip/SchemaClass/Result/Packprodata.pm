@@ -406,7 +406,16 @@ __PACKAGE__->has_many(
 	{ "foreign.ownerid" => "self.packprodataid" }
 	);
 
-sub child_product_details
+# OwnerTypeID:
+# 1000 = order (CO)
+# 2000 = shipment
+# 3000 = product (for packages)
+
+# DataTypeId
+# 1000 = Package
+# 2000 = Product
+
+sub products
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '3000', datatypeid => '2000' };
