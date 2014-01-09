@@ -22,11 +22,30 @@
 		</tr>
 	</table>
 </form>
+
+<table class="app">
+	<caption>SHIPMENT DETAIL:</caption>
+	<tr>
+		<td><label for="datetoship" class="bold_text">Estimated Ship Date</label></td>
+		<td><label for="dateneeded">Due Date</label></td>
+		[% IF PONUMBER %]<td><label for="ponumber">PO Number</label></td>[% END %]
+		<td><label for="dryicewt">Dry Ice Weight</label></td>
+		<td><label for="description">Comments</label></td>
+	</tr>
+	<tr>
+		<td><input type="text" style="margin-right: 3px;" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+		<td><input type="text" style="margin-right: 3px;" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+		[% IF PONUMBER %]<td><input type="text" class="text" id="ponumber" name="ponumber"/></td>[% END %]
+		<td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
+		<td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
+	</tr>
+</table>
 [% END %]
 
+[% UNLESS one_page %]
+<h2>Package Detail</h2>
+[% END %]
 <div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
-
-<br>
 
 [% UNLESS one_page %]
 <form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
@@ -181,6 +200,27 @@
 [% END %]
 
 <script>
+
+[% UNLESS one_page %]
+	$("#datetoship").datepicker({
+		showOn: "button",
+		buttonImage: "/static/images/calendar.png",
+		buttonImageOnly: true,
+		minDate: '-0d' });
+
+	[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
+
+	$("#dateneeded").datepicker({
+		showOn: "button",
+		buttonImage: "/static/images/calendar.png",
+		buttonImageOnly: true,
+		minDate: '-0d'
+		});
+
+	$("#dateneeded").change(function() {
+		check_due_date();
+		});
+[% END %]
 
 	$("#btn_address").click(function() {
 		$("#frm_nav [name=do]").val('address');

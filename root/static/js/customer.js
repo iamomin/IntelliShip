@@ -145,11 +145,11 @@ function validPhoneNumber( Phone ) {
 	return (Phone.length == 10);
 	}
 
-function validNumericField( control )
+function validNumericField( Numeric )
 	{
-	if ($("#" + control ).val() == undefined) return false;
-	if ($("#" + control ).val() == 0) return false;
-	if ($("#" + control ).val().match(/\D+/g)) return false;
+	if (Numeric == undefined) return false;
+	if (Numeric == 0) return false;
+	if (Numeric.match(/\D+/g)) return false;
 	return true;
 	}
 
@@ -190,7 +190,6 @@ function validateForm( requireFields ) {
 		//alert("control= " + control);
 		Object.keys(properties).forEach(function (proerty) {
 			var value = properties[proerty];
-			//alert("proerty= " + proerty + ", value = " + value + ", boolRequired = " + boolRequired);
 
 			//if (boolRequired && proerty != "description") return false;
 
@@ -201,7 +200,7 @@ function validateForm( requireFields ) {
 			else if ( proerty == "date" )
 				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "numeric" )
-				boolRequired = ( $('#'+control).val() == undefined || !validNumericField($('#'+control).val()) );
+				boolRequired = ( value ? !validNumericField($('#'+control).val()) : ($('#'+control).val().length > 0 && !validNumericField($('#'+control).val())));
 			else if ( proerty == "minlength" )
 				boolRequired = ( $('#'+control).val() == undefined || $('#'+control).val().length < value );
 			else if ( proerty == "method" )
@@ -210,6 +209,8 @@ function validateForm( requireFields ) {
 				boolRequired = ( $('#'+control).val() != $('#'+value).val());
 
 			if ( proerty == "description" && boolRequired) messageStr += "<p>" + value + "</p>";
+
+			//alert("proerty= " + proerty + ", value = " + value + ", boolRequired = " + boolRequired);
 			});
 
 		//alert("messageStr= " + messageStr);

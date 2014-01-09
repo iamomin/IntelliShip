@@ -459,8 +459,11 @@ function get_customer_service_list(params)
 		query_param = query_param + '&route=1';
 		}
 
+	var origVal = $("#route").val();
+	$("#route").val("Please Wait...");
 	send_ajax_request('divFreightCharges', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
 		$("#divFreightCharges").slideDown(1000);
+		$("#route").val(origVal);
 		has_FC = true;
 		});
 	}

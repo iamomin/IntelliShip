@@ -150,10 +150,8 @@ sub get_token :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
-	my $TokenID = $c->stash->{TokenID};
-	$TokenID = $c->req->cookies->{'TokenID'}->value if !$TokenID and $c->req->cookies->{'TokenID'};
 
-	if ($TokenID)
+	if (my $TokenID = $self->get_login_token)
 		{
 		return $c->model("MyDBI::Token")->find({ tokenid => $TokenID });
 		}

@@ -118,11 +118,11 @@
 
 	<div class="equal">
 		<div class="row">
-		<div>
-		<table class="app">
+		<div21 style="width: 55%;">
+		<table class="app" style="min-height: 280px;">
 			<caption>Carrier and Service Selection</caption>
 			<tr>
-				<td>
+				<td style="vertical-align: top;">
 				<table id="delivery_method_table">
 					<tr>
 					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
@@ -143,10 +143,10 @@
 				</td>
 			</tr>
 		</table>
-		</div>
+		</div21>
 
-		<div>
-		<table class="app">
+		<div22 style="width: 55%;">
+		<table class="app" style="min-height: 280px;">
 			<caption>Estimated Shipment Charges *</caption>
 			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 			<tr>
@@ -171,7 +171,7 @@
 			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 		</table>
-		</div>
+		</div22>
 		</div>
 	</div>
 

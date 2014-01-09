@@ -39,34 +39,34 @@
 		<tr>
 	</table>
 [% END %]
-	<div class="notice">Enter the recipient's (Ship To) address and Shipment details</div>
+	<div class="notice">Enter the recipient's (Ship To) address [% one_page ? 'and Shipment ' : '' %]details</div>
 
 	<div class="equal">
 		<div class="row">
-			<div>
-			<table class="app">
+			<div31 [% UNLESS one_page %]style="width: 40%"[% END %]>
+			<table class="app" style="min-height: 280px;">
 				<caption>SHIP FROM</caption>
 				<tr>
-					<td><label for="fromname" class="float_right">Company:</label></td><td><div class="default_text">[% customer.customername %]</div></td>
+					<td><label for="fromname" class="float_right">Company:</label></td><td><b>[% customer.customername %]</b></td>
 				</tr>
 				<tr>
-					<td><label for="fromaddress1" class="float_right">Address 1:</label></td><td><div class="default_text">[% customerAddress.address1 %]</div></td>
+					<td><label for="fromaddress1" class="float_right">Address 1:</label></td><td><b>[% customerAddress.address1 %]</b></td>
 				</tr>
 				<tr>
-					<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><div class="default_text">[% customerAddress.address2 %]</div></td>
+					<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><b>[% customerAddress.address2 %]</b></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">City,State,Zipcode:</label></td><td><div class="default_text">[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</div></td>
+					<td><label class="float_right">City,State,Zipcode:</label></td><td><b>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</b></td>
 				</tr>
 				<tr>
-					<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% customerAddress.country %]"/><div class="default_text">[% customerAddress.country_description %]</div>
+					<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% customerAddress.country %]"/><b>[% customerAddress.country_description %]</b>
 					</td>
 				</tr>
 				<tr>
-					<td><label for="fromcontact" class="float_right">Contact:</label></td><td><div class="default_text">[% customer.contact %]</div></td>
+					<td><label for="fromcontact" class="float_right">Contact:</label></td><td><b>[% customer.contact %]</b></td>
 				</tr>
 				</tr>
-					<td><label for="fromphone" class="float_right">Phone:</label></td><td><div class="default_text">[% customer.phone %]</div></td>
+					<td><label for="fromphone" class="float_right">Phone:</label></td><td><b>[% customer.phone %]</b></td>
 				<tr>
 				</tr>
 					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
@@ -75,10 +75,10 @@
 					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
 			</table>
-			</div>
+			</div31>
 
-			<div>
-			<table class="app">
+			<div32 [% UNLESS one_page %]style="width: 40%"[% END %]>
+			<table class="app" style="min-height: 280px;">
 				<caption>SHIP TO</caption>
 				<tr>
 					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
@@ -127,16 +127,16 @@
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
 			</table>
-			</div>
-
-			<div>
-			<table class="app">
+			</div32>
+[% IF one_page %]
+			<div33>
+			<table class="app" style="min-height: 280px;">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" style="margin-right: 3px;" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" style="margin-right: 3px;" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
 				</tr>
 				<tr>
 					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
@@ -191,7 +191,8 @@
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 			</table>
-			</div>
+			</div33>
+[% END %]
 		</div>
 	</div>
 [% UNLESS one_page %]
@@ -207,11 +208,21 @@
 
 //$("#tophone").mask("999-999-9999");
 //$("#tozip").mask("99999");
-
-$("#datetoship").datepicker({ minDate: '-0d' });
+[% IF one_page %]
+$("#datetoship").datepicker({
+		showOn: "button",
+		buttonImage: "/static/images/calendar.png",
+		buttonImageOnly: true,
+		minDate: '-0d'
+		});
 [% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
-$("#dateneeded").datepicker({ minDate: '-0d' });
-
+$("#dateneeded").datepicker({
+		showOn: "button",
+		buttonImage: "/static/images/calendar.png",
+		buttonImageOnly: true,
+		minDate: '-0d'
+		});
+[% END %]
 var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
 var arrCompanyAddress = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[%item.value%]",[% END %]];
 

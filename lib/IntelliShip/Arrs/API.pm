@@ -277,6 +277,66 @@ sub get_carrrier_service_rate_list
 	return ($response, $cs_data_ref, $carrier_list);
 	}
 
+sub valid_billing_account
+	{
+	my $self = shift;
+	my ($CSID, $BillingAccount) = @_;
+
+	return 0 unless $CSID;
+
+	my $CSrequest = {
+			action	=> 'GetValueHashRef',
+			module	=> 'CUSTOMERSERVICE',
+			moduleid	=> $CSID,
+			field		=> 'thirdpartyacct'
+			};
+
+	my $CSResponse =  $self->APIRequest($CSrequest);
+
+	my $ThirdPartyAcct = $CSResponse->{'thirdpartyacct'};
+
+	if ( $ThirdPartyAcct =~ m/^engage::(.*?)$/ )
+		{
+		my ($junk,$ThirdPartyAcct) = split(/::/,$ThirdPartyAcct);
+		}
+	else
+		{
+		return 1;
+		}
+
+	if ( uc($ThirdPartyAcct) eq uc($BillingAccount) )
+		{
+		return 0;
+		}
+	else
+		{
+		return 1;
+		}
+	}
+
+sub get_carrier_ID
+	{
+	my $self = shift;
+	my $csid = shift;
+
+	# Account number should be letters and numbers only and be 6 or 10 in length for ups
+	my $CSRef = $self->APIRequest({
+			action   => 'GetValueHashRef',
+			module   => 'CUSTOMERSERVICE',
+			moduleid => $csid,
+			field    => 'serviceid'
+		});
+
+	my $SRef = $self->APIRequest({
+			action   => 'GetValueHashRef',
+			module   => 'SERVICE',
+			moduleid => $CSRef->{'serviceid'},
+			field    => 'carrierid'
+		});
+
+	return $SRef->{'carrierid'};
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;

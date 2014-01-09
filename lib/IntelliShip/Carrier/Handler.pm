@@ -1,20 +1,22 @@
-package IntelliShip::Carrier::Broker;
+package IntelliShip::Carrier::Handler;
 
 use Moose;
 use Data::Dumper;
 use IntelliShip::Carrier::Constants;
 
 BEGIN {
+	has 'CO' => ( is => 'rw' );
 	has 'token' => ( is => 'rw' );
 	has 'context' => ( is => 'rw' );
 	has 'carrier' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
+	has 'request_data' => ( is => 'rw' );
 	has 'request_type' => ( is => 'rw' );
 	}
 
 my $carriers = {
 	'FEDEX' => &CARRIER_FEDEX,
-	}
+	};
 
 sub model
 	{
@@ -74,7 +76,7 @@ sub process_request
 
 	my $userProfile;
 
-	unless ($input_hash->{'NO_PROFILE_OPTION'})
+	unless ($input_hash->{'NO_TOKEN_OPTION'})
 		{
 		unless ($self->token)
 			{
@@ -92,9 +94,7 @@ sub process_request
 	###############################################
 	# IDENTIFY TRANSACTION BROKER
 	###############################################
-	my $type = $self->request_type;
-	my $broker = $modules{$type};
-	my $DriverModule = "IntelliShip::Carrier::Driver::" . $carriers->{uc $self->carrier} . "::";
+	my $DriverModule = "IntelliShip::Carrier::Driver::" . $carriers->{uc $self->carrier} . "::" . $self->request_type;
 
 	eval "use $DriverModule;";
 
@@ -117,6 +117,8 @@ sub process_request
 	###############################################
 	# GET POPULATED RESPONSE OBJECT
 	###############################################
+
+	my $response;
 
 	eval {
 	$response = $Driver->process_request;

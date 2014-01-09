@@ -2,6 +2,9 @@ package IntelliShip::Controller::Customer::Order;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::MyConfig;
+use IntelliShip::Carrier::Handler;
+use IntelliShip::Carrier::Constants;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; has 'CO' => ( is => 'rw' ); }
@@ -30,7 +33,7 @@ sub quickship :Local
 	my $do_value = $c->req->param('do') || '';
 	if ($do_value eq 'ship')
 		{
-		$self->ship_order;
+		$self->SHIP_ORDER;
 		}
 	else
 		{
@@ -92,7 +95,8 @@ sub setup_address :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('address');
 
-	if ($c->req->param('do') eq 'address')
+	my $do = $c->req->param('do') || '';
+	if ($do eq 'address')
 		{
 		$c->stash->{populate} = 'address';
 		$self->populate_order;
@@ -181,7 +185,7 @@ sub save_CO_details :Private
 
 	my $coData = { keep => '0' };
 
-	$coData->{'isdropship'} = $params->{'isdropship'} || '0';
+	$coData->{'isdropship'} = $params->{'isdropship'} || 0;
 	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
 	$coData->{'department'} = $params->{'fromdepartment'} if $params->{'fromdepartment'};
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
@@ -205,9 +209,9 @@ sub save_CO_details :Private
 	#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
 	#
 	#if (
-	#	$HashRef->{'loginlevel'} == 35 ||
-	#	$HashRef->{'loginlevel'} == 40 ||
-	#	( $HashRef->{'cotypeid'} && $HashRef->{'cotypeid'} == 2 )
+	#	$HashRef->{'loginlevel'} == 35 or
+	#	$HashRef->{'loginlevel'} == 40 or
+	#	( $HashRef->{'cotypeid'} and $HashRef->{'cotypeid'} == 2 )
 	#)
 	#{
 	#	$OrderRef->{'cotypeid'} = 2;
@@ -488,7 +492,7 @@ sub get_shipment_count :Private
 sub get_auto_order_number :Private
 	{
 	my $self = shift;
-	my $OrderNumber = shift || "";
+	my $OrderNumber = shift || '';
 
 	my $c = $self->context;
 	my $myDBI = $c->model("MyDBI");
@@ -551,8 +555,8 @@ sub get_order :Private
 	else
 		{
 		## Set default cotypeid (Default to vanilla 'Order')
-		my $cotypeid = $params->{'cotypeid'} || 1;
-		my $ordernumber = $params->{'ordernumber'};
+		my $cotypeid = $params->{'cotypeid'} || '1';
+		my $ordernumber = $params->{'ordernumber'} || '';
 		my $customerid = $self->customer->customerid;
 
 		$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
@@ -743,12 +747,12 @@ sub populate_order :Private
 	if ($populate eq 'summary')
 		{
 		my @packages = $CO->packages;
-		my $total_weight = $CO->estimatedweight || 0;
+		my $total_weight = $CO->estimatedweight or 0;
 		unless ($total_weight)
 			{
 			$total_weight += $_->weight foreach @packages;
 			}
-		my $insurance = $CO->estimatedinsurance || 0;
+		my $insurance = $CO->estimatedinsurance or 0;
 		unless ($total_weight)
 			{
 			$insurance += $_->decval foreach @packages;
@@ -895,7 +899,7 @@ sub SendChargeThresholdEmail :Private
     #
 	#my $OrderNumAlias = $ShipmentRef->{'ordernumberaka'};
     #
-	#if ( !defined($OrderNumAlias) || $OrderNumAlias eq '' )
+	#if ( !defined($OrderNumAlias) or $OrderNumAlias eq '' )
 	#	{
 	#	$OrderNumAlias = 'Order #';
 	#	}
@@ -953,12 +957,12 @@ sub CheckChargeThreshold :Private
 	#	}
 
 	# Check for percentage threshold amount (but there's no point if we're already over from the flat)
-	#if (!$OverThreshold && (my $Threshold = $Customer->chargediffpct))
+	#if (!$OverThreshold and (my $Threshold = $Customer->chargediffpct))
 	#	{
 	#	my $DollarAmt = $params->{'defaultcsidtotalcost'} * ($Threshold / 100);
 	#	my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
 
-	#	if ( $difference > $DollarAmt && $difference > $self->{'customer'}->GetCustomerValue('chargediffmin') )
+	#	if ( $difference > $DollarAmt and $difference > $self->{'customer'}->GetCustomerValue('chargediffmin') )
 	#		{
 	#		$OverThreshold = 1;
 	#		}
@@ -1009,6 +1013,7 @@ sub SetThirdPartyAddress :Private
 		$Thirdpartyacct = $c->model("MyDBI::Thirdpartyacct")->new($thirdPartyAcctData);
 		$Thirdpartyacct->thirdpartyacctid($self->get_token_id);
 		$Thirdpartyacct->insert;
+
 		$c->log->debug("New Thirdpartyacct Inserted, ID: " . $Thirdpartyacct->thirdpartyacctid);
 		}
 	}
@@ -1108,20 +1113,21 @@ sub BuildDryIceWt :Private
 	return ($DryIceWt,$DryIceWtList);
 	}
 
-sub ship_order :Private
+sub SHIP_ORDER :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
 	my $CO = $self->get_order;
+	my $Customer = $self->customer;
 
 	if (length $params->{'defaultcsid'} and $params->{'defaultcsidtotalcost'} > 0 and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
 		{
 		$self->CheckChargeThreshold;
 		}
 
-	# Create or Update the thirdpartyacct table with address info if this is 3rd party
+	## Create or Update the thirdpartyacct table with address info if this is 3rd party
 	if ($params->{'deliverymethod'} eq '3rdparty')
 		{
 		$self->SetThirdPartyAddress;
@@ -1143,8 +1149,7 @@ sub ship_order :Private
 			}
 		}
 
-	# Pull this out there to avoid calling twice (two arrs calls eq 'bad').
-	my $CustomerID = $self->customer->customerid;
+	my $CustomerID = $Customer->customerid;
 	my $ServiceTypeID = $self->API->get_CS_value($params->{'customerserviceid'}, 'servicetypeid', $CustomerID);
 
 	## 'OTHER' carriers
@@ -1178,12 +1183,12 @@ sub ship_order :Private
 		# Process small/freight shipments (mainly FedEx freight, on the freight end)
 		if ($ServiceTypeID < 3000)
 			{
-			$params->{'enteredweight'}=0;
-			$params->{'dimweight'}=0;
-			$params->{'dimlength'}=0;
-			$params->{'dimwidth'}=0;
-			$params->{'dimheight'}=0;
-			$params->{'extcd'}=0;
+			$params->{'enteredweight'} = 0;
+			$params->{'dimweight'}     = 0;
+			$params->{'dimlength'}     = 0;
+			$params->{'dimwidth'}      = 0;
+			$params->{'dimheight'}     = 0;
+			$params->{'extcd'}         = 0;
 
 			# Get shipment charges and fsc's sorted out for overridden shipment.
 			if ($params->{'fcchanged'} and $params->{'fcoverride'})
@@ -1192,14 +1197,18 @@ sub ship_order :Private
 				}
 
 			# Save out all shipment packages. Give them a dummy shipmentid, pass that around for continuity.
-			my $DummyShipmentID = $CO->coid . '-DSID';
-			my @packages = $CO->package_details;
+			my $DummyShipmentID = $self->get_token_id;
+			$c->log->debug("___ Dummy Shipment ID: " . $DummyShipmentID);
 
+			my @packages = $CO->packages;
 			foreach my $Package (@packages)
 				{
-				my $ShipmentPackage = $self->model('MyDBI::Packprodata')->new;
-				$ShipmentPackage->insert($Product->{'_column_data'});
-				$ShipmentPackage->packprodataid($DummyShipmentID);
+				my $ShipmentPackage = $self->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
+				$ShipmentPackage->ownertypeid(2000); # Shipment
+				$ShipmentPackage->ownerid($DummyShipmentID);
+				$ShipmentPackage->packprodataid($self->get_token_id);
+
+				$ShipmentPackage->insert;
 
 				$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
 
@@ -1207,39 +1216,35 @@ sub ship_order :Private
 
 				foreach my $Product (@products)
 					{
-					my $ShipmentProduct = $self->model('MyDBI::Packprodata')->new;
-					$ShipmentProduct->insert($Product->{'_column_data'});
-					$ShipmentProduct->packprodataid($ShipmentPackage->packprodataid);
+					my $ShipmentProduct = $self->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
+					$ShipmentProduct->ownertypeid(3000); # Product (for Packages)
+					$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
+					$ShipmentProduct->packprodataid($self->get_token_id);
+
+					$ShipmentProduct->insert;
 
 					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
 					}
 				}
 
-			if
-				(( defined($params->{'productcount'}) && $params->{'productcount'} >= 1 ) &&
-					( !defined($params->{'fakeitemids'}) || $params->{'fakeitemids'} eq '' )
-				)
+			# Push all shipmentcharges onto a list for use by all shipments
+			if ($params->{'packagecosts'} > 0)
 				{
-					$params = $self->SavePackages($params,$PPD);
-
-					# Push all shipmentcharges onto a list for use by all shipments
-					if ( defined($params->{'packagecosts'}) && $params->{'packagecosts'} ne '' )
-					{
-						$params->{'shipmentchargepassthru'} = $ShipmentCharge->BuildShipmentChargePassThru($params);
-					}
+				$params->{'shipmentchargepassthru'} = $ShipmentCharge->BuildShipmentChargePassThru($params);
+				$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
 				}
 
-				# Extract shipment specific data for use in the shipping process
-				if ( $params->{'fakeitemids'} )
+			# Extract shipment specific data for use in the shipping process
+			if ( $params->{'fakeitemids'} )
 				{
-					$params = $self->GetCurrentPackage($params,$PPD);
+				#$params = $self->GetCurrentPackage;
 				}
 			}
 		elsif ($ServiceTypeID == 3000) ## Process LTL shipments
 			{
-			$params->{'quantity'}=0;
-			$params->{'dimweight'}=0;
-			$params->{'enteredweight'}=0;
+			$params->{'quantity'}      = 0;
+			$params->{'dimweight'}     = 0;
+			$params->{'enteredweight'} = 0;
 
 			my @packages = $CO->packages;
 			foreach my $Package (@packages)
@@ -1258,154 +1263,547 @@ sub ship_order :Private
 		}
 
 	# Build up shipment ref
-	my $ShipmentRef = $self->BuildShipmentRef($params);
+	my $ShipmentData = $self->BuildShipmentInfo;
 
-	# Get third party address bits into params (in case we picked up a 3p account from 'BuildShipmentRef'
-	if ( $ShipmentRef->{'billingaccount'} )
+	# Get third party address bits into params (in case we picked up a 3p account from 'BuildShipmentData'
+	my $ThirdPartyAccountObj;
+	if ($ShipmentData->{'billingaccount'} and $ThirdPartyAccountObj = $Customer->third_party_account($ShipmentData->{'billingaccount'}))
 		{
-		$params = $self->GetTPAddress($ShipmentRef->{'billingaccount'},$params);
+		$params->{'tpcompanyname'} = $ThirdPartyAccountObj->tpcompanyname;
+		$params->{'tpaddress1'}    = $ThirdPartyAccountObj->tpaddress1;
+		$params->{'tpaddress2'}    = $ThirdPartyAccountObj->tpaddress2;
+		$params->{'tpcity'}        = $ThirdPartyAccountObj->tpcity;
+		$params->{'tpstate'}       = $ThirdPartyAccountObj->tpstate;
+		$params->{'tpzip'}         = $ThirdPartyAccountObj->tpzip;
+		$params->{'tpcountry'}     = $ThirdPartyAccountObj->tpcountry;
 		}
 
 	# Kludge to get freightinsurance into the shipments
-	my $SaveFreightInsurance = $ShipmentRef->{'freightinsurance'};
-	$ShipmentRef->{'freightinsurance'} = $params->{'frtins'};
+	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
+	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
 
-	# Process shipment down through the carrrier handler (online, customerservice, service, carrier handler).
-	my $Online;
-	my $Shipment = $Online->ShipOrder(
-			$params->{'coid'},
-			$params->{'customerserviceid'},
-			$params->{'enteredweight'},
-			$ShipmentRef
-		);
+	###################################################################
+	## Process shipment down through the carrrier handler
+	## (online, customerservice, service, carrier handler).
+	###################################################################
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_SHIP_ORDER);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->customer($self->customer);
+	$Handler->carrier(&CARRIER_FEDEX);
+	$Handler->CO($CO);
+	$Handler->request_data($ShipmentData);
 
-	$ShipmentRef->{'freightinsurance'} = $SaveFreightInsurance;
+	my $Response = $Handler->process_request({
+			NO_TOKEN_OPTION => 0
+			});
+
+	# Process errors
+	unless ($Response->is_success)
+		{
+		print STDERR "\n Error: " . Dumper $Response->errors;
+		return;
+		}
+
+	my $Shipment = $Response->shipment;
+	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
 	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
 	$params = {%$params, %$Shipment};
 	$params->{'pickuprequest'} = $params->{'storepickuprequest'};
 
-	# Process errors
-	if (!defined($Shipment) || (defined($Shipment->{'errorstring'}) && $Shipment->{'errorstring'} ne ''))
-		{
-		$params->{'errorstring'} = $Shipment->{'errorstring'};
-		warn "Setting errorstring to: ". $Shipment->{'errorstring'};
-		}
 	# Process good shipment
-	else
+
+	# If the customer has an email address, check to see if the shipment address is different # from the co address (and send an email, if it is)
+	my $ToEmail = $Customer->losspreventemail;
+	my $CustomerName = $Customer->customername;
+
+	if ($ToEmail)
 		{
-		# Save out DHL specific info needed later as part of the manifest process
-		if ($params->{'carrier'} eq 'DHL')
+		$self->IsShipmentModified(
+				$ToEmail,
+				$CustomerName,
+				$params->{'ordernumber'},
+				$params->{'active_username'},
+				$params->{'cotypeid'},
+				$ShipmentData
+			);
+		}
+
+	# If the csid was changed from the defaultcsid log the activity in the notes table
+	if ($params->{'defaultcsid'} > 0 and $params->{'customerserviceid'} > 0 and $params->{'defaultcsid'} != $params->{'customerserviceid'})
+		{
+		$self->NoteCSIDOverride($params);
+		}
+
+	# Save out shipment packages
+	my $PPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
+
+	if ($ServiceTypeID)
+		{
+		# Process small/freight shipments (mainly FedEx freight, on the freight end)
+		if ( $ServiceTypeID < 3000 )
 			{
-			my $DHLInfo = new DHLSHIPMENTINFO($self->{'dbref'}->{'aos'}, $self->{'customer'});
-			$DHLInfo->SaveDHLInfo($params->{'shipmentid'},$params->{'originstring'},$params->{'deststring'});
+			# Save out shipment charges
+			$params->{'shipmentchargepassthru'} =
+				$ShipmentCharge->SaveSmallShipmentCharges($params->{'shipmentchargepassthru'},$params->{'shipmentid'});
+
+			(my $FakeItemID, $params->{'fakeitemids'}) = $params->{'fakeitemids'} =~ /^(\w{13}):(.*)/;
+
+			$PPD->ReassignItemID($FakeItemID,$params->{'shipmentid'},2000);
 			}
-		# If the customer has an email address, check to see if the shipment address is different # from the co address (and send an email, if it is)
-		my $ToEmail = $self->{'customer'}->GetValueHashRef()->{'losspreventemail'};
-		my $CustomerName = $self->{'customer'}->GetValueHashRef()->{'customername'};
-
-		if (length $ToEmail)
+		# Process LTL shipments
+		elsif ( $ServiceTypeID == 3000 )
 			{
-			$self->IsShipmentModified(
-					$ToEmail,
-					$CustomerName,
-					$params->{'ordernumber'},
-					$params->{'active_username'},
-					$params->{'cotypeid'},
-					$ShipmentRef
-				);
-			}
+			# Save out shipment charges
+			$ShipmentCharge->SaveShipmentCharges($params);
 
-		# If the csid was changed from the defaultcsid log the activity in the notes table
-		if ($params->{'defaultcsid'} > 0 and $params->{'customerserviceid'} > 0 and $params->{'defaultcsid'} != $params->{'customerserviceid'})
-			{
-			$self->NoteCSIDOverride($params);
-			}
-
-		# Save out shipment packages
-		my $PPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
-
-		if ($ServiceTypeID)
-			{
-
-			# Process small/freight shipments (mainly FedEx freight, on the freight end)
-			if ( $ServiceTypeID < 3000 )
-				{
-				# Save out shipment charges
-				$params->{'shipmentchargepassthru'} =
-					$ShipmentCharge->SaveSmallShipmentCharges($params->{'shipmentchargepassthru'},$params->{'shipmentid'});
-
-				(my $FakeItemID, $params->{'fakeitemids'}) = $params->{'fakeitemids'} =~ /^(\w{13}):(.*)/;
-
-				$PPD->ReassignItemID($FakeItemID,$params->{'shipmentid'},2000);
-				}
-			# Process LTL shipments
-			elsif ( $ServiceTypeID == 3000 )
-				{
-				# Save out shipment charges
-				$ShipmentCharge->SaveShipmentCharges($params);
-
-				# Save out shipment packages
-				$PPD->SaveItems($params,2000);
-				}
-			}
-		else # This will theoretically do 'Other' carriers
-			{
 			# Save out shipment packages
 			$PPD->SaveItems($params,2000);
 			}
-
-		#Now that we have everything pushed into our params...
-		#Check for Products and override screen if we have any
-		my $PNPPPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
-		my $has_pnp = $PNPPPD->HasPickAndPack($params->{'coid'});
-		if ( $has_pnp > 0 )
-			{
-			$PNPPPD->SavePickAndPack($params);
-			}
-
-		# Change fullfillment status - PO or Pick & Pack Only
-		if ( $params->{'cotypeid'} == 2 || $has_pnp )
-			{
-			if( $CO->IsFullfilled($params->{'ordernumber'},$params->{'cotypeid'}) )
-				{
-				# Set PO to 'Fullfilled'
-				$CO->ChangeStatus(350);
-				}
-			else
-				{
-				# Set PO to 'Unfullfilled'
-				$CO->ChangeStatus(300);
-				}
-			}
-
-		# If we don't have a csid and service, and *do* have a freight charge (s/b through overrride),
-		# stuff a shipment charge entry in - this is an 'Other' shipment with an overriden freight charge
-		if (!$params->{'customerserviceid'} and !$params->{'service'} and $params->{'freightcharge'})
-			{
-			$ShipmentCharge->SaveShipmentCharge($params->{'shipmentid'},'Freight Charge',$params->{'freightcharge'});
-			}
-
-		# Build up data for use in BOL assessorial display
-		my $ass_names = $params->{'assessorial_names'};
-		if ($ass_names)
-			{
-			$ass_names =~ s/'//g;
-
-			foreach my $ass_name (split(/,/,$ass_names))
-				{
-				my $ass_value = $params->{$ass_name} || '';
-				$params->{'assessorial_values'} .= "'$ass_value',";
-				}
-
-			chop($params->{'assessorial_values'}) if $params->{'assessorial_values'};
-			}
-
-		$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
-
-		# Save out shipment assessorials
-		$self->SaveAssessorials($params,$params->{'shipmentid'},2000);
 		}
+	else # This will theoretically do 'Other' carriers
+		{
+		# Save out shipment packages
+		$PPD->SaveItems($params,2000);
+		}
+
+	#Now that we have everything pushed into our params...
+	#Check for Products and override screen if we have any
+	my $PNPPPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
+	my $has_pnp = $PNPPPD->HasPickAndPack($params->{'coid'});
+	if ( $has_pnp > 0 )
+		{
+		$PNPPPD->SavePickAndPack($params);
+		}
+
+	# Change fullfillment status - PO or Pick & Pack Only
+	if ( $params->{'cotypeid'} == 2 or $has_pnp )
+		{
+		if( $CO->IsFullfilled($params->{'ordernumber'},$params->{'cotypeid'}) )
+			{
+			# Set PO to 'Fullfilled'
+			$CO->ChangeStatus(350);
+			}
+		else
+			{
+			# Set PO to 'Unfullfilled'
+			$CO->ChangeStatus(300);
+			}
+		}
+
+	# If we don't have a csid and service, and *do* have a freight charge (s/b through overrride),
+	# stuff a shipment charge entry in - this is an 'Other' shipment with an overriden freight charge
+	if (!$params->{'customerserviceid'} and !$params->{'service'} and $params->{'freightcharge'})
+		{
+		$ShipmentCharge->SaveShipmentCharge($params->{'shipmentid'},'Freight Charge',$params->{'freightcharge'});
+		}
+
+	# Build up data for use in BOL assessorial display
+	my $ass_names = $params->{'assessorial_names'};
+	if ($ass_names)
+		{
+		$ass_names =~ s/'//g;
+
+		foreach my $ass_name (split(/,/,$ass_names))
+			{
+			my $ass_value = $params->{$ass_name} || '';
+			$params->{'assessorial_values'} .= "'$ass_value',";
+			}
+
+		chop($params->{'assessorial_values'}) if $params->{'assessorial_values'};
+		}
+
+	$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
+
+	# Save out shipment assessorials
+	$self->SaveAssessorials($params,$params->{'shipmentid'},2000);
+	}
+
+# Push all shipment charges onto a simple delimited string, for passing back so that all
+# shipments in a given run will receive proper individual charges.  This is mainly for use
+# with carriers that we connect directly to (FedEx, DHL, etc).
+sub BuildShipmentChargePassThru
+	{
+	my $self = shift;
+	my $ChargeRef = $self->context->params;
+
+	my $ShipmentChargePassThru = '';
+	my @PackageRatios = $self->GetPackageRatios;
+
+	# Get freight and fuel surcharges set up
+	my @FreightANDFSCCharges = split(/::/,$ChargeRef->{'packagecosts'});
+
+	my @FreightCharges = ();
+	my @FSCCharges = ();
+
+	foreach my $FreightAndFSCCharge ( @FreightANDFSCCharges )
+		{
+		my($FreightCharge,$FSCCharge) = split(/-/,$FreightAndFSCCharge);
+
+		push(@FreightCharges,$FreightCharge);
+		push(@FSCCharges,$FSCCharge);
+		}
+
+	my $FreightChargeList = join(',',@FreightCharges);
+	$ShipmentChargePassThru .= 'freightcharge:' . $FreightChargeList . '::';
+
+	my $FSCChargeList = join(',',@FSCCharges);
+	$ShipmentChargePassThru .= 'fuelsurcharge:' . $FSCChargeList . '::';
+
+	# Get accessorial charges (charge a portion to each package, based on the ratio of package
+	# weight vs. total shipment weight).
+	my $ChargeCount = scalar(@FreightCharges);
+
+	foreach my $ChargeType (@{$self->{'chargetypes'}})
+		{
+		if ( $ChargeType eq 'freightcharge' or $ChargeType eq 'fuelsurcharge' ) { next; }
+
+		$ShipmentChargePassThru .= "$ChargeType:";
+
+		for ( my $i = 0; $i < $ChargeCount; $i ++ )
+			{
+			if ($ChargeRef->{$ChargeType} >= 0)
+				{
+				my $Charge = sprintf("%02.2f",$ChargeRef->{$ChargeType} * $PackageRatios[$i]);
+				$ShipmentChargePassThru .= "$Charge,";
+				}
+			}
+
+		chop($ShipmentChargePassThru);
+
+		$ShipmentChargePassThru .= "::";
+		}
+
+	$ShipmentChargePassThru =~ s/[a-z]+:://g;
+
+	return $ShipmentChargePassThru;
+	}
+
+sub GetPackageRatios
+	{
+	my $self = shift;
+	my $ShipmentRef = $self->context->params;
+
+	my @PackageRatios = ();
+
+	# Get weights (higher of entered or dim), for determining accessorial ratios
+	my $EnteredWeights = $ShipmentRef->{'weightlist'};
+	$EnteredWeights =~ s/'//g;
+	my @EnteredWeights = split(/,/,$EnteredWeights);
+
+	my $DimWeights = '';
+	my @DimWeights = ();
+	if ($ShipmentRef->{'dimweightlist'})
+		{
+		$DimWeights = $ShipmentRef->{'dimweightlist'};
+		$DimWeights =~ s/'//g;
+		@DimWeights = split(/,/,$DimWeights);
+		}
+
+	for ( my $i = 0; $i < scalar @EnteredWeights; $i ++ )
+		{
+		my $Ratio = 0;
+		if ( defined($ShipmentRef->{'aggregateweight'}) and $ShipmentRef->{'aggregateweight'} == 0 )
+			{
+			$Ratio = 1/$ShipmentRef->{'totalquantity'};
+			}
+		elsif ( defined($DimWeights[$i]) and $DimWeights[$i] > $EnteredWeights[$i] )
+			{
+			$Ratio = $DimWeights[$i]/$ShipmentRef->{'aggregateweight'};
+			}
+		else
+			{
+			$Ratio = $EnteredWeights[$i]/$ShipmentRef->{'aggregateweight'};
+			}
+
+		push(@PackageRatios,$Ratio);
+		}
+
+	return @PackageRatios;
+	}
+
+sub BuildShipmentInfo
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->params;
+
+	my $ShipmentData = {};
+
+	$ShipmentData->{'addressname'} = $params->{'addressname'};
+	$ShipmentData->{'address1'} = $params->{'address1'};
+	$ShipmentData->{'address2'} = $params->{'address2'};
+	$ShipmentData->{'addresscity'} = $params->{'addresscity'};
+	$ShipmentData->{'addressstate'} = $params->{'addressstate'};
+	$ShipmentData->{'addresszip'} = $params->{'addresszip'};
+	$ShipmentData->{'addresscountry'} = $params->{'addresscountry'};
+	$ShipmentData->{'customername'} = $params->{'customername'};
+	$ShipmentData->{'branchaddress1'} = $params->{'branchaddress1'};
+	$ShipmentData->{'branchaddress2'} = $params->{'branchaddress2'};
+	$ShipmentData->{'branchaddresscity'} = $params->{'branchaddresscity'};
+	$ShipmentData->{'branchaddressstate'} = $params->{'branchaddressstate'};
+	$ShipmentData->{'branchaddresszip'} = $params->{'branchaddresszip'};
+	$ShipmentData->{'branchaddresscountry'} = $params->{'branchaddresscountry'};
+	$ShipmentData->{'contactname'} = $params->{'contactname'};
+	$ShipmentData->{'contactphone'} = $params->{'contactphone'};
+	$ShipmentData->{'contacttitle'} = $params->{'contacttitle'};
+	$ShipmentData->{'dimlength'} = $params->{'dimlength'};
+	$ShipmentData->{'dimwidth'} = $params->{'dimwidth'};
+	$ShipmentData->{'dimheight'} = $params->{'dimheight'};
+	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
+	$ShipmentData->{'currencytype'} = $params->{'currencytype'};
+	$ShipmentData->{'destinationcountry'} = $params->{'destinationcountry'};
+	$ShipmentData->{'manufacturecountry'} = $params->{'manufacturecountry'};
+	$ShipmentData->{'dutypaytype'} = $params->{'dutypaytype'};
+	$ShipmentData->{'termsofsale'} = $params->{'termsofsale'};
+	$ShipmentData->{'commodityquantity'} = $params->{'commodityquantity'};
+	$ShipmentData->{'commodityweight'} = $params->{'commodityweight'};
+	$ShipmentData->{'commodityunitvalue'} = $params->{'commodityunitvalue'};
+	$ShipmentData->{'commoditycustomsvalue'} = $params->{'commoditycustomsvalue'};
+	$ShipmentData->{'unitquantity'} = $params->{'unitquantity'};
+	$ShipmentData->{'customsvalue'} = $params->{'customsvalue'};
+	$ShipmentData->{'partiestotransaction'} = $params->{'partiestotransaction'};
+	$ShipmentData->{'customsdesription'} = $params->{'customsdesription'};
+	$ShipmentData->{'harmonizedcode'} = $params->{'harmonizedcode'};
+	$ShipmentData->{'ssnein'} = $params->{'ssnein'};
+	$ShipmentData->{'naftaflag'} = $params->{'naftaflag'};
+	$ShipmentData->{'dutyaccount'} = $params->{'dutyaccount'};
+	$ShipmentData->{'commodityunits'} = $params->{'commodityunits'};
+	$ShipmentData->{'customsdescription'} = $params->{'customsdescription'};
+	$ShipmentData->{'bookingnumber'} = $params->{'bookingnumber'};
+	$ShipmentData->{'slac'} = $params->{'slac'};
+	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
+	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
+	$ShipmentData->{'billingaccount'} = $params->{'billingaccount'};
+	$ShipmentData->{'billingpostalcode'} = $params->{'billingpostalcode'};
+	$ShipmentData->{'tracking1'} = $params->{'tracking1'};
+	$ShipmentData->{'defaultcsid'} = $params->{'defaultcsid'};
+	$ShipmentData->{'carrier'} = $params->{'carrier'};
+	$ShipmentData->{'service'} = $params->{'service'};
+	$ShipmentData->{'quantity'} = $params->{'quantity'};
+	$ShipmentData->{'coid'} = $params->{'coid'};
+	$ShipmentData->{'datetoship'} = IntelliShip::DateUtils->american_date($params->{'datetoship'});
+	$ShipmentData->{'dateneeded'} = IntelliShip::DateUtils->american_date($params->{'dateneeded'});
+	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
+	$ShipmentData->{'ordernumber'} = $params->{'ordernumber'};
+	$ShipmentData->{'dimweight'} = $params->{'dimweight'};
+	$ShipmentData->{'density'} = $params->{'density'};
+	$ShipmentData->{'description'} = $params->{'description'};
+	$ShipmentData->{'ipaddress'} = $params->{'ipaddress'};
+	$ShipmentData->{'custnum'} = $params->{'custnum'};
+	$ShipmentData->{'shipasname'} = $params->{'customername'};
+	$ShipmentData->{'extcd'} = $params->{'extcd'};
+	$ShipmentData->{'shipmentnotification'} = $params->{'shipmentnotification'};
+	$ShipmentData->{'deliverynotification'} = $params->{'deliverynotification'};
+	$ShipmentData->{'hazardous'} = $params->{'hazardous'};
+	$ShipmentData->{'tpcompanyname'} = $params->{'tpcompanyname'};
+	$ShipmentData->{'tpaddress1'} = $params->{'tpaddress1'};
+	$ShipmentData->{'tpaddress2'} = $params->{'tpaddress2'};
+	$ShipmentData->{'tpcity'} = $params->{'tpcity'};
+	$ShipmentData->{'tpstate'} = $params->{'tpstate'};
+	$ShipmentData->{'tpzip'} = $params->{'tpzip'};
+	$ShipmentData->{'tpcountry'} = $params->{'tpcountry'};
+	$ShipmentData->{'manualthirdparty'} = $params->{'manualthirdparty'};
+	$ShipmentData->{'ponumber'} = $params->{'ponumber'};
+	$ShipmentData->{'securitytype'} = $params->{'securitytype'};
+	$ShipmentData->{'contactid'} = $params->{'contactid'};
+	$ShipmentData->{'originid'} = 3;
+	$ShipmentData->{'insurance'} = $params->{'insurance'};
+	$ShipmentData->{'extid'} = $params->{'extid'};
+	$ShipmentData->{'custref2'} = $params->{'custref2'};
+	$ShipmentData->{'custref3'} = $params->{'custref3'};
+	$ShipmentData->{'department'} = $params->{'department'};
+	$ShipmentData->{'freightcharges'} = $params->{'freightcharges'};
+	$ShipmentData->{'oacontactname'} = $params->{'branchcontact'};
+	$ShipmentData->{'oacontactphone'} = $params->{'branchphone'};
+	$ShipmentData->{'isinbound'} = $params->{'isinbound'};
+	$ShipmentData->{'isdropship'} = $params->{'isdropship'};
+	$ShipmentData->{'datereceived'} = IntelliShip::DateUtils->american_date_time($params->{'datereceived'});
+	$ShipmentData->{'datepacked'} = IntelliShip::DateUtils->american_date_time($params->{'datepacked'});
+	$ShipmentData->{'daterouted'} = IntelliShip::DateUtils->american_date_time($params->{'daterouted'});
+	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
+	$ShipmentData->{'usealtsop'} = $params->{'usealtsop'};
+	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};
+	$ShipmentData->{'quantityxweight'} = $params->{'quantityxweight'};
+	$ShipmentData->{'dryicewt'} = $params->{'dryicewt'};
+	$ShipmentData->{'dryicewtlist'} = $params->{'dryicewtlist'};
+	$ShipmentData->{'dgunnum'} = $params->{'dgunnum'};
+	$ShipmentData->{'dgpkgtype'} = $params->{'dgpkgtype'};
+	$ShipmentData->{'dgpkginstructions'} = $params->{'dgpkginstructions'};
+	$ShipmentData->{'dgpackinggroup'} = $params->{'dgpackinggroup'};
+	$ShipmentData->{'assessorial_names'} = $params->{'assessorial_names'};
+
+	if ($params->{'aostype'} == 1)
+		{
+		$ShipmentData->{'shipqty'} = $params->{'shipqty'};
+		$ShipmentData->{'shiptypeid'} = $params->{'shiptypeid'};
+		}
+
+	# undef billingaccount if it came through the interface as tp but it is in the db already as fedex hack thirdpartyacct which really isn't tp
+	if ($params->{'customerserviceid'} and $params->{'billingaccount'} and !$self->API->valid_billing_account($params->{'customerserviceid'},$params->{'billingaccount'}))
+		{
+		$params->{'billingaccount'} = undef;
+		}
+
+	if ( defined($params->{'billingaccount'}) and $params->{'billingaccount'} ne '' )
+		{
+		$ShipmentData->{'thirdpartybilling'} = 1;
+		}
+
+	my $myDBI = $c->model->('MyDBI');
+	# Get Country Name - for DHL mainly at this point, but likely others will come up.
+	if ($ShipmentData->{'addresscountry'})
+		{
+		my $sth = $myDBI->select->("SELECT countryname FROM country WHERE countryiso2 = '" . $ShipmentData->{'addresscountry'} . "'");
+		$ShipmentData->{'addresscountryname'} = $sth->fetchrow(0)->{'countryname'} if $sth->numrows;
+		}
+
+	# If carrier/service is FedEx/Freight, set 3rd party billing to the Engage heavy account
+	my $host_name = IntelliShip::MyConfig->getHostname;
+	if ($params->{'carrier'} eq 'FedEx' and $params->{'service'} =~ /Freight/ and !$params->{'billingaccount'} and $host_name !~ /rml/)
+		{
+		$c->log->debug("*** In FedEx billingaccount/thirdpartybillinghack");
+		$ShipmentData->{'billingaccount'} = '232191376';
+		$ShipmentData->{'thirdpartybilling'} = 0;
+		}
+
+	# Check new alt billing table first before the actual CS value.
+	# Check for 3rd party billing defaults for customer/service
+	# All of this needs a csid (won't work for autoselect otherwise)
+	if ($params->{'customerserviceid'} and !$params->{'billingaccount'})
+		{
+		my $Key = 'extcustnum';
+		my $Value = $params->{'custnum'};
+		my $CarrierID = $self->API->get_carrier_ID($params->{'customerserviceid'});
+
+		# Get alternate billing account
+		my $sth = $myDBI->select("SELECT billingaccount FROM altbilling WHERE key = '$Key' AND upper(value) = upper('$Value') AND carrierid = '$CarrierID' LIMIT 1");
+		my $ThirdPartyAcct = $sth->fetchrow(0)->{'billingaccount'} if $sth->numrows;
+
+		unless ($ThirdPartyAcct)
+			{
+			$ThirdPartyAcct = $self->API->get_CS_value($params->{'customerserviceid'}, 'thirdpartyacct', $self->customer->customerid, 0);
+			}
+
+		if ( $ThirdPartyAcct =~ m/^engage::(.*?)$/ )
+			{
+			$ShipmentData->{'thirdpartybilling'} = 0;
+			(my $junk,$ThirdPartyAcct) = split(/::/,$ThirdPartyAcct);
+			}
+
+		$ShipmentData->{'billingaccount'} = $ThirdPartyAcct;
+		}
+
+	# put collect in 'billingaccount' if 'Collect' Freight Charges is selected on the BOL
+	if (!$params->{'billingaccount'} and $params->{'cfcharge'})
+		{
+		$ShipmentData->{'billingaccount'} = 'Collect';
+		$ShipmentData->{'thirdpartybilling'} = 1;
+		}
+
+	# Build up 'dims' ref for label display
+	if ($params->{'dimlength'} or $params->{'dimwidth'} or $params->{'dimheight'} or $params->{'dimunits'})
+		{
+		$ShipmentData->{'dims'} = $params->{'dimlength'} . 'x' . $params->{'dimwidth'} . 'x' . $params->{'dimheight'} . " " . $params->{'dimunits'};
+		}
+
+	# Put assessorials onto shipment ref
+	if ($params->{'assessorial_names'})
+		{
+		my $ass_names = $params->{'assessorial_names'};
+		$ass_names =~ s/'//g;
+		my @ass_names = split(/,/,$ass_names);
+
+		foreach my $ass_name (@ass_names)
+			{
+			my $ass_charge_name = grep { $ass_name eq $_ and ($params->{$_} eq 'on' or $params->{$_} > 0 ) } keys %$params;
+			$ShipmentData->{$ass_charge_name} = $params->{$ass_charge_name} if $ass_charge_name;
+			}
+		}
+
+	return $ShipmentData;
+	}
+
+sub IsShipmentModified
+	{
+	my $self = shift;
+	my ($COTypeID,$ShipmentData) = @_;
+
+	# Load CO so we we can check against what was actually shipped.
+	my $CO = $self->get_order;
+	my $coid = '';
+
+	my $OriginalAddress = $CO->to_address;
+
+	if ($OriginalAddress->addressname ne $ShipmentData->{'addressname'} or
+		$OriginalAddress->address1 ne $ShipmentData->{'address1'} or
+		$OriginalAddress->address2 ne $ShipmentData->{'address2'} or
+		$OriginalAddress->city ne $ShipmentData->{'addresscity'} or
+		$OriginalAddress->state ne $ShipmentData->{'addressstate'} or
+		$OriginalAddress->zip ne $ShipmentData->{'addresszip'} or
+		$OriginalAddress->country ne $ShipmentData->{'addresscountry'})
+		{
+		$self->SendShipmentModifiedEmail($OriginalAddress,$ShipmentData);
+		}
+	}
+
+sub SendShipmentModifiedEmail
+	{
+	my $self = shift;
+	my $OriginalAddress = shift;
+	my $ShipmentRef = shift;
+
+	return;
+
+	my $CO = $self->get_order;
+
+	#send email if ship address is different than co address
+
+	my $EmailInfo = {};
+	$EmailInfo->{'fromemail'} = "intelliship\@intelliship.engagetechnology.com";
+	$EmailInfo->{'fromname'} = 'NOC';
+	$EmailInfo->{'toemail'} = $self->customerlosspreventemail;;
+	$EmailInfo->{'toname'} = '';
+	$EmailInfo->{'subject'} =  "NOTICE: " . $self->customer->customername . " Order Modified (" . $CO->ordernumber . " by " . $self->contact->contact->full_name . ")";
+	#$EmailInfo->{'cc'} = 'noc@engagetechnology.com';
+
+	my $ServerType; # 1 = production, 2 = beta, 3 = dev
+
+	if ( $ServerType == 1 )
+		{
+		$EmailInfo->{'subject'} =  "TEST " . $EmailInfo->{'subject'};
+		}
+
+	my $BodyHash = {};
+	$BodyHash->{'ordernumber'} = $CO->ordernumber;
+	$BodyHash->{'orig_addressname'} = $OriginalAddress->addressname;
+	$BodyHash->{'orig_address1'} = $OriginalAddress->address1;
+
+	if ($OriginalAddress->address2 ne '')
+		{
+		$BodyHash->{'orig_address2'} = $OriginalAddress->address2;
+		}
+
+	$BodyHash->{'orig_addresscity'} = $OriginalAddress->city;
+	$BodyHash->{'orig_addressstate'} = $OriginalAddress->state;
+	$BodyHash->{'orig_addresszip'} = $OriginalAddress->zip;
+	$BodyHash->{'orig_addresscountry'} = $OriginalAddress->country;
+
+	$BodyHash->{'addressname'} = $ShipmentRef->{'addressname'};
+	$BodyHash->{'address1'} = $ShipmentRef->{'address1'};
+
+	if (defined($ShipmentRef->{'address2'}) && $ShipmentRef->{'address2'} ne '')
+		{
+		$BodyHash->{'address2'} = $ShipmentRef->{'address2'};
+		}
+
+	$BodyHash->{'addresscity'} = $ShipmentRef->{'addresscity'};
+	$BodyHash->{'addressstate'} = $ShipmentRef->{'addressstate'};
+	$BodyHash->{'addresszip'} = $ShipmentRef->{'addresszip'};
+	$BodyHash->{'addresscountry'} = $ShipmentRef->{'addresscountry'};
+
 	}
 
 sub set_required_fields :Private
@@ -1436,8 +1834,12 @@ sub set_required_fields :Private
 
 		unless ($Customer->login_level == 25)
 			{
-			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
-			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+			if ($c->stash->{one_page})
+				{
+				push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
+				push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+				}
+
 			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $Customer->reqcustnum;
 			push(@$requiredList, { name => 'ponumber', details => "{ minlength: 2 }"}) if $Customer->reqponum;
 			push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqordernumber');
@@ -1449,10 +1851,15 @@ sub set_required_fields :Private
 		}
 	if (!$page or $page eq 'shipment')
 		{
+		unless ($Customer->login_level == 25 or $c->stash->{one_page})
+			{
+			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
+			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+			}
 		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validate_package_details }"})
 		}
 
-	$c->log->debug("requiredfield_list: " . Dumper $requiredList);
+	#$c->log->debug("requiredfield_list: " . Dumper $requiredList);
 	$c->stash->{requiredfield_list} = $requiredList;
 	}
 

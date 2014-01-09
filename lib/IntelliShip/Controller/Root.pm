@@ -111,7 +111,9 @@ sub end : Private {
 
 	return unless $c->stash->{template};
 
-	$c->stash->{selected_mnu} = 'mnu_' . (split(/\//,$c->action))[1];
+	my @urlParts = split(/\//,$c->action);
+	my $selected_mnu = ($urlParts[-1] =~ /index/ ? $urlParts[-2] : $urlParts[-1]);
+	$c->stash->{selected_mnu} = 'mnu_' . ($selected_mnu ? $selected_mnu : 'dashboard');
 	$c->response->body($c->stash->{template});
 
 	my $Token = $c->controller->token;

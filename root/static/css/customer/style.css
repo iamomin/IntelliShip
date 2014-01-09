@@ -51,11 +51,6 @@ img { border: none }
     color: #FFF;
 }
 
-#header a {
-    color: #FFF;
-    text-align:center;
-}
-
 #header ul {
     margin-top: 15px;
     float: right;
@@ -70,7 +65,13 @@ img { border: none }
 
 #header label {
     vertical-align: super;
-    cursor: inherit;
+    cursor: pointer;
+}
+
+#header a {
+    color: #FFF;
+    text-align:center;
+    cursor: pointer;
 }
 
 /* Menu */
@@ -165,7 +166,8 @@ img { border: none }
 }
 
 #menu a.selected {
-    border-bottom: 2px solid #1875BA;
+    border-bottom: 3px solid #1875BA;
+    cursor: default;
 }
 
 #menu div {
@@ -193,18 +195,18 @@ img { border: none }
 }
 
 #menu select {
-    padding:2px;
+    padding: 2px;
     margin: 0;
     width: 120px;
     background: #FFF;
-    color:#98A7AF;
-    border:1px solid #98A7AF;
-    outline:none;
+    color: #98A7AF;
+    border: 1px solid #98A7AF;
+    outline: none;
     display: inline-block;
-    -webkit-appearance:none;
-    -moz-appearance:none;
-    appearance:none;
-    cursor:pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
 }
 
 #menu label { position:relative }
@@ -352,6 +354,11 @@ label {
 .equal {display: table; width: 100%}
 .row {display: table-row; width: 100%}
 .row div {display: table-cell;padding: 0 10px;vertical-align: top}
+.row div21 {display: table-cell;padding-right: 10px;vertical-align: top}
+.row div22 {display: table-cell;padding-left: 10px;vertical-align: top}
+.row div31 {display: table-cell;padding-right: 10px;vertical-align: top}
+.row div32 {display: table-cell;padding: 0 10px;vertical-align: top}
+.row div33 {display: table-cell;padding-left: 10px;vertical-align: top}
 
 table {
     margin: 0;
@@ -383,18 +390,6 @@ table.center {
     padding: 10px;
     margin: 10px auto;
     text-align: center;
-}
-
-table.app {
-    width: 100%;
-    margin: 10px 0;
-    background: #e9e9e9;
-    border: solid 1px #ccc;
-}
-
-table.app td green {
-    color: green;
-    font-weight: bold;
 }
 
 table.gray-app {
@@ -464,20 +459,43 @@ table.summary-app a:hover {
     text-decoration: underline;
 }
 
+table.app {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background: #F5F5F5;
+    border: solid 1px #ccc;
+}
+
 table.app caption {
     width: auto;
-    padding: 5px;
     color: #FFF;
+    padding: 10px;
     font-weight: bold;
     background: #1875BA;
     text-align: left;
     text-transform: uppercase;
 }
 
+table.app th {
+    padding: 10px;
+}
+
 table.app caption a {
     color: #FFF;
     text-align: center;
     text-transform: lowercase;
+}
+
+table.app td green {
+    color: green;
+    font-weight: bold;
+}
+
+table.app b {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 10px 5px;
 }
 
 table.center_app {
@@ -635,7 +653,7 @@ ul.sortable {
 
 input {
     width: auto;
-    padding: 0 3px;
+    padding: 2px 3px;
     border: solid 1px #afafaf;
 }
 
@@ -645,6 +663,10 @@ input.text {
 
 input.broad_text {
     width: 210px;
+}
+
+input.invisible {
+    border: none;
 }
 
 /* Buttons */
@@ -659,6 +681,8 @@ input.button {
     background-color: #eaeaea;
     white-space: nowrap;
     border: 1px solid #ddd;
+    vertical-align: middle;
+    min-width: 100px;
     cursor: pointer;
 }
 
@@ -673,6 +697,7 @@ input.green {
     background-color: #5DBD53;
     border: 1px solid #5DBD53;
     vertical-align: middle;
+    min-width: 100px;
     cursor: pointer;
 }
 
@@ -687,6 +712,7 @@ input.blue {
     background-color: #1875BA;
     border: 1px solid #1875BA;
     vertical-align: middle;
+    min-width: 100px;
     cursor: pointer;
 }
 
@@ -701,6 +727,7 @@ input.gray {
     background-color: #9BA7AF;
     border: 1px solid #9BA7AF;
     vertical-align: middle;
+    min-width: 100px;
     cursor: pointer;
 }
 
@@ -783,13 +810,14 @@ input.package {
     position: relative;
     display: inline-block;
     padding: 3px 10px;
-    cursor: pointer;
     color: #333;
     font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
     background: #fbf9ee;
     border: 1px solid #fcefa1;
+    vertical-align: middle;
+    cursor: pointer;
 }
 
 .ui-state-package {border: 1px solid #EEE;background-color: #F0F0F0;}

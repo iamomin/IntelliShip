@@ -616,6 +616,12 @@ __PACKAGE__->has_many(
 		{ "foreign.customerid" => "self.customerid" },
 	);
 
+__PACKAGE__->has_many(
+	thirdpartyacct => 
+		'IntelliShip::SchemaClass::Result::Thirdpartyacct',
+		{ "foreign.customerid" => "self.customerid" },
+	);
+
 sub get_contact_data_value
 	{
 	my $self = shift;
@@ -677,6 +683,18 @@ sub get_sop_id
 		}
 
 	return ($customerid,$using_altsop,$altsopid);
+	}
+
+sub third_party_account
+	{
+	my $self = shift;
+	my $accountnumber = shift;
+
+	my @thirdpartyaccts = $self->thirdpartyacct;
+	foreach my $ThirdPartyAcct (@thirdpartyaccts)
+		{
+		return $ThirdPartyAcct if uc $ThirdPartyAcct->tpacctnumber eq uc $accountnumber;
+		}
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
