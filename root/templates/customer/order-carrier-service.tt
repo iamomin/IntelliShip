@@ -1,19 +1,19 @@
 [% UNLESS one_page %]
 <h2>SHIP PACKAGES</h2>
 
-<table class="center" style="width: 100%">
-	<tr style="text-align: center;">
-	<td width="33%"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
-	<td width="33%"><input type="button" class="inactive" id="btn_shipment" value="SHIPMENT DETAILS"/></td>
-	<td width="33%"><input type="button" class="active" value="FINAL REVIEW"/></td>
+<table class="order-nav">
+	<tr>
+	<td class="L"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
+	<td class="C"><input type="button" class="inactive" id="btn_shipment" value="SHIPMENT DETAILS"/></td>
+	<td class="R"><input type="button" class="active" value="FINAL REVIEW"/></td>
 	</tr>
 	<tr>
 	<td colspan="3">
 		<div style="position: relative;">
 			<hr class="solid_line"/>
-			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/images/thumbs-up-grayed.png">
+			<img style="z-index: 1; float: left; margin-left:15%;" src="/static/images/thumbs-up-grayed.png">
 			<img style="z-index: 2; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/thumbs-up-grayed.png">
-			<img style="z-index: 3; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/navigation-down.png">
+			<img style="z-index: 3; float: left; margin-left:32%; margin-top: -0.1%;" src="/static/images/navigation-down.png">
 		</div>
 	</td>
 	</tr>
@@ -25,7 +25,7 @@
 
 	<div class="equal">
 		<div class="row">
-			<div>
+			<div21>
 			<table class="summary-app">
 				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
@@ -53,9 +53,9 @@
 					<td>&nbsp;</td><td>[% fromemail %]</td>
 				</tr>
 			</table>
-			</div>
+			</div21>
 
-			<div>
+			<div22>
 			<table class="summary-app">
 				<caption>SHIPMENT DETAIL SUMMARY:<div class="float_right"><a id="edit_shipment" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
@@ -82,7 +82,7 @@
 					<td>&nbsp;</td><td>&nbsp;</td>
 				</tr>
 			</table>
-			</div>
+			</div22>
 		</div>
 	</div>
 
@@ -148,28 +148,42 @@
 		<div22 style="width: 55%;">
 		<table class="app" style="min-height: 280px;">
 			<caption>Estimated Shipment Charges *</caption>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 			<tr>
-				<td>
+				<td><label class="float_right">Freight Charge:</label></td><td>$0.00</td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Fuel Surcharge:</label></td><td>$0.00</td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Declared Value Insurance Charge:</label></td><td>$0.00</td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Freight Insurance Charge:</label></td><td>$0.00</td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Collect Freight Charge:</label></td><td>$0.00</td>
+			</tr>
+			<tr>
+				<td colspan="2"><hr></td>
+			</tr>
+			<tr>
+				<td><label class="float_right">Total Shipment Charges:</label></td><td>$0.00</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
 				<label for="quote" class="float_right">Customer Quote:</label>
 				</th>
 				<td>
 				<label>
 				<select name="quote" id="quote">
-					<option value="0">--------------------</option>
+					<option value="0">0%</option><option value="5">5%</option><option value="10">10%</option>
+					<option value="15">15%</option><option value="20">20%</option><option value="25">25%</option>
+					<option value="30">30%</option><option value="35">35%</option><option value="40">40%</option>
+					<option value="45">45%</option><option value="50">50%</option>
 				</select>
 				</label>
 				</td>
 			</tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-			<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 		</table>
 		</div22>
 		</div>
@@ -177,7 +191,9 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
-	<div id="divFreightCharges"></div>
+	<h1>SERVICE LEVEL SUMMARY</h1>
+
+	<div id="carrier-service-list"></div>
 
 	<div style="clear: both;">&nbsp;</div>
 

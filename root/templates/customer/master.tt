@@ -2,8 +2,6 @@
 <html>
 	<head>
 		<title>Engage Technology IntelliShip</title>
-		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
-		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
 
 		[% IF MEDIA_PRINT %]
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/print.css" media="print"/>
@@ -24,6 +22,7 @@
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.position.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.menu.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.autocomplete.js"></script>
+		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.tabs.js"></script>
 
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.mouse.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.sortable.js"></script>
@@ -52,6 +51,9 @@
 		 <!-- Customer Portal Javascript -->
 		<script src="/static/js/customer.js"></script>
 
+		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
+		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
+
 		<script>$(document).ready(function(){ $("#[% selected_mnu %]").addClass("selected "); $("#[% selected_mnu %]").removeAttr('href'); });</script>
 	</head>
 
@@ -60,7 +62,7 @@
 		<div id="wrapper">
 
 		<!-- ajax loader -->
-		<div id="preload" style="display: none;"><img src="/static/images/ajax-loader-dots.gif" class="ajax-loader"/></div>
+		<div id="preload"><img src="/static/images/ajax-loader-dots.gif"/></div>
 		<!-- ajax loader -->
 
 		<!-- start Dialog -->

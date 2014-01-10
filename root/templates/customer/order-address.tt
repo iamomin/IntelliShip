@@ -1,11 +1,11 @@
 [% UNLESS one_page %]
 <h2>SHIP PACKAGES</h2>
 
-<table class="center" style="width: 100%">
-	<tr style="text-align: center;">
-	<td width="33%"><input type="button" class="active" value="ADDRESS"/></td>
-	<td width="33%"><input type="button" class="inactive" value="SHIPMENT DETAILS"/></td>
-	<td width="33%"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
+<table class="order-nav">
+	<tr>
+	<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
+	<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS"/></td>
+	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
 	</tr>
 	<tr>
 	<td colspan="3">
@@ -77,7 +77,7 @@
 			</table>
 			</div31>
 
-			<div32 [% UNLESS one_page %]style="width: 40%"[% END %]>
+			<[% one_page ? 'div32' : 'div33 style="width: 40%"' %]>
 			<table class="app" style="min-height: 280px;">
 				<caption>SHIP TO</caption>
 				<tr>
@@ -127,7 +127,7 @@
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
 			</table>
-			</div32>
+			</[% one_page ? 'div32' : 'div33' %]>
 [% IF one_page %]
 			<div33>
 			<table class="app" style="min-height: 280px;">

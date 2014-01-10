@@ -85,8 +85,8 @@ sub get_carrier_service_list
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
-	my $is_route = 0;
-	$is_route = 1 if ($params->{'route'} == 1);
+
+	my $is_route = $params->{'route'} || 0;
 
 	my $freightcharges = 0;
 	#$self->context->log->debug("deliverymethod :". $params->{'deliverymethod'});
@@ -142,7 +142,7 @@ sub get_carrier_service_list
 
 		if ($is_route)
 			{
-			$c->stash->{IS_ROUTE} = 1;
+			$c->stash->{IS_PREPAID} = 1;
 			$detail_hash->{'delivery'} = $estimated_date;
 			$detail_hash->{'shipment_charge'} = $shipment_charge;
 			$detail_hash->{'days'} = IntelliShip::DateUtils->get_delta_days(IntelliShip::DateUtils->current_date, $estimated_date);

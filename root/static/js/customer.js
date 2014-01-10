@@ -134,7 +134,8 @@ function showError( dialogMessage, dialogTitle ) {
 
 function validateEmail( Email ) {
 	if (Email == undefined) return false;
-	var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+	var filter = /^[A-Z0-9._-]+@[A-Z0-9.-]+\.[A-Z]{2,3}$/i;
+	//var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
 	return filter.test(Email);
 	}
 
@@ -196,7 +197,7 @@ function validateForm( requireFields ) {
 			if ( proerty == "email" )
 				boolRequired = ( value ? !validateEmail($('#'+control).val()) : ($('#'+control).val().length > 0 && !validateEmail($('#'+control).val())));
 			else if ( proerty == "phone" )
-				boolRequired = ( value && !validPhoneNumber($('#'+control).val()) && $('#'+control).val('') );
+				boolRequired = ( value ? !validPhoneNumber($('#'+control).val()) : ($('#'+control).val().length > 0 && !validPhoneNumber($('#'+control).val())));
 			else if ( proerty == "date" )
 				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "numeric" )

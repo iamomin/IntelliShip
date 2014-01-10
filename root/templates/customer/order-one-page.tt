@@ -20,9 +20,9 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float_right">
-		<input type="button" class="green" id="save" value="Save"/>
-		[% IF quickship %]<input type="button" class="green" id="ship_now" value="Ship"/>[% END %]
-		<input type="button" class="gray" id="cancel" value="Cancel"/>
+		<input type="button" class="green" id="save" value="SAVE"/>
+		[% IF quickship %]<input type="button" class="green" id="ship_now" value="SHIP"/>[% END %]
+		<input type="button" class="gray" id="cancel" value="CANCEL"/>
 	</div>
 
 </form>

@@ -453,6 +453,8 @@ function checkCarrierServiceSection()
 var has_FC=false;
 function get_customer_service_list(params)
 	{
+	$("#carrier-service-list").slideUp(1000);
+
 	var query_param = '&' + params;
 	if($('input:radio[name=deliverymethod]:checked').val() == "prepaid") 
 		{
@@ -460,20 +462,59 @@ function get_customer_service_list(params)
 		}
 
 	var origVal = $("#route").val();
+	$("#route").attr("disabled",true);
 	$("#route").val("Please Wait...");
-	send_ajax_request('divFreightCharges', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
-		$("#divFreightCharges").slideDown(1000);
+
+	send_ajax_request('carrier-service-list', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
+		$("#carrier-service-list").tabs();
+		$("#route").attr("disabled",false);
 		$("#route").val(origVal);
 		has_FC = true;
+
+		$("#carrier-service-list").slideDown(1000);
 		});
 	}
 
 function resetCSList()
 	{
-	if (has_FC)
-		{
-		$("#divFreightCharges").slideUp(1000);
+	if (has_FC) $("#carrier-service-list").slideUp(1000);
+	}
+
+function sortTableData(table_ID, column, order_BY)
+	{
+	return;
+
+	var rows = $('#'+table_ID+' tbody  tr').get();
+	rows.sort(function(a, b) {
+		var A = $(a).children('td').eq(column).text().toUpperCase();
+		var B = $(b).children('td').eq(column).text().toUpperCase();
+		alert("a: " + A + ", b: " + B);
+		//if(A < B) return -1;
+		//if(A > B) return 1;
+		return (order_BY == 'desc' ? -1 : 1);
+		});
+	$.each(rows, function(index, row) {
+		$('#'+table_ID).children('tbody').append(row);
+		});
+/*
+	var rows = $('#'+table_ID+' tbody tr').removeClass('row_alt').get();
+
+	var t = (!order_BY || order_BY == 'dec' ? -1 : 1);
+
+	rows.sort(function(a, b) {
+		var A = $(a).children('td').eq(column).text().toUpperCase();
+		var B = $(b).children('td').eq(column).text().toUpperCase();
+		if (A B) return t;
+		return 0;
+		});
+
+	$.each(rows, function(index, row) {
+		$('#livefeeds').children('tbody').append(row);
+		if( index%2 == 1){
+		$(row).addClass('row_alt');
 		}
+		});
+*/
 	}
 
 function populate_ship_to_address(addressid)

@@ -1820,15 +1820,14 @@ sub set_required_fields :Private
 	if (!$page or $page eq 'address')
 		{
 		$requiredList = [
-			{ name => 'fromemail', details => "{ email: true }"},
+			{ name => 'fromemail', details => "{ email: false }"},
 			{ name => 'toname', details => "{ minlength: 2 }"},
 			{ name => 'toaddress1', details => "{ minlength: 2 }"},
 			{ name => 'tocity', details => " { minlength: 2 }"},
 			{ name => 'tostate', details => "{ minlength: 2 }"},
 			{ name => 'tozip', details => "{ minlength: 5 }"},
 			{ name => 'tocountry', details => "{ minlength: 2 }"},
-			{ name => 'tocontact', details => "{ minlength: 2 }"},
-			{ name => 'tophone', details => "{ phone: true }"},
+			{ name => 'tophone', details => "{ phone: false }"},
 			{ name => 'toemail', details => "{ email: true }"},
 		];
 

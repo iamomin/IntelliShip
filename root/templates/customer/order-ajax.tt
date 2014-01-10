@@ -205,13 +205,19 @@
 [% END %]
 
 [% IF CARRIERSERVICE_LIST %]
-	<table id="freight_charges" class="app css3-radios" style="text-align: center;">
-		<caption>SERVICE LEVEL SUMMARY:</caption>
+	<ul>
+		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 0, 'asc');">RECOMMENDED</a></li>
+		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 3, 'desc');">TRANSIT DAYS</a></li>
+		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 7, 'desc');">VIEW ALL</a></li>
+	</ul>
+
+	<div id="freight-charges-list">
+	<table id="freight-charges-table" class="app css3-radios">
 		<tr>
 			<th>&nbsp;</th>
 			<th>CARRIER</th>
 			<th>SERVICE LEVEL</th>
-			[% IF IS_ROUTE %]
+			[% IF IS_PREPAID %]
 			<th>TRANSIT DAYS</th>
 			<th>EST. DELIVERY</th>
 			<th>EST. COST</th>
@@ -220,13 +226,13 @@
 			[% END %]
 		</tr>
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
-		<tr>
+		<tr class="sortable">
 			<td>
 				<label><input type="radio" name="freightcharge" id="customerserviceid" value="[% item.customerserviceid %]" /><span></span></label>
 			</td>
 			<td>[% item.carrier %]</td>
 			<td>[% item.service %]</td>
-			[% IF IS_ROUTE %]
+			[% IF IS_PREPAID %]
 			<td>[% item.days %]</td>
 			<td>[% item.delivery %]</td>
 			<td>[% item.shipment_charge %]</td>
@@ -236,4 +242,5 @@
 		</tr>
 	[% END %]
 	</table>
+	</div>
 [% END %]
