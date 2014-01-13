@@ -133,6 +133,8 @@ sub get_db_format_date_time
 
 	return unless $datetime;
 
+	$datetime =~ s/%2F/\//g if $datetime =~ /%2F/;
+
 	my ($date, $time) = split(/\ /, $datetime);
 	my ($mm, $dd, $yy) = split(/\//, $date);
 	$mm = '0' . $mm if length $mm == 1;

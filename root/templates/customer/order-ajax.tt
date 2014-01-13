@@ -112,7 +112,7 @@
 		<table>
 		<tr>
 		[% IF one_page %]
-			<td style="width: 01%"><label><input type="checkbox" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
+			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
 			<td style="width: 04%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
 			<td style="width: 05%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% sku %]"/></td>
 			<td style="width: 20%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>
@@ -128,7 +128,7 @@
 			<td style="width: 07%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" value="[% decval %]"/></td>
 			<td style="width: 07%"><input type="text" name="frtins_[% ROW_COUNT %]" class="total_pkg_detail" id="frtins_[% ROW_COUNT %]" value="[% frtins %]"/></td>
 		[% ELSE %]
-			<td style="width: 05%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
+			<td style="width: 05%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="package" /></td>
 			<td style="width: 20%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
 			<td style="width: 15%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %] selected [% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td style="width: 08%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>
@@ -206,9 +206,9 @@
 
 [% IF CARRIERSERVICE_LIST %]
 	<ul>
-		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 0, 'asc');">RECOMMENDED</a></li>
-		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 3, 'desc');">TRANSIT DAYS</a></li>
-		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 7, 'desc');">VIEW ALL</a></li>
+		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 0, '', 'original');">RECOMMENDED</a></li>
+		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 3, 'numeric', 'desc');">TRANSIT DAYS</a></li>
+		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 7, 'numeric', 'asc');">VIEW ALL</a></li>
 	</ul>
 
 	<div id="freight-charges-list">
@@ -228,9 +228,9 @@
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sortable">
 			<td>
-				<label><input type="radio" name="freightcharge" id="customerserviceid" value="[% item.customerserviceid %]" /><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" /><span></span></label>
 			</td>
-			<td>[% item.carrier %]</td>
+			<td>[% item.carrier %]<input type="hidden" id="[% item.customerserviceid %]" value="[% item.carrier %]"></td>
 			<td>[% item.service %]</td>
 			[% IF IS_PREPAID %]
 			<td>[% item.days %]</td>

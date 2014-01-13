@@ -113,6 +113,7 @@ sub process_request
 	$Driver->DB_ref($myDBI);
 	$Driver->context($self->context);
 	$Driver->customer($self->customer);
+	$Driver->data($self->request_data);
 
 	###############################################
 	# GET POPULATED RESPONSE OBJECT

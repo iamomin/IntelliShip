@@ -24,7 +24,7 @@
 
 	<form id="frm_report" method="post" action="/customer/report/run">
 	<input type="hidden" id="report" name="report" value="[% report %]" />
-	<table class="center_app" >
+	<table class="center_app" style="width: 600px;">
 		<tr> 
 			<td colspan=2>&nbsp;</td>
 		</tr>

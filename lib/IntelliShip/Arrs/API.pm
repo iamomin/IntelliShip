@@ -170,7 +170,7 @@ sub get_carrrier_service_rate_list
 	$request->{'customerid'} = $Customer->customerid;
 
 	## Add support for dropship & inbound
-	if ($CO->isinbound == 1)
+	if ($CO->isinbound)
 		{
 		my $ToAddress = $CO->to_address;
 		my $FromAddress = $Customer->address;

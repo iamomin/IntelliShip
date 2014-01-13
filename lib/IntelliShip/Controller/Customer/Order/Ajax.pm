@@ -73,14 +73,7 @@ sub get_carrier_service_list
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if ($params->{'do'} eq 'step3')
-		{
-		$self->save_special_services;
-		}
-	else
-		{
-		#$self->save_order;
-		}
+	$self->save_order;
 
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
@@ -105,32 +98,31 @@ sub get_carrier_service_list
 	# my $DefaultTotalCost = $Contact->login_level == 20 ? undef : $response->{'defaulttotalcost'};
 	# my $CostList = $Contact->login_level == 20 ? undef : $response->{'costlist'};
 
-	foreach my $Key (sort{$a<=>$b}(keys(%$carrier_list)))
+	foreach my $Key (keys %$carrier_list)
 		{
 		my $CSData = $carrier_list->{$Key};
 
 		my @carrier_service = split(/ - /,$CSData->{'value'});
 		my $carrier = $carrier_service[0];
 
-		my ($service, $estimated_date,$shipment_charge);
-		if (scalar @carrier_service == 2)
+		my ($service, $estimated_date, $shipment_charge);
+		if (@carrier_service == 2)
 			{
-			my @service_namae = split(/-/,$carrier_service[1]);
-			$service = $service_namae[0];
-			$shipment_charge = $service_namae[1];
+			my @serviceParts = split(/-/, $carrier_service[1]);
+			$service = $serviceParts[0];
+			$shipment_charge = $serviceParts[1];
 			}
-		elsif (scalar @carrier_service == 3)
+		elsif (@carrier_service == 3)
 			{
-			my @service_namae = split(/-/,$carrier_service[2]);
-			$service = $carrier_service[1] . ' - ' . $service_namae[0];
-			$shipment_charge = $service_namae[1];
+			my @serviceParts = split(/-/, $carrier_service[2]);
+			$service = $carrier_service[1] . ' - ' . $serviceParts[0];
+			$shipment_charge = $serviceParts[1];
 			}
 
 		if ($service =~ /\//)
 			{
 			my @service_est_date = split(/ /,$service);
 			$estimated_date = pop(@service_est_date);
-
 			$service = join(' ',@service_est_date);
 			}
 
@@ -144,12 +136,15 @@ sub get_carrier_service_list
 			{
 			$c->stash->{IS_PREPAID} = 1;
 			$detail_hash->{'delivery'} = $estimated_date;
+			$shipment_charge =~ s/\$//;
 			$detail_hash->{'shipment_charge'} = $shipment_charge;
 			$detail_hash->{'days'} = IntelliShip::DateUtils->get_delta_days(IntelliShip::DateUtils->current_date, $estimated_date);
 			}
 
 		push(@$carrier_service_list_loop, $detail_hash);
 		}
+
+	$carrier_service_list_loop = [ sort {$a->{shipment_charge} <=> $b->{shipment_charge}} @$carrier_service_list_loop ];
 
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $carrier_service_list_loop;
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
@@ -287,8 +282,8 @@ sub add_pkg_detail_row :Private
 	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
-	#$self->context->log->debug("in add_new_row : row_HTML");
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	#$self->context->log->debug("add_pkg_detail_row : " . $row_HTML);
 	$c->stash->{PKG_DETAIL_ROW} = 0;
 
 	return { rowHTML => $row_HTML };

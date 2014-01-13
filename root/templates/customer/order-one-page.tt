@@ -4,7 +4,6 @@
 <script src="/static/js/customer-order.js"></script>
 
 <form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
-	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" name="do" value="save"/>
 
@@ -38,6 +37,7 @@
 		});
 
 	$("#route").click(function() {
+		update_package_product_sequence();
 		get_customer_service_list($("#frm_order").serialize());
 		});
 
@@ -46,30 +46,24 @@
 		});
 
 	$("#ship_now").click(function() {
+		if ($("#" + $("#customerserviceid").val()).val().toUpperCase() != 'FEDEX')
+			{
+			showError("Only FedEx is supported, please select correct carrier from list.");
+			return;
+			}
 		return showError("Under construction!");
 		$("#do").val('ship');
 		$("#frm_order").submit();
 		});
 
 	$('#cancel').click(function() {
+		requiredFieldHash = {};
+		$("#do").val("cancel");
+		$("#frm_order").submit();
 		});
 
 	$("#frm_order").submit(function() {
-
-		var pkg_detail_row_count=0;
-
-		$('#package-detail-list li').each(function( index ) {
-			var row_id = this.id;
-			if (row_id.match(/^new_/))
-				{
-				var row_num = row_id.split('_')[2];
-				$("#rownum_id_"+row_num).val(index);
-				pkg_detail_row_count++;
-				}
-			});
-
-		$("#pkg_detail_row_count").val(pkg_detail_row_count);
-
+		update_package_product_sequence();
 		return validateForm(requiredFieldHash);
 		});
 
@@ -81,6 +75,7 @@
 	$(document).ready(function(){
 		checkInternationalSection();
 		checkCarrierServiceSection();
+		$('#carrier-service-list').tabs();
 		});
 
 </script>

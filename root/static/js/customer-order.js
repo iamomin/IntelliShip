@@ -318,6 +318,24 @@ function clear_product_details(row_ID)
 	$("#quantity_"+row_ID).val('1');
 	}
 
+function update_package_product_sequence() 
+	{
+	var pkg_detail_row_count=0;
+
+	$('#package-detail-list li').each(function( index ) {
+		var row_id = this.id;
+		if (row_id.match(/^new_/))
+			{
+			var row_num = row_id.split('_')[2];
+			$("#rownum_id_"+row_num).val(index);
+			pkg_detail_row_count++;
+			}
+		});
+
+	//alert("pkg_detail_row_count:  " + pkg_detail_row_count);
+	$("#pkg_detail_row_count").val(pkg_detail_row_count);
+	}
+
 function checkInternationalSection() {
 	if($("#tocountry").val() != $("#fromcountry").val()) {
 		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){
@@ -465,6 +483,8 @@ function get_customer_service_list(params)
 	$("#route").attr("disabled",true);
 	$("#route").val("Please Wait...");
 
+	$('#carrier-service-list').tabs('destroy').tabs();
+
 	send_ajax_request('carrier-service-list', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
 		$("#carrier-service-list").tabs();
 		$("#route").attr("disabled",false);
@@ -480,41 +500,31 @@ function resetCSList()
 	if (has_FC) $("#carrier-service-list").slideUp(1000);
 	}
 
-function sortTableData(table_ID, column, order_BY)
+var originalRows=null;
+function sortTableData(table_ID, column, col_TYPE, order_BY)
 	{
-	return;
-
-	var rows = $('#'+table_ID+' tbody  tr').get();
-	rows.sort(function(a, b) {
-		var A = $(a).children('td').eq(column).text().toUpperCase();
-		var B = $(b).children('td').eq(column).text().toUpperCase();
-		alert("a: " + A + ", b: " + B);
-		//if(A < B) return -1;
-		//if(A > B) return 1;
-		return (order_BY == 'desc' ? -1 : 1);
-		});
+	var rows;
+	alert(order_BY);
+	if (order_BY == 'original')
+		{
+		alert(order_BY + originalRows);
+		rows = originalRows;
+		}
+	else
+		{
+		rows = $('#'+table_ID+' tbody  tr.sortable').get();
+		if (originalRows == null) originalRows = rows;
+		rows.sort(function(a, b) {
+			var A = $(a).children('td').eq(column).text().toUpperCase();
+			var B = $(b).children('td').eq(column).text().toUpperCase();
+			//alert("a: |" + A + "|, b: |" + B + "|");
+			return (col_TYPE == 'numeric' && order_BY == 'desc' ? (+A - +B) : (+B - +A));
+			return (col_TYPE != 'numeric' && order_BY == 'desc' ? (A > B) : (A < B));
+			});
+		}
 	$.each(rows, function(index, row) {
 		$('#'+table_ID).children('tbody').append(row);
 		});
-/*
-	var rows = $('#'+table_ID+' tbody tr').removeClass('row_alt').get();
-
-	var t = (!order_BY || order_BY == 'dec' ? -1 : 1);
-
-	rows.sort(function(a, b) {
-		var A = $(a).children('td').eq(column).text().toUpperCase();
-		var B = $(b).children('td').eq(column).text().toUpperCase();
-		if (A B) return t;
-		return 0;
-		});
-
-	$.each(rows, function(index, row) {
-		$('#livefeeds').children('tbody').append(row);
-		if( index%2 == 1){
-		$(row).addClass('row_alt');
-		}
-		});
-*/
 	}
 
 function populate_ship_to_address(addressid)

@@ -19,6 +19,10 @@ sub onepage :Local
 		{
 		$self->save_order;
 		}
+	elsif ($do_value eq 'cancel')
+		{
+		$self->void_shipment;
+		}
 	else
 		{
 		$self->setup_one_page;
@@ -34,6 +38,11 @@ sub quickship :Local
 	if ($do_value eq 'ship')
 		{
 		$self->SHIP_ORDER;
+		}
+	elsif ($do_value eq 'cancel')
+		{
+		$self->void_shipment;
+		$self->setup_one_page;
 		}
 	else
 		{
@@ -263,6 +272,7 @@ sub save_address :Private
 
 	my $CO = $self->get_order;
 
+	my $update_co=0;
 	if (defined $params->{'toaddress1'})
 		{
 		my $toAddressData = {
@@ -297,6 +307,7 @@ sub save_address :Private
 			}
 
 		$CO->addressid($ToAddress->id);
+		$update_co=1;
 		}
 
 	## Sort out return address/id
@@ -334,9 +345,10 @@ sub save_address :Private
 			}
 
 		$CO->rtaddressid($ReturnAddress->id);
+		$update_co=1;
 		}
 
-	$CO->update;
+	$CO->update if $update_co;
 	}
 
 sub get_row_id :Private
@@ -361,6 +373,16 @@ sub save_package_product_details :Private
 
 	$c->log->debug("... save package product details");
 
+	my $total_row_count = int $params->{'pkg_detail_row_count'};
+
+	$c->log->debug("... Total Row Count: " . $total_row_count);
+
+	unless ($total_row_count)
+		{
+		$c->log->debug("... package/product details not found in request");
+		return;
+		}
+
 	my $CO = $self->get_order;
 
 	$c->log->debug("___ Flush old PackProData for ownerid: " . $CO->coid);
@@ -371,8 +393,6 @@ sub save_package_product_details :Private
 		$Pkg->delete;
 		}
 
-	my $total_row_count = int $params->{'pkg_detail_row_count'};
-
 	my $last_package_id=0;
 	for (my $index=1; $index <= $total_row_count; $index++)
 		{
@@ -380,6 +400,8 @@ sub save_package_product_details :Private
 		# Save it out so following products will get owned by it.
 		# If this is a product, and we have a packageid, the ownertype needs to be a package
 		my $PackageIndex = int $self->get_row_id($index);
+
+		next unless defined $params->{'type_' . $PackageIndex};
 
 		$c->log->debug("PackageIndex: " . $PackageIndex);
 
@@ -397,20 +419,20 @@ sub save_package_product_details :Private
 				quantity    => $params->{'quantity_' . $PackageIndex },
 				partnumber  => $params->{'sku_' . $PackageIndex },
 				description => $params->{'description_' . $PackageIndex },
-				unittypeid  => int $params->{'unittype_' . $PackageIndex },
-				weight      => int $params->{'weight_' . $PackageIndex },
-				dimweight   => int $params->{'dimweight_' . $PackageIndex },
-				dimlength   => int $params->{'dimlength_' . $PackageIndex },
-				dimwidth    => int $params->{'dimwidth_' . $PackageIndex },
-				dimheight   => int $params->{'dimheight_' . $PackageIndex },
-				density     => int $params->{'density_' . $PackageIndex },
-				class       => int $params->{'class_' . $PackageIndex },
-				frtins      => int $params->{'frtins_' . $PackageIndex},
+				unittypeid  => $params->{'unittype_' . $PackageIndex },
+				weight      => sprintf("%.2f", $params->{'weight_' . $PackageIndex }),
+				dimweight   => sprintf("%.2f", $params->{'dimweight_' . $PackageIndex }),
+				dimlength   => sprintf("%.2f", $params->{'dimlength_' . $PackageIndex }),
+				dimwidth    => sprintf("%.2f", $params->{'dimwidth_' . $PackageIndex }),
+				dimheight   => sprintf("%.2f", $params->{'dimheight_' . $PackageIndex }),
+				density     => sprintf("%.2f", $params->{'density_' . $PackageIndex }),
+				class       => sprintf("%.2f", $params->{'class_' . $PackageIndex }),
+				decval      => sprintf("%.2f", $params->{'decval_' . $PackageIndex }),
+				frtins      => sprintf("%.2f", $params->{'frtins_' . $PackageIndex}),
 				nmfc        => $params->{'nmfc_' . $PackageIndex },
-				decval      => int $params->{'decval_' . $PackageIndex },
 			};
 
-		#$c->log->debug("PackProData: " . Dumper $PackProData);
+		$c->log->debug("PackProData: " . Dumper $PackProData);
 
 		my $PackProDataObj = $c->model("MyDBI::Packprodata")->new($PackProData);
 		$PackProDataObj->packprodataid($self->get_token_id);

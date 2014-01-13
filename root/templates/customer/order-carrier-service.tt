@@ -137,6 +137,9 @@
 						<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
 					</tr>
 					<tr>
+						<td>&nbsp;</td><td>&nbsp;</td>
+					</tr>
+					<tr>
 						<td>&nbsp;</td><td><input type="button" class="gray" id="route" value="Route"/></td>
 					</tr>
 				</table>
@@ -254,7 +257,9 @@
 
 [% UNLESS one_page %]
 	$(document).ready(function(){
+
 		checkCarrierServiceSection();
+		$('#carrier-service-list').tabs();
 
 		[% IF tooltips %]
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]

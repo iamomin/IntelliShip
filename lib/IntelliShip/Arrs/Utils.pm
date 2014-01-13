@@ -129,11 +129,11 @@ sub get_other_carrier_data
 		my $quantities = $request->{'quantitylist'};
 		my $weights = $request->{'weightlist'};
 
-		$quantities =~ s/\'//g;
-		$weights =~ s/\'//g;
+		$quantities =~ s/\'//g if $quantities;
+		$weights =~ s/\'//g if $weights;
 
-		my @quantities = split(/,/,$quantities);
-		my @weights = split(/,/,$weights);
+		my @quantities = split(/,/, $quantities) if $quantities;
+		my @weights = split(/,/, $weights) if $weights;
 
 		if ($request->{'quantityxweight'})
 			{

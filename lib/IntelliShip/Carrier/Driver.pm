@@ -9,6 +9,7 @@ BEGIN {
 	has 'context' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
 	has 'DB_ref' => ( is => 'rw' );
+	has 'data' => ( is => 'rw' );
 	}
 
 sub model
