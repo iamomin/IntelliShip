@@ -189,9 +189,13 @@
 		<div style="clear: both;">&nbsp;</div>
 	[% END %]
 
+	<div class="float_left">
+		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="javascript:void(0);"/></div>
+	</div>
+
 	<div class="float_right">
 		<table><tr>
-		<td><div class="gray-backward"><input type="button" value="PREVIOUS" onclick="javascript:history.back()"/></div></td>
+		<td><div class="gray-backward"><input type="button" value="PREVIOUS" onclick="javascript:history.back();"/></div></td>
 		<td><div class="green-forward"><input type="submit" id="quick_ship" value="NEXT STEP"/></div></td>
 		</tr></table>
 	</div>

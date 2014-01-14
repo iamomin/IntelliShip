@@ -768,7 +768,7 @@ input.delete {
 }
 
 .green-forward {
-    width: 150px;
+    min-width: 150px;
     height: 32px;
     overflow: hidden;
     background: url(/static/images/green-arrowhead-right.png) no-repeat right;
@@ -776,7 +776,7 @@ input.delete {
 }
 
 .green-forward input {
-    width: 118px;
+    min-width: 118px;
     position: relative;
     display: inline-block;
     padding: 7px 15px;
@@ -798,7 +798,7 @@ input.delete {
 }
 
 .gray-backward input {
-    width: 118px;
+    min-width: 118px;
     position: relative;
     display: inline-block;
     margin-left: 32px;
@@ -824,6 +824,27 @@ input.package {
     text-transform: uppercase;
     background: #fbf9ee;
     border: 1px solid #fcefa1;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.orange {
+    height: 32px;
+    overflow: hidden;
+    color: transparent;
+}
+
+.orange input {
+    min-width: 118px;
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #FAA226;
+    border: 1px solid #FAA226;
     vertical-align: middle;
     cursor: pointer;
 }

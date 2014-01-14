@@ -120,8 +120,6 @@ sub get_other_carrier_data
 	my $carrier_list = shift;
 	my $Customer = shift;
 	my $request = shift;
-	my $response = shift;
-	my $counter = shift;
 
 	my $weight = 0;
 	if ($request)
@@ -163,28 +161,15 @@ sub get_other_carrier_data
 	for (my $row=0; $row < $STH->numrows; $row++)
 		{
 		my $data = $STH->fetchrow($row);
-
-		$carrier_list->{$counter++} = { 'key' => 'OTHER_' . $data->{'otherid'}, 'value' => 'Other - ' . $data->{'othername'}};
-
-		if ($response)
-			{
-			$response->{'costlist'} .= ",'0'";
-			$response->{'costweightlist'} .= ",'$weight'" if $response->{'costweightlist'} and $weight;
-			}
+		$carrier_list->{'OTHER_' . $data->{'otherid'}} = { 'NAME' => 'Other - ' . $data->{'othername'} };
 		}
 
 	if ($Customer->administrator)
 		{
-		$carrier_list->{$counter++} = {'key' => 'OTHER_NEW', 'value' => 'Other - New'};
-
-		if ($response)
-			{
-			$response->{'costlist'} .= ",'0'";
-			$response->{'costweightlist'} .= ",'$weight'" if $response->{'costweightlist'} and $weight;
-			}
+		$carrier_list->{'OTHER_NEW'} = { 'NAME' => 'Other - New' };
 		}
 
-	return ($carrier_list,$response);
+	return $carrier_list;
 	}
 
 sub get_required_assessorials

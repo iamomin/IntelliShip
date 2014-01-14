@@ -708,7 +708,7 @@ Related object: L<IntelliShip::SchemaClass::Result::Customer>
 =cut
 
 __PACKAGE__->belongs_to(
-  "customerid",
+  "customer",
   "IntelliShip::SchemaClass::Result::Customer",
   { customerid => "customerid" },
   {

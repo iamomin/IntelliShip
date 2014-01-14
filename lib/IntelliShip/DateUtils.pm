@@ -5,7 +5,7 @@ use DateTime;
 use Date::Business;
 use Date::Calendar;
 use Date::Manip qw(ParseDate UnixDate);
-use Date::Calc qw(check_date Delta_Days Add_Delta_Days Delta_DHMS Add_Delta_DHMS Day_of_Week Add_Delta_YMDHMS Timezone);
+use Date::Calc qw(Date_to_Text_Long check_date Delta_Days Add_Delta_Days Delta_DHMS Add_Delta_DHMS Day_of_Week Add_Delta_YMDHMS Timezone);
 
 =head1 NAME
 
@@ -20,6 +20,22 @@ Collection of subroutines to manipulate date/time information.
 List below are the subroutines available.
 
 =cut
+
+sub date_to_text_long
+	{
+	my $self = shift;
+	my $fulldate = shift;
+
+	($fulldate, my $time) = split(/\ /, $fulldate) if $fulldate =~ /\:/;
+
+	my ($yy, $mm, $dd);
+	($yy, $mm, $dd) = split(/\-/, $fulldate) if $fulldate =~ /-/;
+	($mm, $dd, $yy) = split(/\//, $fulldate) if $fulldate =~ /\//;
+
+	my $date = Date_to_Text_Long($yy, $mm, $dd);
+
+	return $date . ' ' . $time;
+	}
 
 =head2 american_date
 
@@ -234,6 +250,18 @@ sub get_formatted_timestamp
 	$timestamp = "$year$separator$month$separator$day $hours:$min:$sec" if $separator;
 
 	return $timestamp;
+	}
+
+sub format_to_yyyymmdd
+	{
+	my $self = shift;
+	my $date = shift;
+
+	($date,my $time) = split(/\ /, $date) if $date =~ /\ /;
+	my ($yy,$mm,$dd) = split(/\-/, $date) if $date =~ /\-/;
+	   ($mm,$dd,$yy) = split(/\//, $date) if $date =~ /\//;
+
+	return $yy . $mm . $dd;
 	}
 
 sub get_delta_days

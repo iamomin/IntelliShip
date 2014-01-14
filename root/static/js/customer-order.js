@@ -471,7 +471,7 @@ function checkCarrierServiceSection()
 var has_FC=false;
 function get_customer_service_list(params)
 	{
-	$("#carrier-service-list").slideUp(1000);
+	$("#service-level-summary").slideUp(1000);
 
 	var query_param = '&' + params;
 	if($('input:radio[name=deliverymethod]:checked').val() == "prepaid") 
@@ -483,21 +483,22 @@ function get_customer_service_list(params)
 	$("#route").attr("disabled",true);
 	$("#route").val("Please Wait...");
 
-	$('#carrier-service-list').tabs('destroy').tabs();
+	//$('#carrier-service-list').tabs('destroy').tabs();
 
-	send_ajax_request('carrier-service-list', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
+	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
 		$("#carrier-service-list").tabs();
 		$("#route").attr("disabled",false);
 		$("#route").val(origVal);
+		setToolTip();
 		has_FC = true;
 
-		$("#carrier-service-list").slideDown(1000);
+		$("#service-level-summary").slideDown(1000);
 		});
 	}
 
 function resetCSList()
 	{
-	if (has_FC) $("#carrier-service-list").slideUp(1000);
+	if (has_FC) $("#service-level-summary").slideUp(1000);
 	}
 
 var originalRows=null;

@@ -411,26 +411,28 @@ sub save_package_product_details :Private
 		$datatypeid = "2000" if ($params->{'type_' . $PackageIndex } eq 'product');
 		my $ownertypeid = 1000;
 		$ownertypeid = 3000 if ($params->{'type_' . $PackageIndex } eq 'product');
+
 		my $PackProData = {
 				ownertypeid => $ownertypeid,
 				ownerid     => $ownerid,
 				datatypeid  => $datatypeid,
-				boxnum      => $params->{'quantity_' . $PackageIndex },
-				quantity    => $params->{'quantity_' . $PackageIndex },
-				partnumber  => $params->{'sku_' . $PackageIndex },
-				description => $params->{'description_' . $PackageIndex },
+				boxnum      => $params->{'quantity_' . $PackageIndex},
+				quantity    => $params->{'quantity_' . $PackageIndex},
 				unittypeid  => $params->{'unittype_' . $PackageIndex },
-				weight      => sprintf("%.2f", $params->{'weight_' . $PackageIndex }),
-				dimweight   => sprintf("%.2f", $params->{'dimweight_' . $PackageIndex }),
-				dimlength   => sprintf("%.2f", $params->{'dimlength_' . $PackageIndex }),
-				dimwidth    => sprintf("%.2f", $params->{'dimwidth_' . $PackageIndex }),
-				dimheight   => sprintf("%.2f", $params->{'dimheight_' . $PackageIndex }),
-				density     => sprintf("%.2f", $params->{'density_' . $PackageIndex }),
-				class       => sprintf("%.2f", $params->{'class_' . $PackageIndex }),
-				decval      => sprintf("%.2f", $params->{'decval_' . $PackageIndex }),
+				weight      => sprintf("%.2f", $params->{'weight_' . $PackageIndex}),
+				dimweight   => sprintf("%.2f", $params->{'dimweight_' . $PackageIndex}),
+				dimlength   => sprintf("%.2f", $params->{'dimlength_' . $PackageIndex}),
+				dimwidth    => sprintf("%.2f", $params->{'dimwidth_' . $PackageIndex}),
+				dimheight   => sprintf("%.2f", $params->{'dimheight_' . $PackageIndex}),
+				density     => sprintf("%.2f", $params->{'density_' . $PackageIndex}),
+				class       => sprintf("%.2f", $params->{'class_' . $PackageIndex}),
+				decval      => sprintf("%.2f", $params->{'decval_' . $PackageIndex}),
 				frtins      => sprintf("%.2f", $params->{'frtins_' . $PackageIndex}),
-				nmfc        => $params->{'nmfc_' . $PackageIndex },
 			};
+
+		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
+		$PackProData->{description} = $params->{'description_' . $PackageIndex} if $params->{'description_' . $PackageIndex};
+		$PackProData->{nmfc} = $params->{'nmfc_' . $PackageIndex} if $params->{'nmfc_' . $PackageIndex};
 
 		$c->log->debug("PackProData: " . Dumper $PackProData);
 
@@ -1850,7 +1852,7 @@ sub set_required_fields :Private
 			{ name => 'tozip', details => "{ minlength: 5 }"},
 			{ name => 'tocountry', details => "{ minlength: 2 }"},
 			{ name => 'tophone', details => "{ phone: false }"},
-			{ name => 'toemail', details => "{ email: true }"},
+			{ name => 'toemail', details => "{ email: false }"},
 		];
 
 		unless ($Customer->login_level == 25)

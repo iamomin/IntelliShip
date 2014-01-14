@@ -205,6 +205,7 @@
 [% END %]
 
 [% IF CARRIERSERVICE_LIST %]
+<div id="carrier-service-list">
 	<ul>
 		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 0, '', 'original');">RECOMMENDED</a></li>
 		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 3, 'numeric', 'desc');">TRANSIT DAYS</a></li>
@@ -226,7 +227,7 @@
 			[% END %]
 		</tr>
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
-		<tr class="sortable">
+		<tr class="sortable" title="[% item.SHIPMENT_CHARGE_DETAILS %]">
 			<td>
 				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" /><span></span></label>
 			</td>
@@ -243,4 +244,5 @@
 	[% END %]
 	</table>
 	</div>
+</div>
 [% END %]

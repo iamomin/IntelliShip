@@ -57,6 +57,38 @@ sub default :Path
 	$c->response->redirect($c->uri_for('/customer/login'));
 	}
 
+sub set_navigation_rules
+	{
+	my $self = shift;
+	my $page = shift;
+
+	my $c = $self->context;
+    my $Contact = $self->contact;
+	my $Customer = $self->customer;
+	my $login_level = $Customer->login_level;
+
+	my $navRules = {};
+	if ($login_level != 25 and $login_level != 35 and $login_level != 40 and !$Contact->is_restricted)
+		{
+		$navRules->{DISPLAY_SHIPMENT_MAINTENANCE} = 1;
+		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->uploadorders;
+		$navRules->{DISPLAY_SHIP_PACKAGE} = $Contact->get_contact_data_value('disallowshippackages') || 0;
+		}
+
+   unless ($Contact->is_restricted)
+		{
+		$navRules->{DISPLAY_QUICKSHIP} = ($Customer->quickship and !$Contact->get_contact_data_value('myorders'));
+		$navRules->{DISPLAY_NEW_ORDER} = (!$Contact->get_contact_data_value('myorders') and !$Contact->get_contact_data_value('disallowneworder'));
+		}
+
+	$navRules->{DISPLAY_MYORDERS} = $Contact->get_contact_data_value('myorders');
+	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
+	$navRules->{DISPLAY_SETTINGS} = ($Contact->get_contact_data_value('superuser') or $Customer->superuser);
+
+	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
+	$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
+	}
+
 sub flush_expired_tokens :Private
 	{
 	my $self = shift;
@@ -272,11 +304,11 @@ sub get_address_dropdown_list
 		$orderby = "  ORDER BY addressname, address1, address2, city";
 		}
 
-	my $sql = "SELECT 
+	my $sql = "SELECT
 					DISTINCT ON (addressname,address1,
 						address2,city,state,zip,country) address.addressid as addressid,
 					addressname as addressname
-				FROM co 
+				FROM co
 					INNER JOIN address on co.addressid = address.addressid AND co.customerid = '$customerid'
 				WHERE
 				co.cotypeid in (1,2,10)
@@ -384,7 +416,7 @@ sub get_select_list
 			distinct => 1,
 			order_by => 'extcd',
 			});
-		 while( my $obj = $product_desc_rs->next) 
+		 while ( my $obj = $product_desc_rs->next)
 			{
 			push(@$list, { name => $obj->extcd(), value => $obj->extcd()});
 			}
@@ -403,7 +435,7 @@ sub get_select_list
 			distinct => 1,
 			order_by => 'department',
 			});
-		 while( my $obj = $product_desc_rs->next) 
+		 while ( my $obj = $product_desc_rs->next)
 			{
 			push(@$list, { name => $obj->department(), value => $obj->department()});
 			}
@@ -421,7 +453,7 @@ sub get_select_list
 								distinct => 1,
 								order_by => 'custnum',
 								});
-		 while (my $Co = $product_desc_rs->next) 
+		 while (my $Co = $product_desc_rs->next)
 			{
 			push(@$list, { name => $Co->custnum, value => $Co->custnum });
 			}
@@ -430,12 +462,12 @@ sub get_select_list
 		{
 		my $myDBI = $self->context->model('MyDBI');
 		my $sql = "SELECT
-						DISTINCT coalesce(extcarrier,'') || ' - ' || coalesce(extservice,'') as carrierservice 
-					FROM 
+						DISTINCT coalesce(extcarrier,'') || ' - ' || coalesce(extservice,'') as carrierservice
+					FROM
 						co
 					WHERE
 						co.customerid = '" . $self->customer->customerid . "'
-					ORDER BY 
+					ORDER BY
 						carrierservice";
 		my $sth = $myDBI->select($sql);
 		for (my $row=0; $row < $sth->numrows; $row++)

@@ -91,6 +91,7 @@
 	<h2>Special Services Requested</h2>
 [% END %]
 
+[% IF one_page %]
 	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
 
 	<table class="app css3-checkboxes">
@@ -110,12 +111,39 @@
 		</tr>
 	</table>
 
-[% IF one_page %]
 	<div style="clear: both;">&nbsp;</div>
 	<div id="intlCommoditySec"></div>
 [% END %]
 	<div style="clear: both;">&nbsp;</div>
 
+	<table class="app" style="min-height: 280px;">
+		<caption>Carrier and Service Selection</caption>
+		<tr>
+			<td style="vertical-align: top;">
+			<table id="delivery_method_table">
+				<tr>
+				<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+				<td class="css3-radios">
+					[% FOREACH item IN deliverymethod_loop %]
+					<label><input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+					[% END %]
+				</td>
+				</tr>
+				<tr>
+					<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
+					<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td><td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td><td><input type="button" class="gray" id="route" value="Route"/></td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+<!--
 	<div class="equal">
 		<div class="row">
 		<div21 style="width: 55%;">
@@ -191,12 +219,12 @@
 		</div22>
 		</div>
 	</div>
-
+-->
 	<div style="clear: both;">&nbsp;</div>
 
 	<h1>SERVICE LEVEL SUMMARY</h1>
 
-	<div id="carrier-service-list"></div>
+	<div id="service-level-summary"></div>
 
 	<div style="clear: both;">&nbsp;</div>
 

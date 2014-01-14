@@ -198,13 +198,13 @@ __PACKAGE__->has_one(
 	);
 
 __PACKAGE__->has_many(
-	restrictions => 
+	restrictions =>
 		'IntelliShip::SchemaClass::Result::Restrictcontact',
 		'contactid'
 	);
 
 __PACKAGE__->has_many(
-	customer_contact_data => 
+	customer_contact_data =>
 		'IntelliShip::SchemaClass::Result::Custcondata',
 		'ownerid'
 	);
@@ -246,7 +246,7 @@ sub get_contact_data_value
 	my $WHERE = { ownertypeid => ['1','2'], datatypename => $data_type_name };
 	$WHERE->{datatypeid} = $data_type_id if $data_type_id;
 
-	my @custcondata_objs = $self->customer_contact_data($WHERE);
+	my @custcondata_objs = $self->customer_contact_data($WHERE, { order_by => 'ownertypeid desc' });
 
 	my $contact_data_value;
 	$contact_data_value = $_->value and last foreach @custcondata_objs;

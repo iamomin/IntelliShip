@@ -116,7 +116,8 @@ sub end : Private {
 	$c->stash->{selected_mnu} = 'mnu_' . ($selected_mnu ? $selected_mnu : 'dashboard');
 	$c->response->body($c->stash->{template});
 
-	my $Token = $c->controller->token;
+	my $Controller = $c->controller;
+	my $Token = $Controller->token;
 	my $ajax = $c->req->param('ajax') || 0;
 
 	if ($Token and $ajax)
@@ -125,7 +126,8 @@ sub end : Private {
 		}
 	elsif ($Token)
 		{
-		$c->stash->{username} = $c->controller->contact->full_name;
+		$Controller->set_navigation_rules;
+		$c->stash->{username} = $Controller->contact->full_name;
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else

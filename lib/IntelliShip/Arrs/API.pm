@@ -156,6 +156,20 @@ sub get_CS_value
 	return $self->APIRequest($http_request);
 	}
 
+sub get_CS_shipping_values
+	{
+	my $self = shift;
+	my ($CSID,$CustomerID) = @_;
+
+	my $http_request = {
+		action => 'GetCSShippingValues',
+		customerserviceid => $CSID,
+		customerid => $CustomerID,
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub get_carrrier_service_rate_list
 	{
 	my $self = shift;
@@ -250,31 +264,31 @@ sub get_carrrier_service_rate_list
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($request,$Customer,$CO);
 	$self->context->log->debug("request :". Dumper($request));
+
 	my $response = $self->APIRequest($request);
 
 	$self->context->log->debug("response :". Dumper($response));
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
 
-	my $carrier_list = {};
+	# my $DefaultCSID = $response->{'defaultcsid'};
+	# my $DefaultCost = $Contact->login_level == 20 ? undef : $response->{'defaultcost'};
+	# my $DefaultTotalCost = $Contact->login_level == 20 ? undef : $response->{'defaulttotalcost'};
+	my $CostList = $Contact->login_level == 20 ? undef : $response->{'costlist'};
+	my @costlist_arr = split(/,/,$CostList) if ($CostList);
+
+	my $carrier_Details = {};
 	for ( my $i = 0; $i < scalar(@CSIDs); $i ++ )
 		{
-		$carrier_list->{$i} = {'key' => $CSIDs[$i], 'value' => $CSNames[$i]};
+		$carrier_Details->{$CSIDs[$i]} = {'NAME' => $CSNames[$i], 'COST_DETAILS' => $costlist_arr[$i+1]};
 		}
 
 	unless ($request->{'csid'})
 		{
-		($carrier_list,$response) = $self->get_other_carrier_data($carrier_list,$Customer,$response,$request,scalar(@CSIDs));
+		$carrier_Details = $self->get_other_carrier_data($carrier_Details, $Customer, $request);
 		}
 
-	$request->{'action'} = 'GetCSJSArrays';
-	$request->{'csids'} = $response->{'csids'};
-
-	# Slip the cost weight list into the cs data ref
-	my $cs_data_ref =  $self->APIRequest($request);
-	$cs_data_ref->{'costweightlist'} = $response->{'costweightlist'};
-
-	return ($response, $cs_data_ref, $carrier_list);
+	return $carrier_Details;
 	}
 
 sub valid_billing_account

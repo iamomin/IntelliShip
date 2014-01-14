@@ -1,5 +1,6 @@
 package IntelliShip::Controller::Customer::Order::Ajax;
 use Moose;
+use Data::Dumper;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer::Order','IntelliShip::Controller::Customer::Ajax'; }
@@ -87,22 +88,17 @@ sub get_carrier_service_list
 	$freightcharges = 2 if ($params->{'deliverymethod'} eq '3rdparty');
 
 	#$self->context->log->debug("freightcharges :". $freightcharges);
-	my $carrier_service_list_loop = [];
 
 	my $APIRequest = IntelliShip::Arrs::API->new;
 	$APIRequest->context($c);
-	my ($response,$cs_data_ref, $carrier_list) = $APIRequest->get_carrrier_service_rate_list($CO,$Contact,$Customer, $is_route,$freightcharges);
+	my $carrier_Details = $APIRequest->get_carrrier_service_rate_list($CO,$Contact,$Customer, $is_route,$freightcharges);
 
-	# my $DefaultCSID = $response->{'defaultcsid'};
-	# my $DefaultCost = $Contact->login_level == 20 ? undef : $response->{'defaultcost'};
-	# my $DefaultTotalCost = $Contact->login_level == 20 ? undef : $response->{'defaulttotalcost'};
-	# my $CostList = $Contact->login_level == 20 ? undef : $response->{'costlist'};
-
-	foreach my $Key (keys %$carrier_list)
+	my ($CS_list_1, $CS_list_2) = ([], []);
+	foreach my $customerserviceid (keys %$carrier_Details)
 		{
-		my $CSData = $carrier_list->{$Key};
+		my $CSData = $carrier_Details->{$customerserviceid};
 
-		my @carrier_service = split(/ - /,$CSData->{'value'});
+		my @carrier_service = split(/ - /,$CSData->{'NAME'});
 		my $carrier = $carrier_service[0];
 
 		my ($service, $estimated_date, $shipment_charge);
@@ -127,9 +123,9 @@ sub get_carrier_service_list
 			}
 
 		my $detail_hash = {
-							customerserviceid => $CSData->{'key'},
-							carrier => $carrier,
-							service => $service,
+						customerserviceid => $customerserviceid,
+						carrier => $carrier,
+						service => $service,
 						};
 
 		if ($is_route)
@@ -139,15 +135,144 @@ sub get_carrier_service_list
 			$shipment_charge =~ s/\$//;
 			$detail_hash->{'shipment_charge'} = $shipment_charge;
 			$detail_hash->{'days'} = IntelliShip::DateUtils->get_delta_days(IntelliShip::DateUtils->current_date, $estimated_date);
+
+			my ($freightcharges,$fuelcharges) = (0,0);
+			if ( defined $CSData->{'COST_DETAILS'} and $shipment_charge !~ /Quote/ )
+				{
+				## Step 1 :: Split cost of Individual package
+				my $packages_cost = $CSData->{'COST_DETAILS'};
+				$packages_cost =~ s/\'//g;
+
+				my @individual_package_costs = split('::', $CSData->{'COST_DETAILS'});
+				## Step 2 :: Break Down Cost
+				foreach my $package_cost (@individual_package_costs)
+					{
+					next unless (length $package_cost > 0);
+					my @CostBreakDown = split('-',$package_cost);
+					$CostBreakDown[0] =~ s/\'// if $CostBreakDown[0];
+					$CostBreakDown[1] =~ s/\'// if $CostBreakDown[1];
+
+					$freightcharges += $CostBreakDown[0] if $CostBreakDown[0];
+					$fuelcharges += $CostBreakDown[1] if $CostBreakDown[1];
+					}
+				}
+
+			my ($totalquantity, $aggregateweight) = $self->get_estimated_quantity_and_weight;
+			my $DVI_Charge = $self->calculate_declared_value_insurance($CSData->{'key'}, $aggregateweight);
+			my $FI_Charge = $self->calculate_freight_insurance($CSData->{'key'}, $totalquantity);
+
+			my $charge_details = 'Freight Charges: $' . $freightcharges if ($freightcharges);
+			$charge_details .= ', Fuel Charges: $' . $fuelcharges if ($fuelcharges);
+			$charge_details .= ', Declared Value Insurance: $' . $DVI_Charge if ($DVI_Charge);
+			$charge_details .= ', Freight Insurance$ ' . $FI_Charge if ($FI_Charge);
+
+			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $charge_details;
+			$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". $detail_hash->{'SHIPMENT_CHARGE_DETAILS'});
 			}
 
-		push(@$carrier_service_list_loop, $detail_hash);
+		$detail_hash->{'shipment_charge'} =~ s/Quote//;
+		$detail_hash->{'shipment_charge'} =~ /\d+/ ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
-	$carrier_service_list_loop = [ sort {$a->{shipment_charge} <=> $b->{shipment_charge}} @$carrier_service_list_loop ];
+	my @SortedList = sort {$a->{shipment_charge} <=> $b->{shipment_charge}} @$CS_list_1;
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $carrier_service_list_loop;
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@SortedList, @$CS_list_2];
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
+	}
+
+sub get_estimated_quantity_and_weight
+	{
+	my $self = shift;
+	my $CO = $self->get_order;
+
+	my ($totalquantity, $aggregateweight);
+	my @packages = $CO->package_details;
+	foreach my $PackProData (@packages)
+		{
+		$totalquantity += $PackProData->quantity;
+		$aggregateweight += $PackProData->weight;
+		}
+
+	return ($totalquantity,$aggregateweight);
+	}
+
+sub calculate_declared_value_insurance
+	{
+	my $self = shift;
+	my $csid = shift;
+	my $aggregateweight = shift;
+
+	my $c = $self->context;
+	my $Customer = $self->customer;
+
+	my $DeclaredValue = 0;
+
+	my $CSValueRef = $self->API->get_CS_shipping_values($csid, $Customer->customerid);
+
+	my $DVI_Rate = $CSValueRef->{'decvalinsrate'} || 0;
+	my $DVI_Min = $CSValueRef->{'decvalinsmin'} || 0;
+	my $DVI_Max = $CSValueRef->{'decvalinsmax'} || 0;
+	my $DVI_MaxPerlb = $CSValueRef->{'decvalinsmaxperlb'} || 0;
+	my $DVI_MinCharge = $CSValueRef->{'decvalinsmincharge'} || 0;
+
+	unless ($DVI_Max > 0)
+		{
+		$DVI_Max = $DVI_MaxPerlb * $aggregateweight if ($DVI_MaxPerlb > 0);
+		}
+
+	# If we don't have any DVI values at all, don't calculate a rate (even by default)
+	return 0 if ( $DVI_Rate == 0 and $DVI_Max == 0 and $DVI_MinCharge == 0 );
+
+	# Check to see if DVI charge is greater than the max for the service
+	return("Not Available") if ($DeclaredValue > $DVI_Max);
+
+	if ($DeclaredValue > 0 and $DVI_Rate > 0 and $DeclaredValue > $DVI_Min)
+		{
+		my $DeclaredValueCharge = $DVI_Rate * (($DeclaredValue - $DVI_Min)/100);
+		$DeclaredValueCharge = $DVI_MinCharge if ($DeclaredValueCharge < $DVI_MinCharge);
+		return $DeclaredValueCharge;
+		}
+	else
+		{
+		return 0;
+		}
+	}
+
+sub calculate_freight_insurance
+	{
+	my $self = shift;
+	my $csid = shift;
+	my $totalquantity = shift;
+
+	my $c = $self->context;
+	my $Customer = $self->customer;
+
+	my $FreightInsurance = 0;
+
+	my $CSValueRef = $self->API->get_CS_shipping_values($csid, $Customer->customerid);
+	my $FI_Rate = $CSValueRef->{'freightinsrate'};
+	my $FI_Increment = $CSValueRef->{'freightinsincrement'};
+
+	# If we don't have any FI values at all, don't calculate a rate (even by default)
+	return 0 unless ($FI_Rate and $FI_Increment);
+
+	if ($FreightInsurance > 0 and $FI_Rate > 0)
+		{
+		my $FreightInsuranceCharge = 0;
+
+		if ($FI_Increment != -1)
+			{
+			$FreightInsuranceCharge = $FI_Rate * ($FreightInsurance/$FI_Increment);
+			}
+			else
+			{
+			$FreightInsuranceCharge = $FI_Rate * $totalquantity;
+			}
+
+		return $FreightInsuranceCharge;
+		}
+
+	return 0;
 	}
 
 sub get_JSON_DATA :Private

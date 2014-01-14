@@ -2,6 +2,7 @@ package IntelliShip::Controller::Customer::ReportDriver;
 use Moose;
 use Data::Dumper;
 use namespace::autoclean;
+use IntelliShip::Utils;
 use IntelliShip::DateUtils;
 
 BEGIN {
@@ -557,7 +558,6 @@ sub get_filter_details
 		elsif ($criteria =~ m/\ =\ /)
 			{
 			($key,$value) = split(' = ' , $criteria);
-			$value = substr($value, 6) if ($key eq 'gcard'); # CARD NO CONTAINS QUOTE ADD 5+1 = 6
 			$key = IntelliShip::Utils->get_filter_value_from_key($key);
 			}
 		elsif ($criteria =~ m/\ IN\ /i)
