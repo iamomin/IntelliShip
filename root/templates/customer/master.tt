@@ -76,9 +76,7 @@
 			<img src="/static/images/company-logo-transperent.png">
 			<span>&nbsp;Welcome Back [% username %]</span>
 			<ul>
-				[% IF DISPLAY_SETTINGS %]
 				<li><a href="/customer/settings"><img src="/static/images/settings.png"><label>SETTINGS</label></a></li>
-				[% END %]
 				<li><a href="/customer/dashboard"><img src="/static/images/help.png"><label>HELP</label></a></li>
 				<li><a href="/customer/logout"><img src="/static/images/signout.png"><label>SIGNOUT</label></a></li>
 			</ul>
@@ -99,8 +97,8 @@
 			[% IF DISPLAY_NEW_ORDER %]
 			<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
 			[% END %]
-			[% IF DISPLAY_SHIP_PACKAGE %]
 			<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>SHIP A PACKAGE</div></a></li>
+			[% IF DISPLAY_SHIP_PACKAGE %]
 			[% END %]
 			[% IF DISPLAY_QUICKSHIP %]
 			<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>

@@ -31,13 +31,21 @@ sub index :Path :Args(0) {
 
 	$c->log->debug("DISPLAY SETTING LINKS");
 
-	## Display settings
-	my $settings = [
-				{ name => 'Change Password', url => '/customer/settings/changepassword'},
-				{ name => 'Sku Management', url => '/customer/settings/skumanagement'},
-			];
+	my $Customer = $self->customer;
+	my $Contact = $self->contact;
 
-	if ($self->customer->has_extid_data)
+	## Display settings
+	my $settings = [{ name => 'Change Password', url => '/customer/settings/changepassword' }];
+	if ($Contact->is_superuser)
+		{
+		push (@$settings, { name => 'Company Management', url => '#'});
+		}
+	else
+		{
+		push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'});
+		}
+
+	if ($Customer->has_extid_data)
 		{
 		push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'})
 		}

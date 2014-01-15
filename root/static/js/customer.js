@@ -6,6 +6,10 @@ function setToolTip() {
 	$("[title]").tooltip({ track: true });
 	}
 
+function isEmpty( el ) {
+	return !$.trim($("#" + el).html())
+	}
+
 var JSON_data;
 function send_ajax_request(result_div, type_value, section_value, action_value, optional_param, call_back_function) {
 
@@ -15,7 +19,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 	if (type_value) data_string += '&type='+ (type_value ? type_value : 'HTML');
 	if (action_value) data_string += '&action='+ action_value;
 
-	if (optional_param) data_string += optional_param;
+	if (optional_param) data_string += '&' + optional_param;
 
 	var request_url = (section_value ? '/customer/' + section_value + '/ajax' : '/customer/ajax');
 
@@ -89,6 +93,8 @@ function afterSuccessCallBack(response_type, result_div, call_back_function, res
 $(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });
 
 $( "#dialog-message" ).dialog({
+	show: { effect: "blind", duration: 1000 },
+	hide: { effect: "explode", duration: 1000 },
 	autoOpen: false,
 	modal: true,
 	buttons: {

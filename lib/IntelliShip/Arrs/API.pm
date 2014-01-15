@@ -262,7 +262,7 @@ sub get_carrrier_service_rate_list
 		$request->{'csid'} = $self->get_co_customer_service($request,$Customer,$CO);
 		}
 
-	$request->{'required_assessorials'} = $self->get_required_assessorials($request,$Customer,$CO);
+	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
 	$self->context->log->debug("request :". Dumper($request));
 
 	my $response = $self->APIRequest($request);

@@ -175,19 +175,11 @@ sub get_other_carrier_data
 sub get_required_assessorials
 	{
 	my $self = shift;
-	my $request = shift;
-	my $Customer = shift;
 	my $CO = shift;
 
-	my @assessorial_datas = $self->model("MyDBI::Assdata")->search({ ownerid => $CO->coid });
+	my @assessorials = $CO->assessorials;
+	my $required_assessorials = join(',', map {$_->assname} @assessorials);
 
-	my @assessorial_names;
-	foreach my $AssData (@assessorial_datas)
-		{
-		push (@assessorial_names, $AssData->assname);
-		}
-
-	my $required_assessorials = join(',',@assessorial_names);
 	return $required_assessorials;
 	}
 

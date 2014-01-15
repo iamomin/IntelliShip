@@ -9,23 +9,42 @@ use Module::Install::Catalyst; # Complain loudly if you don't have
 name 'IntelliShip';
 all_from 'lib/IntelliShip.pm';
 
+requires 'DBD::Pg';
+
+requires 'Package::DeprecationManager';
+requires 'Test::Requires';
+requires 'Package::Stash::XS';
+requires 'Class::Load';
+requires 'Class::Load::XS';
+requires 'Eval::Closure';
+requires 'Package::Stash';
+requires 'Moose';
+requires 'MooseX::NonMoose';
+requires 'MooseX::MarkAsMethods';
+requires 'namespace::autoclean';
+requires 'DBIx::Class';
+requires 'DBIx::Class::TimeStamp';
+requires 'DBIx::Class::PassphraseColumn';
+requires 'Catalyst::View::TT';
+requires 'Test::Memory::Cycle';
+requires 'Devel::Cycle';
+requires 'Test::Differences';
+requires 'YAML';
+requires 'XML::Writer';
+requires 'Package::Variant';
 requires 'Catalyst::Runtime' => '5.90019';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
-requires 'Catalyst::View::TT';
-requires 'DBIx::Class';
 requires 'Catalyst::Model::DBIC::Schema';
-requires 'Moose';
-requires 'MooseX::NonMoose';
-requires 'namespace::autoclean';
 requires 'Config::General'; # This should reflect the config file format you've chosen
-                 # See Catalyst::Plugin::ConfigLoader for supported formats
+                            # See Catalyst::Plugin::ConfigLoader for supported formats
 requires 'Math::BaseCalc' => '1.011';
 requires 'Date::Business';
 requires 'Date::Calendar';
 requires 'Date::Manip';
 requires 'Date::Calc';
+requires 'DateTime';
 requires 'Email::Stuff';
 requires 'Sys::Hostname';
 requires 'XML::Simple';

@@ -157,7 +157,7 @@ sub setup_carrier_service :Private
 	$self->populate_order;
 
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
-	$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
+	#$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
@@ -786,9 +786,6 @@ sub populate_order :Private
 		$c->stash->{insurance} = $insurance;
 		#$c->stash->{international} = '';
 		}
-
-	# ASSESSORIALS SECTION 1000 for co and 2000 for shipment
-	$c->stash->{specialservice_loop} = $self->populate_assessorials_section;
 	}
 
 sub add_detail_row :Private
@@ -834,38 +831,6 @@ sub add_detail_row :Private
 	$c->stash->{'density'}     = $PackProData->density;
 
 	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	}
-
-sub populate_assessorials_section :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
-	my $specialService = $self->get_special_services;
-
-	foreach my $SpecialService (@$special_service_loop)
-		{
-		$SpecialService->{'checked'} = 'CHECKED' if $specialService->{$SpecialService->{'value'}};
-		}
-
-	return $special_service_loop;
-	}
-
-sub get_special_services :Private
-	{
-	my $self = shift;
-	my $COID = $self->CO->coid;
-
-	return unless $COID;
-
-	my $specialService = {};
-	my $sql = "SELECT assname FROM assdata WHERE ownerid = '$COID'";
-	my $STH = $self->context->model("MyDBI")->select("$sql");
-	my $data = $STH->query_data;
-
-	$specialService->{$_} = 1 foreach @$data;
-	return $specialService;
 	}
 
 sub get_tooltips :Private

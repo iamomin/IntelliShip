@@ -49,6 +49,10 @@ sub get_HTML :Private
 		{
 		$self->set_international_details;
 		}
+	elsif ($c->req->param('action') eq 'get_special_service_list')
+		{
+		$self->get_special_service_list;
+		}
 	elsif ($c->req->param('action') eq 'get_customer_service_list')
 		{
 		$self->get_carrier_service_list;
@@ -66,6 +70,29 @@ sub set_international_details
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{currencylist_loop} = $self->get_select_list('CURRENCY');
 	$c->stash->{dimentionlist_loop} = $self->get_select_list('DIMENTION');
+	}
+
+sub get_special_service_list
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CO = $self->get_order;
+	my @special_services = $CO->assessorials;
+	my %serviceHash =  map { $_->assname => 1 } @special_services;
+
+	my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
+
+	#$c->log->debug("special_service_loop: " . Dumper($special_service_loop));
+	#$c->log->debug("serviceHash: " . Dumper(%serviceHash));
+
+	foreach my $dataHash (@$special_service_loop)
+		{
+		$dataHash->{'checked'} = 'CHECKED' if $serviceHash{$dataHash->{'value'}};
+		}
+
+	$c->stash->{SPECIAL_SERVICE} = 1;
+	$c->stash->{specialservice_loop} = $special_service_loop;
 	}
 
 sub get_carrier_service_list
@@ -91,7 +118,7 @@ sub get_carrier_service_list
 
 	my $APIRequest = IntelliShip::Arrs::API->new;
 	$APIRequest->context($c);
-	my $carrier_Details = $APIRequest->get_carrrier_service_rate_list($CO,$Contact,$Customer, $is_route,$freightcharges);
+	my $carrier_Details = $APIRequest->get_carrrier_service_rate_list($CO, $Contact, $Customer, $is_route, $freightcharges);
 
 	my ($CS_list_1, $CS_list_2) = ([], []);
 	foreach my $customerserviceid (keys %$carrier_Details)
@@ -310,6 +337,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->get_address_detail;
 		}
+	elsif ($c->req->param('action') eq 'save_special_services')
+		{
+		$dataHash = $self->update_special_services;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -437,6 +468,13 @@ sub get_freight_class :Private
 	my $response_hash = { freight_class => IntelliShip::Utils->get_freight_class_from_density(undef,undef,undef,undef,$params->{'density'}) };
 	#$c->log->debug("response_hash : " . Dumper $response_hash);
 	return $response_hash;
+	}
+
+sub update_special_services
+	{
+	my $self = shift;
+	$self->save_special_services;
+	return { UPDATED => 1};
 	}
 
 =encoding utf8

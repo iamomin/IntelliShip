@@ -13,10 +13,14 @@
 	<h2>Package Detail</h2>
 	[% SHIPMENT_SECTION %]
 
-	<h2>Special Services Requested</h2>
 	[% CARRIER_SERVICE_SECTION %]
 
 	<div style="clear: both;">&nbsp;</div>
+
+	<div class="float_left">
+		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
+		<div id="special-requirements"></div>
+	</div>
 
 	<div class="float_right">
 		<input type="button" class="green" id="save" value="SAVE"/>

@@ -190,7 +190,8 @@
 	[% END %]
 
 	<div class="float_left">
-		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="javascript:void(0);"/></div>
+		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
+		<div id="special-requirements"></div>
 	</div>
 
 	<div class="float_right">

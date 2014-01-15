@@ -799,6 +799,12 @@ __PACKAGE__->has_many(
 	{ "foreign.ownerid" => "self.coid" }
 	);
 
+__PACKAGE__->has_many(
+	assdata =>
+	"IntelliShip::SchemaClass::Result::Assdata",
+	{ "foreign.ownerid" => "self.coid" }
+	);
+
 sub is_shipped
 	{
 	my $self = shift;
@@ -868,6 +874,15 @@ sub package_details
 		}
 
 	return @packageArr;
+	}
+
+# Assdata OwnerTypeID:
+# 1000 = CO
+# 2000 = shipment
+sub assessorials
+	{
+	my $self = shift;
+	return $self->assdata({ ownertypeid => '1000' });
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

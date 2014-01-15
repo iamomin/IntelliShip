@@ -336,6 +336,48 @@ function update_package_product_sequence()
 	$("#pkg_detail_row_count").val(pkg_detail_row_count);
 	}
 
+function populateSpecialServiceList() {
+
+	if (!isEmpty("special-requirements")) return $("#special-requirements").dialog( "open" );
+
+	$("#special-requirements").dialog({
+			show: { effect: "blind", duration: 1000 },
+			hide: { effect: "explode", duration: 1000 },
+			title: "Select Special Service",
+			autoOpen: false,
+			modal: true,
+			width: '800px',
+			buttons: {
+				Save: function() {
+					//$("#special-requirements > .ui-button-text").text("Please Wait...");
+					var params = $("#frm_SC").serialize();
+					if (params == "") {
+						$("#sc_error").html("Please select at least one special service");
+						$("#sc_error").addClass("ui-state-error");
+						return;
+						} else {
+						$("#sc_error").html("");
+						if ($("#sc_error").hasClass('ui-state-error')) $("#sc_error").removeClass('ui-state-error');
+						}
+					params = 'coid=' + $("#coid").val() + '&' + params;
+					//alert("PARAMS: " + params);
+
+					send_ajax_request('', 'JSON', 'order', 'save_special_services', params, function () {
+						if (JSON_data.UPDATED == 1) $("#special-requirements").dialog( "close" );
+						});
+					},
+				Cancel: function() {
+					$( this ).dialog( "close" );
+					}
+				}
+		});
+
+	send_ajax_request('special-requirements', 'HTML', 'order', 'get_special_service_list', '', function (){
+		$( "#special-requirements" ).dialog( "open" );
+		});
+
+	}
+
 function checkInternationalSection() {
 	if($("#tocountry").val() != $("#fromcountry").val()) {
 		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){

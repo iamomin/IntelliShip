@@ -88,10 +88,12 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
-	<h2>Special Services Requested</h2>
 [% END %]
 
-[% IF one_page %]
+[% IF specialservice_loop %]
+
+	<h2>Special Services Requested</h2>
+
 	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
 
 	<table class="app css3-checkboxes">
@@ -110,10 +112,13 @@
 		[% END %]
 		</tr>
 	</table>
-
 	<div style="clear: both;">&nbsp;</div>
+[% END %]
+
+[% IF one_page %]
 	<div id="intlCommoditySec"></div>
 [% END %]
+
 	<div style="clear: both;">&nbsp;</div>
 
 	<table class="app" style="min-height: 280px;">

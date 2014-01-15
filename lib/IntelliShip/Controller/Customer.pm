@@ -57,38 +57,6 @@ sub default :Path
 	$c->response->redirect($c->uri_for('/customer/login'));
 	}
 
-sub set_navigation_rules
-	{
-	my $self = shift;
-	my $page = shift;
-
-	my $c = $self->context;
-    my $Contact = $self->contact;
-	my $Customer = $self->customer;
-	my $login_level = $Customer->login_level;
-
-	my $navRules = {};
-	if ($login_level != 25 and $login_level != 35 and $login_level != 40 and !$Contact->is_restricted)
-		{
-		$navRules->{DISPLAY_SHIPMENT_MAINTENANCE} = 1;
-		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->uploadorders;
-		$navRules->{DISPLAY_SHIP_PACKAGE} = $Contact->get_contact_data_value('disallowshippackages') || 0;
-		}
-
-   unless ($Contact->is_restricted)
-		{
-		$navRules->{DISPLAY_QUICKSHIP} = ($Customer->quickship and !$Contact->get_contact_data_value('myorders'));
-		$navRules->{DISPLAY_NEW_ORDER} = (!$Contact->get_contact_data_value('myorders') and !$Contact->get_contact_data_value('disallowneworder'));
-		}
-
-	$navRules->{DISPLAY_MYORDERS} = $Contact->get_contact_data_value('myorders');
-	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
-	$navRules->{DISPLAY_SETTINGS} = ($Contact->get_contact_data_value('superuser') or $Customer->superuser);
-
-	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
-	$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
-	}
-
 sub flush_expired_tokens :Private
 	{
 	my $self = shift;
@@ -759,6 +727,38 @@ sub spawn_batches
 	push @$batches, [ splice @$matching_ids, 0, $batch_size ] while @$matching_ids;
 
 	return $batches;
+	}
+
+sub set_navigation_rules
+	{
+	my $self = shift;
+	my $page = shift;
+
+	my $c = $self->context;
+    my $Contact = $self->contact;
+	my $Customer = $self->customer;
+	my $login_level = $Customer->login_level;
+
+	my $navRules = {};
+	if ($login_level != 25 and $login_level != 35 and $login_level != 40 and !$Contact->is_restricted)
+		{
+		$navRules->{DISPLAY_SHIPMENT_MAINTENANCE} = 1;
+		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->uploadorders;
+		$navRules->{DISPLAY_SHIP_PACKAGE} = $Contact->get_contact_data_value('disallowshippackages') || 0;
+		}
+
+   unless ($Contact->is_restricted)
+		{
+		$navRules->{DISPLAY_QUICKSHIP} = ($Customer->quickship and !$Contact->get_contact_data_value('myorders'));
+		$navRules->{DISPLAY_NEW_ORDER} = (!$Contact->get_contact_data_value('myorders') and !$Contact->get_contact_data_value('disallowneworder'));
+		}
+
+	$navRules->{DISPLAY_MYORDERS} = $Contact->get_contact_data_value('myorders');
+	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
+
+	#$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
+	$c->stash->{$_} = 1 foreach keys %$navRules;
+	#$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
 	}
 
 =encoding utf8

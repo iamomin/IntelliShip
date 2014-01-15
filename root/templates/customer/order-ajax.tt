@@ -204,6 +204,31 @@
 	</tr>
 [% END %]
 
+[% IF SPECIAL_SERVICE %]
+
+	<form id="frm_SC">
+	<div class="notice">When you click on "Save", this window will close automatically after storing special service successfully</div>
+	<div id="sc_error"></div>
+	<table class="app css3-checkboxes">
+		[% count=0 %]
+		<tr>
+		[% FOREACH item IN specialservice_loop %]
+		[% count=count+1 %]
+			[% IF count == 5 %]
+				</tr><tr>
+			[% count = 0 %]
+			[% ELSE %]
+				<td>
+				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+				</td>
+			[% END %]
+		[% END %]
+		</tr>
+	</table>
+	</form>
+
+[% END %]
+
 [% IF CARRIERSERVICE_LIST %]
 <div id="carrier-service-list">
 	<ul>
