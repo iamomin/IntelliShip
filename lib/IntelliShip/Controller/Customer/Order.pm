@@ -64,7 +64,7 @@ sub setup_one_page :Private
 	$self->setup_address;
 	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
 
-	$self->setup_package_detail;
+	$self->setup_shipment_information;
 	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment.tt" ]));
 
 	$self->setup_carrier_service;
@@ -90,6 +90,7 @@ sub setup_address :Private
 	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
+	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') if $c->stash->{one_page};
 	$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY
@@ -115,11 +116,11 @@ sub setup_address :Private
 	$c->stash(template => "templates/customer/order-address.tt");
 	}
 
-sub setup_package_detail :Private
+sub setup_shipment_information :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
-	$c->log->debug("__ SETUP PACKAGE DETAIL");
+
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
 	my $CO = $self->get_order;
@@ -132,6 +133,11 @@ sub setup_package_detail :Private
 		$CA->context($c);
 		$CA->set_international_details;
 		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
+		}
+
+	unless ($c->stash->{one_page})
+		{
+		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 		}
 
 	#DYNAMIC FIELD VALIDATIONS
@@ -157,7 +163,6 @@ sub setup_carrier_service :Private
 	$self->populate_order;
 
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
-	#$c->stash->{specialservice_loop} = $self->get_select_list('SPECIAL_SERVICE');
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
@@ -206,10 +211,21 @@ sub save_CO_details :Private
 	$coData->{'extloginid'} = $self->customer->username;
 	$coData->{'contactname'} = $params->{'tocontact'} if $params->{'tocontact'};
 
-	if ($params->{'datetoship'})
+	if ($params->{'tophone'})
 		{
 		$params->{'tophone'} =~ s/\D//g;
 		$coData->{'contactphone'} = $params->{'tophone'};
+		}
+
+	if ($params->{'deliverymethod'})
+		{
+		my $deliverymethodHash = {
+			'prepaid' => '0',
+			'collect' => '1',
+			'3rdparty' => '2',
+			};
+
+		$coData->{'freightcharges'} = $deliverymethodHash->{$params->{'deliverymethod'}};
 		}
 
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
@@ -681,6 +697,8 @@ sub populate_order :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	return unless $params->{coid};
 
 	$c->log->debug("_______ POPULATE_ORDER _______");
 

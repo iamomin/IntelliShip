@@ -178,7 +178,7 @@ sub get_carrrier_service_rate_list
 	my $Customer = shift;
 	my $is_route = shift;
 	my $freightcharges = shift;
-	$self->context->log->debug("freightcharges :". $freightcharges);
+
 	my $request = {};
 	$request->{'action'} = 'GetCSList';
 	$request->{'customerid'} = $Customer->customerid;
@@ -263,11 +263,11 @@ sub get_carrrier_service_rate_list
 		}
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
-	$self->context->log->debug("request :". Dumper($request));
+	#$self->context->log->debug("request :". Dumper($request));
 
 	my $response = $self->APIRequest($request);
 
-	$self->context->log->debug("response :". Dumper($response));
+	#$self->context->log->debug("response :". Dumper($response));
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
 

@@ -121,6 +121,7 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
+<!--
 	<table class="app" style="min-height: 280px;">
 		<caption>Carrier and Service Selection</caption>
 		<tr>
@@ -148,92 +149,31 @@
 			</td>
 		</tr>
 	</table>
-<!--
-	<div class="equal">
-		<div class="row">
-		<div21 style="width: 55%;">
-		<table class="app" style="min-height: 280px;">
-			<caption>Carrier and Service Selection</caption>
-			<tr>
-				<td style="vertical-align: top;">
-				<table id="delivery_method_table">
-					<tr>
-					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-					<td class="css3-radios">
-						[% FOREACH item IN deliverymethod_loop %]
-						<label><input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
-						[% END %]
-					</td>
-					</tr>
-					<tr>
-						<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
-						<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
-					</tr>
-					<tr>
-						<td>&nbsp;</td><td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td>&nbsp;</td><td><input type="button" class="gray" id="route" value="Route"/></td>
-					</tr>
-				</table>
-				</td>
-			</tr>
-		</table>
-		</div21>
 
-		<div22 style="width: 55%;">
-		<table class="app" style="min-height: 280px;">
-			<caption>Estimated Shipment Charges *</caption>
-			<tr>
-				<td><label class="float_right">Freight Charge:</label></td><td>$0.00</td>
-			</tr>
-			<tr>
-				<td><label class="float_right">Fuel Surcharge:</label></td><td>$0.00</td>
-			</tr>
-			<tr>
-				<td><label class="float_right">Declared Value Insurance Charge:</label></td><td>$0.00</td>
-			</tr>
-			<tr>
-				<td><label class="float_right">Freight Insurance Charge:</label></td><td>$0.00</td>
-			</tr>
-			<tr>
-				<td><label class="float_right">Collect Freight Charge:</label></td><td>$0.00</td>
-			</tr>
-			<tr>
-				<td colspan="2"><hr></td>
-			</tr>
-			<tr>
-				<td><label class="float_right">Total Shipment Charges:</label></td><td>$0.00</td>
-			</tr>
-			<tr>
-				<td style="vertical-align: top;">
-				<label for="quote" class="float_right">Customer Quote:</label>
-				</th>
-				<td>
-				<label>
-				<select name="quote" id="quote">
-					<option value="0">0%</option><option value="5">5%</option><option value="10">10%</option>
-					<option value="15">15%</option><option value="20">20%</option><option value="25">25%</option>
-					<option value="30">30%</option><option value="35">35%</option><option value="40">40%</option>
-					<option value="45">45%</option><option value="50">50%</option>
-				</select>
-				</label>
-				</td>
-			</tr>
-		</table>
-		</div22>
-		</div>
-	</div>
--->
 	<div style="clear: both;">&nbsp;</div>
+-->
 
 	<h1>SERVICE LEVEL SUMMARY</h1>
+	<div class="notice">Click on "Route" button to populate available carrier service list</div>
+
+	<table>
+		<tr>
+		<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
+		<td><input type="text" class="text" name="othercarrier" id="othercarrier"/></td>
+		<td><input type="button" class="gray" id="route" value="Route"/></td>
+		</tr>
+	</table>
 
 	<div id="service-level-summary"></div>
 
 	<div style="clear: both;">&nbsp;</div>
 
 [% UNLESS one_page %]
+	<div class="float_left">
+		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
+		<div id="special-requirements"></div>
+		<div id="selected-special-requirements"></div>
+	</div>
 	<div class="float_right">
 		<table><tr>
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>

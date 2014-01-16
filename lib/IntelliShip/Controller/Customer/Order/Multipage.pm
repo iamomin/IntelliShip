@@ -42,7 +42,7 @@ sub index :Path :Args(0) {
 		}
 	elsif ($do_value eq 'shipment')
 		{
-		$self->setup_package_detail;
+		$self->setup_shipment_information;
 		}
 	elsif ($do_value eq 'cancel')
 		{
@@ -63,7 +63,7 @@ sub complete_step1
 	my $self = shift;
 	$self->save_address;
 	$self->save_CO_details;
-	$self->setup_package_detail;
+	$self->setup_shipment_information;
 	}
 
 sub complete_step2
@@ -71,6 +71,7 @@ sub complete_step2
 	my $self = shift;
 	$self->save_package_product_details;
 	$self->save_CO_details;
+	$self->save_special_services;
 	$self->setup_carrier_service;
 	}
 

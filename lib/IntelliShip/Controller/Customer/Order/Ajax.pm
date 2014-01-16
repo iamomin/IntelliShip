@@ -109,11 +109,9 @@ sub get_carrier_service_list
 
 	my $is_route = $params->{'route'} || 0;
 
-	my $freightcharges = 0;
-	#$self->context->log->debug("deliverymethod :". $params->{'deliverymethod'});
-	$freightcharges = 1 if ($params->{'deliverymethod'} eq 'collect');
-	$freightcharges = 2 if ($params->{'deliverymethod'} eq '3rdparty');
-
+	my $freightcharges = $CO->freightcharges;
+	#$freightcharges = 1 if ($params->{'deliverymethod'} eq 'collect');
+	#$freightcharges = 2 if ($params->{'deliverymethod'} eq '3rdparty');
 	#$self->context->log->debug("freightcharges :". $freightcharges);
 
 	my $APIRequest = IntelliShip::Arrs::API->new;
@@ -188,20 +186,23 @@ sub get_carrier_service_list
 			my $DVI_Charge = $self->calculate_declared_value_insurance($CSData->{'key'}, $aggregateweight);
 			my $FI_Charge = $self->calculate_freight_insurance($CSData->{'key'}, $totalquantity);
 
-			my $charge_details = 'Freight Charges: $' . $freightcharges if ($freightcharges);
-			$charge_details .= ', Fuel Charges: $' . $fuelcharges if ($fuelcharges);
-			$charge_details .= ', Declared Value Insurance: $' . $DVI_Charge if ($DVI_Charge);
-			$charge_details .= ', Freight Insurance$ ' . $FI_Charge if ($FI_Charge);
+			my $SHIPMENT_CHARGE_DETAILS = [];
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Charges' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Fuel Charges' , value => '$' . sprintf("%.2f",$fuelcharges) }) if $fuelcharges;
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Declared Value Insurance' , value => '$' . sprintf("%.2f",$DVI_Charge) }) if $DVI_Charge;
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
+			push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>$' . sprintf("%.2f",$detail_hash->{'shipment_charge'}) . '</green>' });
 
-			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $charge_details;
-			$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". $detail_hash->{'SHIPMENT_CHARGE_DETAILS'});
+			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $SHIPMENT_CHARGE_DETAILS;
+			#$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));
 			}
 
 		$detail_hash->{'shipment_charge'} =~ s/Quote//;
 		$detail_hash->{'shipment_charge'} =~ /\d+/ ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
-	my @SortedList = sort {$a->{shipment_charge} <=> $b->{shipment_charge}} @$CS_list_1;
+	my @SortedList = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
 
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@SortedList, @$CS_list_2];
 	$c->stash->{CARRIERSERVICE_LIST} = 1;

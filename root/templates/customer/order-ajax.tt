@@ -207,7 +207,9 @@
 [% IF SPECIAL_SERVICE %]
 
 	<form id="frm_SC">
+	<!--
 	<div class="notice">When you click on "Save", this window will close automatically after storing special service successfully</div>
+	-->
 	<div id="sc_error"></div>
 	<table class="app css3-checkboxes">
 		[% count=0 %]
@@ -218,7 +220,7 @@
 				</tr><tr>
 			[% count = 0 %]
 			[% ELSE %]
-				<td>
+				<td id="td_[% item.value %]">
 				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 				</td>
 			[% END %]
@@ -230,11 +232,12 @@
 [% END %]
 
 [% IF CARRIERSERVICE_LIST %]
+
 <div id="carrier-service-list">
 	<ul>
-		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 0, '', 'original');">RECOMMENDED</a></li>
-		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 3, 'numeric', 'desc');">TRANSIT DAYS</a></li>
-		<li><a href="#freight-charges-list" onclick="javascript:sortTableData('freight-charges-table', 7, 'numeric', 'asc');">VIEW ALL</a></li>
+		<li><a href="#freight-charges-list" onclick="sortCarrierServiceList('RECOMMENDED')">RECOMMENDED</a></li>
+		<li><a href="#freight-charges-list" onclick="sortCarrierServiceList('TRANSIT_DAYS')">TRANSIT DAYS</a></li>
+		<li><a href="#freight-charges-list" onclick="sortCarrierServiceList('VIEW_ALL')">VIEW ALL</a></li>
 	</ul>
 
 	<div id="freight-charges-list">
@@ -252,22 +255,58 @@
 			[% END %]
 		</tr>
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
-		<tr class="sortable" title="[% item.SHIPMENT_CHARGE_DETAILS %]">
+		<tr class="sortable" onclick="displayShipmentChargeDetails('[% item.customerserviceid %]');" style="cursor: pointer;">
 			<td>
-				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" /><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]"/><span></span></label>
+				<div style="display: none;" id="[% item.customerserviceid %]">
+					<table class="app"  style="text-align: center;">
+					<tr><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSIT DAYS</th><th>EST. DELIVERY</th></tr>
+					<tr><td>[% item.carrier %]</td><td>[% item.service %]</td><td>[% item.days %]</td><td>[% item.shipment_charge %]</td></tr>
+					</table>
+					<table class="app">
+					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
+						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b>[% scd.text %]</b></td><td style="text-align: right;"><b>[% scd.value %]</b></td>[% END %]</tr>
+					[% END %]
+					</table>
+				</div>
 			</td>
 			<td>[% item.carrier %]<input type="hidden" id="[% item.customerserviceid %]" value="[% item.carrier %]"></td>
 			<td>[% item.service %]</td>
 			[% IF IS_PREPAID %]
 			<td>[% item.days %]</td>
 			<td>[% item.delivery %]</td>
-			<td>[% item.shipment_charge %]</td>
-			<td>[% item.shipment_charge %]</td>
-			<td><green>[% item.shipment_charge %]</green></td>
+			<td style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td style="text-align: right; padding-right: 20px;"><green>[% item.shipment_charge %]</green></td>
 			[% END %]
 		</tr>
 	[% END %]
 	</table>
 	</div>
 </div>
+
+<script>
+	var originalCarrierList = $("#freight-charges-list").html();
+	function displayShipmentChargeDetails(ID)
+		{
+		var dlg = $("#" + ID).dialog({
+			modal: true,
+			width: '500px',
+			autoOpen: false,
+			draggable: false,
+			resizable: false,
+			title: "Estimated Shipment Charges",
+			buttons: {
+				Close: function() { $( this ).dialog( "close" ); }
+				}
+			});
+		dlg.dialog("open");
+		}
+	function sortCarrierServiceList(ID)
+		{
+		if (ID == 'RECOMMENDED')  $("#freight-charges-list").html(originalCarrierList);
+		if (ID == 'TRANSIT_DAYS') sortTableData('freight-charges-table', 3, 'numeric', 'desc');
+		if (ID == 'VIEW_ALL')     sortTableData('freight-charges-table', 7, 'numeric', 'desc', 3, 'numeric');
+		}
+</script>
 [% END %]

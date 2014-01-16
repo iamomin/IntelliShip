@@ -141,54 +141,48 @@
 				<tr>
 					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
-				[% IF one_page %]
 				<tr>
 					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="0.00"/><div class="default_text" id="shipmentvalue_div">0.00</div></td>
 				</tr>
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
-				[% END %]
+				<tr>
+					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+					<td class="css3-radios">
+						[% FOREACH item IN deliverymethod_loop %]
+						<label>
+						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
+						<span><label for="[% item.value %]">[% item.name %]</label></span>
+						</label>
+						[% END %]
+					</td>
+				</tr>
 				[% IF PONUMBER %]
 				<tr>
 					<td><label for="ponumber" class="float_right">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
 				</tr>
-				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF EXTID %]
 				<tr>
 					<td><label for="extid" class="float_right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"/></td>
 				</tr>
-				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF CUSTREF2 %]
 				<tr>
 					<td><label for="custref2" class="float_right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"/></td>
 				</tr>
-				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF CUSTREF3 %]
 				<tr>
 					<td><label for="custref3" class="float_right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
 				</tr>
-				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF AMDELIVERY %]
 				<tr>
 					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
 					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
 				</tr>
-				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				[% END %]
-				[% UNLESS one_page %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 			</table>
 			</div33>
@@ -244,6 +238,7 @@ $("#tozip").change(function() {
 	});
 
 $("#dateneeded").change(function() {
+	resetCSList();
 	check_due_date();
 	});
 

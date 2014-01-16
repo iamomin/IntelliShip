@@ -124,8 +124,8 @@ sub get_customer_contact
 
 	$contactUser = $customerUser unless $contactUser;
 
-	#$c->log->debug("Customer user: " . $customerUser);
-	#$c->log->debug("Contact  user: " . $contactUser) if $contactUser;
+	$c->log->debug("Customer user: " . $customerUser);
+	$c->log->debug("Contact  user: " . $contactUser) if $contactUser;
 
 	my $contact_search = { username => $contactUser };
 	$contact_search->{password} = $password unless $self->token;
@@ -135,13 +135,14 @@ sub get_customer_contact
 	return unless @contactArr;
 	my $Contact = $contactArr[0] if @contactArr;
 
-	#$c->log->debug($Contact ? "Contact customerid: " . $Contact->customerid : Dumper $contact_search);
+	$c->log->debug($Contact ? "Contact customerid: " . $Contact->customerid : Dumper $contact_search);
+	$c->log->debug($Contact ? "Contact contactid: " . $Contact->contactid : "no contact found");
 
 	my @customerArr = $c->model('MyDBI::Customer')->search({ customerid => $Contact->customerid, username => $customerUser });
 	return unless @customerArr;
 	my $Customer = $customerArr[0] if @customerArr;
 
-	#$c->log->debug("Customer customerid: " . $Customer->customerid);
+	$c->log->debug("Customer customerid: " . $Customer->customerid);
 
 	return ($Customer, $Contact);
 	}

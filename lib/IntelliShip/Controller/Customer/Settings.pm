@@ -36,19 +36,9 @@ sub index :Path :Args(0) {
 
 	## Display settings
 	my $settings = [{ name => 'Change Password', url => '/customer/settings/changepassword' }];
-	if ($Contact->is_superuser)
-		{
-		push (@$settings, { name => 'Company Management', url => '#'});
-		}
-	else
-		{
-		push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'});
-		}
-
-	if ($Customer->has_extid_data)
-		{
-		push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'})
-		}
+	push (@$settings, { name => 'Company Management', url => '#'}) if $Contact->is_superuser;
+	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'});
+	push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data;
 
 	$c->stash->{settings_loop} = $settings;
 	$c->stash(template => "templates/customer/settings.tt");

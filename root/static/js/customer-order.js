@@ -348,6 +348,7 @@ function populateSpecialServiceList() {
 			modal: true,
 			width: '800px',
 			buttons: {
+			/*
 				Save: function() {
 					//$("#special-requirements > .ui-button-text").text("Please Wait...");
 					var params = $("#frm_SC").serialize();
@@ -366,7 +367,18 @@ function populateSpecialServiceList() {
 						if (JSON_data.UPDATED == 1) $("#special-requirements").dialog( "close" );
 						});
 					},
-				Cancel: function() {
+				*/
+				Add: function() {
+					$('#special-requirements input:checkbox:checked').each(function(){
+						//addCheckBox('selected-special-requirements', this.id, $(this).val(), $(this).first().next('label').text());
+						$('#selected-special-requirements').append($("#td_" + this.id).html());
+						$('#selected-special-requirements').slideDown(1000);
+						$("#td_" + this.id).empty();
+						$("#" + this.id).attr("checked", true);
+						resetCSList();
+						});
+					},
+				Close: function() {
 					$( this ).dialog( "close" );
 					}
 				}
@@ -531,7 +543,6 @@ function get_customer_service_list(params)
 		$("#carrier-service-list").tabs();
 		$("#route").attr("disabled",false);
 		$("#route").val(origVal);
-		setToolTip();
 		has_FC = true;
 
 		$("#service-level-summary").slideDown(1000);
@@ -543,31 +554,46 @@ function resetCSList()
 	if (has_FC) $("#service-level-summary").slideUp(1000);
 	}
 
-var originalRows=null;
-function sortTableData(table_ID, column, col_TYPE, order_BY)
+function sortTableData(table_ID, column_1, col_TYPE_1, order_BY_1, column_2, col_TYPE_2, order_BY_2)
 	{
-	var rows;
-	alert(order_BY);
-	if (order_BY == 'original')
-		{
-		alert(order_BY + originalRows);
-		rows = originalRows;
-		}
-	else
-		{
-		rows = $('#'+table_ID+' tbody  tr.sortable').get();
-		if (originalRows == null) originalRows = rows;
-		rows.sort(function(a, b) {
-			var A = $(a).children('td').eq(column).text().toUpperCase();
-			var B = $(b).children('td').eq(column).text().toUpperCase();
-			//alert("a: |" + A + "|, b: |" + B + "|");
-			return (col_TYPE == 'numeric' && order_BY == 'desc' ? (+A - +B) : (+B - +A));
-			return (col_TYPE != 'numeric' && order_BY == 'desc' ? (A > B) : (A < B));
-			});
-		}
+	var rows = $('#'+table_ID+' tbody  tr.sortable').get();
+
+	rows.sort(function(a, b) {
+		var A = $(a).children('td').eq(column_1).text().toUpperCase();
+		var B = $(b).children('td').eq(column_1).text().toUpperCase();
+		//alert("a: |" + A + "|, b: |" + B + "|");
+
+		var second_check_required = (column_2 != undefined) && (col_TYPE_1 == 'numeric' ? (+A == +B) : (A == B));
+
+		if (second_check_required)
+			{
+			//alert('SECOND CHECK REQUIRED');
+			var C = $(a).children('td').eq(column_2).text().toUpperCase();
+			var D = $(b).children('td').eq(column_2).text().toUpperCase();
+
+			return (order_BY_2 == 'desc' ? compareValues(col_TYPE_2, C, D) : !compareValues(col_TYPE_2, C, D));
+			}
+		else
+			{
+			return (order_BY_1 == 'desc' ? compareValues(col_TYPE_1, A, B) : !compareValues(col_TYPE_1, A, B));
+			}
+		});
+
 	$.each(rows, function(index, row) {
 		$('#'+table_ID).children('tbody').append(row);
 		});
+	}
+
+function compareValues(type, Val_1, Val_2)
+	{
+	return (type == 'numeric' ? (+Val_1 > +Val_2) : (Val_1 > Val_2));
+	}
+
+function addCheckBox(container_ID, control_ID, control_Value, control_Label)
+	{
+	var container = $("#" + container_ID);
+	$('<input />', { type: 'checkbox', id: control_ID, name: control_ID, value: control_Value }).appendTo(container);
+	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
 function populate_ship_to_address(addressid)

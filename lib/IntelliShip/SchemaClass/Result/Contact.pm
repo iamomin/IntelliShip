@@ -191,7 +191,7 @@ __PACKAGE__->set_primary_key("contactid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:goqKXBZlzSALbGBy6A4Scw
 
-__PACKAGE__->has_one(
+__PACKAGE__->belongs_to(
 	customer =>
 		'IntelliShip::SchemaClass::Result::Customer',
 		'customerid'
