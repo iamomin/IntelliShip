@@ -164,16 +164,19 @@
 [% END %]
 
 [% IF THIRD_PARTY_DELIVERY %]
-	<tr class="tp">
+	<form id="frm_TP">
+	<p class="validateTips"></p>
+	<table>
+	<tr>
 		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="text" name="tpcompanyname" id="tpcompanyname"/></td>
 	</tr>
-	<tr class="tp">
+	<tr>
 		<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="text" name="tpaddress1" id="tpaddress1"/></td>
 	</tr>
-	<tr class="tp">
+	<tr>
 		<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="text" name="tpaddress2" id="tpaddress2"/></td>
 	</tr>
-	<tr class="tp">
+	<tr>
 		<td><label  class="float_right">Billing&nbsp;<label for="tpcity">City</label>,&nbsp;<label for="tpstate">State</label>,&nbsp;<label for="tpzip">Zip</label>:</label></td>
 		<td>
 		<input type="text" name="tpcity" id="tpcity" size="6"/>
@@ -187,7 +190,7 @@
 		<input type="text" name="tpzip" id="tpzip" size="2"/>
 		</td>
 	</tr>
-	<tr class="tp">
+	<tr>
 		<td><label for="tpcountry" class="float_right">Billing Country:</label></td>
 		<td>
 		<label>
@@ -199,9 +202,11 @@
 		</label>
 		</td>
 	</tr>
-	<tr class="tp">
+	<tr>
 		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account"/></td>
 	</tr>
+	</table>
+	</form>
 [% END %]
 
 [% IF SPECIAL_SERVICE %]
@@ -255,7 +260,7 @@
 			[% END %]
 		</tr>
 	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
-		<tr class="sortable" onclick="displayShipmentChargeDetails('[% item.customerserviceid %]');" style="cursor: pointer;">
+		<tr class="sortable">
 			<td>
 				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]"/><span></span></label>
 				<div style="display: none;" id="[% item.customerserviceid %]">
@@ -277,7 +282,7 @@
 			<td>[% item.delivery %]</td>
 			<td style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
 			<td style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
-			<td style="text-align: right; padding-right: 20px;"><green>[% item.shipment_charge %]</green></td>
+			<td style="text-align: right; padding-right: 20px;"><a onclick="displayShipmentChargeDetails('[% item.customerserviceid %]');"><green>[% item.shipment_charge %]</green></a></td>
 			[% END %]
 		</tr>
 	[% END %]

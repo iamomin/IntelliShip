@@ -176,8 +176,6 @@ sub get_carrrier_service_rate_list
 	my $CO = shift;
 	my $Contact = shift;
 	my $Customer = shift;
-	my $is_route = shift;
-	my $freightcharges = shift;
 
 	my $request = {};
 	$request->{'action'} = 'GetCSList';
@@ -211,34 +209,27 @@ sub get_carrrier_service_rate_list
 	$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 
 	$request->{'hasrates'} = $Customer->hasrates;
-	$request->{'autocsselect'} = 1 if $Customer->autocsselect; ## NOT SURE
+	$request->{'autocsselect'} = $Customer->autocsselect;
 	$request->{'allowraterecalc'} = 1;
 	$request->{'manroutingctrl'} = $Customer->get_contact_data_value('manroutingctrl');
 	$request->{'clientid'} = $Customer->get_contact_data_value('clientid');
 
 	###########
-	$request->{'required_assessorials'} = "";
-	$request->{'autocsselect'} = 0;
 	$request->{'productparadigm'} = undef;
 	##########
 
 	$self->populate_package_detail_section($CO,$request);
 
 	$request->{'quantityxweight'} = $CO->quantityxweight ? 1 : 0;
-	#$request->{'productparadigm'} = $CO->productparadigm ## NOT SURE
-
-	# TODO: Implement route support
-	$request->{'route'} = $is_route;
 
 	# Inbound and dropship flags
 	$request->{'isinbound'} = (defined($CO->isinbound) and $CO->isinbound == 1) ? 1 : 0;
 	$request->{'isdropship'} = (defined($CO->isdropship) and $CO->isdropship == 1) ? 1 : 0;
 
 	# Collect and thirdparty flags
-	$request->{'collect'} = 0;
-	$request->{'collect'} = 1 if ($freightcharges == 1);
-	$request->{'thirdparty'} = 0;
-	$request->{'thirdparty'} = 1 if ($freightcharges == 2);;
+	$request->{'route'} = ($CO->freightcharges == 0);
+	$request->{'collect'} = ($CO->freightcharges == 1);
+	$request->{'thirdparty'} = ($CO->freightcharges == 2);
 
 	# Flag for sorting CS list in cost order - currently used for 'route only' login level
 	$request->{'sortcslist'} = $Contact->login_level == 20 ? 1 : 0;
@@ -263,7 +254,7 @@ sub get_carrrier_service_rate_list
 		}
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
-	#$self->context->log->debug("request :". Dumper($request));
+	$self->context->log->debug("API REQUEST: ". Dumper($request));
 
 	my $response = $self->APIRequest($request);
 

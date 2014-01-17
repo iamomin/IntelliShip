@@ -90,7 +90,13 @@ sub setup_address :Private
 	$c->stash->{customerlist_loop} = $self->get_select_list('CUSTOMER');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
-	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') if $c->stash->{one_page};
+
+	if ($c->stash->{one_page})
+		{
+		$c->stash->{deliverymethod} = "prepaid";
+		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') ;
+		}
+
 	$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY
@@ -137,6 +143,7 @@ sub setup_shipment_information :Private
 
 	unless ($c->stash->{one_page})
 		{
+		$c->stash->{deliverymethod} = "prepaid";
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 		}
 
@@ -162,11 +169,11 @@ sub setup_carrier_service :Private
 
 	$self->populate_order;
 
+	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash(template => "templates/customer/order-carrier-service.tt");
 	}
 
@@ -367,6 +374,48 @@ sub save_address :Private
 	$CO->update if $update_co;
 	}
 
+sub save_third_party_details
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $params = $c->req->params;
+	my $CO = $self->get_order;
+	my $Customer = $CO->customer;
+
+	return unless $params->{tpaddress1};
+
+	$c->log->debug("SAVE_THIRD_PARTY_INFO, account number: " . $params->{account});
+
+	my $Thirdpartyacct;
+	unless ($Thirdpartyacct = $Customer->third_party_account($params->{account}))
+		{
+		$Thirdpartyacct = $c->model('MyDBI::Thirdpartyacct')->new({});
+		}
+
+	$Thirdpartyacct->tpcompanyname($params->{tpcompanyname}) if $params->{tpcompanyname};
+	$Thirdpartyacct->tpaddress1($params->{tpaddress1}) if $params->{tpaddress1};
+	$Thirdpartyacct->tpaddress2($params->{tpaddress2}) if $params->{tpaddress2};
+	$Thirdpartyacct->tpcity($params->{tpcity}) if $params->{tpcity};
+	$Thirdpartyacct->tpstate($params->{tpstate}) if $params->{tpstate};
+	$Thirdpartyacct->tpzip($params->{tpzip}) if $params->{tpzip};
+	$Thirdpartyacct->tpcountry($params->{tpcountry}) if $params->{tpcountry};
+	$Thirdpartyacct->customerid($Customer->customerid);
+	$Thirdpartyacct->tpacctnumber($params->{account}) if $params->{account};
+
+	if ($Thirdpartyacct->thirdpartyacctid)
+		{
+		$Thirdpartyacct->update;
+		$c->log->debug("Existing third party info found, thirdpartyacctid: " . $Thirdpartyacct->thirdpartyacctid);
+		}
+	else
+		{
+		$Thirdpartyacct->thirdpartyacctid($self->get_token_id);
+		$Thirdpartyacct->insert;
+		$c->log->debug("Third party info not found, creating new, thirdpartyacctid: " . $Thirdpartyacct->thirdpartyacctid);
+		}
+	}
+
 sub get_row_id :Private
 	{
 	my $self = shift;
@@ -450,7 +499,7 @@ sub save_package_product_details :Private
 		$PackProData->{description} = $params->{'description_' . $PackageIndex} if $params->{'description_' . $PackageIndex};
 		$PackProData->{nmfc} = $params->{'nmfc_' . $PackageIndex} if $params->{'nmfc_' . $PackageIndex};
 
-		$c->log->debug("PackProData: " . Dumper $PackProData);
+		#$c->log->debug("PackProData: " . Dumper $PackProData);
 
 		my $PackProDataObj = $c->model("MyDBI::Packprodata")->new($PackProData);
 		$PackProDataObj->packprodataid($self->get_token_id);
@@ -585,7 +634,7 @@ sub get_order :Private
 		return $self->CO;
 		}
 
-	$c->log->debug("params->{'coid'}: " . $params->{'coid'}) if $params->{'coid'};
+	#$c->log->debug("params->{'coid'}: " . $params->{'coid'}) if $params->{'coid'};
 	if ($params->{'coid'})
 		{
 		my $CO = $c->model('MyDBI::Co')->find({ coid => $params->{'coid'} });

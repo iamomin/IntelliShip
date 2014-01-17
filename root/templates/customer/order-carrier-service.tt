@@ -119,6 +119,10 @@
 	<div id="intlCommoditySec"></div>
 [% END %]
 
+	<div id="selected-special-requirements" style="display: none;" class="css3-checkboxes">
+		<h2>Special Services Requested</h2>
+	</div>
+
 	<div style="clear: both;">&nbsp;</div>
 
 <!--
@@ -172,7 +176,6 @@
 	<div class="float_left">
 		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
 		<div id="special-requirements"></div>
-		<div id="selected-special-requirements"></div>
 	</div>
 	<div class="float_right">
 		<table><tr>
@@ -224,14 +227,9 @@
 
 [% END %]
 
-	$("input[name='deliverymethod']:radio").change(function () {
-		checkCarrierServiceSection();
-		});
-
 [% UNLESS one_page %]
 	$(document).ready(function(){
 
-		checkCarrierServiceSection();
 		$('#carrier-service-list').tabs();
 
 		[% IF tooltips %]

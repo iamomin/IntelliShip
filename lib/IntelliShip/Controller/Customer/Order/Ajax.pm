@@ -53,9 +53,13 @@ sub get_HTML :Private
 		{
 		$self->get_special_service_list;
 		}
-	elsif ($c->req->param('action') eq 'get_customer_service_list')
+	elsif ($c->req->param('action') eq 'get_carrier_service_list')
 		{
 		$self->get_carrier_service_list;
+		}
+	elsif ($c->req->param('action') eq 'third_party_delivery')
+		{
+		$self->get_third_party_delivery;
 		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt");
@@ -107,16 +111,9 @@ sub get_carrier_service_list
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	my $is_route = $params->{'route'} || 0;
-
-	my $freightcharges = $CO->freightcharges;
-	#$freightcharges = 1 if ($params->{'deliverymethod'} eq 'collect');
-	#$freightcharges = 2 if ($params->{'deliverymethod'} eq '3rdparty');
-	#$self->context->log->debug("freightcharges :". $freightcharges);
-
 	my $APIRequest = IntelliShip::Arrs::API->new;
 	$APIRequest->context($c);
-	my $carrier_Details = $APIRequest->get_carrrier_service_rate_list($CO, $Contact, $Customer, $is_route, $freightcharges);
+	my $carrier_Details = $APIRequest->get_carrrier_service_rate_list($CO, $Contact, $Customer);
 
 	my ($CS_list_1, $CS_list_2) = ([], []);
 	foreach my $customerserviceid (keys %$carrier_Details)
@@ -153,7 +150,7 @@ sub get_carrier_service_list
 						service => $service,
 						};
 
-		if ($is_route)
+		if ($CO->freightcharges == 0) # PREPAID
 			{
 			$c->stash->{IS_PREPAID} = 1;
 			$detail_hash->{'delivery'} = $estimated_date;
@@ -206,6 +203,16 @@ sub get_carrier_service_list
 
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@SortedList, @$CS_list_2];
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
+	}
+
+sub get_third_party_delivery
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
+	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
+	$c->stash->{THIRD_PARTY_DELIVERY} = 1;
 	}
 
 sub get_estimated_quantity_and_weight
@@ -342,6 +349,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->update_special_services;
 		}
+	elsif ($c->req->param('action') eq 'save_third_party_info')
+		{
+		$dataHash = $self->save_third_party_info;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -451,9 +462,7 @@ sub set_third_party_delivery
 	my $self = shift;
 	my $c = $self->context;
 
-	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
-	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
-	$c->stash->{THIRD_PARTY_DELIVERY} = 1;
+	$self->get_third_party_delivery;
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	$c->stash->{THIRD_PARTY_DELIVERY} = 0;
 
@@ -475,6 +484,13 @@ sub update_special_services
 	{
 	my $self = shift;
 	$self->save_special_services;
+	return { UPDATED => 1};
+	}
+
+sub save_third_party_info
+	{
+	my $self = shift;
+	$self->save_third_party_details;
 	return { UPDATED => 1};
 	}
 

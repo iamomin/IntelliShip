@@ -44,7 +44,7 @@
 	<div class="equal">
 		<div class="row">
 			<div31 [% UNLESS one_page %]style="width: 40%"[% END %]>
-			<table class="app" style="min-height: 280px;">
+			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
 					<td><label for="fromname" class="float_right">Company:</label></td><td><b>[% customer.customername %]</b></td>
@@ -78,7 +78,7 @@
 			</div31>
 
 			<[% one_page ? 'div32' : 'div33 style="width: 40%"' %]>
-			<table class="app" style="min-height: 280px;">
+			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
 					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
@@ -130,7 +130,7 @@
 			</[% one_page ? 'div32' : 'div33' %]>
 [% IF one_page %]
 			<div33>
-			<table class="app" style="min-height: 280px;">
+			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
 					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" style="margin-right: 3px;" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
@@ -156,6 +156,7 @@
 						<span><label for="[% item.value %]">[% item.name %]</label></span>
 						</label>
 						[% END %]
+						<div id="third-party-details"></div>
 					</td>
 				</tr>
 				[% IF PONUMBER %]
@@ -167,22 +168,30 @@
 				<tr>
 					<td><label for="extid" class="float_right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"/></td>
 				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF CUSTREF2 %]
 				<tr>
 					<td><label for="custref2" class="float_right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"/></td>
 				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF CUSTREF3 %]
 				<tr>
 					<td><label for="custref3" class="float_right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
 				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF AMDELIVERY %]
 				<tr>
 					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
 					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
 				</tr>
+				[% ELSE %]
+				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 			</table>
 			</div33>
@@ -241,6 +250,8 @@ $("#dateneeded").change(function() {
 	resetCSList();
 	check_due_date();
 	});
+
+$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
 
 [% UNLESS one_page %]
 [% FOREACH item IN requiredfield_list %]

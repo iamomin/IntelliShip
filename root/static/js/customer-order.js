@@ -384,10 +384,10 @@ function populateSpecialServiceList() {
 				}
 		});
 
-	send_ajax_request('special-requirements', 'HTML', 'order', 'get_special_service_list', '', function (){
+	var params = 'coid=' + $("#coid").val();
+	send_ajax_request('special-requirements', 'HTML', 'order', 'get_special_service_list', params, function (){
 		$( "#special-requirements" ).dialog( "open" );
 		});
-
 	}
 
 function checkInternationalSection() {
@@ -500,10 +500,10 @@ function update_package_product_details(event, ui)
 	}
 
 var has_TP=false;
-function checkCarrierServiceSection()
+function checkDeliveryMethodSection()
 	{
 	resetCSList();
-
+/*
 	if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
 		{
 		if(has_TP) {
@@ -520,6 +520,48 @@ function checkCarrierServiceSection()
 			$(".tp").slideUp(1000);
 			}
 		}
+*/
+	if ($('input:radio[name=deliverymethod]:checked').val() == "3rdparty")
+		{
+		$("#third-party-details").dialog({
+			show: { effect: "blind", duration: 1000 },
+			hide: { effect: "explode", duration: 1000 },
+			title: "Third Party Information",
+			autoOpen: false,
+			modal: true,
+			width: '500px',
+			buttons: {
+				Save: function() {
+					if (!validateForm({
+							tpcompanyname : { minlength: 2, description: 'Company name missing' },
+							tpaddress1    : { minlength: 2, description: 'Address 1 missing' },
+							tpcity        : { minlength: 2, description: 'City missing' },
+							tpstate       : { minlength: 2, description: 'State missing' },
+							tpzip         : { minlength: 2, description: 'Zip code missing' },
+							tpcountry     : { minlength: 2, description: 'Country missing' },
+							account       : { minlength: 2, description: 'Account info missing' },
+							})
+						)
+						{
+						return;
+						}
+
+					var params = 'coid=' + $("#coid").val() + '&' + $("#frm_TP").serialize();
+					//alert("PARAMS: " + params);
+
+					send_ajax_request('', 'JSON', 'order', 'save_third_party_info', params, function () {
+						if (JSON_data.UPDATED == 1) $("#third-party-details").dialog( "close" );
+						});
+					},
+				Close: function() {
+					$( this ).dialog( "close" );
+					}
+				}
+		});
+		send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', "", function () {
+			$("#third-party-details").dialog( "open" );
+			});
+		}
 	}
 
 var has_FC=false;
@@ -527,19 +569,13 @@ function get_customer_service_list(params)
 	{
 	$("#service-level-summary").slideUp(1000);
 
-	var query_param = '&' + params;
-	if($('input:radio[name=deliverymethod]:checked').val() == "prepaid") 
-		{
-		query_param = query_param + '&route=1';
-		}
-
 	var origVal = $("#route").val();
 	$("#route").attr("disabled",true);
 	$("#route").val("Please Wait...");
 
 	//$('#carrier-service-list').tabs('destroy').tabs();
 
-	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_customer_service_list', query_param, function (){
+	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function (){
 		$("#carrier-service-list").tabs();
 		$("#route").attr("disabled",false);
 		$("#route").val(origVal);

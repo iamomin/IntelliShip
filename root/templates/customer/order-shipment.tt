@@ -175,6 +175,7 @@
 		[% ELSE %]
 			<li id="new_package_1" class="ui-state-package ui-state-fixed">
 				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+				<input  type="hidden" name="type_1" id="type_1" value="package"/>
 				<table>
 				<tr>
 					<td style="width: 05%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
@@ -203,7 +204,7 @@
 	[% END %]
 [% END %]
 
-	<div id="selected-special-requirements" style="display: none;">
+	<div id="selected-special-requirements" style="display: none;" class="css3-checkboxes">
 		<h2>Special Services Requested</h2>
 	</div>
 
@@ -245,6 +246,8 @@
 	$("#dateneeded").change(function() {
 		check_due_date();
 		});
+
+	$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
 [% END %]
 
 	$("#btn_address").click(function() {

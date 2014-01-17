@@ -362,6 +362,7 @@ label {
 .row div31 {display: table-cell;padding-right: 10px;vertical-align: top}
 .row div32 {display: table-cell;padding: 0 10px;vertical-align: top}
 .row div33 {display: table-cell;padding-left: 10px;vertical-align: top}
+.row table {min-height: 280px}
 
 table {
     margin: 0;
@@ -470,14 +471,12 @@ table.summary-app a:hover {
 
 table.app {
     width: 100%;
-    padding: 10px;
     margin: 10px 0;
     background: #F5F5F5;
     border: solid 1px #ccc;
 }
 
 table.app caption {
-    width: auto;
     color: #FFF;
     padding: 10px;
     font-weight: bold;

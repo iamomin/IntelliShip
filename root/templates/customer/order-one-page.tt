@@ -78,7 +78,6 @@
 
 	$(document).ready(function(){
 		checkInternationalSection();
-		checkCarrierServiceSection();
 		$('#carrier-service-list').tabs();
 		});
 
