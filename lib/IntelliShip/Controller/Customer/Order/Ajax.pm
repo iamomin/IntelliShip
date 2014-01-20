@@ -200,8 +200,10 @@ sub get_carrier_service_list
 		}
 
 	my @SortedList = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
+	my $final_CS_list = [@SortedList, @$CS_list_2];
+	$c->log->debug("Total CarrierS: " . @$final_CS_list);
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@SortedList, @$CS_list_2];
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $final_CS_list;
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	}
 
@@ -209,6 +211,18 @@ sub get_third_party_delivery
 	{
 	my $self = shift;
 	my $c = $self->context;
+
+	my @thirdpartyaccts = $self->customer->thirdpartyaccts;
+	if (@thirdpartyaccts == 1)
+		{
+		$c->stash($thirdpartyaccts[0]->{'_column_data'});
+		}
+	else
+		{
+		my $tp_list = [];
+		push (@$tp_list, { tpcompanyname => $_->tpcompanyname, tpdetails => $_->tpaddress1.'|'.$_->tpaddress2.'|'.$_->tpcity.'|'.$_->tpstate.'|'.$_->tpzip.'|'.$_->tpcountry.'|'.$_->tpacctnumber }) foreach @thirdpartyaccts;
+		$c->stash->{thirdpartyaccts_loop} = $tp_list;
+		}
 
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');

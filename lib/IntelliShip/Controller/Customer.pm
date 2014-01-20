@@ -38,10 +38,10 @@ Catalyst Controller.
 =cut
 
 sub index :Path :Args(0) {
-    my ( $self, $c ) = @_;
+	my ( $self, $c ) = @_;
 
 	#$c->log->debug('In ' . __PACKAGE__ . ', index');
-    #$c->response->body('Matched IntelliShip::Controller::Customer in Customer.');
+	#$c->response->body('Matched IntelliShip::Controller::Customer in Customer.');
 	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
@@ -118,7 +118,7 @@ sub get_customer_contact
 	my $c = $self->context;
 
 	$username = $self->token->active_username if $self->token;
-	#$c->log->debug("Authenticated user: " . $username);
+	#$c->log->debug("Authenticate User: " . $username);
 
 	my ($customerUser, $contactUser) = split(/\//,$username);
 
@@ -736,7 +736,7 @@ sub set_navigation_rules
 	my $page = shift;
 
 	my $c = $self->context;
-    my $Contact = $self->contact;
+	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 	my $login_level = $Customer->login_level;
 
@@ -745,10 +745,10 @@ sub set_navigation_rules
 		{
 		$navRules->{DISPLAY_SHIPMENT_MAINTENANCE} = 1;
 		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->uploadorders;
-		$navRules->{DISPLAY_SHIP_PACKAGE} = $Contact->get_contact_data_value('disallowshippackages') || 0;
+		$navRules->{DISPLAY_SHIP_PACKAGE} = !$Contact->get_contact_data_value('disallowshippackages') || 0;
 		}
 
-   unless ($Contact->is_restricted)
+	unless ($Contact->is_restricted)
 		{
 		$navRules->{DISPLAY_QUICKSHIP} = ($Customer->quickship and !$Contact->get_contact_data_value('myorders'));
 		$navRules->{DISPLAY_NEW_ORDER} = (!$Contact->get_contact_data_value('myorders') and !$Contact->get_contact_data_value('disallowneworder'));
@@ -757,8 +757,8 @@ sub set_navigation_rules
 	$navRules->{DISPLAY_MYORDERS} = $Contact->get_contact_data_value('myorders');
 	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
 
-	#$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
-	$c->stash->{$_} = 1 foreach keys %$navRules;
+	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
+	#$c->stash->{$_} = 1 foreach keys %$navRules;
 	#$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
 	}
 

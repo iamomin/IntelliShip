@@ -243,13 +243,20 @@ sub get_contact_data_value
 	my $data_type_name = shift;
 	my $data_type_id = shift;
 
-	my $WHERE = { ownertypeid => ['1','2'], datatypename => $data_type_name };
+	my $WHERE = { ownertypeid => '2', datatypename => $data_type_name };
 	$WHERE->{datatypeid} = $data_type_id if $data_type_id;
 
 	my @custcondata_objs = $self->customer_contact_data($WHERE, { order_by => 'ownertypeid desc' });
 
 	my $contact_data_value;
-	$contact_data_value = $_->value and last foreach @custcondata_objs;
+	if (@custcondata_objs)
+		{
+		$contact_data_value = $_->value and last foreach @custcondata_objs;
+		}
+	else
+		{
+		$contact_data_value = $self->customer->get_contact_data_value($data_type_name);
+		}
 
 	return $contact_data_value;
 	}

@@ -172,6 +172,16 @@ sub setup_carrier_service :Private
 	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
+	my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+	$CA->customer($self->customer);
+	$CA->contact($self->contact);
+	$CA->context($c);
+
+	$CA->get_carrier_service_list;
+
+	$c->stash->{SERVICE_LEVEL_SUMMARY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	#$c->log->debug("SERVICE_LEVEL_SUMMARY, HTML: " . $c->stash->{SERVICE_LEVEL_SUMMARY});
+
 	$c->stash->{tooltips} = $self->get_tooltips;
 
 	$c->stash(template => "templates/customer/order-carrier-service.tt");
@@ -385,10 +395,10 @@ sub save_third_party_details
 
 	return unless $params->{tpaddress1};
 
-	$c->log->debug("SAVE_THIRD_PARTY_INFO, account number: " . $params->{account});
+	$c->log->debug("SAVE_THIRD_PARTY_INFO, account number: " . $params->{tpacctnumber});
 
 	my $Thirdpartyacct;
-	unless ($Thirdpartyacct = $Customer->third_party_account($params->{account}))
+	unless ($Thirdpartyacct = $Customer->third_party_account($params->{tpacctnumber}))
 		{
 		$Thirdpartyacct = $c->model('MyDBI::Thirdpartyacct')->new({});
 		}
@@ -401,7 +411,7 @@ sub save_third_party_details
 	$Thirdpartyacct->tpzip($params->{tpzip}) if $params->{tpzip};
 	$Thirdpartyacct->tpcountry($params->{tpcountry}) if $params->{tpcountry};
 	$Thirdpartyacct->customerid($Customer->customerid);
-	$Thirdpartyacct->tpacctnumber($params->{account}) if $params->{account};
+	$Thirdpartyacct->tpacctnumber($params->{tpacctnumber}) if $params->{tpacctnumber};
 
 	if ($Thirdpartyacct->thirdpartyacctid)
 		{
@@ -629,7 +639,7 @@ sub get_order :Private
 
 	if ($self->CO)
 		{
-		$c->log->debug("Hmm, cached CO found");
+		#$c->log->debug("Hmm, cached CO found");
 		$c->stash->{coid} = $self->CO->coid;
 		return $self->CO;
 		}
@@ -706,7 +716,7 @@ sub get_order :Private
 			}
 		else
 			{
-			$c->log->debug("_______ NO CO FOUND _______");
+			$c->log->debug("######## NO CO FOUND ########");
 			my $coData = {
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
@@ -774,16 +784,16 @@ sub populate_order :Private
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
 		$c->stash->{toAddress} = $CO->to_address;
-
-		## Shipment Information
-		$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
-		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
-		$c->stash->{description} = $CO->description;
 		}
 
 	## Package Details
 	if (!$populate or $populate eq 'shipment')
 		{
+		## Shipment Information
+		$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
+		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
+		$c->stash->{description} = $CO->description;
+
 		$c->stash->{'totalweight'} = 0;
 		$c->stash->{'totalpackages'} = 0;my $rownum_id = 0;
 		my $package_detail_section_html;
@@ -838,19 +848,23 @@ sub populate_order :Private
 	if ($populate eq 'summary')
 		{
 		my @packages = $CO->packages;
-		my $total_weight = $CO->estimatedweight or 0;
+
+		my $total_weight = $CO->estimatedweight || 0.00;
 		unless ($total_weight)
 			{
 			$total_weight += $_->weight foreach @packages;
 			}
-		my $insurance = $CO->estimatedinsurance or 0;
+
+		my $insurance = $CO->estimatedinsurance || 0.00;
 		unless ($total_weight)
 			{
 			$insurance += $_->decval foreach @packages;
 			}
+
+		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 		$c->stash->{total_packages} = @packages;
-		$c->stash->{total_weight} = $total_weight;
-		$c->stash->{insurance} = $insurance;
+		$c->stash->{total_weight} = sprintf("%.2f",$total_weight);
+		$c->stash->{insurance} = sprintf("%.2f",$insurance);
 		#$c->stash->{international} = '';
 		}
 	}
@@ -1859,7 +1873,6 @@ sub SendShipmentModifiedEmail
 	$BodyHash->{'addressstate'} = $ShipmentRef->{'addressstate'};
 	$BodyHash->{'addresszip'} = $ShipmentRef->{'addresszip'};
 	$BodyHash->{'addresscountry'} = $ShipmentRef->{'addresscountry'};
-
 	}
 
 sub set_required_fields :Private

@@ -111,10 +111,9 @@ sub end : Private {
 
 	return unless $c->stash->{template};
 
-	my @urlParts = split(/\//,$c->action);
-	my $selected_mnu = ($urlParts[-1] =~ /index/ ? $urlParts[-2] : $urlParts[-1]);
-	$c->stash->{selected_mnu} = 'mnu_' . ($selected_mnu ? $selected_mnu : 'dashboard');
 	$c->response->body($c->stash->{template});
+
+	$self->set_selected_menu($c);
 
 	my $Controller = $c->controller;
 	my $Token = $Controller->token;
@@ -135,6 +134,19 @@ sub end : Private {
 		$c->forward($c->view('Login'));
 		}
 }
+
+my $DEFAULT_MENU_SELECTED = {
+	login => 'dashboard',
+	};
+
+sub set_selected_menu :Private
+	{
+	my $self = shift;
+	my $context = shift;
+	my @urlParts = split(/\//,$context->action);
+	my $selected_mnu = ($urlParts[-1] =~ /index/ ? $urlParts[-2] : $urlParts[-1]);
+	$context->stash->{selected_mnu} = 'mnu_' . ($DEFAULT_MENU_SELECTED->{$selected_mnu} ? $DEFAULT_MENU_SELECTED->{$selected_mnu} : $selected_mnu);
+	}
 
 =head1 AUTHOR
 

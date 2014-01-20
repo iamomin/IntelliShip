@@ -58,6 +58,7 @@
 			<span><label for="[% item.value %]">[% item.name %]</label></span>
 			</label>
 			[% END %]
+			<div id="third-party-details"></div>
 		</td>
 	</tr>
 </table>

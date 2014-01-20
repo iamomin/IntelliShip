@@ -158,6 +158,7 @@
 -->
 
 	<h1>SERVICE LEVEL SUMMARY</h1>
+[% IF one_page %]
 	<div class="notice">Click on "Route" button to populate available carrier service list</div>
 
 	<table>
@@ -167,8 +168,9 @@
 		<td><input type="button" class="gray" id="route" value="Route"/></td>
 		</tr>
 	</table>
+[% END %]
 
-	<div id="service-level-summary"></div>
+	<div id="service-level-summary">[% SERVICE_LEVEL_SUMMARY %]</div>
 
 	<div style="clear: both;">&nbsp;</div>
 

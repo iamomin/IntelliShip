@@ -539,7 +539,7 @@ function checkDeliveryMethodSection()
 							tpstate       : { minlength: 2, description: 'State missing' },
 							tpzip         : { minlength: 2, description: 'Zip code missing' },
 							tpcountry     : { minlength: 2, description: 'Country missing' },
-							account       : { minlength: 2, description: 'Account info missing' },
+							tpacctnumber  : { minlength: 2, description: 'Account info missing' },
 							})
 						)
 						{
@@ -558,7 +558,9 @@ function checkDeliveryMethodSection()
 					}
 				}
 		});
-		send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', "", function () {
+
+		var params = 'coid=' + $("#coid").val();
+		send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', params, function () {
 			$("#third-party-details").dialog( "open" );
 			});
 		}

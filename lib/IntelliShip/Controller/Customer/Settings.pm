@@ -33,12 +33,23 @@ sub index :Path :Args(0) {
 
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
+	my $settings = [];
 
 	## Display settings
-	my $settings = [{ name => 'Change Password', url => '/customer/settings/changepassword' }];
-	push (@$settings, { name => 'Company Management', url => '#'}) if $Contact->is_superuser;
-	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'});
-	push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data;
+	push (@$settings, { name => 'Change Password', url => '/customer/settings/changepassword' }) if $Customer->customerid ne '8ETKCWZXZC0UY';
+	push (@$settings, { name => 'Contact Info', url => '#'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
+	push (@$settings, { name => 'Company Management', url => '/customer/settings/customermanagement'}) if $Contact->is_superuser;
+	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Customer->login_level != 25 and $Contact->get_contact_data_value('skumanager');
+	push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
+
+	if ($Customer->login_level != 25 and ($Customer->login_level == 35 or $Customer->login_level == 40))
+		{
+		push (@$settings, { name => 'My POs View', url => '#'});
+		}
+	elsif ($Contact->get_contact_data_value('myorders'))
+		{
+		push (@$settings, { name => 'My Order Numbers View', url => '#'});
+		}
 
 	$c->stash->{settings_loop} = $settings;
 	$c->stash(template => "templates/customer/settings.tt");

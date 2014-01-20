@@ -232,10 +232,10 @@ var arrCompanyAddress = [[% FOREACH item IN customerlist_loop %]"[% item.name %]
 $("#toname").autocomplete({
 	source: availableCustomers,
 	select: function( event, ui ) {
-		var SelectedComapny = ui.item.value
+		var SelectedCompany = ui.item.value
 		$.each( arrCompanyAddress, function( index, value ){
 			var availableCompany = value.split(":");
-			if (availableCompany[0] == SelectedComapny) {
+			if (availableCompany[0] == SelectedCompany) {
 				populate_ship_to_address(availableCompany[1]);
 				}
 			});

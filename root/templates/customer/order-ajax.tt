@@ -165,48 +165,89 @@
 
 [% IF THIRD_PARTY_DELIVERY %]
 	<form id="frm_TP">
-	<p class="validateTips"></p>
+	<!-- <p class="validateTips"></p> -->
 	<table>
+	[% IF thirdpartyaccts_loop %]
 	<tr>
-		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="text" name="tpcompanyname" id="tpcompanyname"/></td>
+		<td><label for="tplist" class="float_right">Existing Company List:</label></td><td><select name="tplist" id="tplist" onchange="setTpDetails(this.value);"><option value="">--- Add New ---</option>[% FOREACH item IN thirdpartyaccts_loop %]<option value="[% item.tpcompanyname %]">[% item.tpcompanyname %]</option>[% END %]</select></td>
+	</tr>
+	[% END %]
+	<tr>
+		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="broad_text" name="tpcompanyname" id="tpcompanyname"/></td>
 	</tr>
 	<tr>
-		<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="text" name="tpaddress1" id="tpaddress1"/></td>
+		<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="broad_text" name="tpaddress1" id="tpaddress1" value="[% tpaddress1 %]"/></td>
 	</tr>
 	<tr>
-		<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="text" name="tpaddress2" id="tpaddress2"/></td>
+		<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="broad_text" name="tpaddress2" id="tpaddress2" value="[% tpaddress2 %]"/></td>
 	</tr>
 	<tr>
-		<td><label  class="float_right">Billing&nbsp;<label for="tpcity">City</label>,&nbsp;<label for="tpstate">State</label>,&nbsp;<label for="tpzip">Zip</label>:</label></td>
+		<td><label class="float_right">Billing <label for="tpcity">City</label>,<label for="tpstate">State</label>,<label for="tpzip">Zip</label>:</label></td>
 		<td>
-		<input type="text" name="tpcity" id="tpcity" size="6"/>
-		<label>
+		<input type="text" name="tpcity" id="tpcity" value="[% tpcity %]" size="6"/>
 		<select name="tpstate" id="tpstate">
 			[% FOREACH item IN statelist_loop %]
-				<option value="[% item.value %]">[% item.name %]</option>
+				<option value="[% item.value %]" [% item.value == tpstate ? 'SELECTED' : ''%]>[% item.name %]</option>
 			[% END %]
 		</select>
-		</label>
-		<input type="text" name="tpzip" id="tpzip" size="2"/>
+		<input type="text" name="tpzip" id="tpzip"  value="[% tpzip %]" size="4"/>
 		</td>
 	</tr>
 	<tr>
 		<td><label for="tpcountry" class="float_right">Billing Country:</label></td>
 		<td>
-		<label>
 			<select name="tpcountry" id="tpcountry">
 				[% FOREACH item IN countrylist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]" [% item.value == tpcountry ? 'SELECTED' : ''%]>[% item.name %]</option>
 				[% END %]
 			</select>
-		</label>
 		</td>
 	</tr>
 	<tr>
-		<td><label for="account" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="text" name="account" id="account"/></td>
+		<td><label for="tpacctnumber" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="broad_text" name="tpacctnumber" id="tpacctnumber" value="[% tpacctnumber %]"/></td>
 	</tr>
 	</table>
 	</form>
+
+	[% IF thirdpartyaccts_loop %]
+	<script>
+	var tpDetails={};
+	var availableTpNames=[];
+	[% FOREACH item IN thirdpartyaccts_loop %]
+		availableTpNames.push("[% item.tpcompanyname %]");
+		tpDetails["[% item.tpcompanyname %]"]="[% item.tpdetails %]";
+	[% END %]
+
+	function setTpDetails(SelectedTP)
+		{
+		if (SelectedTP == "") {
+			$("#tpcompanyname").val('');
+			$("#tpaddress1").val('');
+			$("#tpaddress2").val('');
+			$("#tpcity").val('');
+			$("#tpstate").val('');
+			$("#tpzip").val('');
+			$("#tpcountry").val('');
+			$("#tpacctnumber").val('');
+			return;
+			}
+
+		var tpDetailStr = tpDetails[SelectedTP];
+
+		var arrTpInfo = tpDetailStr.split("|");
+
+		$("#tpcompanyname").val(SelectedTP);
+		$("#tpaddress1").val(arrTpInfo[0]);
+		$("#tpaddress2").val(arrTpInfo[1]);
+		$("#tpcity").val(arrTpInfo[2]);
+		$("#tpstate").val(arrTpInfo[3]);
+		$("#tpzip").val(arrTpInfo[4]);
+		$("#tpcountry").val(arrTpInfo[5]);
+		$("#tpacctnumber").val(arrTpInfo[6]);
+		}
+	</script>
+	[% END %]
+
 [% END %]
 
 [% IF SPECIAL_SERVICE %]

@@ -27,22 +27,23 @@ sub index :Path :Args(0)
 
 	#$c->response->body('Matched IntelliShip::Controller::Customer::Login in Customer::Login.');
 
-	$c->log->debug("********* LOG IN CUSTOMER USER *********");
-
 	$self->flush_expired_tokens;
 
-	my $params = $c->request->parameters;
-	my $Token = $self->get_token;
-
-	if ($Token)
+	if (my $Token = $self->get_token)
 		{
 		$c->log->debug('--------- TOKEN FOUND ---------');
 		$self->token($Token);
 
 		$c->log->debug('redirect to customer dashboard');
-		$c->response->redirect($c->uri_for('/customer/dashboard'));
+		return $c->response->redirect($c->uri_for('/customer/dashboard'));
 		}
-	elsif (defined $params->{'username'} and defined $params->{'password'})
+
+	$c->log->debug("********* LOG IN CUSTOMER USER *********");
+
+	$self->token(undef); ## IMP
+
+	my $params = $c->request->parameters;
+	if (defined $params->{'username'} and defined $params->{'password'})
 		{
 		my $TokenID = $self->authenticate_user($params->{'username'}, $params->{'password'});
 
@@ -60,7 +61,6 @@ sub index :Path :Args(0)
 		}
 	else
 		{
-		$self->token(undef);
 		$c->stash(template => "templates/customer/login.tt"); ## SHOW LOGIN PAGE FIRST
 		}
 
@@ -70,9 +70,9 @@ sub index :Path :Args(0)
 sub authenticate_user :Private
 	{
 	my $self = shift;
-	my $c = $self->context;
-
 	my ($Username, $Password, $BrandingID, $SSOUsername, $SSOAuth) = @_;
+
+	my $c = $self->context;
 
 	my ($Customer, $Contact ) = $self->get_customer_contact($Username,$Password);
 
@@ -83,12 +83,14 @@ sub authenticate_user :Private
 		$ContactID = $Contact->contactid;
 		$CustomerID = $Customer->customerid;
 
+		#$c->log->debug("ContactID: " . $ContactID . ", CustomerID: " . $CustomerID);
+
 		#$ActiveUser = ($Contact->firstname ? $Contact->firstname : $Contact->username);
 		$ActiveUser = $Contact->username;
 		$BrandingID = $self->get_branding_id;
 
-		$c->log->debug("ActiveUser: " . $ActiveUser);
-		$c->log->debug("BrandingID: " . $BrandingID) if $BrandingID;
+		#$c->log->debug("ActiveUser: " . $ActiveUser);
+		#$c->log->debug("BrandingID: " . $BrandingID) if $BrandingID;
 
 		$self->contact($Contact);
 		$self->customer($Customer);

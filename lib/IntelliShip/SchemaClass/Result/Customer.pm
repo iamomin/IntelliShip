@@ -617,7 +617,7 @@ __PACKAGE__->has_many(
 	);
 
 __PACKAGE__->has_many(
-	thirdpartyacct => 
+	thirdpartyaccts => 
 		'IntelliShip::SchemaClass::Result::Thirdpartyacct',
 		{ "foreign.customerid" => "self.customerid" },
 	);
@@ -646,14 +646,16 @@ sub login_level
 sub has_extid_data
 	{
 	my $self = shift;
+	my $MyDBI = shift;
+
+	return unless $MyDBI;
 
 	my $customer_id = $self->get_contact_data_value('sopid');
 	$customer_id = $self->customerid unless $customer_id;
 
-	# my $RS = $self->droplist_data->search({ field = 'extid' });
-	# my $sth = $c->model("MyDBI")->select("SELECT count(*) FROM droplistdata WHERE field = 'extid' AND customerid = '" . $customer_id . "'");
-	# my $count = $sth->fetchrow(0)->{'count'};
-	# return $count;
+
+	my $sth = $MyDBI->select("SELECT 1 FROM droplistdata WHERE field = 'extid' AND customerid = '" . $customer_id . "'");
+	return $sth->numrows;
 	}
 
 sub get_sop_id
@@ -690,11 +692,13 @@ sub third_party_account
 	my $self = shift;
 	my $accountnumber = shift;
 
-	my @thirdpartyaccts = $self->thirdpartyacct;
+	my @thirdpartyaccts = $self->thirdpartyaccts;
 	foreach my $ThirdPartyAcct (@thirdpartyaccts)
 		{
 		return $ThirdPartyAcct if uc $ThirdPartyAcct->tpacctnumber eq uc $accountnumber;
 		}
+
+	return $thirdpartyaccts[0] if @thirdpartyaccts;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

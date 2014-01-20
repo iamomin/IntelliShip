@@ -98,12 +98,12 @@
 			<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
 			[% END %]
 			<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>SHIP A PACKAGE</div></a></li>
-			[% IF DISPLAY_SHIP_PACKAGE %]
-			[% END %]
 			[% IF DISPLAY_QUICKSHIP %]
 			<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>
 			[% END %]
+			[% IF DISPLAY_SHIP_PACKAGE %]
 			<li><a id="mnu_shippackages" href="/customer/shippackages" class="sp"><div>PROCESS SHIPMENT</div></a></li>
+			[% END %]
 			[%IF DISPLAY_BATCH_SHIPPING %]
 			<li><a id="mnu_batchshipping" href="/customer/batchshipping" class="batch"><div>BATCH SHIPPING</div></a></li>
 			[% END %]
