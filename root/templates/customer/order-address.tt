@@ -100,7 +100,7 @@
 						[% END %]
 					</select>
 					</label>
-					<input type="text" name="tozip" id="tozip" size="2" value="[% toAddress.zip %]"/>
+					<input type="text" name="tozip" id="tozip" style="width: 70px;" value="[% toAddress.zip %]"/>
 					</td>
 				</tr>
 				<tr>

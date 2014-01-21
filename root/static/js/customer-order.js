@@ -594,7 +594,7 @@ function resetCSList()
 
 function sortTableData(table_ID, column_1, col_TYPE_1, order_BY_1, column_2, col_TYPE_2, order_BY_2)
 	{
-	var rows = $('#'+table_ID+' tbody  tr.sortable').get();
+	var rows = $('#'+table_ID+' tbody  tr.sc-sortable').get();
 
 	rows.sort(function(a, b) {
 		var A = $(a).children('td').eq(column_1).text().toUpperCase();

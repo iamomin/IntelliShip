@@ -174,8 +174,8 @@ sub get_carrier_service_list
 					$CostBreakDown[0] =~ s/\'// if $CostBreakDown[0];
 					$CostBreakDown[1] =~ s/\'// if $CostBreakDown[1];
 
-					$freightcharges += $CostBreakDown[0] if $CostBreakDown[0];
-					$fuelcharges += $CostBreakDown[1] if $CostBreakDown[1];
+					$freightcharges += $CostBreakDown[0] if $CostBreakDown[0] =~ /\d+/;
+					$fuelcharges += $CostBreakDown[1] if $CostBreakDown[1] =~ /\d+/;
 					}
 				}
 
@@ -199,12 +199,23 @@ sub get_carrier_service_list
 		$detail_hash->{'shipment_charge'} =~ /\d+/ ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
-	my @SortedList = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
-	my $final_CS_list = [@SortedList, @$CS_list_2];
-	$c->log->debug("Total CarrierS: " . @$final_CS_list);
+	my @sortByDays = sort { $a->{days} <=> $b->{days} || $a->{shipment_charge} <=> $b->{shipment_charge} } @$CS_list_1;
+	my @sortByCharge = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $final_CS_list;
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
+	$c->stash->{ONLY_TABLE} = 1;
+
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [$sortByDays[0]];
+	$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
+	$c->stash->{transitdayscarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByCharge, @$CS_list_2];
+	$c->stash->{viewallcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = undef;
+	$c->stash->{ONLY_TABLE} = 0;
 	}
 
 sub get_third_party_delivery

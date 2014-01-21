@@ -163,24 +163,35 @@ sub setup_carrier_service :Private
 	my $self = shift;
 	my $c = $self->context;
 
+	my $Customer = $self->customer;
+	my $Contact = $self->contact;
+
 	$c->stash->{review_order} = 1;
 	$c->stash->{populate} = 'summary';
-	$c->stash->{customer} = $self->customer;
+	$c->stash->{customer} = $Contact;
 
 	$self->populate_order;
 
 	$c->stash->{deliverymethod} = "prepaid";
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
-	my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-	$CA->customer($self->customer);
-	$CA->contact($self->contact);
-	$CA->context($c);
+	if ($Contact->is_administrator and $Customer->login_level != 10 and $Customer->login_level != 20 and $Customer->login_level != 15)
+		{
+		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
+		}
 
-	$CA->get_carrier_service_list;
+	unless ($c->stash->{one_page})
+		{
+		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+		$CA->customer($Contact);
+		$CA->contact($Contact);
+		$CA->context($c);
 
-	$c->stash->{SERVICE_LEVEL_SUMMARY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	#$c->log->debug("SERVICE_LEVEL_SUMMARY, HTML: " . $c->stash->{SERVICE_LEVEL_SUMMARY});
+		$CA->get_carrier_service_list;
+
+		$c->stash->{SERVICE_LEVEL_SUMMARY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		#$c->log->debug("SERVICE_LEVEL_SUMMARY, HTML: " . $c->stash->{SERVICE_LEVEL_SUMMARY});
+		}
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
@@ -866,6 +877,13 @@ sub populate_order :Private
 		$c->stash->{total_weight} = sprintf("%.2f",$total_weight);
 		$c->stash->{insurance} = sprintf("%.2f",$insurance);
 		#$c->stash->{international} = '';
+
+		my @special_services = $CO->assessorials;
+		my %serviceHash =  map { $_->assname => 1 } @special_services;
+		my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
+		my $selected_special_service_loop = [grep { $serviceHash{$_->{'value'}} } @$special_service_loop];
+		$c->stash->{selected_special_service_loop} = $selected_special_service_loop;
+		#$c->log->debug("selected_special_service_loop: " . Dumper $selected_special_service_loop);
 		}
 	}
 

@@ -190,7 +190,7 @@
 				<option value="[% item.value %]" [% item.value == tpstate ? 'SELECTED' : ''%]>[% item.name %]</option>
 			[% END %]
 		</select>
-		<input type="text" name="tpzip" id="tpzip"  value="[% tpzip %]" size="4"/>
+		<input type="text" name="tpzip" id="tpzip"  value="[% tpzip %]" style="width: 70px;"/>
 		</td>
 	</tr>
 	<tr>
@@ -279,15 +279,8 @@
 
 [% IF CARRIERSERVICE_LIST %]
 
-<div id="carrier-service-list">
-	<ul>
-		<li><a href="#freight-charges-list" onclick="sortCarrierServiceList('RECOMMENDED')">RECOMMENDED</a></li>
-		<li><a href="#freight-charges-list" onclick="sortCarrierServiceList('TRANSIT_DAYS')">TRANSIT DAYS</a></li>
-		<li><a href="#freight-charges-list" onclick="sortCarrierServiceList('VIEW_ALL')">VIEW ALL</a></li>
-	</ul>
-
-	<div id="freight-charges-list">
-	<table id="freight-charges-table" class="app css3-radios">
+  [% IF ONLY_TABLE %]
+	<table class="app css3-radios">
 		<tr>
 			<th>&nbsp;</th>
 			<th>CARRIER</th>
@@ -300,11 +293,11 @@
 			<th>EST. TOTAL COST</th>
 			[% END %]
 		</tr>
-	[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
-		<tr class="sortable">
+		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
+		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td>
 				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]"/><span></span></label>
-				<div style="display: none;" id="[% item.customerserviceid %]">
+				<div style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table class="app"  style="text-align: center;">
 					<tr><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSIT DAYS</th><th>EST. DELIVERY</th></tr>
 					<tr><td>[% item.carrier %]</td><td>[% item.service %]</td><td>[% item.days %]</td><td>[% item.shipment_charge %]</td></tr>
@@ -316,43 +309,78 @@
 					</table>
 				</div>
 			</td>
-			<td>[% item.carrier %]<input type="hidden" id="[% item.customerserviceid %]" value="[% item.carrier %]"></td>
-			<td>[% item.service %]</td>
+			<td class="sc-hover">[% item.carrier %]<input type="hidden" id="[% item.customerserviceid %]" value="[% item.carrier %]"></td>
+			<td class="sc-hover">[% item.service %]</td>
 			[% IF IS_PREPAID %]
-			<td>[% item.days %]</td>
-			<td>[% item.delivery %]</td>
-			<td style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
-			<td style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
-			<td style="text-align: right; padding-right: 20px;"><a onclick="displayShipmentChargeDetails('[% item.customerserviceid %]');"><green>[% item.shipment_charge %]</green></a></td>
+			<td class="sc-hover">[% item.days %]</td>
+			<td class="sc-hover">[% item.delivery %]</td>
+			<td class="sc-hover" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td class="sc-hover" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td class="sc-hover" style="text-align: right; padding-right: 20px;"><green>[% item.shipment_charge %]</green></td>
 			[% END %]
 		</tr>
-	[% END %]
+		[% END %]
 	</table>
-	</div>
-</div>
+  [% ELSE %]
 
-<script>
-	var originalCarrierList = $("#freight-charges-list").html();
-	function displayShipmentChargeDetails(ID)
-		{
-		var dlg = $("#" + ID).dialog({
-			modal: true,
-			width: '500px',
-			autoOpen: false,
-			draggable: false,
-			resizable: false,
-			title: "Estimated Shipment Charges",
-			buttons: {
-				Close: function() { $( this ).dialog( "close" ); }
-				}
-			});
-		dlg.dialog("open");
-		}
-	function sortCarrierServiceList(ID)
-		{
-		if (ID == 'RECOMMENDED')  $("#freight-charges-list").html(originalCarrierList);
-		if (ID == 'TRANSIT_DAYS') sortTableData('freight-charges-table', 3, 'numeric', 'desc');
-		if (ID == 'VIEW_ALL')     sortTableData('freight-charges-table', 7, 'numeric', 'desc', 3, 'numeric');
-		}
-</script>
+	<div id="carrier-service-list">
+		<ul>
+			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
+			<li><a href="#freight-charges-list-2">TRANSIT DAYS</a></li>
+			<li><a href="#freight-charges-list-3">VIEW ALL</a></li>
+		</ul>
+
+		<div id="freight-charges-list-1">[% recommendedcarrierlist %]</div>
+		<div id="freight-charges-list-2">[% transitdayscarrierlist %]</div>
+		<div id="freight-charges-list-3">[% viewallcarrierlist %]</div>
+	</div>
+
+	<div id="SC-DLG"></div>
+
+	<script>
+		function displayShipmentChargeDetails(ID)
+			{
+			var dlg = $("#" + ID).dialog({
+				modal: true,
+				width: '500px',
+				autoOpen: false,
+				draggable: false,
+				resizable: false,
+				title: "Estimated Shipment Charges",
+				buttons: {
+					Close: function() { $( this ).dialog( "close" ); }
+					}
+				});
+			dlg.dialog("open");
+			}
+		function sortCarrierServiceList(ID)
+			{
+			if (ID == 'RECOMMENDED')  $("#freight-charges-list").html(recommendedCarrierList);
+			if (ID == 'TRANSIT_DAYS') $("#freight-charges-list").html(transitDaysCarrierList);
+			if (ID == 'VIEW_ALL')     $("#freight-charges-list").html(viewAllCarrierList);;
+			}
+
+		var shipmentChargeDlg = $("#SC-DLG").dialog({
+				width: '500px',
+				autoOpen: false,
+				draggable: false,
+				resizable: false,
+				title: "Estimated Shipment Charges",
+				});
+
+		$(".sc-hover").mouseover(function() {
+			$("#SC-DLG").html($("#SC-" + $(this).parent('tr').attr('id')).html());
+			shipmentChargeDlg.dialog("open");
+			}).mousemove(function(event) {
+				shipmentChargeDlg.dialog("option", "position", {
+					my: "left top",
+					at: "right bottom",
+					of: event,
+					offset: "20 20"
+					});
+				}).mouseout(function() {
+					shipmentChargeDlg.dialog("close");
+					});
+	</script>
+  [% END %]
 [% END %]

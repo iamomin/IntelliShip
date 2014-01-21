@@ -273,6 +273,12 @@ sub is_superuser
 	return ($self->get_contact_data_value('superuser') or $self->customer->superuser);
 	}
 
+sub is_administrator
+	{
+	my $self = shift;
+	return ($self->get_contact_data_value('administrator') or $self->customer->administrator);
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
