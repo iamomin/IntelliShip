@@ -183,7 +183,7 @@ sub setup_carrier_service :Private
 	unless ($c->stash->{one_page})
 		{
 		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-		$CA->customer($Contact);
+		$CA->customer($Customer);
 		$CA->contact($Contact);
 		$CA->context($c);
 

@@ -34,7 +34,7 @@
 	[% END %]
 
 	<table class="center_app">
-		<tr> 
+		<tr>
 			<td colspan=2>&nbsp;</td>
 		</tr>
 		<tr>
@@ -49,11 +49,11 @@
 			<td><label class="float_right" for="newpassword2">Confirm New Password:</td>
 			<td align="left"><input type="password" class="broad_text" id="newpassword2" name="newpassword2" autocomplete="off" maxlength="50" /></td>
 		</tr>
-		<tr> 
+		<tr>
 			<td colspan=2>&nbsp;</td>
 		</tr>
 	</table>
-	<center><input type="submit" class="green" id="change_password" value="Update Password" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+	<center><input type="submit" class="green" id="change_password" value="Update Password"/><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 </form>
 
 <script>
@@ -263,7 +263,7 @@ $(document).ready(function(){
 			<tr>
 				<td>Unit of Measure:</td>
 				<td><select name="unitofmeasure" id="unitofmeasure">
-				
+
 						[% FOREACH item IN unitofmeasure_list %]
 						<option [% IF unitofmeasure == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
 						[% END %]
@@ -348,7 +348,11 @@ $(document).ready(function(){
 				<td><input type="text" name="casesperpallet" id="casesperpallet" value="[%casesperpallet%]" size="5"></td>
 			</tr>
 		</table>
-		<center><input type="submit" class="green" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+		<center>
+			<input type="submit" class="green" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />
+			&nbsp;&nbsp;
+			<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/>
+		</center>
 	</form>
 
 	<script>
@@ -547,7 +551,11 @@ $(document).ready(function(){
 						</select></td>
 				</tr>
 			</table>
-			<center><input type="submit" class="button" id="update_extid" value="[% IF droplistdataid %]Update[% ELSE %]Add[% END %]" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+			<center>
+				<input type="submit" class="button" id="update_extid" value="[% IF droplistdataid %]Update[% ELSE %]Add[% END %]"/>
+				&nbsp;&nbsp;
+				<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/>
+			</center>
 		</form>
 
 		<script>
@@ -572,5 +580,154 @@ $(document).ready(function(){
 	[% END %]
 	[% #---------------------------------------------------------- %]
 	[% # EXTID_DROP_LIST END %]
+	[% #---------------------------------------------------------- %]
+[% END %]
+
+[% IF CONTACT_INFO %]
+	[% #---------------------------------------------------------- %]
+	[% # CONTACT INFO START %]
+	[% #---------------------------------------------------------- %]
+	<h2>Contact Information</h2>
+
+	<p class="validateTips"></p>
+
+	<form id="frm_setup_contact" method="post" action="/customer/settings/contactinformation">
+		<input type="hidden" id="do" name="do" value="configure"/>
+
+		<table class="center_app">
+		<tr>
+			<td colspan="2"><b>Contact Details</b></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="firstnamedisplay">First Name:</label></td>
+			<td id="firstnamedisplay">[% contactInfo.firstname %]</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="lastname">Last Name:</label></td>
+			<td id="lastnamedisplay">[% contactInfo.lastname %]</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="department">Department:</label></td>
+			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="phonemobile">Mobile Phone:</label></td>
+			<td><input type="text" name="phonemobile" id="phonemobile" value="[% contactInfo.phonemobile %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="phonebusiness">Business Phone:</label></td>
+			<td><input type="text" name="phonebusiness" id="phonebusiness" value="[% contactInfo.phonebusiness %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="phonehome">Home Phone:</label></td>
+			<td><input type="text" class="broad_text" name="phonehome" id="phonehome" value="[% contactInfo.phonehome %]" ></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="fax">Fax:</label></td>
+			<td><input type="text" name="fax" id="fax" value="[% contactInfo.fax %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="email">E-mail:</label></td>
+			<td><input type="text" name="email" id="email" value="[% contactInfo.email %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td colspan="2"><b>Address Details</b></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="address1">Shipping Address1:</label></td>
+			<td><input type="text" name="address1" id="address1" value="[% contactAddress.address1 %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="address2">Shipping Address2:</label></td>
+			<td><input type="text" name="address2" id="address2" value="[% contactAddress.address2 %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="city">Shipping City:</label></td>
+			<td><input type="text" name="city" id="city" value="[% contactAddress.city %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="state">Shipping State:</label></td>
+			<td>
+			<label>
+				<select name="state" id="state">
+					[% FOREACH item IN statelist_loop %]
+						<option value="[% item.value %]" [% item.value == contactAddress.state ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</label>
+			</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="zip">Shipping Zip:</label></td>
+			<td><input type="text" name="zip" id="zip" value="[% contactAddress.zip %]" class="broad_text"></td>
+		</tr>
+		<tr>
+			<td><label for="country" class="float_right">Country:</label></td>
+			<td>
+			<label>
+				<select name="country" id="country">
+					[% FOREACH item IN countrylist_loop %]
+						<option value="[% item.value %]" [% item.value == contactAddress.country ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</label>
+			</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="location">Location:</label></td>
+			<td>[% location %]</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="ownerid">OwnerID:</label></td>
+			<td>[% ownerid %]</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="origdate">Orig Date:</label></td>
+			<td>[% origdate %]</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="sourcedate">Source Date:</label></td>
+			<td>[% sourcedate %]</td>
+		</tr>
+		<tr>
+			<td><label class="float_right" for="disabledate">Disable Date:</label></td>
+			<td>[% disabledate %]</td>
+		</tr>
+		</table>
+
+		<center>
+			<input type="submit" class="green" id="update_contact" value="Update"/>
+			&nbsp;&nbsp;
+			<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
+		</center>
+	</form>
+
+	<script>
+	$("#frm_setup_contact").submit(function () {
+		var requireHash = {
+			phonebusiness : { phone: true, description: "Please specify business contact" },
+			phonemobile   : { phone: true, description: "Please specify mobile contact" },
+			address1      : { minlength: 2, description: "Please specify address 1" },
+			city          : { minlength: 2, description: "Please specify city" },
+			state         : { minlength: 2, description: "Please specify state" },
+			zip           : { minlength: 5, description: "Please specify zip code" },
+			country       : { minlength: 1, description: "Please specify country" },
+			};
+
+		if (validateForm(requireHash)) {
+			$("#update_contact").val("Please Wait...");
+			$("#update_contact").attr("disabled", true);
+			return true;
+			} else {
+			return false;
+			}
+		});
+
+	$(document).ready(function(){
+		$("#update_contact").attr("disabled", false);
+		});
+	</script>
+	[% #---------------------------------------------------------- %]
+	[% # CONTACT INFO END %]
 	[% #---------------------------------------------------------- %]
 [% END %]

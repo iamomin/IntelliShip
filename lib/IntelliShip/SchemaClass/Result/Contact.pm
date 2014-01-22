@@ -197,6 +197,12 @@ __PACKAGE__->belongs_to(
 		'customerid'
 	);
 
+__PACKAGE__->belongs_to(
+	address =>
+		'IntelliShip::SchemaClass::Result::Address',
+		'addressid'
+	);
+
 __PACKAGE__->has_many(
 	restrictions =>
 		'IntelliShip::SchemaClass::Result::Restrictcontact',

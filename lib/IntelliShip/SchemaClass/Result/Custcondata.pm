@@ -104,6 +104,10 @@ __PACKAGE__->set_primary_key("custcondataid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/ZSn0Jsw15avhlKUrzs6wA
 
+# ownertypeid: [1]/[2]
+# ownerid:
+#    [1] customer.customerid
+#    [2] contact.contactid
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

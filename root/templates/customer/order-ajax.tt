@@ -376,7 +376,8 @@
 					my: "left top",
 					at: "right bottom",
 					of: event,
-					offset: "20 20"
+					offset: "20 20",
+					collision: "flipfit"
 					});
 				}).mouseout(function() {
 					shipmentChargeDlg.dialog("close");

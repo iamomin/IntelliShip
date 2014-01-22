@@ -19,7 +19,9 @@
 :root .css3-radios label *,
 :root .css3-checkboxes label *
 {
+    padding: 3px;
     cursor: pointer;
+    white-space:nowrap;
 }
 
 :root .css3-radios input[type="radio"],

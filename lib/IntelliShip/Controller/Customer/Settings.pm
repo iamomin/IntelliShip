@@ -37,10 +37,10 @@ sub index :Path :Args(0) {
 
 	## Display settings
 	push (@$settings, { name => 'Change Password', url => '/customer/settings/changepassword' }) if $Customer->customerid ne '8ETKCWZXZC0UY';
-	push (@$settings, { name => 'Contact Info', url => '#'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
+	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if 1 or $Customer->customerid eq '8ETKCWZXZC0UY';
 	push (@$settings, { name => 'Company Management', url => '/customer/settings/customermanagement'}) if $Contact->is_superuser;
 	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Customer->login_level != 25 and $Contact->get_contact_data_value('skumanager');
-	push(@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
+	push (@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
 
 	if ($Customer->login_level != 25 and ($Customer->login_level == 35 or $Customer->login_level == 40))
 		{
@@ -480,6 +480,80 @@ sub process_pagination
 	#$c->log->debug("TOTAL PAGES: " . @$batches);
 	#$c->log->debug("TOTAL PAGES: " . Dumper $batches);
 	return $batches;
+	}
+
+sub contactinformation :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $params = $c->req->params;
+	my $Contact = $self->contact;
+	my $Address = $Contact->address;
+
+	#$c->log->debug("Contact: " . Dumper $Contact->{_column_data});
+	#$c->log->debug("Address: " . Dumper $Address->{_column_data});
+
+	IntelliShip::Utils->trim_hash_ref_values($params);
+
+	if ($params->{'do'} eq 'configure')
+		{
+		my $addressData = {
+			address1    => $params->{'address1'},
+			address2    => $params->{'address2'},
+			city        => $params->{'city'},
+			state       => $params->{'state'},
+			zip         => $params->{'zip'},
+			country     => $params->{'country'},
+			};
+
+		unless ($Address)
+			{
+			my @addresses = $c->model('MyDBI::Address')->search($addressData);
+
+			$Address = (@addresses ? $addresses[0] : $c->model('MyDBI::Address')->new({}));
+
+			unless ($Address->addressid)
+				{
+				$Address->addressid($self->get_token_id);
+				$Address->insert;
+				$c->log->debug("New Address Inserted: " . $Address->addressid);
+				}
+
+			$Contact->addressid($Address->addressid);
+			}
+
+		$Address->update($addressData);
+
+		$Contact->email($params->{'email'});
+		$Contact->fax($params->{'fax'});
+		$Contact->department($params->{'department'});
+		$Contact->phonemobile($params->{'phonemobile'});
+		$Contact->phonebusiness($params->{'phonebusiness'});
+		$Contact->phonehome($params->{'phonehome'});
+		$Contact->update;
+
+		$c->stash->{MESSAGE} = 'Contact information updated successfully';
+
+		$c->detach("index",$params);
+		}
+	else
+		{
+		$c->stash->{CONTACT_INFO} = 1;
+		$c->stash->{contactInfo} = $Contact;
+		$c->stash->{contactAddress} = $Address;
+
+		$c->stash->{location}    = $Contact->get_contact_data_value('location');
+		$c->stash->{ownerid}     = $Contact->get_contact_data_value('ownerid');
+		$c->stash->{origdate}    = $Contact->get_contact_data_value('origdate');
+		$c->stash->{sourcedate}  = $Contact->get_contact_data_value('sourcedate');
+		$c->stash->{disabledate} = $Contact->get_contact_data_value('disabledate');
+
+		$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
+		$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
+
+		$c->stash(template => "templates/customer/settings.tt");
+		}
 	}
 
 =encoding utf8
