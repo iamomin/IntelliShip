@@ -23,8 +23,8 @@
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="do" name="do" value="step3"/>
 
-	<div class="equal">
-		<div class="row">
+	<div id="equal">
+		<div id="row">
 			<div class="21">
 			<table class="summary-app">
 				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
