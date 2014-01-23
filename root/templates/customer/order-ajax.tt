@@ -173,7 +173,7 @@
 	</tr>
 	[% END %]
 	<tr>
-		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="broad_text" name="tpcompanyname" id="tpcompanyname"/></td>
+		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="broad_text" name="tpcompanyname" id="tpcompanyname" value="[% tpcompanyname %]"/></td>
 	</tr>
 	<tr>
 		<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="broad_text" name="tpaddress1" id="tpaddress1" value="[% tpaddress1 %]"/></td>

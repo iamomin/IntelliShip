@@ -223,12 +223,7 @@ sub get_third_party_delivery
 	my $self = shift;
 	my $c = $self->context;
 
-	my @thirdpartyaccts = $self->customer->thirdpartyaccts;
-	if (@thirdpartyaccts == 1)
-		{
-		$c->stash($thirdpartyaccts[0]->{'_column_data'});
-		}
-	else
+	if (my @thirdpartyaccts = $self->customer->thirdpartyaccts)
 		{
 		my $tp_list = [];
 		push (@$tp_list, { tpcompanyname => $_->tpcompanyname, tpdetails => $_->tpaddress1.'|'.$_->tpaddress2.'|'.$_->tpcity.'|'.$_->tpstate.'|'.$_->tpzip.'|'.$_->tpcountry.'|'.$_->tpacctnumber }) foreach @thirdpartyaccts;
