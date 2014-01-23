@@ -427,7 +427,8 @@ sub save_third_party_details
 	my $Thirdpartyacct;
 	unless ($Thirdpartyacct = $Customer->third_party_account($params->{'tpacctnumber'}))
 		{
-		$Thirdpartyacct = $c->model("MyDBI::Thirdpartyacct")->new({ customerid => $Customer->customerid });
+		$thirdPartyAcctData->{'customerid'} = $Customer->customerid;
+		$Thirdpartyacct = $c->model("MyDBI::Thirdpartyacct")->new($thirdPartyAcctData);
 		}
 
 	if ($Thirdpartyacct->thirdpartyacctid)
@@ -438,7 +439,7 @@ sub save_third_party_details
 	else
 		{
 		$Thirdpartyacct->thirdpartyacctid($self->get_token_id);
-		$Thirdpartyacct->insert($thirdPartyAcctData);
+		$Thirdpartyacct->insert;
 		$c->log->debug("New Thirdpartyacct Inserted, ID: " . $Thirdpartyacct->thirdpartyacctid);
 		}
 	}
