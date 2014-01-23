@@ -79,6 +79,9 @@ sub complete_step3
 	{
 	my $self = shift;
 	$self->save_CO_details;
+	my $params = $self->context->req->params;
+	$params->{'coid'} = undef;
+	$self->CO(undef);
 	$self->setup_address;
 	}
 

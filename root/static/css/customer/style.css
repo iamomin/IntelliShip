@@ -353,15 +353,16 @@ label {
     -webkit-appearance: none;
 }
 */
-.equal {display: table; width: 100%}
-.row {display: table-row; width: 100%}
-.row div {display: table-cell;padding: 0 10px;vertical-align: top}
-.row div21 {display: table-cell;padding-right: 10px;vertical-align: top}
-.row div22 {display: table-cell;padding-left: 10px;vertical-align: top}
-.row div31 {display: table-cell;padding-right: 10px;vertical-align: top}
-.row div32 {display: table-cell;padding: 0 10px;vertical-align: top}
-.row div33 {display: table-cell;padding-left: 10px;vertical-align: top}
-.row table {min-height: 280px}
+
+#equal {display: table; width: 100%}
+#row {display: table-row; width: 100%}
+#row table {min-height: 280px}
+#row div {display: table-cell;padding: 0 10px;vertical-align: top}
+#row div.21 {display: table-cell;padding-right: 10px;vertical-align: top}
+#row div.22 {display: table-cell;padding-left: 10px;vertical-align: top}
+#row div.31 {display: table-cell;padding-right: 10px;vertical-align: top}
+#row div.32 {display: table-cell;padding: 0 10px;vertical-align: top}
+#row div.33 {display: table-cell;padding-left: 10px;vertical-align: top}
 
 table {
     margin: 0;

@@ -36,6 +36,7 @@ sub index :Path :Args(0) {
 	my $settings = [];
 
 	## Display settings
+	# Customer ID: 8ETKCWZXZC0UY (Motorola Solutions, Inc.)
 	push (@$settings, { name => 'Change Password', url => '/customer/settings/changepassword' }) if $Customer->customerid ne '8ETKCWZXZC0UY';
 	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
 	push (@$settings, { name => 'Company Management', url => '/customer/settings/customermanagement'}) if $Contact->is_superuser;

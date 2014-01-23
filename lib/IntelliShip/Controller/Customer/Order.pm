@@ -400,40 +400,46 @@ sub save_third_party_details
 	my $self = shift;
 	my $c = $self->context;
 
-	my $params = $c->req->params;
 	my $CO = $self->get_order;
 	my $Customer = $CO->customer;
+	my $params = $c->req->params;
 
-	return unless $params->{tpaddress1};
-
-	$c->log->debug("SAVE_THIRD_PARTY_INFO, account number: " . $params->{tpacctnumber});
-
-	my $Thirdpartyacct;
-	unless ($Thirdpartyacct = $Customer->third_party_account($params->{tpacctnumber}))
+	unless ($params->{'tpacctnumber'} or $params->{'tpaddress1'})
 		{
-		$Thirdpartyacct = $c->model('MyDBI::Thirdpartyacct')->new({});
+		$c->log->debug("UNABLE TO STORE THIRD PARTY INFO, no tpacctnumber/tpaddress1 found");
+		return;
 		}
 
-	$Thirdpartyacct->tpcompanyname($params->{tpcompanyname}) if $params->{tpcompanyname};
-	$Thirdpartyacct->tpaddress1($params->{tpaddress1}) if $params->{tpaddress1};
-	$Thirdpartyacct->tpaddress2($params->{tpaddress2}) if $params->{tpaddress2};
-	$Thirdpartyacct->tpcity($params->{tpcity}) if $params->{tpcity};
-	$Thirdpartyacct->tpstate($params->{tpstate}) if $params->{tpstate};
-	$Thirdpartyacct->tpzip($params->{tpzip}) if $params->{tpzip};
-	$Thirdpartyacct->tpcountry($params->{tpcountry}) if $params->{tpcountry};
-	$Thirdpartyacct->customerid($Customer->customerid);
-	$Thirdpartyacct->tpacctnumber($params->{tpacctnumber}) if $params->{tpacctnumber};
+	$c->log->debug("SAVE_THIRD_PARTY_INFO, account number: " . $params->{'tpacctnumber'});
+
+	my $thirdPartyAcctData = {};
+	$thirdPartyAcctData->{'tpacctnumber'}  = $params->{'tpacctnumber'} if $params->{'tpacctnumber'};
+	$thirdPartyAcctData->{'tpcompanyname'} = $params->{'tpcompanyname'} if $params->{'tpcompanyname'};
+	$thirdPartyAcctData->{'tpaddress1'}    = $params->{'tpaddress1'} if $params->{'tpaddress1'};
+	$thirdPartyAcctData->{'tpaddress2'}    = $params->{'tpaddress2'} if $params->{'tpaddress2'};
+	$thirdPartyAcctData->{'tpcity'}        = $params->{'tpcity'} if $params->{'tpcity'};
+	$thirdPartyAcctData->{'tpstate'}       = $params->{'tpstate'} if $params->{'tpstate'};
+	$thirdPartyAcctData->{'tpzip'}         = $params->{'tpzip'} if $params->{'tpzip'};
+	$thirdPartyAcctData->{'tpcountry'}     = $params->{'tpcountry'} if $params->{'tpcountry'};
+
+	IntelliShip::Utils->trim_hash_ref_values($thirdPartyAcctData);
+
+	my $Thirdpartyacct;
+	unless ($Thirdpartyacct = $Customer->third_party_account($params->{'tpacctnumber'}))
+		{
+		$Thirdpartyacct = $c->model("MyDBI::Thirdpartyacct")->new({ customerid => $Customer->customerid });
+		}
 
 	if ($Thirdpartyacct->thirdpartyacctid)
 		{
-		$Thirdpartyacct->update;
+		$Thirdpartyacct->update($thirdPartyAcctData);
 		$c->log->debug("Existing third party info found, thirdpartyacctid: " . $Thirdpartyacct->thirdpartyacctid);
 		}
 	else
 		{
 		$Thirdpartyacct->thirdpartyacctid($self->get_token_id);
-		$Thirdpartyacct->insert;
-		$c->log->debug("Third party info not found, creating new, thirdpartyacctid: " . $Thirdpartyacct->thirdpartyacctid);
+		$Thirdpartyacct->insert($thirdPartyAcctData);
+		$c->log->debug("New Thirdpartyacct Inserted, ID: " . $Thirdpartyacct->thirdpartyacctid);
 		}
 	}
 
@@ -803,7 +809,6 @@ sub populate_order :Private
 		## Shipment Information
 		$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
 		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
-		$c->stash->{description} = $CO->description;
 
 		$c->stash->{'totalweight'} = 0;
 		$c->stash->{'totalpackages'} = 0;my $rownum_id = 0;
@@ -836,6 +841,9 @@ sub populate_order :Private
 				$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
 				}
 			}
+
+		## Don't move this above foreach block
+		$c->stash->{description} = $CO->description;
 
 		# Step 3: Find product belog to Order
 		my $find_product = {};
@@ -1062,50 +1070,6 @@ sub CheckChargeThreshold :Private
 		}
 	}
 
-sub SetThirdPartyAddress :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	$c->log->debug("... save thirdparty account details");
-
-	$c->log->debug("checking for thirdparty account availability");
-
-	## Fetch ship from address
-	my $WHERE = { billingaccount => $params->{'billingaccount'}, customerid => $self->customer->customerid };
-	my @thirdpartyacctArr = $c->model('MyDBI::Thirdpartyacct')->search($WHERE);
-
-	my $Thirdpartyacct;
-	if (@thirdpartyacctArr)
-		{
-		$Thirdpartyacct = $thirdpartyacctArr[0];
-		$c->log->debug("Existing Thirdpartyacct Found, ID: " . $Thirdpartyacct->thirdpartyacctid);
-		}
-	else
-		{
-		my $thirdPartyAcctData = {
-				tpaddressname  => $params->{'tpaddressname'},
-				billingaccount => $params->{'billingaccount'},
-				tpaddress1     => $params->{'tpaddress1'},
-				tpaddress2     => $params->{'tpaddress2'},
-				tpcity         => $params->{'tpcity'},
-				tpstate        => $params->{'tpstate'},
-				tpzip          => $params->{'tpzip'},
-				tpcountry      => $params->{'tpcountry'},
-				customerid     => $self->customer->customerid,
-				};
-
-		IntelliShip::Utils->trim_hash_ref_values($thirdPartyAcctData);
-
-		$Thirdpartyacct = $c->model("MyDBI::Thirdpartyacct")->new($thirdPartyAcctData);
-		$Thirdpartyacct->thirdpartyacctid($self->get_token_id);
-		$Thirdpartyacct->insert;
-
-		$c->log->debug("New Thirdpartyacct Inserted, ID: " . $Thirdpartyacct->thirdpartyacctid);
-		}
-	}
-
 sub ProcessFCOverride :Private
 	{
 	my $self = shift;
@@ -1218,7 +1182,7 @@ sub SHIP_ORDER :Private
 	## Create or Update the thirdpartyacct table with address info if this is 3rd party
 	if ($params->{'deliverymethod'} eq '3rdparty')
 		{
-		$self->SetThirdPartyAddress;
+		$self->save_third_party_details;
 		}
 
 	# Instantiate shipmentcharge object for further use

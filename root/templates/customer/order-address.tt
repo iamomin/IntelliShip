@@ -41,9 +41,9 @@
 [% END %]
 	<div class="notice">Enter the recipient's (Ship To) address [% one_page ? 'and Shipment ' : '' %]details</div>
 
-	<div class="equal">
-		<div class="row">
-			<div31 [% UNLESS one_page %]style="width: 40%"[% END %]>
+	<div id="equal">
+		<div id="row">
+			<div class="31" [% UNLESS one_page %]style="width: 40%"[% END %]>
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
@@ -75,9 +75,9 @@
 					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
 			</table>
-			</div31>
+			</div>
 
-			<[% one_page ? 'div32' : 'div33 style="width: 40%"' %]>
+			<[% one_page ? 'div class="32"' : 'div class="33" style="width: 40%"' %]>
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
@@ -127,9 +127,9 @@
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
 			</table>
-			</[% one_page ? 'div32' : 'div33' %]>
+			</div>
 [% IF one_page %]
-			<div33>
+			<div class="33">
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
@@ -194,7 +194,7 @@
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 			</table>
-			</div33>
+			</div>
 [% END %]
 		</div>
 	</div>
