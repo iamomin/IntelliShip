@@ -155,9 +155,7 @@ function validPhoneNumber( Phone ) {
 function validNumericField( Numeric )
 	{
 	if (Numeric == undefined) return false;
-	if (Numeric == 0) return false;
-	if (Numeric.match(/\D+/g)) return false;
-	return true;
+	return Numeric.match(/^\d+(\.\d+)?$/g);
 	}
 
 function validDate( DateStr ) {

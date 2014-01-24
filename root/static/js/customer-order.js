@@ -76,7 +76,7 @@ function calculate_total_weight(event_row_ID)
 
 	$('#package-detail-list li').each(function() {
 
-		if (event_row_ID != undefined && $("#type_"+event_row_ID).val() == 'package') return;
+		if (!isNaN(event_row_ID) && $("#type_"+event_row_ID).val() == 'package') return;
 		if (!this.id.match(/^new_/)) return;
 
 		var res = this.id.split('_');

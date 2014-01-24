@@ -172,8 +172,8 @@ sub set_address_code_details
 	my $string = $self->address1.$self->address2.$self->city.$self->state.$self->zip;
 	my $addresscountry = $self->country;
 
-	my $addressinitial = substr($addressname,0,1);
-	$addressname = substr($addressname,1);
+	my $addressinitial = substr($addressname,0,1) if $addressname;
+	$addressname = substr($addressname,1) if $addressname;
 
 	$addressname = uc($addressname);
 	$addressname =~ s/ //g;

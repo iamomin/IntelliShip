@@ -215,28 +215,30 @@ img { border: none }
 #menu label { position:relative }
 
 #menu label:after {
-    content:'<>';
-    font:11px "Consolas", monospace;
-    color:#98A7AF;
-    -webkit-transform:rotate(90deg);
-    -moz-transform:rotate(90deg);
-    -ms-transform:rotate(90deg);
-    transform:rotate(90deg);
-    right:8px; top:2px;
-    padding:0 0 2px;
-    border-bottom:1px solid #98A7AF;
-    position:absolute;
+    content: '<>';
+    font: 11px "Consolas", monospace;
+    color: #98A7AF;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+    right: 8px; top:2px;
+    padding: 0 0 2px;
+    border-bottom: 1px solid #98A7AF;
+    position: absolute;
     pointer-events: none;
 }
 
 #menu label:before {
-    content:'';
-    right:6px; top:0px;
-    width:20px; height:20px;
-    background:#FFF;
-    position:absolute;
-    pointer-events:none;
-    display:block;
+    content: '';
+    right: 3px;
+    top: -5px;
+    width: 20px;
+    height: 20px;
+    background: #FFF;
+    position: absolute;
+    pointer-events: none;
+    display: block;
 }
 
 /* Page */
@@ -659,6 +661,7 @@ ul.sortable {
 input {
     padding: 1px 3px;
     border: solid 1px #afafaf;
+    vertical-align: inherit;
 }
 
 input.text {
@@ -784,6 +787,7 @@ input.delete {
     border: 1px solid #5DBD53;
     vertical-align: middle;
     cursor: pointer;
+    float: left;
 }
 
 .gray-backward {
@@ -807,6 +811,7 @@ input.delete {
     border: 1px solid #9BA7AF;
     vertical-align: middle;
     cursor: pointer;
+    float: right;
 }
 
 input.package {

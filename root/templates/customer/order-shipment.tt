@@ -82,8 +82,10 @@
 			<td><input type="text" class="default_text" style="border: none;" id="totalweight" name="totalweight" value="0.00" size="2" readonly /></td>
 			<td><label>Total Packages:</label></td>
 			<td><input type="text" class="default_text" style="border: none;" id="totalpackages" name="totalpackages" value="0.00" size="2" readonly /></td>
-			<td><label for="insurance">Declared Value:</label><input type="text" name="insurance" id="insurance" value="0.00" size="5"/></td>
-			<td><label for="freightinsurance">Freight Insurance:</label><input type="text" name="freightinsurance" id="freightinsurance" value="0.00" size="5"/></td>
+			<td><label for="insurance">Declared Value:</label></td>
+			<td><input type="text" name="insurance" id="insurance" value="0.00" size="5"/></td>
+			<td><label for="freightinsurance">Freight Insurance:</label></td>
+			<td><input type="text" name="freightinsurance" id="freightinsurance" value="0.00" size="5"/></td>
 		</tr>
 	</table>
 	<br>

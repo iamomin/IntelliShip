@@ -296,7 +296,7 @@
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td>
-				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]"/><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')"/><span></span></label>
 				<div style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table class="app"  style="text-align: center;">
 					<tr><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSIT DAYS</th><th>EST. DELIVERY</th></tr>
@@ -309,7 +309,7 @@
 					</table>
 				</div>
 			</td>
-			<td class="sc-hover">[% item.carrier %]<input type="hidden" id="[% item.customerserviceid %]" value="[% item.carrier %]"></td>
+			<td class="sc-hover">[% item.carrier %]</td>
 			<td class="sc-hover">[% item.service %]</td>
 			[% IF IS_PREPAID %]
 			<td class="sc-hover">[% item.days %]</td>
@@ -321,8 +321,9 @@
 		</tr>
 		[% END %]
 	</table>
-  [% ELSE %]
+	[% ELSE %]
 
+	<input type="hidden" id="carrier" name="carrier" value=""/>
 	<div id="carrier-service-list">
 		<ul>
 			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
@@ -338,6 +339,12 @@
 	<div id="SC-DLG"></div>
 
 	<script>
+
+		function setCarrier(carrier)
+			{
+			$("#carrier").val(carrier);
+			console.log("RADIO CHECK VAL: " + $("#carrier").val());
+			}
 		function displayShipmentChargeDetails(ID)
 			{
 			var dlg = $("#" + ID).dialog({

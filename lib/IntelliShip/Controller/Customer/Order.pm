@@ -19,6 +19,10 @@ sub onepage :Local
 		{
 		$self->save_order;
 		}
+	elsif ($do_value eq 'ship')
+		{
+		$self->SHIP_ORDER;
+		}
 	elsif ($do_value eq 'cancel')
 		{
 		$self->void_shipment;
@@ -259,42 +263,38 @@ sub save_CO_details :Private
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
 	#$coData->{'tocustomernumber'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
 
-	#$OrderRef->{'cotypeid'} = $HashRef->{'action'} eq 'clearquote' ? 10 : 1;
-	#
-	#if (
-	#	$HashRef->{'loginlevel'} == 35 or
-	#	$HashRef->{'loginlevel'} == 40 or
-	#	( $HashRef->{'cotypeid'} and $HashRef->{'cotypeid'} == 2 )
-	#)
-	#{
-	#	$OrderRef->{'cotypeid'} = 2;
-	#}
+	$coData->{'cotypeid'} = $params->{'action'} eq 'clearquote' ? 10 : 1;
 
-	# $coData->{'estimatedweight'} = $params->{'estimatedweight'};
-	# $coData->{'density'} = $params->{'density'};
-	# $coData->{'volume'} = $params->{'volume'};
-	# $coData->{'class'} = $params->{'class'};
+	if ($self->customer->login_level =~ /(35|40)/ and $params->{'cotypeid'} and $params->{'cotypeid'} == 2)
+		{
+		$coData->{'cotypeid'} = 2;
+		}
 
-	# # Sort out volume/density/class issues - if we have volume (and of course weight), and nothing
-	# # else, calculate density.  If we have density and no class, get class.
-	# # Volume assumed to be in cubic feet - density would of course be #/cubic foot
-	# if ($params->{'estimatedweight'} and $params->{'volume'} and !$params->{'density'} )
-		# {
-		# $coData->{'density'} = int($params->{'estimatedweight'} / $params->{'volume'});
-		# }
+	$coData->{'estimatedweight'} = $params->{'totalweight'};
+	$coData->{'density'} = $params->{'density'};
+	$coData->{'volume'} = $params->{'volume'};
+	$coData->{'class'} = $params->{'class'};
 
-	# if ($params->{'density'} and !$params->{'class'})
-		# {
-		# $coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($params->{'estimatedweight'}, undef, undef, undef, $params->{'density'});
-		# }
+	# Sort out volume/density/class issues - if we have volume (and of course weight), and nothing
+	# else, calculate density.  If we have density and no class, get class.
+	# Volume assumed to be in cubic feet - density would of course be #/cubic foot
+	if ($params->{'estimatedweight'} and $params->{'volume'} and !$params->{'density'} )
+		{
+		$coData->{'density'} = int($params->{'estimatedweight'} / $params->{'volume'});
+		}
 
-	# $coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
+	if ($params->{'density'} and !$params->{'class'})
+		{
+		$coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($params->{'estimatedweight'}, undef, undef, undef, $params->{'density'});
+		}
 
-	# ## If this order has non-voided shipments, keep it's status as 'shipped' (statusid = 5)
-	# if ($params->{'coid'} and $self->get_shipment_count > 0)
-		# {
-		# $coData->{'statusid'} = 5;
-		# }
+	$coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
+
+	## If this order has non-voided shipments, keep it's status as 'shipped' (statusid = 5)
+	if ($CO->shipment_count > 0)
+		{
+		$coData->{'statusid'} = 5;
+		}
 
 	## Sort out 'Other' carrier nonsense
 	if ($params->{'customerserviceid'} and $params->{'customerserviceid'} =~ /^OTHER_(\w{13})/)
@@ -595,17 +595,6 @@ sub save_special_services :Private
 		}
 	}
 
-sub get_shipment_count :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $COID = $self->params->{'coid'};
-	return unless $COID;
-	my $STH = $c->model("MyDBI")->select("SELECT count(*) FROM shipment WHERE coid = '$COID' AND statusid NOT IN ('5','6','7')");
-	my $Count = $STH->fetchrow(0)->{'count'};
-	return $Count;
-	}
-
 sub get_auto_order_number :Private
 	{
 	my $self = shift;
@@ -676,7 +665,7 @@ sub get_order :Private
 		my $ordernumber = $params->{'ordernumber'} || '';
 		my $customerid = $self->customer->customerid;
 
-		$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
+		#$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
 
 		my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
 
@@ -1172,6 +1161,7 @@ sub SHIP_ORDER :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->log->debug("------- SHIP_ORDER -------");
 	my $CO = $self->get_order;
 	my $Customer = $self->customer;
 
@@ -1185,9 +1175,6 @@ sub SHIP_ORDER :Private
 		{
 		$self->save_third_party_details;
 		}
-
-	# Instantiate shipmentcharge object for further use
-	my $ShipmentCharge = $c->model("MyDBI::Shipmentcharge")->new();
 
 	# Prepend 'AM Delivery' to comments if 'AM Delivery' was checked on the interface.
 	if ($params->{'amdeliverycheck'})
@@ -1205,6 +1192,9 @@ sub SHIP_ORDER :Private
 	my $CustomerID = $Customer->customerid;
 	my $ServiceTypeID = $self->API->get_CS_value($params->{'customerserviceid'}, 'servicetypeid', $CustomerID);
 
+	$params->{'new_shipmentid'} = $self->get_token_id;
+	$c->log->debug("___ Generate New Shipment ID: " . $params->{'new_shipmentid'});
+
 	## 'OTHER' carriers
 	if ($params->{'customerserviceid'} =~ m/OTHER_/)
 		{
@@ -1219,30 +1209,24 @@ sub SHIP_ORDER :Private
 			$params->{'customerserviceid'} = 'OTHER_' . $Other->otherid;
 			}
 
-		$params->{'quantity'}=0;
-		$params->{'dimweight'}=0;
-		$params->{'enteredweight'}=0;
-
-		my @packages = $CO->packages;
-		foreach my $Package (@packages)
-			{
-			$params->{'enteredweight'} += $Package->weight;
-			$params->{'dimweight'} += $Package->dimweight;
-			$params->{'quantity'} += $Package->quantity;
-			}
+		$params->{'enteredweight'} = $CO->total_weight;
+		$params->{'dimweight'} = $CO->total_dimweight;
+		$params->{'quantity'} = $CO->total_quantity;
 		}
-	else ## 'Normal' carriers
+	## 'Normal' carriers
+	else
 		{
+		$params->{'quantity'}      = 0;
+		$params->{'dimweight'}     = 0;
+		$params->{'enteredweight'} = 0;
+		$params->{'dimlength'}     = 0;
+		$params->{'dimwidth'}      = 0;
+		$params->{'dimheight'}     = 0;
+		$params->{'extcd'}         = 0;
+
 		# Process small/freight shipments (mainly FedEx freight, on the freight end)
 		if ($ServiceTypeID < 3000)
 			{
-			$params->{'enteredweight'} = 0;
-			$params->{'dimweight'}     = 0;
-			$params->{'dimlength'}     = 0;
-			$params->{'dimwidth'}      = 0;
-			$params->{'dimheight'}     = 0;
-			$params->{'extcd'}         = 0;
-
 			# Get shipment charges and fsc's sorted out for overridden shipment.
 			if ($params->{'fcchanged'} and $params->{'fcoverride'})
 				{
@@ -1250,30 +1234,24 @@ sub SHIP_ORDER :Private
 				}
 
 			# Save out all shipment packages. Give them a dummy shipmentid, pass that around for continuity.
-			my $DummyShipmentID = $self->get_token_id;
-			$c->log->debug("___ Dummy Shipment ID: " . $DummyShipmentID);
-
 			my @packages = $CO->packages;
 			foreach my $Package (@packages)
 				{
 				my $ShipmentPackage = $self->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
 				$ShipmentPackage->ownertypeid(2000); # Shipment
-				$ShipmentPackage->ownerid($DummyShipmentID);
+				$ShipmentPackage->ownerid($params->{'new_shipmentid'});
 				$ShipmentPackage->packprodataid($self->get_token_id);
-
 				$ShipmentPackage->insert;
 
 				$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
 
 				my @products = $Package->products;
-
 				foreach my $Product (@products)
 					{
 					my $ShipmentProduct = $self->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
 					$ShipmentProduct->ownertypeid(3000); # Product (for Packages)
 					$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
 					$ShipmentProduct->packprodataid($self->get_token_id);
-
 					$ShipmentProduct->insert;
 
 					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
@@ -1283,7 +1261,7 @@ sub SHIP_ORDER :Private
 			# Push all shipmentcharges onto a list for use by all shipments
 			if ($params->{'packagecosts'} > 0)
 				{
-				$params->{'shipmentchargepassthru'} = $ShipmentCharge->BuildShipmentChargePassThru($params);
+				$params->{'shipmentchargepassthru'} = $self->BuildShipmentChargePassThru;
 				$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
 				}
 
@@ -1295,17 +1273,9 @@ sub SHIP_ORDER :Private
 			}
 		elsif ($ServiceTypeID == 3000) ## Process LTL shipments
 			{
-			$params->{'quantity'}      = 0;
-			$params->{'dimweight'}     = 0;
-			$params->{'enteredweight'} = 0;
-
-			my @packages = $CO->packages;
-			foreach my $Package (@packages)
-				{
-				$params->{'enteredweight'} += $Package->weight;
-				$params->{'dimweight'} += $Package->dimweight;
-				$params->{'quantity'} += $Package->quantity;
-				}
+			$params->{'enteredweight'} = $CO->total_weight;
+			$params->{'dimweight'} = $CO->total_dimweight;
+			$params->{'quantity'} = $CO->total_quantity;
 			}
 		}
 
@@ -1317,19 +1287,6 @@ sub SHIP_ORDER :Private
 
 	# Build up shipment ref
 	my $ShipmentData = $self->BuildShipmentInfo;
-
-	# Get third party address bits into params (in case we picked up a 3p account from 'BuildShipmentData'
-	my $ThirdPartyAccountObj;
-	if ($ShipmentData->{'billingaccount'} and $ThirdPartyAccountObj = $Customer->third_party_account($ShipmentData->{'billingaccount'}))
-		{
-		$params->{'tpcompanyname'} = $ThirdPartyAccountObj->tpcompanyname;
-		$params->{'tpaddress1'}    = $ThirdPartyAccountObj->tpaddress1;
-		$params->{'tpaddress2'}    = $ThirdPartyAccountObj->tpaddress2;
-		$params->{'tpcity'}        = $ThirdPartyAccountObj->tpcity;
-		$params->{'tpstate'}       = $ThirdPartyAccountObj->tpstate;
-		$params->{'tpzip'}         = $ThirdPartyAccountObj->tpzip;
-		$params->{'tpcountry'}     = $ThirdPartyAccountObj->tpcountry;
-		}
 
 	# Kludge to get freightinsurance into the shipments
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
@@ -1355,11 +1312,16 @@ sub SHIP_ORDER :Private
 	# Process errors
 	unless ($Response->is_success)
 		{
+		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . Dumper $Response->errors);
 		print STDERR "\n Error: " . Dumper $Response->errors;
 		return;
 		}
 
+	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
+
 	my $Shipment = $Response->shipment;
+	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
+
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
 	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
@@ -1390,59 +1352,24 @@ sub SHIP_ORDER :Private
 		$self->NoteCSIDOverride($params);
 		}
 
-	# Save out shipment packages
-	my $PPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
-
-	if ($ServiceTypeID)
-		{
-		# Process small/freight shipments (mainly FedEx freight, on the freight end)
-		if ( $ServiceTypeID < 3000 )
-			{
-			# Save out shipment charges
-			$params->{'shipmentchargepassthru'} =
-				$ShipmentCharge->SaveSmallShipmentCharges($params->{'shipmentchargepassthru'},$params->{'shipmentid'});
-
-			(my $FakeItemID, $params->{'fakeitemids'}) = $params->{'fakeitemids'} =~ /^(\w{13}):(.*)/;
-
-			$PPD->ReassignItemID($FakeItemID,$params->{'shipmentid'},2000);
-			}
-		# Process LTL shipments
-		elsif ( $ServiceTypeID == 3000 )
-			{
-			# Save out shipment charges
-			$ShipmentCharge->SaveShipmentCharges($params);
-
-			# Save out shipment packages
-			$PPD->SaveItems($params,2000);
-			}
-		}
-	else # This will theoretically do 'Other' carriers
-		{
-		# Save out shipment packages
-		$PPD->SaveItems($params,2000);
-		}
-
 	#Now that we have everything pushed into our params...
 	#Check for Products and override screen if we have any
-	my $PNPPPD = new PACKPRODATA($self->{'dbref'}->{'aos'}, $self->{'customer'});
-	my $has_pnp = $PNPPPD->HasPickAndPack($params->{'coid'});
-	if ( $has_pnp > 0 )
+	my $has_pick_and_pack = $CO->has_pick_and_pack;
+	if ($has_pick_and_pack)
 		{
-		$PNPPPD->SavePickAndPack($params);
+		#$PNPPPD->SavePickAndPack($params);
 		}
 
 	# Change fullfillment status - PO or Pick & Pack Only
-	if ( $params->{'cotypeid'} == 2 or $has_pnp )
+	if ($params->{'cotypeid'} == 2 or $has_pick_and_pack)
 		{
-		if( $CO->IsFullfilled($params->{'ordernumber'},$params->{'cotypeid'}) )
+		if($CO->is_fullfilled($params->{'ordernumber'},$params->{'cotypeid'}))
 			{
-			# Set PO to 'Fullfilled'
-			$CO->ChangeStatus(350);
+			$CO->statusid(350); ## Set PO to 'Fullfilled'
 			}
 		else
 			{
-			# Set PO to 'Unfullfilled'
-			$CO->ChangeStatus(300);
+			$CO->statusid(300); ## Set PO to 'Unfullfilled'
 			}
 		}
 
@@ -1450,7 +1377,15 @@ sub SHIP_ORDER :Private
 	# stuff a shipment charge entry in - this is an 'Other' shipment with an overriden freight charge
 	if (!$params->{'customerserviceid'} and !$params->{'service'} and $params->{'freightcharge'})
 		{
-		$ShipmentCharge->SaveShipmentCharge($params->{'shipmentid'},'Freight Charge',$params->{'freightcharge'});
+		my $scData = {
+			shipmentchargeid => $self->get_token_id,
+			chargename => IntelliShip::Utils->get_shipment_charge_display_name('freightcharge'),
+			chargeamount => $params->{'freightcharge'},
+			shipmentid => $Shipment->shipmentid,
+			};
+
+		$c->model('MyDBI::Shipmentcharge')->new($scData)->insert;
+		$c->log->debug("___ NEW SHIPMENTCHARGE INSERTED< ID: " . $scData->{shipmentchargeid});
 		}
 
 	# Build up data for use in BOL assessorial display
@@ -1581,9 +1516,10 @@ sub BuildShipmentInfo
 	{
 	my $self = shift;
 	my $c = $self->context;
-	my $params = $c->params;
+	my $params = $c->req->params;
+	my $Customer = $self->customer;
 
-	my $ShipmentData = {};
+	my $ShipmentData = { 'shipmentid' => $params->{'new_shipmentid'} };
 
 	$ShipmentData->{'addressname'} = $params->{'addressname'};
 	$ShipmentData->{'address1'} = $params->{'address1'};
@@ -1651,13 +1587,6 @@ sub BuildShipmentInfo
 	$ShipmentData->{'shipmentnotification'} = $params->{'shipmentnotification'};
 	$ShipmentData->{'deliverynotification'} = $params->{'deliverynotification'};
 	$ShipmentData->{'hazardous'} = $params->{'hazardous'};
-	$ShipmentData->{'tpcompanyname'} = $params->{'tpcompanyname'};
-	$ShipmentData->{'tpaddress1'} = $params->{'tpaddress1'};
-	$ShipmentData->{'tpaddress2'} = $params->{'tpaddress2'};
-	$ShipmentData->{'tpcity'} = $params->{'tpcity'};
-	$ShipmentData->{'tpstate'} = $params->{'tpstate'};
-	$ShipmentData->{'tpzip'} = $params->{'tpzip'};
-	$ShipmentData->{'tpcountry'} = $params->{'tpcountry'};
 	$ShipmentData->{'manualthirdparty'} = $params->{'manualthirdparty'};
 	$ShipmentData->{'ponumber'} = $params->{'ponumber'};
 	$ShipmentData->{'securitytype'} = $params->{'securitytype'};
@@ -1695,14 +1624,27 @@ sub BuildShipmentInfo
 		}
 
 	# undef billingaccount if it came through the interface as tp but it is in the db already as fedex hack thirdpartyacct which really isn't tp
-	if ($params->{'customerserviceid'} and $params->{'billingaccount'} and !$self->API->valid_billing_account($params->{'customerserviceid'},$params->{'billingaccount'}))
+	if ($params->{'customerserviceid'} and $params->{'billingaccount'} and
+		!$self->API->valid_billing_account($params->{'customerserviceid'},$params->{'billingaccount'}))
 		{
 		$params->{'billingaccount'} = undef;
 		}
 
-	if ( defined($params->{'billingaccount'}) and $params->{'billingaccount'} ne '' )
+	if (length $params->{'billingaccount'})
 		{
 		$ShipmentData->{'thirdpartybilling'} = 1;
+
+		# Get third party address bits into params (in case we picked up a 3p account from 'BuildShipmentData'
+		if (my $ThirdPartyAccountObj = $Customer->third_party_account($ShipmentData->{'billingaccount'}))
+			{
+			$ShipmentData->{'tpcompanyname'} = $ThirdPartyAccountObj->tpcompanyname;
+			$ShipmentData->{'tpaddress1'}    = $ThirdPartyAccountObj->tpaddress1;
+			$ShipmentData->{'tpaddress2'}    = $ThirdPartyAccountObj->tpaddress2;
+			$ShipmentData->{'tpcity'}        = $ThirdPartyAccountObj->tpcity;
+			$ShipmentData->{'tpstate'}       = $ThirdPartyAccountObj->tpstate;
+			$ShipmentData->{'tpzip'}         = $ThirdPartyAccountObj->tpzip;
+			$ShipmentData->{'tpcountry'}     = $ThirdPartyAccountObj->tpcountry;
+			}
 		}
 
 	my $myDBI = $c->model->('MyDBI');

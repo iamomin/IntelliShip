@@ -207,15 +207,24 @@
 		$("#do").val('address');
 		$("#frm_order_sumary").submit();
 		});
+
 	$("#edit_address").click(function() {
 		$("#do").val('address');
 		$("#frm_order_sumary").submit();
 		});
 
 	$("#btn_shipment").click(function() {
+		alert($("#" + $("#customerserviceid").val()).val().toUpperCase());
+		if ($("#" + $("#customerserviceid").val()).val().toUpperCase() != 'FEDEX')
+			{
+			showError("Only FedEx is supported, please select correct carrier from list.");
+			return;
+			}
+
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
 		});
+
 	$("#edit_shipment").click(function() {
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
@@ -224,10 +233,12 @@
 	$("#route").click(function() {
 		get_customer_service_list($("#frm_order_sumary").serialize());
 		});
+
 	$("#cancel").click(function() {
 		$("#do").val('cancel');
 		$("#frm_order_sumary").submit();
 		});
+
 	$("#ship_now").click(function() {
 		return showError("Under construction!");
 		$("#do").val('ship');

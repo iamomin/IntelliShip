@@ -692,13 +692,13 @@ sub third_party_account
 	my $self = shift;
 	my $accountnumber = shift;
 
+	return unless $accountnumber;
+
 	my @thirdpartyaccts = $self->thirdpartyaccts;
 	foreach my $ThirdPartyAcct (@thirdpartyaccts)
 		{
 		return $ThirdPartyAcct if uc $ThirdPartyAcct->tpacctnumber eq uc $accountnumber;
 		}
-
-	return $thirdpartyaccts[0] if @thirdpartyaccts;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

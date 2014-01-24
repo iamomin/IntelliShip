@@ -14,213 +14,213 @@ sub process_request
 	my $CO = $self->CO;
 	my $c = $self->context;
 	my $Customer = $CO->customer;
-	my $requestData = $self->data;
+	my $shipmentData = $self->data;
 
 	###############################
 	# The incoming variables
 	###############################
-	$requestData->{'carrier'} = 'Fedex';
+	$shipmentData->{'carrier'} = 'Fedex';
 
-	if ($requestData->{'addresscountry'} eq 'USA')
+	if ($shipmentData->{'addresscountry'} eq 'USA')
 		{
-		$requestData->{'addresscountry'} = 'US';
+		$shipmentData->{'addresscountry'} = 'US';
 		}
 
-	$requestData->{'commodityweight'} = $requestData->{'enteredweight'};
-	$requestData->{'dateshipped'} = $requestData->{'datetoship'};
+	$shipmentData->{'commodityweight'} = $shipmentData->{'enteredweight'};
+	$shipmentData->{'dateshipped'} = $shipmentData->{'datetoship'};
 
-	if ( $requestData->{'enteredweight'} !~ /\.\d+/ ) { $requestData->{'enteredweight'} .= ".0"; }
+	if ( $shipmentData->{'enteredweight'} !~ /\.\d+/ ) { $shipmentData->{'enteredweight'} .= ".0"; }
 
 	my $insurance;
-	if ($requestData->{'insurance'} and $requestData->{'insurance'} =~ /\./ )
+	if ($shipmentData->{'insurance'} and $shipmentData->{'insurance'} =~ /\./ )
 		{
 		# search/replace simultaneously.
-		($insurance = $requestData->{'insurance'}) =~ s/\.//;
+		($insurance = $shipmentData->{'insurance'}) =~ s/\.//;
 		}
 
-	$requestData->{'oacontactphone'} =~ s/-//g;
+	$shipmentData->{'oacontactphone'} =~ s/-//g;
 
 	# Attempt to distill Remel's various phone formats into something fedex will take
-	my $ContactPhone = $requestData->{'contactphone'};
+	my $ContactPhone = $shipmentData->{'contactphone'};
 	$ContactPhone =~ s/-//g;
 	$ContactPhone =~ s/\s+//g;
 	$ContactPhone =~ s/\(//g;
 	$ContactPhone =~ s/\)//g;
 
-	if ( $requestData->{'addresscountry'} eq 'US' or $requestData->{'addresscountry'} eq 'CA' )
+	if ( $shipmentData->{'addresscountry'} eq 'US' or $shipmentData->{'addresscountry'} eq 'CA' )
 		{
 		$ContactPhone = $ContactPhone =~ /^(\d{10})/;
 		}
 
 	# Allow for LTR type packages (0 weight)
 	my $PackageType = "01";
-	if ($requestData->{'enteredweight'} == 0)
+	if ($shipmentData->{'enteredweight'} == 0)
 		{
 		$PackageType = "06";
-		$requestData->{'enteredweight'} = "1.0";
-		$requestData->{'commodityweight'} = "1.0";
+		$shipmentData->{'enteredweight'} = "1.0";
+		$shipmentData->{'commodityweight'} = "1.0";
 		}
 
 	# Hardwire 'Total Customs Value' to be the same as 'Commodity Customs Value'
 	my $commoditycustomsvalue;
-	if ( $requestData->{'commoditycustomsvalue'} )
+	if ( $shipmentData->{'commoditycustomsvalue'} )
 		{
-		if ( $requestData->{'commoditycustomsvalue'} =~ /\./ )
+		if ( $shipmentData->{'commoditycustomsvalue'} =~ /\./ )
 			{
 			# search/replace simultaneously.
-			($commoditycustomsvalue = $requestData->{'commoditycustomsvalue'}) =~ s/\.//;
+			($commoditycustomsvalue = $shipmentData->{'commoditycustomsvalue'}) =~ s/\.//;
 			}
-		elsif ( $requestData->{'commoditycustomsvalue'} !~ /\./ )
+		elsif ( $shipmentData->{'commoditycustomsvalue'} !~ /\./ )
 			{
-			$commoditycustomsvalue = $requestData->{'commoditycustomsvalue'} . '00';
+			$commoditycustomsvalue = $shipmentData->{'commoditycustomsvalue'} . '00';
 			}
 		}
 
 	# Hardwire 'Unit Quantity' to 'Commodity Number of Pieces'
-	$requestData->{'unitquantity'} = $requestData->{'commodityquantity'};
+	$shipmentData->{'unitquantity'} = $shipmentData->{'commodityquantity'};
 
 	# 3rd Party Billing
 	my $AccountNumber = "";
 	my $BillingType = "";
 
-	if ($requestData->{'billingaccount'})
+	if ($shipmentData->{'billingaccount'})
 		{
-		$AccountNumber = $requestData->{'billingaccount'};
+		$AccountNumber = $shipmentData->{'billingaccount'};
 		$BillingType = 3;
 		}
 	else
 		{
-		$AccountNumber = $requestData->{'webaccount'};
+		$AccountNumber = $shipmentData->{'webaccount'};
 		$BillingType = 1;
 		}
 
 	$AccountNumber =~ s/[-| ]//g;
 
 	# Pop reference field with 'Order# - Customer#'
-	$requestData->{'refnumber'} = $requestData->{'ordernumber'};
-	if ($requestData->{'ponumber'})
+	$shipmentData->{'refnumber'} = $shipmentData->{'ordernumber'};
+	if ($shipmentData->{'ponumber'})
 		{
-		$requestData->{'refnumber'} .= " - " . $requestData->{'ponumber'};
+		$shipmentData->{'refnumber'} .= " - " . $shipmentData->{'ponumber'};
 		}
-	elsif ($requestData->{'custnum'})
+	elsif ($shipmentData->{'custnum'})
 		{
-		$requestData->{'refnumber'} .= " - " . $requestData->{'custnum'};
+		$shipmentData->{'refnumber'} .= " - " . $shipmentData->{'custnum'};
 		}
 
 	# Strip non-numeric from ssnein field
-	if ($requestData->{'ssnein'})
+	if ($shipmentData->{'ssnein'})
 		{
-		$requestData->{'ssnein'} =~ s/\D//g;
+		$shipmentData->{'ssnein'} =~ s/\D//g;
 		}
 
 	# Strip non alpha-numeric from harmonized code field
-	if ($requestData->{'harmonizedcode'})
+	if ($shipmentData->{'harmonizedcode'})
 		{
-		$requestData->{'harmonizedcode'} =~ s/[^a-zA-Z0-9]//g;
+		$shipmentData->{'harmonizedcode'} =~ s/[^a-zA-Z0-9]//g;
 		}
 
 	# Hash with data to build up shipping string that we'll transmit to FedEx
 
-	my $ShipDate = IntelliShip->DateUtils->format_to_yyyymmdd($requestData->{'datetoship'});
+	my $ShipDate = IntelliShip->DateUtils->format_to_yyyymmdd($shipmentData->{'datetoship'});
 
 	my %ShipData = (
 		# Generic
-		4		=>	$requestData->{'customername'}, 		#Sender company
-		5		=>	$requestData->{'branchaddress1'},		#Sender Addr1
-		6		=>	$requestData->{'branchaddress2'},		#Sender Addr2 -> but only if pop'd.  Probly pull from ref.
-		7		=>	$requestData->{'branchaddresscity'},	#Sender City
-		8		=>	$requestData->{'branchaddressstate'},	#Sender State
-		9		=>	$requestData->{'branchaddresszip'},		#Sender Postal Code
-		11		=>	$requestData->{'addressname'},			#Recipient Company
-		12		=>	$requestData->{'contactname'},			#Recipient contactname
-		13		=>	$requestData->{'address1'},				#Recipient Addr1
-		14		=>	$requestData->{'address2'},				#Recipient Addr2
-		15		=>	$requestData->{'addresscity'},			#Recipient City
-		16		=>	$requestData->{'addressstate'},			#Recipient State
-		17		=>	$requestData->{'addresszip'},			#Recipient Postal Code
+		4		=>	$shipmentData->{'customername'}, 		#Sender company
+		5		=>	$shipmentData->{'branchaddress1'},		#Sender Addr1
+		6		=>	$shipmentData->{'branchaddress2'},		#Sender Addr2 -> but only if pop'd.  Probly pull from ref.
+		7		=>	$shipmentData->{'branchaddresscity'},	#Sender City
+		8		=>	$shipmentData->{'branchaddressstate'},	#Sender State
+		9		=>	$shipmentData->{'branchaddresszip'},		#Sender Postal Code
+		11		=>	$shipmentData->{'addressname'},			#Recipient Company
+		12		=>	$shipmentData->{'contactname'},			#Recipient contactname
+		13		=>	$shipmentData->{'address1'},				#Recipient Addr1
+		14		=>	$shipmentData->{'address2'},				#Recipient Addr2
+		15		=>	$shipmentData->{'addresscity'},			#Recipient City
+		16		=>	$shipmentData->{'addressstate'},			#Recipient State
+		17		=>	$shipmentData->{'addresszip'},			#Recipient Postal Code
 		18		=>	$ContactPhone,							#Recipient Phone Number
 		20		=>	$AccountNumber, 						#Payer Account Number
 		23		=>	$BillingType,							#Pay Type
-		25		=>	$requestData->{'refnumber'},			#Reference Number
+		25		=>	$shipmentData->{'refnumber'},			#Reference Number
 		117		=>	"US",									#Sender Country Code
-		183		=>	$requestData->{'oacontactphone'},		#Sender Phone Number
-		498		=>	$requestData->{'meternumber'},			#Required - Meter #
+		183		=>	$shipmentData->{'oacontactphone'},		#Sender Phone Number
+		498		=>	$shipmentData->{'meternumber'},			#Required - Meter #
 		1119	=>	"Y",
 		24		=>	$ShipDate,								# Ship date
 		1273	=>	$PackageType,							#FedEx Packaging Type
-		1274	=>	$requestData->{'webname'},				#FedEx Service Type
+		1274	=>	$shipmentData->{'webname'},				#FedEx Service Type
 		187		=>	"299",									# New printer stuff
 		);
 
 	# fedex says this has to do with hazardous - 20121112
-	#if ( $requestData->{'international'} )
+	#if ( $shipmentData->{'international'} )
 	#	{
 	#	$ShipData{'1391'} = "2";	#Client Revision Indicator
 	#	}
 
 	## Total Package Weight this field has 2 implied decimals.
 	## Multiplying by 100 just puts things to rights.
-	$ShipData{'1670'} = ceil($requestData->{'enteredweight'} * 100);
+	$ShipData{'1670'} = ceil($shipmentData->{'enteredweight'} * 100);
 
-	$ShipData{'75'} = $requestData->{'weighttype'};		#Weight Units
+	$ShipData{'75'} = $shipmentData->{'weighttype'};		#Weight Units
 	$ShipData{'69'} = $insurance; 						#Declared Value/Carriage Value
 
 	# Heavy
-	$ShipData{'57'} = $requestData->{'dimheight'}; 		#Required for heavyweight
-	$ShipData{'58'} = $requestData->{'dimwidth'}; 		#Required for heavyweight
-	$ShipData{'59'} = $requestData->{'dimlength'}; 		#Required for heavyweight
+	$ShipData{'57'} = $shipmentData->{'dimheight'}; 		#Required for heavyweight
+	$ShipData{'58'} = $shipmentData->{'dimwidth'}; 		#Required for heavyweight
+	$ShipData{'59'} = $shipmentData->{'dimlength'}; 		#Required for heavyweight
 
 	# International
-	$ShipData{'1090'} = $requestData->{'currencytype'};
-	$ShipData{'74'} = $requestData->{'destinationcountry'};
+	$ShipData{'1090'} = $shipmentData->{'currencytype'};
+	$ShipData{'74'} = $shipmentData->{'destinationcountry'};
 
-	if ( $requestData->{'international'} )
+	if ( $shipmentData->{'international'} )
 		{
-		$ShipData{'80'} = $requestData->{'manufacturecountry'};
-		$ShipData{'70'} = $requestData->{'dutypaytype'};
+		$ShipData{'80'} = $shipmentData->{'manufacturecountry'};
+		$ShipData{'70'} = $shipmentData->{'dutypaytype'};
 		$ShipData{'1958'} = "Box";
 		}
 
-	$ShipData{'71'} = $requestData->{'dutyaccount'};
+	$ShipData{'71'} = $shipmentData->{'dutyaccount'};
 
-	if ( $requestData->{'international'} )
+	if ( $shipmentData->{'international'} )
 		{
-		$ShipData{'72'} = $requestData->{'termsofsale'};
-		$ShipData{'414'} = $requestData->{'commodityunits'};
+		$ShipData{'72'} = $shipmentData->{'termsofsale'};
+		$ShipData{'414'} = $shipmentData->{'commodityunits'};
 		$ShipData{'119'} = $commoditycustomsvalue;
 		}
 
-	$ShipData{'76'} = $requestData->{'commodityquantity'};
-	$ShipData{'82'} = $requestData->{'unitquantity'};
+	$ShipData{'76'} = $shipmentData->{'commodityquantity'};
+	$ShipData{'82'} = $shipmentData->{'unitquantity'};
 
-	if ( $requestData->{'international'} )
+	if ( $shipmentData->{'international'} )
 		{
-		$ShipData{'73'} = $requestData->{'partiestotransaction'};
-		$ShipData{'79'} = $requestData->{'extcd'};
+		$ShipData{'73'} = $shipmentData->{'partiestotransaction'};
+		$ShipData{'79'} = $shipmentData->{'extcd'};
 		}
 
-	$ShipData{'81'} = $requestData->{'harmonizedcode'};
+	$ShipData{'81'} = $shipmentData->{'harmonizedcode'};
 
-	if ( $requestData->{'international'} )
+	if ( $shipmentData->{'international'} )
 		{
-		$ShipData{'413'} = $requestData->{'naftaflag'};
+		$ShipData{'413'} = $shipmentData->{'naftaflag'};
 		}
 
-	$ShipData{'1139'} = $requestData->{'ssnein'};
-	$ShipData{'50'} = $requestData->{'addresscountry'}; #Recipient Country Code
+	$ShipData{'1139'} = $shipmentData->{'ssnein'};
+	$ShipData{'50'} = $shipmentData->{'addresscountry'}; #Recipient Country Code
 
-	# fedex says is obsolete (201211112)
-	##if ( $requestData->{'international'} )
+	# FedEx says is obsolete (201211112)
+	##if ($shipmentData->{'international'})
 	##	{
 	##	$ShipData{'1349'} = "S";
 	##	}
 
 	# International Heavy
-	$ShipData{'1271'} = $requestData->{'slac'}; # SLAC
-	$ShipData{'1272'} = $requestData->{'bookingnumber'}; # Booking number
+	$ShipData{'1271'} = $shipmentData->{'slac'}; # SLAC
+	$ShipData{'1272'} = $shipmentData->{'bookingnumber'}; # Booking number
 
 	# Hazardous - fedex says these are for hazardous not international.
-	if ( $requestData->{'hazardous'} )
+	if ($shipmentData->{'hazardous'})
 		{
 		$ShipData{'456'} = 1;
 		$ShipData{'466'} = 1;
@@ -230,53 +230,53 @@ sub process_request
 		}
 
 	# Saturday Delivery
-	if ( $requestData->{'dateneeded'} )
+	if ($shipmentData->{'dateneeded'})
 		{
-		my $DateToText = IntelliShip::DateUtils->date_to_text_long($requestData->{'dateneeded'});
-		if ( $DateToText =~ /Saturday/i )
+		my $DateToText = IntelliShip::DateUtils->date_to_text_long($shipmentData->{'dateneeded'});
+		if ($DateToText =~ /Saturday/i)
 			{
 			$ShipData{'1266'} = 'Y'
 			}
 		}
 
 	# Hazardous
-	if ( $requestData->{'hazardous'} == 1 )
+	if ($shipmentData->{'hazardous'} == 1)
 		{
 		$ShipData{'1331'} = "A", #Hazardous Flag
-		$ShipData{'451'} = $requestData->{'dgunnum'},
-		$ShipData{'461'} = $requestData->{'dgpkgtype'},
-		$ShipData{'476'} = $requestData->{'dgpkginstructions'},
+		$ShipData{'451'} = $shipmentData->{'dgunnum'},
+		$ShipData{'461'} = $shipmentData->{'dgpkgtype'},
+		$ShipData{'476'} = $shipmentData->{'dgpkginstructions'},
 		$ShipData{'484'} = $ContactPhone,
-		$ShipData{'489'} = $requestData->{'dgpackinggroup'},
-		$ShipData{'1903'} = $requestData->{'description'}, # Dangerous Goods Proper Ship Name
-		$ShipData{'1918'} = $requestData->{'contactname'}, # Dangerous Goods Signatory
-		$ShipData{'1922'} = $requestData->{'addresscity'}, # Dangerous Goods Signatory Location
-		$ShipData{'485'} = $requestData->{'contacttitle'}, # Dangerous Goods Signatory Title
+		$ShipData{'489'} = $shipmentData->{'dgpackinggroup'},
+		$ShipData{'1903'} = $shipmentData->{'description'}, # Dangerous Goods Proper Ship Name
+		$ShipData{'1918'} = $shipmentData->{'contactname'}, # Dangerous Goods Signatory
+		$ShipData{'1922'} = $shipmentData->{'addresscity'}, # Dangerous Goods Signatory Location
+		$ShipData{'485'} = $shipmentData->{'contacttitle'}, # Dangerous Goods Signatory Title
 		}
 
-	$requestData->{'rtaddressid'} = $CO->rtaddressid;
-	$requestData->{'rtcontact'} = $CO->rtcontact;
-	$requestData->{'rtphone'} = $CO->rtphone;
+	$shipmentData->{'rtaddressid'} = $CO->rtaddressid;
+	$shipmentData->{'rtcontact'} = $CO->rtcontact;
+	$shipmentData->{'rtphone'} = $CO->rtphone;
 
-	if ($requestData->{'rtaddressid'})
+	if ($shipmentData->{'rtaddressid'})
 		{
-		if ( !$requestData->{'rtphone'} )
+		if ( !$shipmentData->{'rtphone'} )
 			{
-			$requestData->{'rtphone'} = $Customer->phone;
-			$requestData->{'rtcontact'} = $Customer->contact;
+			$shipmentData->{'rtphone'} = $Customer->phone;
+			$shipmentData->{'rtcontact'} = $Customer->contact;
 			}
 
-		$requestData->{'rtphone'} =~ s/\.//g;
-		$requestData->{'rtphone'} =~ s/\///g;
-		$requestData->{'rtphone'} =~ s/\)//g;
-		$requestData->{'rtphone'} =~ s/\(//g;
-		$requestData->{'rtphone'} =~ s/ //g;
+		$shipmentData->{'rtphone'} =~ s/\.//g;
+		$shipmentData->{'rtphone'} =~ s/\///g;
+		$shipmentData->{'rtphone'} =~ s/\)//g;
+		$shipmentData->{'rtphone'} =~ s/\(//g;
+		$shipmentData->{'rtphone'} =~ s/ //g;
 
 		if (my $rtAddress = $CO->rt_address)
 			{
 			$ShipData{'1586'} = "Y",
-			$ShipData{'1485'} = $requestData->{'rtcontact'},
-			$ShipData{'1492'} = $requestData->{'rtphone'},
+			$ShipData{'1485'} = $shipmentData->{'rtcontact'},
+			$ShipData{'1492'} = $shipmentData->{'rtphone'},
 			$ShipData{'1486'} = $rtAddress->addressname,
 			$ShipData{'1487'} = $rtAddress->address1,
 			$ShipData{'1488'} = $rtAddress->address2,
@@ -318,7 +318,7 @@ sub process_request
 		my ($ErrorCode) = $ShipmentReturn =~ /"2,"(\w+?)"/;
 		my ($ErrorMessage) = $ShipmentReturn =~ /"3,"(.*?)"/;
 
-		$requestData->{'errorstring'} = "Error - " . $ErrorCode . ": " . $ErrorMessage;
+		$shipmentData->{'errorstring'} = "Error - " . $ErrorCode . ": " . $ErrorMessage;
 
 		if (   $ErrorCode eq 'F010' 
 			or $ErrorCode eq '1237'
@@ -330,17 +330,17 @@ sub process_request
 			or $ErrorCode eq '8020'
 			or $ErrorCode eq '6026' )
 			{
-			$requestData->{'errorcode'} = 'badzone';
+			$shipmentData->{'errorcode'} = 'badzone';
 			}
 
-		return $requestData;
+		return $shipmentData;
 		}
 	elsif ( $ShipmentReturn =~ /ERROR:(.*)\n/ )
 		{
-		$requestData->{'errorstring'} = $1;
-		$requestData->{'screen'} = 'shipconfirm';
+		$shipmentData->{'errorstring'} = $1;
+		$shipmentData->{'screen'} = 'shipconfirm';
 
-		return $requestData;
+		return $shipmentData;
 		}
 
 	# Build the shipment object to pass back to service
@@ -364,15 +364,15 @@ sub process_request
 		$PrinterString = $String;
 		}
 
-	$PrinterString = $self->TagPrinterString($PrinterString,$requestData->{'ordernumber'});
+	$PrinterString = $self->TagPrinterString($PrinterString,$shipmentData->{'ordernumber'});
 
-	$requestData->{'tracking1'} = $TrackingNumber;
-	$requestData->{'printerstring'} = $PrinterString;
-	$requestData->{'weight'} = $requestData->{'enteredweight'};
+	$shipmentData->{'tracking1'} = $TrackingNumber;
+	$shipmentData->{'printerstring'} = $PrinterString;
+	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	$c->log->debug('requestData: ' . Dumper $requestData);
-	my $Shipment = $c->model('MyDBI::Shipment')->new($requestData);
-	$Shipment->shipmentid($self->get_token_id);
+	$c->log->debug('*** shipmentData ***: ' . Dumper $shipmentData);
+	my $Shipment = $c->model('MyDBI::Shipment')->new($shipmentData);
+	$Shipment->shipmentid($shipmentData->{'shipmentid'});
 	$Shipment->insert;
 
 	$c->log->debug('New shipment inserted, ID: ' . $Shipment->shipmentid);

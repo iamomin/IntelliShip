@@ -253,6 +253,24 @@ sub trim_hash_ref_values ## Trims all multiple internal whitespace down to a sin
 	return $HashRef;
 	}
 
+my $SHIPMENT_CHARGE_NAMES = {
+	freightcharge => 'Freight Charge',
+	fuelsurcharge => 'Fuel Surcharge',
+	declaredvalueinsurancecharge => 'Declared Value Insurance Charge',
+	freightinsurancecharge => 'Freight Insurance Charge',
+	codfeecharge => 'COD Fee Charge',
+	collectfreightcharge => 'Collect Freight Charge',
+	singleshipmentcharge => 'Single Shipment Charge',
+	podservicecharge => 'POD Service Charge'
+	};
+
+sub get_shipment_charge_display_name
+	{
+	my $self = shift;
+	my $ChargeType = shift;
+	return $SHIPMENT_CHARGE_NAMES->{$ChargeType};
+	}
+
 1;
 
 __END__

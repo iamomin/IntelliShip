@@ -876,6 +876,37 @@ sub package_details
 	return @packageArr;
 	}
 
+sub total_dimweight
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_dimweight = 0;
+	$total_dimweight += $_->dimweight foreach @packages;
+	return $total_dimweight;
+	}
+
+sub total_weight
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_weight = 0;
+	foreach (@packages)
+		{
+		my $weight = ($_->dimweight > $_->weight ? $_->dimweight : $_->weight);
+		$total_weight += ($_->quantity > 1 ? $_->quantity * $weight : $weight);
+		}
+	return $total_weight;
+	}
+
+sub total_quantity
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_quantity = 0;
+	$total_quantity += $_->quantity foreach @packages;
+	return $total_quantity;
+	}
+
 # Assdata OwnerTypeID:
 # 1000 = CO
 # 2000 = shipment
@@ -883,6 +914,40 @@ sub assessorials
 	{
 	my $self = shift;
 	return $self->assdata({ ownertypeid => '1000' });
+	}
+
+sub has_pick_and_pack
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	foreach (@packages)
+		{
+		my $RS = $_->packprochilds;
+		return 1 if $RS->count > 0;
+		}
+	}
+
+sub is_fullfilled
+	{
+	my $self = shift;
+	my $order_number = shift;
+	my $cotype_id = shift || 0;
+
+	my @products = $self->products($order_number);
+
+	foreach my $Product (@products)
+		{
+		if ($cotype_id == 2)
+			{
+			return 0 if $Product->shippedqty < $Product->quantity; # PO is unfullfilled if any product is unfullfilled
+			}
+		else
+			{
+			return 0 if $Product->quantity > 0; # Order is unfullfilled if any product is unfullfilled
+			}
+		}
+
+	return 1;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

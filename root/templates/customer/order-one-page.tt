@@ -3,9 +3,9 @@
 
 <script src="/static/js/customer-order.js"></script>
 
-<form id="frm_order" name="frm_order" method="post" action="/customer/order/new">
+<form id="frm_order" name="frm_order" method="post" action="/customer/order/[% quickship ? 'quickship' : 'onepage' %]">
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" name="do" value="save"/>
+	<input type="hidden" id="do" name="do" value="save"/>
 
 	<h2>Address Information</h2>
 	[% ADDRESS_SECTION %]
@@ -50,13 +50,19 @@
 		});
 
 	$("#ship_now").click(function() {
-		if ($("#" + $("#customerserviceid").val()).val().toUpperCase() != 'FEDEX')
+
+		return;
+		var carrier = $("#carrier").val();
+		console.log("SELECTED CARRIER: " + carrier);
+		if (carrier == undefined) return;
+
+		if (carrier.toUpperCase() != 'FEDEX')
 			{
 			showError("Only FedEx is supported, please select correct carrier from list.");
 			return;
 			}
-		return showError("Under construction!");
-		$("#do").val('ship');
+
+		$("#do").val("ship");
 		$("#frm_order").submit();
 		});
 

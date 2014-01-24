@@ -150,12 +150,14 @@ sub get_carrier_service_list
 						service => $service,
 						};
 
+		$shipment_charge =~ s/\$// if $shipment_charge;
+		$detail_hash->{'shipment_charge'} = $shipment_charge || '0.00';
+
 		if ($CO->freightcharges == 0) # PREPAID
 			{
 			$c->stash->{IS_PREPAID} = 1;
 			$detail_hash->{'delivery'} = $estimated_date;
-			$shipment_charge =~ s/\$//;
-			$detail_hash->{'shipment_charge'} = $shipment_charge;
+
 			$detail_hash->{'days'} = IntelliShip::DateUtils->get_delta_days(IntelliShip::DateUtils->current_date, $estimated_date);
 
 			my ($freightcharges,$fuelcharges) = (0,0);
@@ -174,14 +176,16 @@ sub get_carrier_service_list
 					$CostBreakDown[0] =~ s/\'// if $CostBreakDown[0];
 					$CostBreakDown[1] =~ s/\'// if $CostBreakDown[1];
 
-					$freightcharges += $CostBreakDown[0] if $CostBreakDown[0] =~ /\d+/;
-					$fuelcharges += $CostBreakDown[1] if $CostBreakDown[1] =~ /\d+/;
+					$freightcharges += $CostBreakDown[0] if $CostBreakDown[0] and $CostBreakDown[0] =~ /\d+/;
+					$fuelcharges += $CostBreakDown[1] if $CostBreakDown[1] and $CostBreakDown[1] =~ /\d+/;
 					}
 				}
 
 			my ($totalquantity, $aggregateweight) = $self->get_estimated_quantity_and_weight;
 			my $DVI_Charge = $self->calculate_declared_value_insurance($CSData->{'key'}, $aggregateweight);
 			my $FI_Charge = $self->calculate_freight_insurance($CSData->{'key'}, $totalquantity);
+
+			$detail_hash->{'shipment_charge'} =~ s/Quote//;
 
 			my $SHIPMENT_CHARGE_DETAILS = [];
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Charges' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
@@ -195,7 +199,6 @@ sub get_carrier_service_list
 			#$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));
 			}
 
-		$detail_hash->{'shipment_charge'} =~ s/Quote//;
 		$detail_hash->{'shipment_charge'} =~ /\d+/ ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 

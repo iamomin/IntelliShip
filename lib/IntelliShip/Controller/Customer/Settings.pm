@@ -29,7 +29,7 @@ sub index :Path :Args(0) {
 
     #$c->response->body('Matched IntelliShip::Controller::Customer::Settings in Customer::Settings.');
 
-	$c->log->debug("DISPLAY SETTING LINKS");
+	#$c->log->debug("DISPLAY SETTING LINKS");
 
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
@@ -85,8 +85,8 @@ sub update_password :Private
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	$c->log->debug("Contact->password: " . $Contact->password);
-	$c->log->debug("Customer->password: " . $Customer->password);
+	#$c->log->debug("Contact->password: " . $Contact->password);
+	#$c->log->debug("Customer->password: " . $Customer->password);
 
 	if ($params->{'oldpassword'} ne $Contact->password)
 		{
@@ -140,7 +140,7 @@ sub skumanagement :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("SKU MANAGEMENT");
+	#$c->log->debug("SKU MANAGEMENT");
 
 	my $productskus_batches = $self->process_pagination('skumanagement');
 
@@ -195,7 +195,7 @@ sub ajax :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("SETTINGS AJAX");
+	#$c->log->debug("SETTINGS AJAX");
 
 	$c->stash->{ajax} = 1;
 
@@ -208,7 +208,7 @@ sub ajax :Local
 		#$c->log->debug("WHERE: " . Dumper $WHERE);
 		my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
 
-		$c->log->debug("TOTAL SKUS: " . @productskus);
+		#$c->log->debug("TOTAL SKUS: " . @productskus);
 		$c->stash->{productskulist} = \@productskus;
 		$c->stash->{productsku_count} = scalar @productskus;
 
@@ -239,7 +239,7 @@ sub findsku :Local
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	$c->log->debug("FIND SKU: " . Dumper $params);
+	#$c->log->debug("FIND SKU: " . Dumper $params);
 
 	#my $WHERE = { customerid => $self->customer->customerid };
 	#$WHERE->{description} = { like => $params->{'term'} };
@@ -417,7 +417,7 @@ sub finddroplistdata :Local
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	$c->log->debug("FIND DropListData: " . Dumper $params);
+	#$c->log->debug("FIND DropListData: " . Dumper $params);
 
 	my $term  = uc($params->{'term'});
 	my $sql = "SELECT fieldvalue FROM droplistdata WHERE field = 'extid' and customerid = '" . $self->customer->customerid . "' AND fieldvalue LIKE '%" . $term . "%' ORDER BY 1";
@@ -456,7 +456,7 @@ sub process_pagination
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("PROCESS PAGINATION");
+	#$c->log->debug("PROCESS PAGINATION");
 
 	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
 	$c->stash->{records_per_page} = $batch_size;
