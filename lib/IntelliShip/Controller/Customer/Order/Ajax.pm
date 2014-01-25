@@ -208,6 +208,9 @@ sub get_carrier_service_list
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
+	$sortByDays[0]->{'selected'} = 1;
+	$sortByCharge[0]->{'selected'} = 1;
+
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [$sortByDays[0]];
 	$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 
