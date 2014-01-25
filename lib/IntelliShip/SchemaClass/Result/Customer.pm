@@ -586,6 +586,12 @@ __PACKAGE__->belongs_to(
 		'addressid'
 	);
 
+__PACKAGE__->belongs_to(
+	auxilary_address =>
+		'IntelliShip::SchemaClass::Result::Address',
+		'auxformaddressid'
+	);
+
 __PACKAGE__->has_many(
 	contacts =>
 		'IntelliShip::SchemaClass::Result::Contact',

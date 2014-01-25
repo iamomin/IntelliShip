@@ -293,10 +293,11 @@
 			<th>EST. TOTAL COST</th>
 			[% END %]
 		</tr>
+		[% customerserviceid_selected=0 %]
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td>
-				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')"/><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')" [% customerserviceid_selected++ == 0 ? 'CHECKED' : '' %]/><span></span></label>
 				<div style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table class="app"  style="text-align: center;">
 					<tr><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSIT DAYS</th><th>EST. DELIVERY</th></tr>

@@ -731,3 +731,870 @@ $(document).ready(function(){
 	[% # CONTACT INFO END %]
 	[% #---------------------------------------------------------- %]
 [% END %]
+
+[% #---------------------------------------------------------- %]
+[% # CUSTOMER MANAGEMENT %]
+[% #---------------------------------------------------------- %]
+[% IF CUSTOMER_MANAGEMENT %]
+	[% UNLESS ajax %]<h2>Company Management</h2>[% END %]
+
+	[% #---------------------------------------------------------- %]
+	[% # CUSTOMER_LIST START %]
+	[% #---------------------------------------------------------- %]
+	[% IF CUSTOMER_LIST %]
+
+	[% UNLESS ajax %]
+	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
+
+	<p class="validateTips"></p>
+
+		<form id="frm_customer_management" method="post" action="/customer/settings/customersetup">
+			<input type="hidden" id="do" name="do" value="setup"/>
+			<input type="hidden" id="customerid" name="customerid"/>
+			<div class="float_right">
+			<table><tr>
+				<td><label class="float_right" for="customer">Customer Name:</td>
+				<td><input type="text" class="text" id="customer" name="customer" /></td>
+				<td><input type="button" class="blue" id="customer_edit" value="Edit" /></td>
+				<td><input type="button" class="green" id="customer_add" value="Add New" /></td>
+				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
+				<td><label class="float_right" for="records_per_page">Records Per Page:</td>
+				<td>
+					<select name="records_per_page" id="records_per_page">
+					[% FOREACH item IN recordsperpage_list %]
+						<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+					[% END %]
+					</select>
+				</td>
+				<td>
+					<select name="customer_page" id="customer_page">
+					[% FOREACH ids IN customer_batches %]
+						<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+					[% END %]
+					</select>
+				</td>
+			</tr></table>
+			</div>
+		</form>
+	[% END %]
+
+
+	[% UNLESS ajax %]<div id="divCustomerList">[% END %]
+	<h3>Customer Count [% customer_count %]</h3>
+
+	<table class="report">
+		<tr>
+			<th>&nbsp;</th>
+			<th>Customer Name</th>
+			<th>Contact</th>
+			<th>Phone</th>
+			<th>Email</th>
+			<th>User Name</th>
+		</tr>
+		[% FOREACH item IN customerlist %]
+			<tr>
+				<td><a href="javascript:editCustomer('[% item.customerid %]');">edit</a></td>
+				<td>[% item.customername %]</td>
+				<td>[% item.contact %]</td>
+				<td>[% item.phone %]</td>
+				<td>[% item.email %]</td>
+				<td>[% item.username %]</td>
+			</tr>
+		[% END %]
+	</table>
+	[% UNLESS ajax %]</div>[% END %]
+
+	[% UNLESS ajax %]
+	<script>
+
+	function editCustomer(customerid) {
+		return;
+		$("#customer").val("");
+		$("#customerid").val(customerid);
+		$("#frm_customer_management").submit();
+		}
+
+	var cachedCustomers = {};
+
+	$(document).ready(function(){
+
+		$("#customer").autocomplete({
+			minLength: 2,
+			source: function ( request, response ) {
+					var term = request.term;
+					if ( term in cachedCustomers ) {
+						response( cachedCustomers[ term ] );
+						return;
+						}
+					$('#preload').show();
+					$.getJSON( "/customer/settings/findcustomer", request, function( data, status, xhr ) {
+						cachedCustomers[ term ] = data;
+						response( data );
+						$('#preload').hide();
+						});
+					}
+			});
+
+		$("#customer_edit").click(function() {
+			return;
+			if (validateForm({ customer : { minlength: 1, description: "Please specify valid Customer Name" } })) {
+				$("#frm_customer_management").submit();
+				}
+			});
+
+		$("#customer_add").click(function() {
+			$("#customer").val("");
+			$("#customerid").val("");
+			$("#frm_customer_management").submit();
+			});
+
+		$("#records_per_page").change(function() {
+			$('#frm_customer_management').attr('action', '/customer/settings/customermanagement');
+			$("#customer_page").prop('disabled','disabled');
+			$("#frm_customer_management").submit();
+			});
+
+		$("#customer_page").change(function() {
+			var query_param = "&customer=1&page=" + $(this).val();
+			send_ajax_request('divCustomerList', 'HTML', 'settings', '', query_param);
+			});
+		});
+	</script>
+	[% END %]
+	[% END %]
+
+	[% #---------------------------------------------------------- %]
+	[% # CUSTOMER_LIST END %]
+	[% #---------------------------------------------------------- %]
+
+	[% #---------------------------------------------------------- %]
+	[% # SETUP_CUSTOMER START %]
+	[% #---------------------------------------------------------- %]
+	[% IF SETUP_CUSTOMER %]
+
+	<h3>[% IF customerid %]Edit[% ELSE %]Add New[% END %] Customer</h3>
+
+	<form id="frm_setup_customer" method="post" action="/customer/settings/customersetup">
+		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
+		<input type="hidden" id="do" name="do" value="configure"/>
+		<table class="center_app">
+			<tr height=20 align='center'>
+				<th colspan="2">COMPANY INFORMATION</th>
+			</tr>
+			<tr>
+				<td>Company ID:</td>
+				<td><input type="text" name="customerid" id="customerid" value="[%customerid%]" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>HALO Company ID</td>
+				<td><input type="text" name="halocustomerid" id="halocustomerid" value="[%halocustomerid%]" size="30" maxlength="50"></td>
+			</tr>
+			<tr>
+				<td>Company Name:</td>
+				<td><input type="text" name="customername" id="customername" value="[%customername%]" size="30" maxlength="50"></td>
+			</tr>
+
+			<tr>
+				<td>Address 1:</td>
+				<td><input type="text" class="broad_text" name="address1" id="address1" value="[% customerAddress.address1 %]"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input type="text" class="broad_text" name="address2" id="address2" value="[% customerAddress.address2 %]"></td>
+			</tr>
+			<tr>
+				<td>City:</td>
+				<td><input type="text" class="broad_text" name="city" id="city" value="[% customerAddress.city %]"></td>
+			</tr>
+			<tr>
+				<td>State:</td>
+				<td><select name="state" id="state">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.name %]</option>
+						[% END %]
+					</select>
+</td>
+			</tr>
+			<tr>
+				<td>Zipcode:</td>
+				<td><input type="text" class="broad_text" name="zip" id="zip" value="[% customerAddress.zip %]"></td>
+			</tr>
+			<tr>
+				<td>Country:</td>
+				<td><select name="country" id="country">
+						[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]" [% (customerAddress.country and item.value == customerAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Contact:</td>
+				<td><input type="text" class="broad_text" name="contact" id="contact" value="[% customer.contact %]"></td>
+			</tr>
+			</tr>
+				<td>Phone:</td>
+				<td><input type="text" class="broad_text" name="phone" id="phone" value="[% customer.phone %]"></td>
+			<tr>
+			</tr>
+				<td>Department:</td>
+				<td><input type="text" class="broad_text" name="department" id="department" value="[% department %]"></td>
+			<tr>
+			<tr>
+				<td>Email:</td>
+				<td><input type="text" class="broad_text" name="email" id="email" value="[% email %]"/></td>
+			</tr>
+			<tr>
+				<td>Fax:</td>
+				<td><input type="text" class="broad_text" name="fax" id="fax" value="[% fax %]"/></td>
+			</tr>
+			<tr>
+				<td>EIN:</td>
+				<td><input type="text" class="broad_text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
+			</tr>
+			<tr>
+				<td>Password:</td>
+				<td>
+					[%IF !customerid %]
+						<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
+					[%ELSE%]
+						[%password%]
+					[%END%]
+				</td>
+			</tr>
+			<tr>
+				<td>Form Name:</td>
+				<td><input type="text" name="auxaddressname" id="auxaddressname" value="[%customerAuxFormAddress.addressname%]" size="30" maxlength="50"></td>
+			</tr>
+
+			<tr>
+				<td>Form Address:</td>
+				<td><input type="text" class="broad_text" name="auxaddress1" id="auxaddress1" value="[% customerAuxFormAddress.address1 %]"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input type="text" class="broad_text" name="auxaddress2" id="auxaddress2" value="[% customerAuxFormAddress.address2 %]"></td>
+			</tr>
+			<tr>
+				<td>Form City:</td>
+				<td><input type="text" class="broad_text" name="auxcity" id="auxcity" value="[% customerAuxFormAddress.city %]"></td>
+			</tr>
+			<tr>
+				<td>Form State:</td>
+				<td><select name="auxstate" id="auxstate">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == customerAuxFormAddress.state %] selected [% END %]>[% item.name %]</option>
+						[% END %]
+					</select>
+</td>
+			</tr>
+			<tr>
+				<td>Form Zipcode:</td>
+				<td><input type="text" class="broad_text" name="auxzip" id="auxzip" value="[% customerAuxFormAddress.zip %]"></td>
+			</tr>
+			<tr>
+				<td>Form Country:</td>
+				<td><select name="auxcountry" id="auxcountry">
+						[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]" [% (customerAuxFormAddress.country and item.value == customerAuxFormAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+			</tr>
+		</table>
+		<table class="center_app">
+			<tr height=20 align='center'>
+				<th colspan ="8" >COMPANY SETTINGS</th>
+			</tr>
+			<tr>
+				<td>SOP:</td>
+				<td><select name="cust_sopid" id="cust_sopid">
+						[% FOREACH item IN customerlist_loop %]
+							<option value="[% item.value %]" [% (cust_sopid and item.value == cust_sopid) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Client ID:</td>
+				<td><input type="text" class="broad_text" name="cust_clientid" id="cust_clientid" value="[% cust_clientid %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			[% count=0 %]
+			<tr>
+			[% FOREACH item IN companysetting_loop %]
+			[% count=count+1 %]
+				[% IF count == 5 %]
+					</tr><tr>
+					[% count = 1 %]
+				[% END %]
+					<td>[% item.name %]:&nbsp;</td>
+					<td id="td_[% item.value %]">
+					<label><input type="checkbox" name="cust_[% item.name %]" id="cust_[% item.name %]" value="[% item.value %]" [% item.checked ? "CHECKED" : '' %]/>
+					</td>
+
+			[% END %]
+			<tr>
+				<td>Weight Type:</td>
+				<td><select name="cust_sopid" id="cust_sopid">
+						[% FOREACH item IN weighttype_loop %]
+							<option value="[% item.value %]" [% (customer.weighttype and item.value == customer.weighttype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Label Banner:</td>
+				<td><input type="text" class="broad_text" name="labelbanner" id="labelbanner" value="[% customer.labelbanner %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Label Printer Port:</td>
+				<td><input type="text" class="broad_text" name="cust_labelport" id="cust_labelport" value="[% cust_labelport %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Thermal Label Count:</td>
+				<td><input type="text" class="broad_text" name="cust_defaultthermalcount" id="cust_defaultthermalcount" value="[% cust_defaultthermalcount %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>8.5x11 BOL Label Count:</td>
+				<td><input type="text" class="broad_text" name="cust_bolcount8_5x11" id="cust_bolcount8_5x11" value="[% cust_bolcount8_5x11 %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Thermal BOL Label Count:</td>
+				<td><input type="text" class="broad_text" name="cust_bolcountthermal" id="cust_bolcount8_5x11" value="[% cust_bolcountthermal %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>BOL Type:</td>
+				<td><select name="cust_boltype" id="cust_boltype">
+						[% FOREACH item IN boltype_loop %]
+							<option value="[% item.value %]" [% (cust_boltype and item.value == cust_boltype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>BOL Detail:</td>
+				<td><select name="cust_boldetail" id="cust_boldetail">
+						[% FOREACH item IN boldetail_loop %]
+							<option value="[% item.value %]" [% (cust_boldetail and item.value == cust_boldetail) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Auto Report Times:</td>
+				<td><input type="text" class="broad_text" name="cust_autoreporttime" id="cust_autoreporttime" value="[% cust_autoreporttime %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Auto Report Email:</td>
+				<td><input type="text" class="broad_text" name="cust_autoreportemail" id="cust_autoreportemail" value="[% cust_autoreportemail %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Auto Report Interval:</td>
+				<td><input type="text" class="broad_text" name="cust_autoreportinterval" id="cust_autoreportinterval" value="[% cust_autoreportinterval %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Proxy IP:</td>
+				<td><input type="text" class="broad_text" name="cust_proxyip" id="cust_proxyip" value="[% cust_proxyip %]"></td>
+				<td>Proxy Port:</td>
+				<td><input type="text" class="broad_text" name="cust_proxyport" id="cust_proxyport" value="[% cust_proxyport %]"></td>
+			</tr>
+			<tr>
+				<td>Loss Prevention Email:</td>
+				<td><input type="text" class="broad_text" name="cust_losspreventemail" id="cust_losspreventemail" value="[% cust_losspreventemail %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Loss Prevention Email (Manual Order Create):</td>
+				<td><input type="text" class="broad_text" name="cust_losspreventemailordercreate" id="cust_losspreventemailordercreate" value="[% cust_losspreventemailordercreate %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Smart Address Book:</td>
+				<td><input type="text" class="broad_text" name="cust_smartaddressbook" id="cust_smartaddressbook" value="[% cust_smartaddressbook %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>API Intelliship Address:</td>
+				<td><input type="text" class="broad_text" name="cust_apiaosaddress" id="cust_apiaosaddress" value="[% cust_apiaosaddress %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Charge Difference Threshold (flat):</td>
+				<td><input type="text" class="broad_text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Charge Difference Threshold (%/min):</td>
+				<td><input type="text" class="broad_text" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]"></td>
+				<td><input type="text" class="broad_text" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Return Capability:</td>
+				<td><select name="cust_returncapability" id="cust_returncapability">
+						[% FOREACH item IN capability_loop %]
+							<option value="[% item.value %]" [% (cust_returncapability and item.value == cust_returncapability) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Dropship Capability:</td>
+				<td><select name="cust_dropshipcapability" id="cust_dropshipcapability">
+						[% FOREACH item IN capability_loop %]
+							<option value="[% item.value %]" [% (cust_dropshipcapability and item.value == cust_dropshipcapability) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Login Level:</td>
+				<td><select name="cust_loginlevel" id="cust_loginlevel">
+						[% FOREACH item IN loginlevel_loop %]
+							<option value="[% item.value %]" [% (cust_loginlevel and item.value == cust_loginlevel) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Display Quote Markup:</td>
+				<td><select name="cust_quotemarkup" id="cust_quotemarkup">
+						[% FOREACH item IN quotemarkup_loop %]
+							<option value="[% item.value %]" [% (cust_quotemarkup and item.value == cust_quotemarkup) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Quote Markup Default:</td>
+				<td><select name="cust_quotemarkupdefault" id="cust_quotemarkupdefault">
+						[% FOREACH item IN quotemarkupdefault_loop %]
+							<option value="[% item.value %]" [% (cust_quotemarkupdefault and item.value == cust_quotemarkupdefault) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Default Freight Class:</td>
+				<td><input type="text" class="broad_text" name="cust_defaultfreightclass" id="cust_defaultfreightclass" value="[% cust_defaultfreightclass %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Cycle Time Threshold:</td>
+				<td><input type="text" class="broad_text" name="cust_cycletimethreshold" id="cust_cycletimethreshold" value="[% cust_cycletimethreshold %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Due Date Offset (equal):</td>
+				<td><input type="text" class="broad_text" name="cust_duedateoffsetequal" id="cust_duedateoffsetequal" value="[% cust_duedateoffsetequal %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Due Date Offset (less than):</td>
+				<td><input type="text" class="broad_text" name="cust_duedateoffsetlessthan" id="cust_duedateoffsetlessthan" value="[% cust_duedateoffsetlessthan %]"></td>
+				<td>&nbsp;</td>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Default Package Unit Type:</td>
+				<td><select name="cust_defaultpackageunittype" id="cust_defaultpackageunittype">
+						[% FOREACH item IN unittype_loop %]
+							<option value="[% item.value %]" [% (cust_defaultpackageunittype and item.value == cust_defaultpackageunittype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Default Product Unit Type:</td>
+				<td><select name="cust_defaultproductunittype" id="cust_defaultproductunittype">
+						[% FOREACH item IN unittype_loop %]
+							<option value="[% item.value %]" [% (cust_defaultproductunittype and item.value == cust_defaultproductunittype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>PO Instructions:</td>
+				<td><select name="cust_poinstructions" id="cust_poinstructions">
+						[% FOREACH item IN poinstructions_loop %]
+							<option value="[% item.value %]" [% (cust_poinstructions and item.value == cust_poinstructions) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>PO Auth Type:</td>
+				<td><select name="cust_poauthtype" id="cust_poauthtype">
+						[% FOREACH item IN poauthtype_loop %]
+							<option value="[% item.value %]" [% (cust_poauthtype and item.value == cust_poauthtype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Company Type:</td>
+				<td><select name="cust_companytype" id="cust_companytype">
+						[% FOREACH item IN companytype_loop %]
+							<option value="[% item.value %]" [% (cust_companytype and item.value == cust_companytype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Print Packing List:</td>
+				<td><select name="cust_defaultpackinglist" id="cust_defaultpackinglist">
+						[% FOREACH item IN defaultpackinglist_loop %]
+							<option value="[% item.value %]" [% (cust_defaultpackinglist and item.value == cust_defaultpackinglist) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Packing List:</td>
+				<td><select name="cust_packinglist" id="cust_packinglist">
+						[% FOREACH item IN packinglist_loop %]
+							<option value="[% item.value %]" [% (cust_packinglist and item.value == cust_packinglist) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Live Product TAB:</td>
+				<td><select name="cust_liveproduct" id="cust_liveproduct">
+						[% FOREACH item IN liveproduct_loop %]
+							<option value="[% item.value %]" [% (cust_liveproduct and item.value == cust_liveproduct) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Shipment Markup:</td>
+				<td><input type="text" class="broad_text" name="shipmentmarkup" id="shipmentmarkup" value="[% shipmentmarkup %]"></td>
+				<td><select name="shipmentmarkuptype" id="shipmentmarkuptype">
+						[% FOREACH item IN markuptype_loop %]
+							<option value="[% item.value %]" [% (shipmentmarkuptype and item.value == shipmentmarkuptype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Assessorial Markup:</td>
+				<td><input type="text" class="broad_text" name="assmarkup" id="assmarkup" value="[% assmarkup %]"></td>
+				<td><select name="assmarkuptype" id="assmarkuptype">
+						[% FOREACH item IN markuptype_loop %]
+							<option value="[% item.value %]" [% (assmarkuptype and item.value == assmarkuptype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>Label Type:</td>
+				<td><select name="cust_liveproduct" id="cust_liveproduct">
+						[% FOREACH item IN liveproduct_loop %]
+							<option value="[% item.value %]" [% (cust_liveproduct and item.value == cust_liveproduct) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+				</td>
+				<td align=right>&nbsp;</td>
+				<td align=left>&nbsp;</td>
+			</tr>
+		</table>
+		<table class="report">
+		<tr>
+			<th>FTP Type</th>
+			<th>User Name</th>
+			<th>Password</th>
+			<th>Path</th>
+			<th>Address</th>
+			<th>Active</th>
+			<th>Timeout</th>
+			<th>Email</th>
+		</tr>
+		</table>
+		<table class="report">
+		<tr>
+			<th>User Name</th>
+			<th>Password</th>
+			<th>Login Level</th>
+			<th>Quickship</th>
+			<th>Display Quote Markup</th>
+			<th>Quote Markup Default</th>
+			<th>First Name</th>
+			<th>Last Name</th>
+			<th>Email</th>
+			<th>Mobile Phone</th>
+			<th>Business Phone</th>
+			<th>Business Phone</th>
+			<th>Date Deactivated</th>
+			<th>Label Port</th>
+			<th>ZPL2</th
+			<th><var name=skuaka> Manager</th>
+			<th>My Orders</th>
+			<th>Custnum Address Lookup</th>
+			<th>Text Status</th>
+			<th>Restrict Orders (<var name=extcustnumaka>)</th>
+			<th>Return Capability</th>
+			<th>Dropship Capability</th>
+			<th>Saturday Shipping</th>
+			<th>Sunday Shipping</th>
+			<th>Default Freight Class</th>
+			<th>Auto DIM Classing</th>
+			<th>API Username</th>
+			<th>API Password</th>
+			<th>Default Package Unit Type</th>
+			<th>Default Product Unit Type</th>
+			<th>PO Instructions</th>
+			<th>PO Auth Type</th>
+			<th>Default Commercial Invoice</th>
+			<th>Print Packing List</th>
+			<th>HALO Username</th>
+			<th>HALO Password</th>
+			<th>HALO URL</th>
+		</tr>
+
+		[% ## START CONTACT SAVE LINE %]
+		<tr>
+			<td>
+				<input type=hidden name='contactid_0' value="<var name=contactid_0>">
+				<input type=text name='username_0' size=15 maxlength=20  value="">
+			</td>
+			<td>
+				<input type=text name='password_0' size=15 maxlength=20 value="">
+			</td>
+			<td>
+				<select name="loginlevel_0" id="loginlevel_0">
+					[% FOREACH item IN loginlevel_loop %]
+						<option value="[% item.value %]" [% (loginlevel and item.value == loginlevel) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<select name="quickship_0" id="quickship_0">
+					[% FOREACH item IN quickshipdroplist_loop %]
+						<option value="[% item.value %]" [% (quickship and item.value == quickship) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<select name="quotemarkup_0" id="quotemarkup_0">
+					[% FOREACH item IN quotemarkup_loop %]
+						<option value="[% item.value %]" [% (quotemarkup and item.value == quotemarkup) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<select name="quotemarkupdefault_0" id="quotemarkupdefault_0">
+					[% FOREACH item IN quotemarkupdefault_loop %]
+						<option value="[% item.value %]" [% (quotemarkupdefault and item.value == quotemarkupdefault) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<input type=text name='firstname_0' size=20 maxlength=50 value="">
+			</td>
+			<td>
+				<input type=text name='lastname_0' size=20 maxlength=50 value="">
+			</td>
+			<td>
+				<input type=text name='email_0' size=20 maxlength=100 value="">
+			</td>
+			<td>
+				<input type=text name='phonemobile_0' size=15 maxlength=25 value="">
+			</td>
+			<td>
+				<input type=text name='phonebusiness_0' size=15 maxlength=25 value="">
+			</td>
+			<td>
+				<input type=text name='datedeactivated_0' size=15 maxlength=15 value="">
+			</td>
+			<td>
+				<input type=text name='labelport_0' size=15 maxlength=15 value="">
+			</td>
+			<td>
+				<input type=checkbox name='zpl2_0' value='1' checked>
+			</td>
+			<td>
+				<input type=checkbox name='skumanager_0' value='1' checked>
+			</td>
+			<td>
+				<input type=checkbox name='myorders_0' value='1' checked>
+			</td>
+			<td>
+				<input type=checkbox name='custnumaddresslookup_0' value='1' checked>
+			</td>
+			<td>
+				<select name="indicatortype_0" id="indicatortype_0">
+					[% FOREACH item IN indicatortype_loop %]
+						<option value="[% item.value %]" [% (indicatortype_0 and item.value == indicatortype_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td nowrap align="center">
+			<var name=extcustnum_listbox_0>
+			</td>
+			<td>
+				<select name="returncapability_0" id="returncapability_0">
+					[% FOREACH item IN capability_loop %]
+						<option value="[% item.value %]" [% (returncapability_0 and item.value == returncapability_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<select name="dropshipcapability_0" id="dropshipcapability_0">
+					[% FOREACH item IN capability_loop %]
+						<option value="[% item.value %]" [% (dropshipcapability_0 and item.value == dropshipcapability_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<input type=checkbox name='satshipping_0' value='1' checked>
+			</td>
+			<td>
+				<input type=checkbox name='sunshipping_0' value='1' checked>
+			</td>
+			<td nowrap align="left">
+				<input type=text name='defaultfreightclass_0' size=15 maxlength=15 value="">
+			</td>
+			<td nowrap align="center">
+				<input type=checkbox name='autodimclass_0' value='1' checked>
+			</td>
+			<td nowrap align="left">
+				<input type=text name='apiusername_0' size=15 value="">
+			</td>
+			<td nowrap align="left">
+				<input type=text name='apipassword_0' size=15 value="">
+			</td>
+			<td><select name="defaultpackageunittype_0" id="defaultpackageunittype_0">
+					[% FOREACH item IN unittype_loop %]
+						<option value="[% item.value %]" [% (defaultpackageunittype_0 and item.value == defaultpackageunittype_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td><select name="defaultproductunittype_0" id="defaultproductunittype_0">
+					[% FOREACH item IN unittype_loop %]
+						<option value="[% item.value %]" [% (defaultproductunittype_0 and item.value == defaultproductunittype_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td><select name="poinstructions_0" id="poinstructions_0">
+					[% FOREACH item IN poinstructions_loop %]
+						<option value="[% item.value %]" [% (poinstructions_0 and item.value == poinstructions_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td><select name="poauthtype_0" id="poauthtype_0">
+					[% FOREACH item IN poauthtype_loop %]
+						<option value="[% item.value %]" [% (poauthtype_0 and item.value == poauthtype_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td>
+				<input type=checkbox name='defaultcomminv_0' value='1' checked>
+			</td>
+			<td><select name="defaultpackinglist_0" id="defaultpackinglist_0">
+					[% FOREACH item IN defaultpackinglist_loop %]
+						<option value="[% item.value %]" [% (defaultpackinglist_0 and item.value == defaultpackinglist_0) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					[% END %]
+				</select>
+			</td>
+			<td nowrap align="left">
+				<input type=text name='halousername_0' size=15 value="">
+			</td>
+			<td nowrap align="left">
+				<input type=text name='halopassword_0' size=15 value="">
+			</td>
+			<td nowrap align="left">
+				<input type=text name='halourl_0' size=25 value="">
+			</td>
+		</tr>
+	</table>
+		<center><input type="submit" class="green" id="update_customer" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+	</form>
+
+	<script>
+	$("#frm_setup_customer").submit(function () {
+		var requireHash = {
+
+			};
+		if (validateForm(requireHash)) {
+			$("#update_productsku").val("Please Wait...");
+			$("#update_productsku").attr("disabled", true);
+			return true;
+			} else {
+			return false;
+			}
+		});
+
+	$(document).ready(function(){
+		$("#update_productsku").attr("disabled", false);
+		});
+	</script>
+
+	[% END %]
+	[% #---------------------------------------------------------- %]
+	[% # SETUP_CUSTOMER END %]
+	[% #---------------------------------------------------------- %]
+
+[% END %]

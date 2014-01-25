@@ -665,6 +665,125 @@ sub get_select_list
 			{ value => 500 , name => '500' },
 			];
 		}
+	elsif ($list_name eq 'BOL_DETAIL')
+		{
+		$list = [
+			{ name => 'SKU Detail Only', value => '1'},
+			{ name => 'SKU Detail w/Summary', value => '2'},
+			{ name => 'Summary Only', value => '3'}
+			];
+		}
+	elsif ($list_name eq 'BOL_TYPE')
+		{
+		$list = [
+			{ name => 'Engage', value => 'bol'},
+			{ name => 'VisionShip', value => 'bolvisionship'},
+			];
+		}
+	elsif ($list_name eq 'CAPABILITY_LIST')
+		{
+		$list = [
+			{ name => 'None', value => '0' },
+			{ name => 'Available', value => '1' },
+			{ name => 'Mandatory', value => '2' },
+			{ name => 'Default', value => '3' }
+			];
+		}
+	elsif ($list_name eq 'PO_AUTH_TYPE')
+		{
+		$list = [
+			{ name => 'Select One' , value => '0' },
+			{ name => 'Per Product', value => '1' },
+			{ name => 'Whole PO', value => '2' },
+			];
+		}
+	elsif ($list_name eq 'COMPANY_TYPE')
+		{
+		$list = [
+			{ name => 'Direct' , value => '1' },
+			{ name => 'Direct w/Indirect', value => '2' },
+			{ name => 'Indirect', value => '3' },
+			];
+		}
+	elsif ($list_name eq 'DEFAULT_PACKING_LIST')
+		{
+		$list = [
+			{ name => 'Not Shown' , value => '0' },
+			{ name => 'Show, unchecked', value => '1' },
+			{ name => 'Show, checked', value => '2' },
+			{ name => 'Show, checked FORCED', value => '3' },
+			];
+		}
+	elsif ($list_name eq 'LIVE_PRODUCT_LIST')
+		{
+		$list = [
+			{ name => 'None' , value => '0' },
+			{ name => 'All', value => 'All' },
+			{ name => 'Domestic Only', value => 'Domestic' },
+			{ name => 'International Only', value => 'Intl' },
+			];
+		}
+	elsif ($list_name eq 'PACKING_LIST')
+		{
+		$list = [
+			{ name => 'Generic', value => 'packinglist' },
+			];
+		}
+	elsif ($list_name eq 'MARKUP_TYPE')
+		{
+		$list = [
+			{ name => 'None' , value => '0' },
+			{ name => 'Dollar', value => 'amt' },
+			{ name => 'Percentage', value => 'percent' },
+			];
+		}
+	elsif ($list_name eq 'INDICATOR_TYPE')
+		{
+		$list = [
+			{ name => 'Graphic' , value => '0' },
+			{ name => 'Text', value => '1' },
+			{ name => 'Graphic Text', value => '2' },
+			];
+		}
+	elsif ($list_name eq 'QUICKSHIP_DROPLIST')
+		{
+		$list = [
+			{ name => 'None' , value => '0' },
+			{ name => 'Yes', value => '1' },
+			{ name => 'Default', value => '2' },
+			];
+		}
+	elsif ($list_name eq 'POINT_INSTRUCTION')
+		{
+		$list = [
+			{ name => 'Select One' , value => '' },
+			{ name => 'Generic', value => 'poinstructions' },
+			];
+		}
+	elsif ($list_name eq 'LOGIN_LEVEL')
+		{
+		my @records = $self->context->model('MyDBI::Loginlevel')->all;
+		foreach my $Loginlevel (@records)
+			{
+			push(@$list, { name => $Loginlevel->loginlevelname, value => $Loginlevel->loginlevelid});
+			}
+		}
+	elsif ($list_name eq 'QUOTE_MARKUP')
+		{
+		$list = [
+			{ name => '0%' , value =>    '0' },
+			{ name => '5%' , value => '1.05' },
+			{ name => '10%', value =>  '1.1' },
+			{ name => '15%', value => '1.15' },
+			{ name => '20%', value => '1.2'  },
+			{ name => '25%', value => '1.25' },
+			{ name => '30%', value => '1.3'  },
+			{ name => '35%', value => '1.35' },
+			{ name => '40%', value => '1.4'  },
+			{ name => '45%', value => '1.45' },
+			{ name => '50%', value => '1.5'  },
+			];
+		}
 
 	return $list;
 	}
