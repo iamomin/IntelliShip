@@ -94,9 +94,6 @@ sub authenticate_token :Private
 		$self->contact($Contact);
 		$self->customer($Customer);
 
-		$c->stash->{customer} = $Customer;
-		$c->stash->{contact} = $Contact;
-
 		## Update token expire time
 		$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp with time zone 'now' + '2 hours' WHERE tokenid = '$NewTokenID'");
 		}
@@ -316,6 +313,8 @@ sub get_select_list
 	my $self = shift;
 	my $list_name = shift;
 
+	my $c = $self->context;
+
 	my $list = [];
 	if ($list_name eq 'COSTATUS')
 		{
@@ -327,16 +326,63 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
-		my @records = $self->context->model('MyDBI::Customer')->all;
-		foreach my $Country (@records)
+		my @customers = $c->model('MyDBI::Customer')->search( {},
 			{
-			push(@$list, { name => $Country->customername, value => $Country->addressid});
+			select => [ 'customername', 'addressid' ],
+			}
+			);
+		foreach my $Customer (@customers)
+			{
+			push(@$list, { name => $Customer->customername, value => $Customer->addressid});
+			}
+		}
+	elsif ($list_name eq 'ADDRESS_BOOK_CUSTOMERS')
+		{
+		my $CustomerID = $self->customer->customerid;
+		my $smart_address_book = $self->customer->smartaddressbook || 0; # 0 = keep only 1,2,3 etc is interval
+
+		my $smart_address_book_sql = '( keep = 1 )';
+		if ($smart_address_book > 0)
+			{
+			$smart_address_book_sql = "( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-$smart_address_book days') )";
+			}
+
+		my $extcustnum_field = '';
+		$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
+
+		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname, address1, address2, city";
+
+		my $SQL = "
+		SELECT
+			DISTINCT ON (addressname)
+			addressname,
+			address.addressid
+		FROM
+			co
+			INNER JOIN
+			address
+			ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
+		WHERE
+			co.cotypeid in (1,2,10) AND
+			address.addressname <> '' AND
+			$smart_address_book_sql
+		ORDER BY
+			$OrderBy
+		";
+		#$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
+		my $myDBI = $c->model('MyDBI');
+		my $sth = $myDBI->select($SQL);
+
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			push(@$list, { name => $data->{addressname}, value => $data->{addressid} });
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')
 		{
-		my @records = $self->context->model('MyDBI::Country')->all;
-		#my @records = $self->context->model('MyDBI::Country')->search({ countryiso2 => 'US' });
+		my @records = $c->model('MyDBI::Country')->all;
+		#my @records = $c->model('MyDBI::Country')->search({ countryiso2 => 'US' });
 
 		push(@$list, { name => '', value => ''});
 		foreach my $Country (@records)
@@ -347,7 +393,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'UNIT_TYPE')
 		{
-		my @records = $self->context->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
+		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
 			push(@$list, { name => $UnitType->unittypename, value => $UnitType->unittypeid });
@@ -355,7 +401,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'WEIGHT_TYPE')
 		{
-		my @records = $self->context->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypename'});
+		my @records = $c->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypename'});
 		foreach my $WeightType (@records)
 			{
 			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });
@@ -363,7 +409,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER_SHIPMENT_CARRIER')
 		{
-		my $myDBI = $self->context->model('MyDBI');
+		my $myDBI = $c->model('MyDBI');
 		my $sql = "SELECT DISTINCT carrier FROM shipment INNER JOIN co ON shipment.coid = co.coid WHERE co.customerid = '" . $self->customer->customerid . "' AND shipment.carrier <> '' ORDER BY 1";
 		my $sth = $myDBI->select($sql);
 		for (my $row=0; $row < $sth->numrows; $row++)
@@ -374,7 +420,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'PRODUCT_DESCRIPTION')
 		{
-		my $product_desc_rs = $self->context->model('MyDBI::Co')->search(
+		my $product_desc_rs = $c->model('MyDBI::Co')->search(
 			{
 			customerid => $self->customer->customerid,
 			statusid => { '<' => 5},
@@ -393,7 +439,7 @@ sub get_select_list
 
 	elsif ($list_name eq 'DEPARTMENT')
 		{
-		my $product_desc_rs = $self->context->model('MyDBI::Co')->search(
+		my $product_desc_rs = $c->model('MyDBI::Co')->search(
 			{
 			customerid => $self->customer->customerid,
 			statusid => { '<' => 5},
@@ -411,7 +457,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER_NUMBER')
 		{
-		my $product_desc_rs = $self->context->model('MyDBI::Co')->search(
+		my $product_desc_rs = $c->model('MyDBI::Co')->search(
 								{
 								customerid => $self->customer->customerid,
 								statusid => { '<' => 5},
@@ -429,7 +475,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CARRIER_SERVICE')
 		{
-		my $myDBI = $self->context->model('MyDBI');
+		my $myDBI = $c->model('MyDBI');
 		my $sql = "SELECT
 						DISTINCT coalesce(extcarrier,'') || ' - ' || coalesce(extservice,'') as carrierservice
 					FROM
@@ -447,7 +493,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'DESTINATION_ADDRESS')
 		{
-		my $myDBI = $self->context->model('MyDBI');
+		my $myDBI = $c->model('MyDBI');
 		my $sql = "
 			SELECT
 				DISTINCT
@@ -470,7 +516,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CURRENCY')
 		{
-		my $myDBI = $self->context->model('MyDBI');
+		my $myDBI = $c->model('MyDBI');
 		my $sql = "SELECT DISTINCT currency FROM country";my $sth = $myDBI->select($sql);
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
@@ -762,7 +808,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'LOGIN_LEVEL')
 		{
-		my @records = $self->context->model('MyDBI::Loginlevel')->all;
+		my @records = $c->model('MyDBI::Loginlevel')->all;
 		foreach my $Loginlevel (@records)
 			{
 			push(@$list, { name => $Loginlevel->loginlevelname, value => $Loginlevel->loginlevelid});

@@ -64,6 +64,7 @@ sub auto :Private
 	{
 	my($self, $c) = @_;
 
+	$c->stash({});
 	$c->log->debug('Auto Divert to ' . $c->action);
 
 	return 1 unless $c->request->action =~ /customer/;
@@ -107,6 +108,7 @@ sub end : Private {
 	my ($self, $c) = @_;
 
 	#$c->log->debug("In end : Private ");
+	#$c->log->debug("stash: " . Dumper $c->stash);
 	#$c->log->debug("\nPARAMS : " . Dumper $c->req->params);
 
 	return unless $c->stash->{template};

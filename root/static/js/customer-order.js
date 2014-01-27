@@ -371,10 +371,17 @@ function populateSpecialServiceList() {
 				Add: function() {
 					$('#special-requirements input:checkbox:checked').each(function(){
 						//addCheckBox('selected-special-requirements', this.id, $(this).val(), $(this).first().next('label').text());
-						$('#selected-special-requirements').append($("#td_" + this.id).html());
+						$('#selected-special-requirements').append("<div id='div_"+this.id+"' style='display: inline'>"+$("#td_" + this.id).html()+"</div>");
 						$('#selected-special-requirements').slideDown(1000);
 						$("#td_" + this.id).empty();
 						$("#" + this.id).attr("checked", true);
+						$("#" + this.id).click(function() {
+							if (!$(this).is(':checked')) {
+								$("#td_" + this.id).html($("#div_" + this.id).html());
+								$("#div_" + this.id).remove();
+								$("#" + this.id).attr("checked", false);
+								}
+							});
 						resetCSList();
 						});
 					},
@@ -385,6 +392,12 @@ function populateSpecialServiceList() {
 		});
 
 	var params = 'coid=' + $("#coid").val();
+
+	//$('#selected-special-requirements input:checkbox:checked').each(function(){
+	//	params += '&' + this.id + '=1';
+	//	});
+	//alert("PARAMS: " + params);
+
 	send_ajax_request('special-requirements', 'HTML', 'order', 'get_special_service_list', params, function (){
 		$( "#special-requirements" ).dialog( "open" );
 		});
@@ -639,6 +652,7 @@ function populate_ship_to_address(addressid)
 	var query_param = '&addressid='+addressid;
 
 	if (addressid.length > 0) {
+		resetCSList();
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
 			if (JSON_data.address1) {
 				$("#toaddress1").val(JSON_data.address1);

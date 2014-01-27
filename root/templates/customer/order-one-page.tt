@@ -51,7 +51,6 @@
 
 	$("#ship_now").click(function() {
 
-		return;
 		var carrier = $("#carrier").val();
 		console.log("SELECTED CARRIER: " + carrier);
 		if (carrier == undefined) return;
