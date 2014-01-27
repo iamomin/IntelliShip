@@ -251,7 +251,8 @@ $("#dateneeded").change(function() {
 	check_due_date();
 	});
 
-$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
+//$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
+$("input[name='deliverymethod']").clicked(checkDeliveryMethodSection);
 
 [% UNLESS one_page %]
 [% FOREACH item IN requiredfield_list %]

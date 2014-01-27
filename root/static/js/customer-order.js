@@ -514,8 +514,8 @@ function update_package_product_details(event, ui)
 
 var has_TP=false;
 function checkDeliveryMethodSection()
-	{
-	resetCSList();
+	{            
+	resetCSList();        
 /*
 	if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
 		{
@@ -563,7 +563,9 @@ function checkDeliveryMethodSection()
 					//alert("PARAMS: " + params);
 
 					send_ajax_request('', 'JSON', 'order', 'save_third_party_info', params, function () {
-						if (JSON_data.UPDATED == 1) $("#third-party-details").dialog( "close" );
+						if (JSON_data.UPDATED == 1) {
+                                                    $("#third-party-details").dialog( "close" );                                                    
+                                                    };
 						});
 					},
 				Close: function() {
@@ -572,11 +574,17 @@ function checkDeliveryMethodSection()
 				}
 		});
 
-		var params = 'coid=' + $("#coid").val();
-		send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', params, function () {
-			$("#third-party-details").dialog( "open" );
-			});
-		}
+
+                if($("#third-party-details").html().length > 0) {
+                    $("#third-party-details").dialog( "open" );
+                }else {
+                    var params = 'coid=' + $("#coid").val();
+                    send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', params, function () {                        
+                            $("#third-party-details").dialog( "open" );
+
+                            });
+                    }
+                }
 	}
 
 var has_FC=false;
