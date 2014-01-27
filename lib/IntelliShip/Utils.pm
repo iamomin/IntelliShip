@@ -1,6 +1,7 @@
 package IntelliShip::Utils;
 
 use strict;
+use Switch;
 #use bignum;
 use XML::Simple;
 use Email::Valid;
@@ -269,6 +270,64 @@ sub get_shipment_charge_display_name
 	my $self = shift;
 	my $ChargeType = shift;
 	return $SHIPMENT_CHARGE_NAMES->{$ChargeType};
+	}
+
+sub get_status_ui_info
+	{
+	my $self = shift;
+	my $IndicatorType = shift || 0;
+	my $Condition = shift;
+
+	my $dataHash = {};
+
+	switch ($IndicatorType)
+		{
+		## indicator text
+		case 1
+			{
+			switch ($Condition)
+				{
+				case 1 { $dataHash->{'conditioncolor'} = '#FF0000'; $dataHash->{'conditiontext'} = 'Routed'   } # Red
+				case 2 { $dataHash->{'conditioncolor'} = '#FF6600'; $dataHash->{'conditiontext'} = 'Packed'   } # Orange
+				case 3 { $dataHash->{'conditioncolor'} = '#9900FF'; $dataHash->{'conditiontext'} = 'Received' } # Yellow/Purple
+				case 4 { $dataHash->{'conditioncolor'} = '#66CC33'; $dataHash->{'conditiontext'} = 'Entered'  } # Green
+				case 5 { $dataHash->{'conditioncolor'} = '#0000CC'; $dataHash->{'conditiontext'} = 'Shipped'  } # Blue
+				case 6 { $dataHash->{'conditioncolor'} = '#666666'; $dataHash->{'conditiontext'} = 'Voided'   } # Black
+				else   { $dataHash->{'conditioncolor'} = '#000000'; $dataHash->{'conditiontext'} = 'Unknown'  } # Default
+				}
+			}
+		## indicator graphic text
+		case 2
+			{
+				switch ($Condition)
+					{
+					case 1 { $dataHash->{'conditioncolor'} = 'Green-Routed' }
+					case 2 { $dataHash->{'conditioncolor'} = 'Yellow-Packed' }
+					case 3 { $dataHash->{'conditioncolor'} = 'Orange-Received' }
+					case 4 { $dataHash->{'conditioncolor'} = 'Red-Entered' }
+					case 5 { $dataHash->{'conditioncolor'} = 'Shipped-Blue' }
+					case 6 { $dataHash->{'conditioncolor'} = 'Voided-Black' }
+					else   { $dataHash->{'conditioncolor'} = 'Unknown-Unknown' }
+					}
+			}
+		## indicator balls
+		else
+			{
+				switch ($Condition)
+					{
+					case 1 { $dataHash->{'conditioncolor'} = 'red'    ; $dataHash->{'conditiontext'} = '!'   }
+					case 2 { $dataHash->{'conditioncolor'} = 'orange' ; $dataHash->{'conditiontext'} = '!'   }
+					case 3 { $dataHash->{'conditioncolor'} = 'yellow' ; $dataHash->{'conditiontext'} = '&Delta;' }
+					case 4 { $dataHash->{'conditioncolor'} = 'green'  ; $dataHash->{'conditiontext'} = '&#10004;'  }
+					case 5 { $dataHash->{'conditioncolor'} = 'blue'   ; $dataHash->{'conditiontext'} = '&#10004;'  }
+					case 6 { $dataHash->{'conditioncolor'} = 'black'  ; $dataHash->{'conditiontext'} = '&#10004;'   }
+					else   { $dataHash->{'conditioncolor'} = 'unknown'; $dataHash->{'conditiontext'} = 'Unknown'  }
+				}
+			}
+		}
+
+	$dataHash->{'conditiontext'} = '';
+	return ($dataHash->{'conditioncolor'},$dataHash->{'conditiontext'});
 	}
 
 1;

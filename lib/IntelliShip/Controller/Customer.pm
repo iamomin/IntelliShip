@@ -919,12 +919,35 @@ sub set_navigation_rules
 		$navRules->{DISPLAY_NEW_ORDER} = (!$Contact->get_contact_data_value('myorders') and !$Contact->get_contact_data_value('disallowneworder'));
 		}
 
-	$navRules->{DISPLAY_MYORDERS} = $Contact->get_contact_data_value('myorders');
+	$navRules->{DISPLAY_MYORDERS} = $navRules->{DISPLAY_MYSHIPMENT} = $Contact->get_contact_data_value('myorders');
 	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
 
 	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
 	#$c->stash->{$_} = 1 foreach keys %$navRules;
 	#$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
+	}
+
+sub process_pagination
+	{
+	my $self = shift;
+	my $records = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("PROCESS PAGINATION");
+
+	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
+	$c->stash->{records_per_page} = $batch_size;
+
+	my @matching_ids = map { $_->{coid} } @$records;
+	my $records_batch = $self->spawn_batches(\@matching_ids,$batch_size);
+
+	$c->log->debug("TOTAL PAGES: " . @$records_batch);
+	#$c->log->debug("TOTAL PAGES: " . Dumper $records_batch);
+
+	$c->stash->{no_batches} = @$records_batch == 0;
+
+	return $records_batch;
 	}
 
 =encoding utf8

@@ -1,8 +1,8 @@
 package IntelliShip::Controller::Customer::MyOrders;
 use Moose;
-use Switch;
-use namespace::autoclean;
 use Data::Dumper;
+use IntelliShip::Utils;
+use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
@@ -39,6 +39,20 @@ sub index :Path :Args(0) {
 		}
 	}
 
+sub ajax :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("SETTINGS MYORDER AJAX");
+
+	$self->populate_my_order_list;
+
+	$c->stash->{ajax} = 1;
+	$c->stash(template => "templates/customer/my-orders.tt");
+	}
+
 my $TITLE = {
 	''        => 'Not Shipped',
 	'shipped' => 'Recently Shipped',
@@ -63,7 +77,7 @@ sub display_my_orders :Private
 	$c->stash(template => "templates/customer/my-orders.tt");
 	}
 
-sub populate_my_order_list
+sub populate_my_order_list :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -95,7 +109,7 @@ sub populate_my_order_list
 	for (my $row=0; $row < $sth->numrows; $row++)
 		{
 		my $row_data = $sth->fetchrow($row);
-		($row_data->{'a_class'}, $row_data->{'a_text'}) = $self->get_condition_info(0,$row_data->{'condition'});
+		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
 		push(@$myorder_list, $row_data);
 		}
 
@@ -112,29 +126,6 @@ sub populate_my_order_list
 	$c->stash->{MY_ORDERS} = 1;
 	$c->stash->{refresh_interval_sec} = 60;
 	$c->stash->{list_title} = $TITLE->{$params->{'view'}} if $params->{'view'};
-	}
-
-sub process_pagination
-	{
-	my $self = shift;
-	my $my_orders = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	$c->log->debug("PROCESS PAGINATION");
-
-	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
-	$c->stash->{records_per_page} = $batch_size;
-
-	my @matching_ids = map { $_->{coid} } @$my_orders;
-	my $my_orders_batch = $self->spawn_batches(\@matching_ids,$batch_size);
-
-	$c->log->debug("TOTAL PAGES: " . @$my_orders_batch);
-	#$c->log->debug("TOTAL PAGES: " . Dumper $my_orders_batch);
-
-	$c->stash->{no_batches} = @$my_orders_batch == 0;
-
-	return $my_orders_batch;
 	}
 
 sub get_not_shipped_sql :Private
@@ -467,7 +458,7 @@ sub get_co_type_sql :Private
 	return "AND cotypeid = " . $COType;
 	}
 
-sub get_coid_in_sql
+sub get_coid_in_sql :Private
 	{
 	my $self = shift;
 	my $params = $self->context->req->params;
@@ -486,78 +477,6 @@ sub review_order :Private
 	{
 	my $self = shift;
 	$self->populate_order;
-	}
-
-sub ajax :Local
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	$c->log->debug("SETTINGS MYORDER AJAX");
-
-	$self->populate_my_order_list;
-
-	$c->stash->{ajax} = 1;
-	$c->stash(template => "templates/customer/my-orders.tt");
-	}
-
-sub get_condition_info
-	{
-	my $self = shift;
-	my $IndicatorType = shift || 0;
-	my $Condition = shift;
-
-	my $dataHash = {};
-
-	switch ($IndicatorType)
-		{
-		## indicator text
-		case 1
-			{
-			switch ($Condition)
-				{
-				case 1 { $dataHash->{'conditioncolor'} = '#FF0000'; $dataHash->{'conditiontext'} = 'Routed'   } # Red
-				case 2 { $dataHash->{'conditioncolor'} = '#FF6600'; $dataHash->{'conditiontext'} = 'Packed'   } # Orange
-				case 3 { $dataHash->{'conditioncolor'} = '#9900FF'; $dataHash->{'conditiontext'} = 'Received' } # Yellow/Purple
-				case 4 { $dataHash->{'conditioncolor'} = '#66CC33'; $dataHash->{'conditiontext'} = 'Entered'  } # Green
-				case 5 { $dataHash->{'conditioncolor'} = '#0000CC'; $dataHash->{'conditiontext'} = 'Shipped'  } # Blue
-				case 6 { $dataHash->{'conditioncolor'} = '#666666'; $dataHash->{'conditiontext'} = 'Voided'   } # Black
-				else   { $dataHash->{'conditioncolor'} = '#000000'; $dataHash->{'conditiontext'} = 'Unknown'  } # Default
-				}
-			}
-		## indicator graphic text
-		case 2
-			{
-				switch ($Condition)
-					{
-					case 1 { $dataHash->{'conditioncolor'} = 'Green-Routed' }
-					case 2 { $dataHash->{'conditioncolor'} = 'Yellow-Packed' }
-					case 3 { $dataHash->{'conditioncolor'} = 'Orange-Received' }
-					case 4 { $dataHash->{'conditioncolor'} = 'Red-Entered' }
-					case 5 { $dataHash->{'conditioncolor'} = 'Shipped-Blue' }
-					case 6 { $dataHash->{'conditioncolor'} = 'Voided-Black' }
-					else   { $dataHash->{'conditioncolor'} = 'Unknown-Unknown' }
-					}
-			}
-		## indicator balls
-		else
-			{
-				switch ($Condition)
-					{
-					case 1 { $dataHash->{'conditioncolor'} = 'red'    ; $dataHash->{'conditiontext'} = '!'   }
-					case 2 { $dataHash->{'conditioncolor'} = 'orange' ; $dataHash->{'conditiontext'} = '!'   }
-					case 3 { $dataHash->{'conditioncolor'} = 'yellow' ; $dataHash->{'conditiontext'} = '&Delta;' }
-					case 4 { $dataHash->{'conditioncolor'} = 'green'  ; $dataHash->{'conditiontext'} = '&#10004;'  }
-					case 5 { $dataHash->{'conditioncolor'} = 'blue'   ; $dataHash->{'conditiontext'} = '&#10004;'  }
-					case 6 { $dataHash->{'conditioncolor'} = 'black'  ; $dataHash->{'conditiontext'} = '&#10004;'   }
-					else   { $dataHash->{'conditioncolor'} = 'unknown'; $dataHash->{'conditiontext'} = 'Unknown'  }
-				}
-			}
-		}
-
-	$dataHash->{'conditiontext'} = '';
-	return ($dataHash->{'conditioncolor'},$dataHash->{'conditiontext'});
 	}
 
 =encoding utf8

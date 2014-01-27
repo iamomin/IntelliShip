@@ -251,7 +251,7 @@
 		});
 
 	//$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
-        $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
+	$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 [% END %]
 
 	$("#btn_address").click(function() {

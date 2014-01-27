@@ -98,6 +98,9 @@
 			[% IF DISPLAY_MYORDERS %]
 			<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
 			[% END %]
+			[% IF DISPLAY_MYSHIPMENT %]
+			<li><a id="mnu_myshipments" href="/customer/myshipments" class="mo"><div>MY SHIPMENTS</div></a></li>
+			[% END %]
 			[% IF DISPLAY_NEW_ORDER %]
 			<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
 			[% END %]

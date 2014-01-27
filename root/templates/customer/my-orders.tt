@@ -84,9 +84,9 @@
 			<tr>
 				<td><a class="[% item.a_class %]" href="javascript:reviewOrder('[% item.coid %]');">[% item.a_text %]</a></td>
 				<td>[% item.ordernumber %]</td>
-				<td>[% item.customer %]</td>
+				<td>[% item.customername %]</td>
 				<td>[% item.origin %]</td>
-				<td>[% item.destination %]</td>
+				<td>[% item.destin %]</td>
 				<td>[% item.date %]</td>
 				<td>[% item.duedate %]</td>
 				<td>[% item.carrier %]</td>
@@ -131,8 +131,8 @@
 
 		$("#myorder_count").text('[% myorder_list_count %]');
 
-		setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
 		$("#refresh_interval").text(refresh_interval_sec);
+		setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
 
 		$("#records_per_page").change(function () {
 			$("#coids").prop('disabled','disabled');
@@ -140,7 +140,7 @@
 			});
 
 		$("#coids").change(function () {
-			var query_param = "&view=" + $("#view").val() + "&coids=" + $("#coids").val();
+			var query_param = "view=" + $("#view").val() + "&coids=" + $("#coids").val();
 			send_ajax_request('myOrders', 'HTML', 'myorders', '', query_param);
 			});
 		});
@@ -151,4 +151,3 @@
 [% #---------------------------------------------------------- %]
 [% #  DISPLAY MY ORDERS - END %]
 [% #---------------------------------------------------------- %]
-

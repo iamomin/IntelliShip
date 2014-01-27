@@ -1,0 +1,108 @@
+[% #---------------------------------------------------------- %]
+[% # DISPLAY MY SHIPMENT - START %]
+[% #---------------------------------------------------------- %]
+[% IF MY_SHIPMENTS %]
+	[% UNLESS ajax %]
+	<form id="frm_my_shipments" method="post" action="/customer/myshipments">
+	<input type="hidden" name="do" id="do"/>
+	<h1>My SHIPMENT
+		<div class="float_right" style="white-space: nowrap;">
+			<select name="view" id="view" onChange="refreshMyShipments()">
+				[% FOREACH item IN view_list %]
+				<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
+				[% END %]
+			</select>
+			<label style="font-size: 10px;" for="records_per_page"><span id="myshipment_count"></span> Records, Records Per Page&nbsp;</label>
+			<select name="records_per_page" id="records_per_page">
+				[% FOREACH item IN recordsperpage_list %]
+					<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+				[% END %]
+			</select>
+			<select name="shipmentids" id="shipmentids">
+				[% FOREACH ids IN myshipment_batches %]
+					<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+				[% END %]
+				[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
+			</select>
+		</div>
+	</h1>
+
+	[% IF refresh_interval_sec %]
+	<div class="notice">Shipment list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
+	[% END %]
+
+	<div id="myOrders">
+	[% END %]
+
+		<table>
+			<tr>
+				<th>Status</th>
+				<th>Customer</th>
+				<th>Origin</th>
+				<th>Destination</th>
+				<th>Shipped Date</th>
+				[% IF view_datedelivered %]<th>Delivered Date</th>[% END %]
+				<th>Cost</th>
+				<th>Carrier</th>
+				<th>Service</th>
+				<th>Mode</th>
+			</tr>
+			[% FOREACH item IN myshipment_list %]
+			<tr>
+				<td><a class="[% item.a_class %]" href="javascript:void(0);"></a></td>
+				<td>[% item.customername %]</td>
+				<td>[% item.origin %]</td>
+				<td>[% item.destin %]</td>
+				<td>[% item.dateshipped %]</td>
+				[% IF view_datedelivered %]<td>[% item.datedelivered %]</td>[% END %]
+				<td>[% item.cost %]</td>
+				<td>[% item.carrier %]</td>
+				<td>[% item.service %]</td>
+				<td>[% item.mode %]</td>
+			</tr>
+			[% END %]
+			[% IF myshipment_list_count == 0 %]
+				<tr><td colspan="11">No qualified shipments found</td></tr>
+			[% END %]
+		<table>
+
+	[% UNLESS ajax %]
+	</div>
+	</form>
+	[% END %]
+
+	<script>
+
+	[% UNLESS ajax %]
+	function refreshMyShipments() {
+		$("#shipmentids").prop('disabled','disabled');
+		$('#frm_my_shipments').submit();
+		}
+	[% END %]
+
+	var refresh_interval_sec = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
+
+	$(document).ready(function() {
+
+		$("#myshipment_count").text('[% myshipment_list_count %]');
+
+		$("#refresh_interval").text(refresh_interval_sec);
+		setInterval("refreshMyShipments()", refresh_interval_sec * 1000);
+
+		$("#records_per_page").change(function() {
+				$("#shipmentids").prop('disabled','disabled');
+				$('#frm_my_shipments').submit();
+				});
+
+		$("#shipmentids").change(function() {
+			var query_param = "view=" + $("#view").val() + "&shipmentids=" + $("#shipmentids").val();
+			send_ajax_request('myOrders', 'HTML', 'myshipments', '', query_param);
+			});
+
+		});
+	</script>
+
+[% END %]
+[% #---------------------------------------------------------- %]
+[% #  DISPLAY MY ORDERS - END %]
+[% #---------------------------------------------------------- %]

@@ -36,7 +36,7 @@ function calculate_density(row_ID)
 	var DimWidth = $("#dimwidth_"+row_ID).val();
 	var DimHeight = $("#dimheight_"+row_ID).val();
 
-	if ( DimLength > 0 && DimWidth > 0 && DimHeight > 0  && Weight > 0 && Quantity > 0) 
+	if ( DimLength > 0 && DimWidth > 0 && DimHeight > 0  && Weight > 0 && Quantity > 0)
 		{
 		var Density = (( (Weight/Quantity) / ( DimLength * DimWidth * DimHeight ) ) * 1728 );
 		$("#density_"+row_ID).val(Density.toFixed(2));
@@ -305,7 +305,7 @@ function setSkuDetails(row_ID, sku_id)
 		}
 	}
 
-function clear_product_details(row_ID) 
+function clear_product_details(row_ID)
 	{
 	$("#description_"+row_ID).val('');
 	$("#weight_"+row_ID).val('');
@@ -318,7 +318,7 @@ function clear_product_details(row_ID)
 	$("#quantity_"+row_ID).val('1');
 	}
 
-function update_package_product_sequence() 
+function update_package_product_sequence()
 	{
 	var pkg_detail_row_count=0;
 
@@ -514,10 +514,10 @@ function update_package_product_details(event, ui)
 
 var has_TP=false;
 function checkDeliveryMethodSection()
-	{            
-	resetCSList();        
+	{
+	resetCSList();
 /*
-	if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty") 
+	if($('input:radio[name=deliverymethod]:checked').val() == "3rdparty")
 		{
 		if(has_TP) {
 			$(".tp").show(1000);
@@ -563,9 +563,7 @@ function checkDeliveryMethodSection()
 					//alert("PARAMS: " + params);
 
 					send_ajax_request('', 'JSON', 'order', 'save_third_party_info', params, function () {
-						if (JSON_data.UPDATED == 1) {
-                                                    $("#third-party-details").dialog( "close" );                                                    
-                                                    };
+						if (JSON_data.UPDATED == 1) $("#third-party-details").dialog( "close" );
 						});
 					},
 				Close: function() {
@@ -574,17 +572,15 @@ function checkDeliveryMethodSection()
 				}
 		});
 
-
-                if($("#third-party-details").html().length > 0) {
-                    $("#third-party-details").dialog( "open" );
-                }else {
-                    var params = 'coid=' + $("#coid").val();
-                    send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', params, function () {                        
-                            $("#third-party-details").dialog( "open" );
-
-                            });
-                    }
-                }
+		if ($("#third-party-details").html().length > 0) {
+			$("#third-party-details").dialog( "open" );
+			} else {
+			var params = 'coid=' + $("#coid").val();
+			send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', params, function () {
+				$("#third-party-details").dialog( "open" );
+				});
+			}
+		}
 	}
 
 var has_FC=false;
@@ -701,21 +697,21 @@ function CSSelectFunctions()
 //function set_cs_value(cs_id)
 //	{
 //	if ( '<var name=loginlevel>' == '20' )
-//		{ 
-//		return; 
+//		{
+//		return;
 //		}
 //
-//	if ( cs_id == '' || cs_id == 0 ) 
-//		{ 
-//		return; 
+//	if ( cs_id == '' || cs_id == 0 )
+//		{
+//		return;
 //		}
 //
 //	if (req)
 //		{
 //		url = "index.cgi?screen=ajax&action=GetCSValues&tokenid=<var name=tokenid>&randomnumber=<var name=randomnumber>&arg1=" + CSID;
-//	
+//
 //		req.open("GET", url, false);
-//	
+//
 //		req.onreadystatechange = function()
 //			{
 //			if ( req.readyState == 4 )
@@ -797,7 +793,7 @@ function CSSelectFunctions()
 //		)
 //		&&
 //		( '<var name=loginlevel>' != '10' && '<var name=loginlevel>' != '20' && '<var name=loginlevel>' != '15' )
-//	) 
+//	)
 //	{
 //		trackingdisplay.style.display = "block";
 //		poddisplay.style.display = "block";
@@ -892,7 +888,7 @@ function CSSelectFunctions()
 //		}
 //
 //	if
-//		(	
+//		(
 //		document.shipconfirm.declaredvalueinsurancecharge.value == 0 ||
 //		(document.shipconfirm.billingaccount.value != '' && document.shipconfirm.billingaccount.value != undefined)
 //		)
@@ -955,7 +951,7 @@ function CSSelectFunctions()
 //	// Calculate Total Charges
 //	var TotalChargesObj = new Number(TotalCharges);
 //	document.shipconfirm.totalshipmentcharges.value = TotalChargesObj.toFixed(2);
-//	
+//
 //	DisplayShipmentCharges();
 //	DryIceDisplay();
 //	}
@@ -966,7 +962,7 @@ function CSSelectFunctions()
 //		{
 //		pickuprequestdisplay.style.display = "none";
 //		return;
-//		}	
+//		}
 //
 //	if
 //	(
@@ -1116,9 +1112,9 @@ function CSSelectFunctions()
 //		{
 //		if ( document.shipconfirm.manualthirdparty.value == 0 )
 //			{
-//			if ( CSID == '' || CSID == '0' ) 
+//			if ( CSID == '' || CSID == '0' )
 //				{
-//				return; 
+//				return;
 //				}
 //			if (req)
 //				{
