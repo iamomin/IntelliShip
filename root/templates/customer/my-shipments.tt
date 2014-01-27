@@ -5,7 +5,7 @@
 	[% UNLESS ajax %]
 	<form id="frm_my_shipments" method="post" action="/customer/myshipments">
 	<input type="hidden" name="do" id="do"/>
-	<h1>My SHIPMENT
+	<h1>My Shipments
 		<div class="float_right" style="white-space: nowrap;">
 			<select name="view" id="view" onChange="refreshMyShipments()">
 				[% FOREACH item IN view_list %]
