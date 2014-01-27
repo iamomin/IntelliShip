@@ -213,19 +213,7 @@
 		$("#frm_order_sumary").submit();
 		});
 
-	$("#btn_shipment").click(function() {
-		alert($("#" + $("#customerserviceid").val()).val().toUpperCase());
-		if ($("#" + $("#customerserviceid").val()).val().toUpperCase() != 'FEDEX')
-			{
-			showError("Only FedEx is supported, please select correct carrier from list.");
-			return;
-			}
-
-		$("#do").val('shipment');
-		$("#frm_order_sumary").submit();
-		});
-
-	$("#edit_shipment").click(function() {
+	$("#edit_shipment, #btn_shipment").click(function() {
 		$("#do").val('shipment');
 		$("#frm_order_sumary").submit();
 		});
@@ -240,7 +228,17 @@
 		});
 
 	$("#ship_now").click(function() {
-		return showError("Under construction!");
+
+		var carrier = $("#carrier").val();
+		console.log("SELECTED CARRIER: " + carrier);
+		if (carrier == undefined) return;
+
+		if (carrier.toUpperCase() != 'FEDEX')
+			{
+			showError("Only FedEx is supported, please select correct carrier from list.");
+			return;
+			}
+
 		$("#do").val('ship');
 		$("#frm_order_sumary").submit();
 		});

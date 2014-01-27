@@ -2,6 +2,7 @@ package IntelliShip::Carrier::Handler;
 
 use Moose;
 use Data::Dumper;
+use IntelliShip::Carrier::Response;
 use IntelliShip::Carrier::Constants;
 
 BEGIN {
@@ -53,10 +54,13 @@ sub process_request
 	# SETUP DB CONNECTION
 	###############################################
 
+	my $Response = IntelliShip::Carrier::Response->new;
+
 	unless ($context)
 		{
-		$ENV{'ERROR'} = 'Accessed is denied. Invalid request context.';
-		return undef;
+		$Response->message('Accessed is denied. Invalid request context');
+		$Response->response_code('100');
+		return $Response;
 		}
 
 	unless ($myDBI)
@@ -66,8 +70,9 @@ sub process_request
 
 	unless ($myDBI)
 		{
-		$ENV{'ERROR'} = 'Accessed is denied. Invalid DB.';
-		return undef;
+		$Response->message('Accessed is denied. Invalid DB');
+		$Response->response_code('1001');
+		return $Response;
 		}
 
 	###############################################
@@ -80,14 +85,16 @@ sub process_request
 		{
 		unless ($self->token)
 			{
-			$ENV{'ERROR'} = 'Accessed is denied. Invalid token.';
-			return undef;
+			$Response->message('Accessed is denied. Invalid token');
+			$Response->response_code('102');
+			return $Response;
 			}
 
 		unless (my $Token = $self->model('MyDBI::Token')->find({ tokenid => $self->tokenid}))
 			{
-			$ENV{'ERROR'} = 'Accessed is denied. Invalid token.';
-			return undef;
+			$Response->message('Accessed is denied. Invalid token');
+			$Response->response_code('103');
+			return $Response;
 			}
 		}
 
@@ -101,8 +108,9 @@ sub process_request
 	if ($@)
 		{
 		print STDERR "\n$@\n";
-		$ENV{'ERROR'} = $@;
-		return undef;
+		$Response->message($@);
+		$Response->response_code('103');
+		return $Response;
 		}
 
 	###############################################
@@ -129,11 +137,16 @@ sub process_request
 		{
 		my $error_detail = $@;
 		chomp $error_detail;
-		$ENV{'ERROR'} = $error_detail;
-		print STDERR "\n$error_detail\n";
+		$Response->message($error_detail);
+		$Response->response_code('104');
+		return $Response;
 		}
 
-	return $response;
+	$Response->response_code('0');
+	$Response->is_success(1);
+	$Response->data($response);
+
+	return $Response;
 	}
 
 __PACKAGE__->meta()->make_immutable();

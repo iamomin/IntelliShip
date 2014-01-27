@@ -151,7 +151,7 @@ sub get_carrier_service_list
 						};
 
 		$shipment_charge =~ s/\$// if $shipment_charge;
-		$detail_hash->{'shipment_charge'} = $shipment_charge || '0.00';
+		$detail_hash->{'shipment_charge'} = $shipment_charge || '0';
 
 		if ($CO->freightcharges == 0) # PREPAID
 			{
@@ -185,7 +185,7 @@ sub get_carrier_service_list
 			my $DVI_Charge = $self->calculate_declared_value_insurance($CSData->{'key'}, $aggregateweight);
 			my $FI_Charge = $self->calculate_freight_insurance($CSData->{'key'}, $totalquantity);
 
-			$detail_hash->{'shipment_charge'} =~ s/Quote//;
+			#$detail_hash->{'shipment_charge'} =~ s/Quote//;
 
 			my $SHIPMENT_CHARGE_DETAILS = [];
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Charges' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
@@ -193,13 +193,21 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Declared Value Insurance' , value => '$' . sprintf("%.2f",$DVI_Charge) }) if $DVI_Charge;
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>$' . sprintf("%.2f",$detail_hash->{'shipment_charge'}) . '</green>' });
+
+			if ($detail_hash->{'shipment_charge'} =~ /Quote/)
+				{
+				push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>' . $detail_hash->{'shipment_charge'} . '</green>' });
+				}
+			else
+				{
+				push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>$' . sprintf("%.2f",$detail_hash->{'shipment_charge'}) . '</green>' });
+				}
 
 			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $SHIPMENT_CHARGE_DETAILS;
 			#$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));
 			}
 
-		$detail_hash->{'shipment_charge'} =~ /\d+/ ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
+		($detail_hash->{'shipment_charge'} =~ /\d+/ and $detail_hash->{'shipment_charge'} > 0) ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
 	my @sortByDays = sort { $a->{days} <=> $b->{days} || $a->{shipment_charge} <=> $b->{shipment_charge} } @$CS_list_1;

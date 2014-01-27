@@ -82,7 +82,8 @@ sub complete_step3
 	my $params = $self->context->req->params;
 	$self->SHIP_ORDER;
 	$params->{'coid'} = undef;
-	$self->CO(undef);
+	$self->context->stash->{CO} = undef;
+	$self->context->stash->{coid} = undef;
 	$self->setup_address;
 	}
 

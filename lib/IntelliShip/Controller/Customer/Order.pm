@@ -7,7 +7,7 @@ use IntelliShip::Carrier::Handler;
 use IntelliShip::Carrier::Constants;
 use namespace::autoclean;
 
-BEGIN { extends 'IntelliShip::Controller::Customer'; has 'CO' => ( is => 'rw' ); }
+BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
 sub onepage :Local
 	{
@@ -644,19 +644,19 @@ sub get_order :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if ($self->CO)
+	if ($c->stash->{CO})
 		{
 		#$c->log->debug("Hmm, cached CO found");
-		$c->stash->{coid} = $self->CO->coid;
-		return $self->CO;
+		$c->stash->{coid} = $c->stash->{CO}->coid;
+		return $c->stash->{CO};
 		}
 
 	#$c->log->debug("params->{'coid'}: " . $params->{'coid'}) if $params->{'coid'};
+	my $CO;
 	if ($params->{'coid'})
 		{
-		my $CO = $c->model('MyDBI::Co')->find({ coid => $params->{'coid'} });
+		$CO = $c->model('MyDBI::Co')->find({ coid => $params->{'coid'} });
 		$c->log->debug("Existing CO Found, ID: " . $CO->coid);
-		$self->CO($CO);
 		}
 	else
 		{
@@ -713,11 +713,10 @@ sub get_order :Private
 
 		$c->log->debug("total customer order found: " . @cos);
 
-		my ($coid, $statusid) = (0,0);
+		my ($coid,$statusid) = (0,0);
 		if (@cos)
 			{
-			my $CO = $cos[0];
-			$self->CO($CO);
+			$CO = $cos[0];
 			($coid, $statusid, $ordernumber) = ($CO->coid,$CO->statusid,$CO->ordernumber);
 			$c->log->debug("coid: $coid , statusid: $statusid, ordernumber: $ordernumber");
 			}
@@ -734,18 +733,18 @@ sub get_order :Private
 				statusid   => 1
 				};
 
-			my $CO = $c->model('MyDBI::Co')->new($coData);
+			$CO = $c->model('MyDBI::Co')->new($coData);
 			$CO->coid($self->get_token_id);
 			$CO->insert;
 
 			$c->log->debug("New CO Inserted, ID: " . $CO->coid);
-			$self->CO($CO);
 			}
 		}
 
-	$c->stash->{coid} = $self->CO->coid;
+	$c->stash->{coid} = $CO->coid;
+	$c->stash->{CO} = $CO;
 
-	return $self->CO;
+	return $CO;
 	}
 
 sub setup_quickship_page :Private
@@ -805,12 +804,7 @@ sub populate_order :Private
 		my $package_detail_section_html;
 
 		# Step 1: Find Packages belog to Order
-		my $find_package = {};
-		$find_package->{'ownerid'} = $CO->coid;
-		$find_package->{'ownertypeid'} = '1000';
-		$find_package->{'datatypeid'} = '1000';
-
-		my @packages = $c->model('MyDBI::Packprodata')->search($find_package);
+		my @packages = $CO->packages;
 
 		foreach my $Package (@packages)
 			{
@@ -836,12 +830,7 @@ sub populate_order :Private
 		$c->stash->{description} = $CO->description;
 
 		# Step 3: Find product belog to Order
-		my $find_product = {};
-		$find_product->{'ownerid'}      = $CO->coid;
-		$find_product->{'ownertypeid'}  = '1000';
-		$find_product->{'datatypeid'}   = '2000';
-
-		my @products = $c->model('MyDBI::Packprodata')->search($find_product);
+		my @products = $CO->products;
 
 		foreach my $ProductData (@products)
 			{
@@ -1312,14 +1301,13 @@ sub SHIP_ORDER :Private
 	# Process errors
 	unless ($Response->is_success)
 		{
-		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . Dumper $Response->errors);
-		print STDERR "\n Error: " . Dumper $Response->errors;
+		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
 		return;
 		}
 
 	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
 
-	my $Shipment = $Response->shipment;
+	my $Shipment = $Response->data;
 	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
@@ -1647,7 +1635,7 @@ sub BuildShipmentInfo
 			}
 		}
 
-	my $myDBI = $c->model->('MyDBI');
+	my $myDBI = $c->model('MyDBI');
 	# Get Country Name - for DHL mainly at this point, but likely others will come up.
 	if ($ShipmentData->{'addresscountry'})
 		{

@@ -82,6 +82,20 @@ sub TagPrinterString
 	return $tagged_string;
 	}
 
+sub log
+	{
+	my $self = shift;
+	my $msg = shift;
+	if ($self->context)
+		{
+		$c->log->debug($msg);
+		}
+	else
+		{
+		print STDERR "\n" . $msg;
+		}
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;

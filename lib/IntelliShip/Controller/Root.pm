@@ -64,10 +64,13 @@ sub auto :Private
 	{
 	my($self, $c) = @_;
 
-	$c->stash({});
 	$c->log->debug('Auto Divert to ' . $c->action);
 
 	return 1 unless $c->request->action =~ /customer/;
+
+	$c->stash->{TokenID} = undef;
+	$c->stash->{coid} = undef;
+	$c->stash->{CO} = undef;
 
 	my $Controller = $c->controller;
 

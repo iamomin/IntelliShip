@@ -347,8 +347,11 @@ sub process_request
 	my $TrackingNumber = $ShipmentReturn =~ /"29,"(\w+?)"/;
 	my $PrinterString = $ShipmentReturn =~ /188,"(.*\nP1\nN\n)"/s;
 
+	$self->log("PrinterString: " . $PrinterString);
+
 	if ( !$PrinterString )
 		{
+		$self->log("SEND HTTP REQUEST, " . __PACKAGE__);
 		my $ua = LWP::UserAgent->new;
 		$ua->agent("Mozilla/4.08");
 
@@ -362,6 +365,7 @@ sub process_request
 		$String =~ s/\r//g;
 
 		$PrinterString = $String;
+		$self->log("RESPONSE STRING: " . $PrinterString);
 		}
 
 	$PrinterString = $self->TagPrinterString($PrinterString,$shipmentData->{'ordernumber'});
