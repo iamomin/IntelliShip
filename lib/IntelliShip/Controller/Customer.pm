@@ -691,9 +691,9 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => 'prepaid' , name => 'Prepaid' },
-			{ value => 'collect' , name => 'Collect' },
-			{ value => '3rdparty' , name => '3rd Party' },
+			{ value => '0' , name => 'Prepaid' },
+			{ value => '1' , name => 'Collect' },
+			{ value => '2' , name => '3rd Party' },
 			];
 		}
 	elsif ($list_name eq 'RECORDS_PER_PAGE')
@@ -930,6 +930,7 @@ sub set_navigation_rules
 sub process_pagination
 	{
 	my $self = shift;
+	my $field = shift;
 	my $records = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
@@ -939,7 +940,7 @@ sub process_pagination
 	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
 	$c->stash->{records_per_page} = $batch_size;
 
-	my @matching_ids = map { $_->{coid} } @$records;
+	my @matching_ids = map { $_->{$field} } @$records;
 	my $records_batch = $self->spawn_batches(\@matching_ids,$batch_size);
 
 	$c->log->debug("TOTAL PAGES: " . @$records_batch);

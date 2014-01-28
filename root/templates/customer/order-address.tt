@@ -20,6 +20,7 @@
 <form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
 	<input type="hidden" name="do" value="step1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
 [% IF one_page %]
 	<table>
@@ -252,7 +253,7 @@ $("#dateneeded").change(function() {
 	});
 
 //$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
-$("input[name='deliverymethod']").clicked(checkDeliveryMethodSection);
+$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
 [% UNLESS one_page %]
 [% FOREACH item IN requiredfield_list %]

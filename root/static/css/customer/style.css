@@ -205,14 +205,16 @@ img { border: none }
     background: #FFF;
     color: #98A7AF;
     border: 1px solid #98A7AF;
+/*
     outline: none;
     display: inline-block;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     cursor: pointer;
+*/
 }
-
+/*
 #menu label { position: relative }
 
 #menu label:after {
@@ -242,7 +244,7 @@ img { border: none }
     pointer-events: none;
     display: block;
 }
-
+*/
 /* Page */
 
 #page {

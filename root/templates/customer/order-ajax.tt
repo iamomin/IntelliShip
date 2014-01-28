@@ -169,7 +169,7 @@
 	<table>
 	[% IF thirdpartyaccts_loop %]
 	<tr>
-		<td><label for="tplist" class="float_right">Existing Company List:</label></td><td><select name="tplist" id="tplist" onchange="setTpDetails(this.value);"><option value="">--- Add New ---</option>[% FOREACH item IN thirdpartyaccts_loop %]<option value="[% item.tpcompanyname %]">[% item.tpcompanyname %]</option>[% END %]</select></td>
+		<td><label for="tpaccid" class="float_right">Existing Company List:</label></td><td><select name="tpaccid" id="tpaccid" onchange="setTpDetails(this.value);"><option value="">--- Add New ---</option>[% FOREACH item IN thirdpartyaccts_loop %]<option value="[% item.thirdpartyacctid %]">[% item.tpcompanyname %]</option>[% END %]</select></td>
 	</tr>
 	[% END %]
 	<tr>
@@ -215,7 +215,7 @@
 	var availableTpNames=[];
 	[% FOREACH item IN thirdpartyaccts_loop %]
 		availableTpNames.push("[% item.tpcompanyname %]");
-		tpDetails["[% item.tpcompanyname %]"]="[% item.tpdetails %]";
+		tpDetails["[% item.thirdpartyacctid %]"]="[% item.tpdetails %]";
 	[% END %]
 
 	function setTpDetails(SelectedTP)
@@ -236,15 +236,18 @@
 
 		var arrTpInfo = tpDetailStr.split("|");
 
-		$("#tpcompanyname").val(SelectedTP);
-		$("#tpaddress1").val(arrTpInfo[0]);
-		$("#tpaddress2").val(arrTpInfo[1]);
-		$("#tpcity").val(arrTpInfo[2]);
-		$("#tpstate").val(arrTpInfo[3]);
-		$("#tpzip").val(arrTpInfo[4]);
-		$("#tpcountry").val(arrTpInfo[5]);
-		$("#tpacctnumber").val(arrTpInfo[6]);
+		$("#tpaccid").val(SelectedTP);
+		$("#thirdpartyacctid").val(SelectedTP);
+		$("#tpcompanyname").val(arrTpInfo[0]);
+		$("#tpaddress1").val(arrTpInfo[1]);
+		$("#tpaddress2").val(arrTpInfo[2]);
+		$("#tpcity").val(arrTpInfo[3]);
+		$("#tpstate").val(arrTpInfo[4]);
+		$("#tpzip").val(arrTpInfo[5]);
+		$("#tpcountry").val(arrTpInfo[6]);
+		$("#tpacctnumber").val(arrTpInfo[7]);
 		}
+
 	</script>
 	[% END %]
 
@@ -296,7 +299,7 @@
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td>
-				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')" [% item.selected ? 'CHECKED' : '' %]/><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
 				<div style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table class="app"  style="text-align: center;">
 					<tr><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSIT DAYS</th><th>EST. DELIVERY</th></tr>

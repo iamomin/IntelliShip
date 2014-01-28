@@ -834,7 +834,7 @@ sub packages
 	return $self->packprodata($WHERE);
 	}
 
-sub products
+sub co_products
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '1000', datatypeid => '2000' };
@@ -848,27 +848,22 @@ sub package_details
 	my @packageArr;
 
 	# Step 1: Find Packages belog to Order
-	my $WHERE = { ownertypeid => '1000', datatypeid => '1000' };
-
-	my @packages = $self->packprodata($WHERE);
-
+	my @packages = $self->packages;
 	foreach my $Package (@packages)
 		{
 		push (@packageArr, $Package);
 
 		# Step 2: Find Product belog to Package
-		my @arr = $Package->products;
-		foreach my $Product (@arr)
+		my @products = $Package->products;
+		foreach my $Product (@products)
 			{
 			push (@packageArr, $Product);
 			}
 		}
 
 	# Step 3: Find product belog to Order
-	$WHERE = { ownertypeid => '1000', datatypeid => '2000' };
-	my @products = $self->packprodata($WHERE);
-
-	foreach my $Product (@products)
+	my @co_products = $self->co_products;
+	foreach my $Product (@co_products)
 		{
 		push (@packageArr, $Product);
 		}

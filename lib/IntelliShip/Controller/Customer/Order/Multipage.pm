@@ -79,11 +79,8 @@ sub complete_step3
 	{
 	my $self = shift;
 	$self->save_CO_details;
-	my $params = $self->context->req->params;
 	$self->SHIP_ORDER;
-	$params->{'coid'} = undef;
-	$self->context->stash->{CO} = undef;
-	$self->context->stash->{coid} = undef;
+	$self->clear_CO_details;
 	$self->setup_address;
 	}
 

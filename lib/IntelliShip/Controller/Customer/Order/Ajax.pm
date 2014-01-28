@@ -216,11 +216,9 @@ sub get_carrier_service_list
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
-	$sortByDays[0]->{'selected'} = 1;
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [$sortByDays[0]];
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge);
 	$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 
-	$sortByDays[0]->{'selected'} = 0;
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
 	$c->stash->{transitdayscarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 
@@ -231,7 +229,34 @@ sub get_carrier_service_list
 	$c->stash->{ONLY_TABLE} = 0;
 	}
 
-sub get_third_party_delivery
+sub get_recommened_carrier_service :Private
+	{
+	my $self = shift;
+	my $sortByDays = shift;
+	my $sortByCharge = shift;
+
+	my $c = $self->context;
+	my $CO = $self->get_order;
+
+	my $recommended = [];
+
+	my $days_needed = IntelliShip::DateUtils->get_delta_days($CO->dateneeded);
+	$days_needed *= -1 if $days_needed < 0;
+
+	my @withindays = grep { $_->{days} <= $days_needed } @$sortByDays;
+	#$c->log->debug("withindays: ". Dumper(@withindays));
+
+	my @price_asc = sort { $a->{shipment_charge} <=> $b->{shipment_charge} } @withindays;
+
+	push(@$recommended, $price_asc[0]) if @price_asc;
+	push(@$recommended, $sortByCharge->[0]) unless (@$recommended);
+
+	$recommended->[0]->{checked} = 1;
+	#$c->log->debug("recommended: ". Dumper($recommended));
+	return $recommended;
+	}
+
+sub get_third_party_delivery :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -239,7 +264,14 @@ sub get_third_party_delivery
 	if (my @thirdpartyaccts = $self->customer->thirdpartyaccts)
 		{
 		my $tp_list = [];
-		push (@$tp_list, { tpcompanyname => $_->tpcompanyname, tpdetails => $_->tpaddress1.'|'.$_->tpaddress2.'|'.$_->tpcity.'|'.$_->tpstate.'|'.$_->tpzip.'|'.$_->tpcountry.'|'.$_->tpacctnumber }) foreach @thirdpartyaccts;
+		foreach (@thirdpartyaccts)
+			{
+			push (@$tp_list, {
+				thirdpartyacctid => $_->thirdpartyacctid,
+				tpcompanyname => $_->tpcompanyname,
+				tpdetails => $_->tpcompanyname.'|'.$_->tpaddress1.'|'.$_->tpaddress2.'|'.$_->tpcity.'|'.$_->tpstate.'|'.$_->tpzip.'|'.$_->tpcountry.'|'.$_->tpacctnumber
+				});
+			}
 		$c->stash->{thirdpartyaccts_loop} = $tp_list;
 		}
 

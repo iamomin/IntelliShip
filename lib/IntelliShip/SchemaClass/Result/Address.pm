@@ -200,7 +200,7 @@ sub set_address_code_details
 
 	if ( length($addresscode) <= 10 && length($addresscode) != 0 && $addresscode ne 'US')
 		{
-		my $uniqueid = $self->get_token_id;
+		my $uniqueid = $self->addressid;
 		$addresscode = $uniqueid.$addresscode;
 		}
 

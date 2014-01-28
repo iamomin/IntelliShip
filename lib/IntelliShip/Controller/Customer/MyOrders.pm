@@ -113,7 +113,7 @@ sub populate_my_order_list :Private
 		push(@$myorder_list, $row_data);
 		}
 
-	my $my_orders_batches = $self->process_pagination($myorder_list);
+	my $my_orders_batches = $self->process_pagination('coid',$myorder_list);
 	my $first_batch = $my_orders_batches->[0];
 
 	$myorder_list = [splice @$myorder_list, 0, scalar @$first_batch] if $first_batch;

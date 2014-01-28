@@ -77,7 +77,9 @@ sub populate_my_shipment_list :Private
 		}
 
 	my $myDBI = $c->model("MyDBI");
+	#$c->log->debug("SQL: " . $SQL);
 	my $sth = $myDBI->select($SQL);
+	#$c->log->debug("sth->numrows: " . $sth->numrows);
 
 	my $myshipment_list = [];
 	for (my $row=0; $row < $sth->numrows; $row++)
@@ -87,7 +89,7 @@ sub populate_my_shipment_list :Private
 		push(@$myshipment_list, $row_data);
 		}
 
-	my $my_shipments_batches = $self->process_pagination($myshipment_list);
+	my $my_shipments_batches = $self->process_pagination('shipmentid',$myshipment_list);
 	my $first_batch = $my_shipments_batches->[0];
 	$myshipment_list = [splice @$myshipment_list, 0, scalar @$first_batch] if $first_batch;
 	$c->stash->{myshipment_list} = $myshipment_list;

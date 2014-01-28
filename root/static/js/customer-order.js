@@ -369,6 +369,7 @@ function populateSpecialServiceList() {
 					},
 				*/
 				Add: function() {
+					var boolCloseWindow=false;
 					$('#special-requirements input:checkbox:checked').each(function(){
 						//addCheckBox('selected-special-requirements', this.id, $(this).val(), $(this).first().next('label').text());
 						$('#selected-special-requirements').append("<div id='div_"+this.id+"' style='display: inline'>"+$("#td_" + this.id).html()+"</div>");
@@ -383,7 +384,9 @@ function populateSpecialServiceList() {
 								}
 							});
 						resetCSList();
+						boolCloseWindow=true;
 						});
+					if (boolCloseWindow) $( this ).dialog( "close" );
 					},
 				Close: function() {
 					$( this ).dialog( "close" );
@@ -534,7 +537,12 @@ function checkDeliveryMethodSection()
 			}
 		}
 */
-	if ($('input:radio[name=deliverymethod]:checked').val() == "3rdparty")
+	/* deliverymethod,
+		0: Prepaid
+		1: Collect
+		2: Third party
+	*/
+	if ($('input:radio[name=deliverymethod]:checked').val() == 2)
 		{
 		$("#third-party-details").dialog({
 			show: { effect: "blind", duration: 1000 },
@@ -575,11 +583,16 @@ function checkDeliveryMethodSection()
 		if ($("#third-party-details").html().length > 0) {
 			$("#third-party-details").dialog( "open" );
 			} else {
-			var params = 'coid=' + $("#coid").val();
+			var params = 'coid=' + $("#coid").val() + '&thirdpartyacctid=' + $("#thirdpartyacctid").val();
 			send_ajax_request('third-party-details', 'HTML', 'order', 'third_party_delivery', params, function () {
 				$("#third-party-details").dialog( "open" );
+				if ($("#thirdpartyacctid").val() != '') setTpDetails($("#thirdpartyacctid").val());
 				});
 			}
+		}
+	else
+		{
+		$("#thirdpartyacctid").val('0');
 		}
 	}
 

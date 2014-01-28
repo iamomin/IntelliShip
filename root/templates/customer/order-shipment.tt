@@ -2,33 +2,28 @@
 
 <h2>SHIP PACKAGES</h2>
 
-<form id="frm_nav" name="frm_nav" method="post" action="/customer/order/multipage">
-	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" name="do" value=""/>
-
-	<table class="order-nav">
-		<tr>
-		<td class="L"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
-		<td class="C"><input type="button" class="active" value="SHIPMENT DETAILS"/></td>
-		<td class="R"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
-		</tr>
-		<tr>
-		<td colspan="3">
-			<div style="position: relative;">
-				<hr class="solid_line"/>
-				<img style="z-index: 1; float: left; margin-left:14%;" src="/static/images/thumbs-up-grayed.png">
-				<img style="z-index: 2; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/navigation-down.png">
-			</div>
-		</td>
-		</tr>
-	</table>
-
-</form>
+<table class="order-nav">
+	<tr>
+	<td class="L"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
+	<td class="C"><input type="button" class="active" value="SHIPMENT DETAILS"/></td>
+	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
+	</tr>
+	<tr>
+	<td colspan="3">
+		<div style="position: relative;">
+			<hr class="solid_line"/>
+			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/images/thumbs-up-grayed.png">
+			<img style="z-index: 2; float: left; margin-left:33%; margin-top: -0.1%;" src="/static/images/navigation-down.png">
+		</div>
+	</td>
+	</tr>
+</table>
 
 [% UNLESS one_page %]
 <form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
-	<input type="hidden" name="do" value="step2"/>
+	<input type="hidden" id="do" name="do" value="step2"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
 
 <table class="app">
@@ -220,6 +215,7 @@
 	<div class="float_right">
 		<table><tr>
 		<td><div class="gray-backward"><input type="button" value="PREVIOUS" onclick="javascript:history.back();"/></div></td>
+		<td>&nbsp;</td>
 		<td><div class="green-forward"><input type="submit" id="quick_ship" value="NEXT STEP"/></div></td>
 		</tr></table>
 	</div>
@@ -255,8 +251,8 @@
 [% END %]
 
 	$("#btn_address").click(function() {
-		$("#frm_nav [name=do]").val('address');
-		$("#frm_nav").submit();
+		$("#do").val('address');
+		$("#frm_shipment").submit();
 		});
 
 	$(document).on('change', '.total_pkg_detail', function() {
@@ -332,6 +328,7 @@
 	[% END %]
 
 	$("#frm_shipment").submit(function() {
+		if ($("#do").val() == 'address') return true;
 		update_package_product_sequence();
 		return validateForm(requiredFieldHash);
 		});

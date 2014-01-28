@@ -4,6 +4,7 @@
 <script src="/static/js/customer-order.js"></script>
 
 <form id="frm_order" name="frm_order" method="post" action="/customer/order/[% quickship ? 'quickship' : 'onepage' %]">
+	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="do" name="do" value="save"/>
 

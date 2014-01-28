@@ -20,6 +20,7 @@
 </table>
 
 <form id="frm_order_sumary" name="frm_order_sumary" method="post" action="/customer/order/multipage">
+	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="do" name="do" value="step3"/>
 
@@ -189,6 +190,7 @@
 	<div class="float_right">
 		<table><tr>
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
+		<td>&nbsp;</td>
 		<td><div class="green-forward"><input type="submit" id="ship_now" value="SHIP NOW"/></div></td>
 		</tr></table>
 	</div>

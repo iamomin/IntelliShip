@@ -97,7 +97,7 @@ sub setup_address :Private
 
 	if ($c->stash->{one_page})
 		{
-		$c->stash->{deliverymethod} = "prepaid";
+		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') ;
 		}
 
@@ -147,7 +147,7 @@ sub setup_shipment_information :Private
 
 	unless ($c->stash->{one_page})
 		{
-		$c->stash->{deliverymethod} = "prepaid";
+		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 		}
 
@@ -176,7 +176,7 @@ sub setup_carrier_service :Private
 
 	$self->populate_order;
 
-	$c->stash->{deliverymethod} = "prepaid";
+	$c->stash->{deliverymethod} = '0';
 	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	if ($Contact->is_administrator and $Customer->login_level != 10 and $Customer->login_level != 20 and $Customer->login_level != 15)
@@ -190,8 +190,9 @@ sub setup_carrier_service :Private
 		$CA->customer($Customer);
 		$CA->contact($Contact);
 		$CA->context($c);
-
+		$CA->{SKIP_SAVE_ORDER} = 1;
 		$CA->get_carrier_service_list;
+		$CA->{SKIP_SAVE_ORDER} = 0;
 
 		$c->stash->{SERVICE_LEVEL_SUMMARY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		#$c->log->debug("SERVICE_LEVEL_SUMMARY, HTML: " . $c->stash->{SERVICE_LEVEL_SUMMARY});
@@ -205,6 +206,8 @@ sub setup_carrier_service :Private
 sub save_order :Private
 	{
 	my $self = shift;
+
+	return if $self->{SKIP_SAVE_ORDER};
 
 	## SAVE CO DETAILS
 	$self->save_CO_details;
@@ -249,21 +252,12 @@ sub save_CO_details :Private
 		$coData->{'contactphone'} = $params->{'tophone'};
 		}
 
-	if ($params->{'deliverymethod'})
-		{
-		my $deliverymethodHash = {
-			'prepaid' => '0',
-			'collect' => '1',
-			'3rdparty' => '2',
-			};
-
-		$coData->{'freightcharges'} = $deliverymethodHash->{$params->{'deliverymethod'}};
-		}
+	$coData->{'freightcharges'} = $params->{'deliverymethod'} if length $params->{'deliverymethod'};
 
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
 	#$coData->{'tocustomernumber'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
 
-	$coData->{'cotypeid'} = $params->{'action'} eq 'clearquote' ? 10 : 1;
+	$coData->{'cotypeid'} = ($params->{'action'} and $params->{'action'} eq 'clearquote') ? 10 : 1;
 
 	if ($self->customer->login_level =~ /(35|40)/ and $params->{'cotypeid'} and $params->{'cotypeid'} == 2)
 		{
@@ -424,8 +418,10 @@ sub save_third_party_details
 
 	IntelliShip::Utils->trim_hash_ref_values($thirdPartyAcctData);
 
-	my $Thirdpartyacct;
-	unless ($Thirdpartyacct = $Customer->third_party_account($params->{'tpacctnumber'}))
+	my $Thirdpartyacct = $c->model('MyDBI::Thirdpartyacct')->find({ thirdpartyacctid => $params->{tpaccid} }) if $params->{tpaccid};
+	$Thirdpartyacct = $c->model('MyDBI::Thirdpartyacct')->find({ thirdpartyacctid => $params->{thirdpartyacctid} }) if !$Thirdpartyacct and $params->{thirdpartyacctid};
+	$Thirdpartyacct = $Customer->third_party_account($params->{'tpacctnumber'}) unless $Thirdpartyacct;
+	unless ($Thirdpartyacct)
 		{
 		$thirdPartyAcctData->{'customerid'} = $Customer->customerid;
 		$Thirdpartyacct = $c->model("MyDBI::Thirdpartyacct")->new($thirdPartyAcctData);
@@ -442,6 +438,9 @@ sub save_third_party_details
 		$Thirdpartyacct->insert;
 		$c->log->debug("New Thirdpartyacct Inserted, ID: " . $Thirdpartyacct->thirdpartyacctid);
 		}
+
+	$CO->freightcharges(2); # Third party
+	$CO->update;
 	}
 
 sub get_row_id :Private
@@ -505,6 +504,16 @@ sub save_package_product_details :Private
 		my $ownertypeid = 1000;
 		$ownertypeid = 3000 if ($params->{'type_' . $PackageIndex } eq 'product');
 
+		my $weight    = $params->{'weight_'.$PackageIndex} || 0;
+		my $dimweight = $params->{'dimweight_'.$PackageIndex} || 0;
+		my $dimlength = $params->{'dimlength_'.$PackageIndex} || 0;
+		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex} || 0;
+		my $dimheight = $params->{'dimheight_'.$PackageIndex} || 0;
+		my $density   = $params->{'density_' . $PackageIndex} || 0;
+		my $class     = $params->{'class_' . $PackageIndex} || 0;
+		my $decval    = $params->{'decval_' . $PackageIndex} || 0;
+		my $frtins    = $params->{'frtins_'.$PackageIndex} || 0;
+
 		my $PackProData = {
 				ownertypeid => $ownertypeid,
 				ownerid     => $ownerid,
@@ -512,20 +521,21 @@ sub save_package_product_details :Private
 				boxnum      => $params->{'quantity_' . $PackageIndex},
 				quantity    => $params->{'quantity_' . $PackageIndex},
 				unittypeid  => $params->{'unittype_' . $PackageIndex },
-				weight      => sprintf("%.2f", $params->{'weight_' . $PackageIndex}),
-				dimweight   => sprintf("%.2f", $params->{'dimweight_' . $PackageIndex}),
-				dimlength   => sprintf("%.2f", $params->{'dimlength_' . $PackageIndex}),
-				dimwidth    => sprintf("%.2f", $params->{'dimwidth_' . $PackageIndex}),
-				dimheight   => sprintf("%.2f", $params->{'dimheight_' . $PackageIndex}),
-				density     => sprintf("%.2f", $params->{'density_' . $PackageIndex}),
-				class       => sprintf("%.2f", $params->{'class_' . $PackageIndex}),
-				decval      => sprintf("%.2f", $params->{'decval_' . $PackageIndex}),
-				frtins      => sprintf("%.2f", $params->{'frtins_' . $PackageIndex}),
+				weight      => sprintf("%.2f", $weight),
+				dimweight   => sprintf("%.2f", $dimweight),
+				dimlength   => sprintf("%.2f", $dimlength),
+				dimwidth    => sprintf("%.2f", $dimwidth),
+				dimheight   => sprintf("%.2f", $dimheight),
+				density     => sprintf("%.2f", $density),
+				class       => sprintf("%.2f", $class),
+				decval      => sprintf("%.2f", $decval),
+				frtins      => sprintf("%.2f", $frtins),
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
 		$PackProData->{description} = $params->{'description_' . $PackageIndex} if $params->{'description_' . $PackageIndex};
 		$PackProData->{nmfc} = $params->{'nmfc_' . $PackageIndex} if $params->{'nmfc_' . $PackageIndex};
+		$PackProData->{datecreated} = IntelliShip::DateUtils->get_timestamp_with_time_zone;
 
 		#$c->log->debug("PackProData: " . Dumper $PackProData);
 
@@ -557,6 +567,8 @@ sub save_special_services :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	$c->log->debug("... save special services");
 
 	my $CO = $self->get_order;
 
@@ -772,6 +784,7 @@ sub populate_order :Private
 	my $populate = $c->stash->{populate};
 
 	$c->stash->{edit_order} = 1 unless $populate;
+	$c->stash->{thirdpartyacctid} = $params->{thirdpartyacctid} if $params->{thirdpartyacctid};
 
 	## Address and Shipment Information
 	if (!$populate or $populate eq 'address' or $populate eq 'summary')
@@ -805,21 +818,15 @@ sub populate_order :Private
 
 		# Step 1: Find Packages belog to Order
 		my @packages = $CO->packages;
-
 		foreach my $Package (@packages)
 			{
 			$rownum_id++;
 			$c->stash->{'totalpackages'}++;
 			$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $Package);
 
-			# Step 3: Find Product belog to Package
-			my $WHERE = { ownerid => $Package->packprodataid };
-			$WHERE->{'ownertypeid'}  = '3000';
-			$WHERE->{'datatypeid'}   = '2000';
-
-			my @arr = $Package->products;
-
-			foreach my $Packprodata (@arr)
+			# Step 2: Find Product belog to Package
+			my @products = $Package->products;
+			foreach my $Packprodata (@products)
 				{
 				$rownum_id++;
 				$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
@@ -830,8 +837,7 @@ sub populate_order :Private
 		$c->stash->{description} = $CO->description;
 
 		# Step 3: Find product belog to Order
-		my @products = $CO->products;
-
+		my @products = $CO->co_products;
 		foreach my $ProductData (@products)
 			{
 			$rownum_id++;
@@ -854,7 +860,7 @@ sub populate_order :Private
 			}
 
 		my $insurance = $CO->estimatedinsurance || 0.00;
-		unless ($total_weight)
+		unless ($insurance)
 			{
 			$insurance += $_->decval foreach @packages;
 			}
@@ -863,6 +869,7 @@ sub populate_order :Private
 		$c->stash->{total_packages} = @packages;
 		$c->stash->{total_weight} = sprintf("%.2f",$total_weight);
 		$c->stash->{insurance} = sprintf("%.2f",$insurance);
+
 		#$c->stash->{international} = '';
 
 		my @special_services = $CO->assessorials;
@@ -872,6 +879,8 @@ sub populate_order :Private
 		$c->stash->{selected_special_service_loop} = $selected_special_service_loop;
 		#$c->log->debug("selected_special_service_loop: " . Dumper $selected_special_service_loop);
 		}
+
+	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
 	}
 
 sub add_detail_row :Private
@@ -1160,7 +1169,7 @@ sub SHIP_ORDER :Private
 		}
 
 	## Create or Update the thirdpartyacct table with address info if this is 3rd party
-	if ($params->{'deliverymethod'} eq '3rdparty')
+	if ($params->{'deliverymethod'} == 2) # Third Party
 		{
 		$self->save_third_party_details;
 		}
@@ -1585,7 +1594,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'custref2'} = $params->{'custref2'};
 	$ShipmentData->{'custref3'} = $params->{'custref3'};
 	$ShipmentData->{'department'} = $params->{'department'};
-	$ShipmentData->{'freightcharges'} = $params->{'freightcharges'};
+	$ShipmentData->{'freightcharges'} = $params->{'freightcharges'} || 0;
 	$ShipmentData->{'oacontactname'} = $params->{'branchcontact'};
 	$ShipmentData->{'oacontactphone'} = $params->{'branchphone'};
 	$ShipmentData->{'isinbound'} = $params->{'isinbound'};
@@ -1842,6 +1851,17 @@ sub set_required_fields :Private
 
 	#$c->log->debug("requiredfield_list: " . Dumper $requiredList);
 	$c->stash->{requiredfield_list} = $requiredList;
+	}
+
+sub clear_CO_details :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	$params->{'coid'} = undef;
+	$c->stash->{CO} = undef;
+	$c->stash->{coid} = undef;
+	$c->stash({});
 	}
 
 __PACKAGE__->meta->make_immutable;
