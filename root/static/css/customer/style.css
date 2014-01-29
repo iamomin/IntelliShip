@@ -833,13 +833,8 @@ input.package {
     cursor: pointer;
 }
 
-.orange {
+input.orange  {
     height: 32px;
-    overflow: hidden;
-    color: transparent;
-}
-
-.orange input {
     min-width: 118px;
     position: relative;
     display: inline-block;

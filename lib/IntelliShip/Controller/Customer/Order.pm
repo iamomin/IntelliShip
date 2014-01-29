@@ -176,8 +176,8 @@ sub setup_carrier_service :Private
 
 	$self->populate_order;
 
-	$c->stash->{deliverymethod} = '0';
-	$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
+	#$c->stash->{deliverymethod} = '0';
+	#$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	if ($Contact->is_administrator and $Customer->login_level != 10 and $Customer->login_level != 20 and $Customer->login_level != 15)
 		{
@@ -572,13 +572,14 @@ sub save_special_services :Private
 
 	my $CO = $self->get_order;
 
-	$c->log->debug("___ Flush old Assdata for ownerid: " . $CO->coid);
-	my @assessorial_datas = $c->model("MyDBI::Assdata")->search({ ownerid => $CO->coid });
-
-	foreach my $AssData (@assessorial_datas)
+	if (my @assessorials = $CO->assessorials)
 		{
-		$c->log->debug("___ Flush old Assdata for assdataid: " . $AssData->assdataid);
-		$AssData->delete;
+		$c->log->debug("___ Flush old Assdata for ownerid: " . $CO->coid);
+		foreach my $AssData (@assessorials)
+			{
+			$c->log->debug("___ Flush old Assdata for assdataid: " . $AssData->assdataid);
+			$AssData->delete;
+			}
 		}
 
 	my $AssRef = $self->API->get_sop_asslisting($self->customer->get_sop_id);
@@ -871,7 +872,11 @@ sub populate_order :Private
 		$c->stash->{insurance} = sprintf("%.2f",$insurance);
 
 		#$c->stash->{international} = '';
+		}
 
+	# SELECTED SPECIAL SERVICES
+	if (!$populate or $populate eq 'shipment' or $populate eq 'summary')
+		{
 		my @special_services = $CO->assessorials;
 		my %serviceHash =  map { $_->assname => 1 } @special_services;
 		my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');

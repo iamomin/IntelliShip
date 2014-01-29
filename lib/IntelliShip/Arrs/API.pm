@@ -205,6 +205,21 @@ sub get_carrrier_service_rate_list
 	return $carrier_Details;
 	}
 
+sub get_hashref
+	{
+	my $self = shift;
+	my $module = shift;
+	my $moduleid = shift;
+
+	my $http_request = {
+			action   => 'GetValueHashRef',
+			module   => $module,
+			moduleid => $moduleid,
+			};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub valid_billing_account
 	{
 	my $self = shift;

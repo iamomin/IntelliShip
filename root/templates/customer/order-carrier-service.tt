@@ -123,43 +123,20 @@
 	<div id="selected-special-requirements" style="display: [% selected_special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes">
 		<h2>Special Services Requested</h2>
 		[% FOREACH item IN selected_special_service_loop %]
-			<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" CHECKED/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+			<div id='div_[% item.value %]' style='display: inline'><label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" CHECKED/><span><label for="[% item.value %]">[% item.name %]</label></span></label></div>
 		[% END %]
+		<script>
+		$("#selected-special-requirements input:checkbox").click(function () {
+			if (!$(this).is(':checked')) {
+				$("#td_" + this.id).html($("#div_" + this.id).html());
+				$("#div_" + this.id).remove();
+				$("#" + this.id).attr("checked", false);
+				}
+			});
+		</script>
 	</div>
 
 	<div style="clear: both;">&nbsp;</div>
-
-<!--
-	<table class="app" style="min-height: 280px;">
-		<caption>Carrier and Service Selection</caption>
-		<tr>
-			<td style="vertical-align: top;">
-			<table id="delivery_method_table">
-				<tr>
-				<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-				<td class="css3-radios">
-					[% FOREACH item IN deliverymethod_loop %]
-					<label><input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
-					[% END %]
-				</td>
-				</tr>
-				<tr>
-					<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
-					<td><input type="text" class="text" name="othercarrier" id="othercarrier" /></td>
-				</tr>
-				<tr>
-					<td>&nbsp;</td><td>&nbsp;</td>
-				</tr>
-				<tr>
-					<td>&nbsp;</td><td><input type="button" class="gray" id="route" value="Route"/></td>
-				</tr>
-			</table>
-			</td>
-		</tr>
-	</table>
-
-	<div style="clear: both;">&nbsp;</div>
--->
 
 	<h1>SERVICE LEVEL SUMMARY</h1>
 [% IF one_page %]
@@ -184,7 +161,7 @@
 
 [% UNLESS one_page %]
 	<div class="float_left">
-		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
+		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
 		<div id="special-requirements"></div>
 	</div>
 	<div class="float_right">

@@ -202,14 +202,26 @@
 	[% END %]
 [% END %]
 
-	<div id="selected-special-requirements" style="display: none;" class="css3-checkboxes">
+	<div id="selected-special-requirements" style="display: [% selected_special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes">
 		<h2>Special Services Requested</h2>
+		[% FOREACH item IN selected_special_service_loop %]
+			<div id='div_[% item.value %]' style='display: inline'><label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" CHECKED/><span><label for="[% item.value %]">[% item.name %]</label></span></label></div>
+		[% END %]
+		<script>
+		$("#selected-special-requirements input:checkbox").click(function () {
+			if (!$(this).is(':checked')) {
+				$("#td_" + this.id).html($("#div_" + this.id).html());
+				$("#div_" + this.id).remove();
+				$("#" + this.id).attr("checked", false);
+				}
+			});
+		</script>
 	</div>
 
 [% UNLESS one_page %]
 	<div class="float_left">
 		<div id="special-requirements"></div>
-		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
+		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
 	</div>
 
 	<div class="float_right">

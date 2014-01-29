@@ -270,7 +270,9 @@
 			[% count = 0 %]
 			[% ELSE %]
 				<td id="td_[% item.value %]">
-				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+				[% UNLESS item.checked %]
+				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+				[% END %]
 				</td>
 			[% END %]
 		[% END %]

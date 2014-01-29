@@ -58,8 +58,8 @@
 
 		if (carrier.toUpperCase() != 'FEDEX')
 			{
-			showError("Only FedEx is supported, please select correct carrier from list.");
-			return;
+			//showError("Only FedEx is supported, please select correct carrier from list.");
+			//return;
 			}
 
 		$("#do").val("ship");
