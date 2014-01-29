@@ -248,9 +248,10 @@ img { border: none }
 /* Page */
 
 #page {
-    width: 95%;
+    width: 1000px;
     padding: 10px;
-    margin: 10px auto;
+    margin-left:  auto;
+    margin-right: auto;
 }
 
 #content {
@@ -367,7 +368,7 @@ label {
 
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}
-#row table {min-height: 280px}
+#row table {min-height: 200px}
 #row div {display: table-cell;padding: 0 10px;vertical-align: top}
 #row div.21 {display: table-cell;padding-right: 10px;vertical-align: top}
 #row div.22 {display: table-cell;padding-left: 10px;vertical-align: top}
@@ -517,7 +518,7 @@ table.app b {
 }
 
 table.center_app {
-    width: auto;
+    width: 100%;
     padding: 10px;
     margin: 10px auto;
     background: #e9e9e9;
@@ -891,4 +892,13 @@ input.orange  {
   */
  * html .ui-autocomplete {
     height: 300px;
+}
+
+.accordian_content{    
+    margin: 4px;
+}
+
+.form_table{
+    width: 350px;
+    
 }

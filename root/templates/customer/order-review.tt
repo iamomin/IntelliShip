@@ -18,26 +18,25 @@
 			<caption>ADDRESS SUMMARY</caption>
 			<tr>
 				<td><div class="default_text">SHIP TO:</div>
-					[% customer.customername %], <BR>
-					[% customerAddress.address1 %], <BR>
-					[% IF customerAddress.address2 %] [% customerAddress.address2 %], <BR> [% END %]
-					[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %] <BR>
-					[% customerAddress.country %], <BR>
-					[% customer.contact %], <BR>
-					[% customer.phone %], <BR>
-					[% IF fromdepartment %] [% fromdepartment %], <BR> [% END %]
-					[% IF fromemail %] [% fromemail %] <BR> [% END %]
+					[% customer.customername %], 
+					[% customerAddress.address1 %], 
+					[% IF customerAddress.address2 %] [% customerAddress.address2 %],  [% END %]
+					[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %] 					[% customerAddress.country %], <BR>
+					[% customer.contact %], 
+					[% customer.phone %], 
+					[% IF fromdepartment %] [% fromdepartment %],  [% END %]
+					[% IF fromemail %] [% fromemail %]  [% END %]
 				</td>
 				<td><div class="default_text">SHIP FROM:</div>
-					[% toname %], <BR>
-					[% toaddress1 %], <BR>
-					[% IF toaddress2 %] [% toaddress2 %], <BR> [% END %]
-					[% tocity %], [% tostate %], [% tozip %] <BR>
-					[% tocountry %], <BR>
-					[% tocontact %], <BR>
-					[% tophone %], <BR>
-					[% IF tocustomernumber %] [% tocustomernumber %], <BR> [% END %]
-					[% IF toemail %] [% toemail %] <BR> [% END %]
+					[% toname %], 
+					[% toaddress1 %], 
+					[% IF toaddress2 %] [% toaddress2 %],  [% END %]
+					[% tocity %], [% tostate %], [% tozip %] 
+					[% tocountry %], 
+					[% tocontact %], 
+					[% tophone %], 
+					[% IF tocustomernumber %] [% tocustomernumber %],  [% END %]
+					[% IF toemail %] [% toemail %]  [% END %]
 				</td>
 			</tr>
 		</table>

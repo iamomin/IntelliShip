@@ -378,6 +378,8 @@
 				draggable: false,
 				resizable: false,
 				title: "Estimated Shipment Charges",
+                                open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide(); },
+                                closeText: ""
 				});
 
 		$(".sc-hover").mouseover(function() {
@@ -385,7 +387,7 @@
 			shipmentChargeDlg.dialog("open");
 			}).mousemove(function(event) {
 				shipmentChargeDlg.dialog("option", "position", {
-					my: "left top",
+					my: "left top+20",
 					at: "right bottom",
 					of: event,
 					offset: "20 20",
