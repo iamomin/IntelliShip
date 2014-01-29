@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Engage Technology IntelliShip</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE11"/>
+
+		[% IF MEDIA_PRINT %]
+		<link rel="stylesheet" type="text/css" href="/static/css/customer/print.css" media="print"/>
+		[% END %]
+		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
+	</head>
+
+	<body>
+		<!-- start wrapper -->
+		<div id="wrapper">
+
+			<!-- start header -->
+			<div id="header">
+				<img src="/static/images/company-logo-transperent.png">
+			</div>
+			<!-- end header -->
+
+			<div ID="menu"> <!-- start menu -->
+			</div> <!-- end menu -->
+
+			<!-- <div style="clear: both;">&nbsp;</div> -->
+
+			<!-- start page -->
+			<div id="page">
+
+				[% content %]
+
+			</div>
+			<!-- end page -->
+
+			<!-- start footer -->
+			<div id="footer">
+				<ul>
+					<li><img src="/static/images/engage-logo.gif"></li>
+					<li>&copy; 2013 Engage Technology, LLC.</li>
+					<li>|&nbsp<a href="#">Privacy</a>&nbsp;</li>
+					<li>|&nbsp<a href="#">Legal</a></li>
+			  </ul>
+			</div>
+			<!-- end footer -->
+
+		</div>
+		<!-- end wrapper -->
+
+	</body>
+
+</html>

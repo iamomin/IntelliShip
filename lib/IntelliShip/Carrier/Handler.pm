@@ -11,12 +11,15 @@ BEGIN {
 	has 'context' => ( is => 'rw' );
 	has 'carrier' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
+	has 'customerservice' => ( is => 'rw' );
+	has 'service' => ( is => 'rw' );
 	has 'request_data' => ( is => 'rw' );
 	has 'request_type' => ( is => 'rw' );
 	}
 
 my $carriers = {
 	'FEDEX' => &CARRIER_FEDEX,
+	'UPS' => 'UPS',
 	};
 
 sub model
@@ -33,7 +36,7 @@ sub model
 sub myDBI
 	{
 	my $self = shift;
-	return $self->model->('MyDBI');
+	return $self->model('MyDBI');
 	}
 
 
@@ -58,9 +61,9 @@ sub process_request
 
 	unless ($context)
 		{
-		$Response->message('Accessed is denied. Invalid request context');
-		$Response->response_code('100');
-		return $Response;
+		#$Response->message('Accessed is denied. Invalid request context');
+		#$Response->response_code('100');
+		#return $Response;
 		}
 
 	unless ($myDBI)
@@ -119,6 +122,9 @@ sub process_request
 
 	my $Driver = $DriverModule->new;
 	$Driver->DB_ref($myDBI);
+	$Driver->CO($self->CO);
+	$Driver->customerservice($self->customerservice);
+	$Driver->service($self->service);
 	$Driver->context($self->context);
 	$Driver->customer($self->customer);
 	$Driver->data($self->request_data);

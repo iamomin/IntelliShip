@@ -1,0 +1,12 @@
+<form id="frm_label" name="frm_label" action="/customer/dashboard">
+
+	<div id="label">[% LABEL %]</div>
+
+	<table class="center">
+		<tr>
+			<td><input type="button" class="blue" value="PRINT"/></td>
+			<td><input type="submit" class="green" value="QUICK SHIP" onclick="$('#frm_label').attr('action', '/customer/order/quickship');"></td>
+		</tr>
+	</table>
+
+</form>

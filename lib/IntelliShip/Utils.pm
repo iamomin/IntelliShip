@@ -123,6 +123,24 @@ sub hex_string
 	return $string;
 	}
 
+sub hash_decode
+	{
+	my $self  = shift;
+	my $param = shift;
+
+	my ($key, $value);
+
+	foreach $key (keys %$param)
+		{
+		$value = $param->{$key};
+		$value =~ tr/+/ /;
+		$value =~ s/%([\dA-Fa-f][\dA-Fa-f])/pack("C", hex ($1))/eg;
+		$param->{$key} = $value;
+		}
+
+	return $param;
+	}
+
 sub parse_XML
 	{
 	my $self = shift;

@@ -10,9 +10,10 @@ function isEmpty( el ) {
 	return !$.trim($("#" + el).html())
 	}
 
-var JSON_data;
+var JSON_data, waiting_COUNT=0;
 function send_ajax_request(result_div, type_value, section_value, action_value, optional_param, call_back_function) {
 
+	waiting_COUNT++;
 	$('#preload').show();
 
 	var data_string = "ajax=1";
@@ -35,7 +36,8 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 			contentType: "application/json; charset=utf-8",
 			dataType: 'json',
 			success: function(data) {
-				$('#preload').hide();
+				waiting_COUNT--;
+				if (waiting_COUNT == 0) $('#preload').hide();
 				JSON_data = data;
 
 				if (JSON_data.error) showMessage("<div class='error'>" + JSON_data.error + "</div>", "Reseponse Error");
@@ -44,7 +46,8 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 				},
 			error: function(data) {
 				showMessage("An internal error has occurred, Please contact support. " + data, "Internal Server Error");
-				$('#preload').hide();
+				waiting_COUNT--;
+				if (waiting_COUNT == 0) $('#preload').hide();
 				},
 			complete: function(data){
 				//$('#preload').hide();
@@ -52,7 +55,8 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 			});
 		} else {
 		$('#response-content').load(encodeURI(request_url+"?"+data_string), function (responseText, textStatus, XMLHttpRequest) {
-			$('#preload').hide();
+			waiting_COUNT--;
+			if (waiting_COUNT == 0) $('#preload').hide();
 			afterSuccessCallBack(type_value, result_div, call_back_function, textStatus);
 			});
 		}

@@ -230,6 +230,8 @@ sub save_CO_details :Private
 
 	$c->log->debug("... SAVE CO DETAILS");
 
+	#IntelliShip::Utils->hash_decode($params);
+
 	my $CO = $self->get_order;
 
 	my $coData = { keep => '0' };
@@ -296,6 +298,10 @@ sub save_CO_details :Private
 		my $Other = $c->model('MyDBI::Other')->find({ customerid => $self->customer->customerid, otherid => $1 });
 		$coData->{'extcarrier'} = 'Other - ' . $Other->othername if $Other;
 		}
+
+	$coData->{'dimlength'} = $params->{'dimlength_1'} if $params->{'dimlength_1'};
+	$coData->{'dimwidth'} = $params->{'dimwidth_1'} if $params->{'dimwidth_1'};
+	$coData->{'dimheight'} = $params->{'dimheight_1'} if $params->{'dimheight_1'};
 
 	$CO->update($coData);
 	}
@@ -439,6 +445,7 @@ sub save_third_party_details
 		$c->log->debug("New Thirdpartyacct Inserted, ID: " . $Thirdpartyacct->thirdpartyacctid);
 		}
 
+	$CO->tpacctnumber($Thirdpartyacct->tpacctnumber);
 	$CO->freightcharges(2); # Third party
 	$CO->update;
 	}
@@ -1165,10 +1172,19 @@ sub SHIP_ORDER :Private
 	my $params = $c->req->params;
 
 	$c->log->debug("------- SHIP_ORDER -------");
+
+	unless ($params->{'carrier'})
+		{
+		$c->log->warn("CAN'T SHIP WITHOUT CARRIER");
+		return;
+		}
+
 	my $CO = $self->get_order;
 	my $Customer = $self->customer;
 
-	if (length $params->{'defaultcsid'} and $params->{'defaultcsidtotalcost'} > 0 and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
+	if (length $params->{'defaultcsid'}
+		and $params->{'defaultcsidtotalcost'} > 0
+		and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
 		{
 		$self->CheckChargeThreshold;
 		}
@@ -1194,6 +1210,7 @@ sub SHIP_ORDER :Private
 
 	my $CustomerID = $Customer->customerid;
 	my $ServiceTypeID = $self->API->get_CS_value($params->{'customerserviceid'}, 'servicetypeid', $CustomerID);
+	#$c->log->debug("API ServiceTypeID: " . Dumper $ServiceTypeID);
 
 	$params->{'new_shipmentid'} = $self->get_token_id;
 	$c->log->debug("___ Generate New Shipment ID: " . $params->{'new_shipmentid'});
@@ -1240,7 +1257,7 @@ sub SHIP_ORDER :Private
 			my @packages = $CO->packages;
 			foreach my $Package (@packages)
 				{
-				my $ShipmentPackage = $self->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
+				my $ShipmentPackage = $c->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
 				$ShipmentPackage->ownertypeid(2000); # Shipment
 				$ShipmentPackage->ownerid($params->{'new_shipmentid'});
 				$ShipmentPackage->packprodataid($self->get_token_id);
@@ -1251,7 +1268,7 @@ sub SHIP_ORDER :Private
 				my @products = $Package->products;
 				foreach my $Product (@products)
 					{
-					my $ShipmentProduct = $self->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
+					my $ShipmentProduct = $c->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
 					$ShipmentProduct->ownertypeid(3000); # Product (for Packages)
 					$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
 					$ShipmentProduct->packprodataid($self->get_token_id);
@@ -1295,6 +1312,43 @@ sub SHIP_ORDER :Private
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
 	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
 
+	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
+	$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
+
+	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$self->customer->customerid);
+	$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
+
+	if ($ShippingData->{'decvalinsrate'})
+		{
+		$CustomerService->{'webaccount'} = $ShippingData->{'webaccount'};
+		}
+
+	# If billingaccount (3rd party) exists, and eq webaccount, undef it...this causes problems
+	# with FedEx, at the least, and is superfluous/unnecessary elsewhere
+	if ($ShipmentData->{'billingaccount'} and $ShipmentData->{'billingaccount'} eq $CustomerService->{'webaccount'})
+		{
+		undef $ShipmentData->{'billingaccount'};
+		}
+
+	if ($ShippingData->{'meternumber'})
+		{
+		$CustomerService->{'meternumber'} = $ShippingData->{'meternumber'};
+		}
+
+	$c->log->debug("WEBACCOUNT: " . $CustomerService->{'webaccount'} . ", BILLINGACCOUNT: " . $CustomerService->{'webaccount'} . ", TPACCTNUMBER: " . $ShipmentData->{'tpacctnumber'});
+
+	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+	$c->log->debug("SERVICE: " . Dumper $Service);
+	return undef unless ($Service);
+
+	if ($ShippingData->{'webhandlername'})
+		{
+		$Service->{'webhandlername'} = $ShippingData->{'webhandlername'};
+		}
+
+	my $ObjectName = $Service->{'webhandlername'};
+	$ObjectName =~ s/\.pl$//;
+
 	###################################################################
 	## Process shipment down through the carrrier handler
 	## (online, customerservice, service, carrier handler).
@@ -1304,12 +1358,14 @@ sub SHIP_ORDER :Private
 	$Handler->token($self->get_login_token);
 	$Handler->context($self->context);
 	$Handler->customer($self->customer);
-	$Handler->carrier(&CARRIER_FEDEX);
+	$Handler->carrier($params->{'carrier'});
+	$Handler->customerservice($CustomerService);
+	$Handler->service($Service);
 	$Handler->CO($CO);
 	$Handler->request_data($ShipmentData);
 
 	my $Response = $Handler->process_request({
-			NO_TOKEN_OPTION => 0
+			NO_TOKEN_OPTION => 1
 			});
 
 	# Process errors
@@ -1322,7 +1378,6 @@ sub SHIP_ORDER :Private
 	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
 
 	my $Shipment = $Response->data;
-	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
@@ -1375,6 +1430,7 @@ sub SHIP_ORDER :Private
 			}
 		}
 
+	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
 	# If we don't have a csid and service, and *do* have a freight charge (s/b through overrride),
 	# stuff a shipment charge entry in - this is an 'Other' shipment with an overriden freight charge
 	if (!$params->{'customerserviceid'} and !$params->{'service'} and $params->{'freightcharge'})
@@ -1407,8 +1463,159 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
 
+	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
 	# Save out shipment assessorials
-	$self->SaveAssessorials($params,$params->{'shipmentid'},2000);
+	#$self->SaveAssessorials($params,$params->{'shipmentid'},2000);
+
+	unless ($Shipment)# $Shipment and $Shipment->tracking1 and $Shipment->shipmentid)
+		{
+		if (!defined($Shipment))
+			{
+			}
+		elsif (defined($Shipment->{'shipmentid'}))
+			{
+			#$Shipment->ChangeStatus(5); ######### TODO ########
+			}
+
+		 ######### TODO ########
+		# undef the shipmentid or else shipconfirm will try to display as readonly shipment
+		#$Shipment->{'shipmentid'} = undef;
+		#$CO->ChangeStatus(1);
+
+		# # Excise bad zip/zone combinations from the db.
+		# elsif ($Shipment->{'errorcode'} eq 'badzone')
+			# {
+			# my $ZoneRef = {
+				# action   => 'DeleteZone',
+				# typeid   => $CS->{'zonetypeid'},
+				# fromzip  => $Customer->{'zip'},
+				# tozip    => $ShipmentRef->{'addresszip'},
+				# };
+
+			# &APIRequest($ZoneRef);
+			# }
+
+		# if (!defined($Shipment->{'errorstring'}))
+			# {
+			# $Shipment->{'errorstring'} = 'An Error Has Occurred.  Please try again later.';
+			# }
+		 ######### TODO ########
+		}
+	else
+		{
+		#Set shipment and order statuses (ship complete and shipped, respectively)
+		$Shipment->statusid(4);
+		$CO->statusid(5);
+
+		# Extra, carrier specific bits
+		#if ($Shipment->{'screen'} eq 'displayawb_airborne_preprint')
+		#	{
+		#	my $trackinglast3 = $Shipment->tracking1 =~ /\d+(\d{3})$/;
+		#	if ($Shipment->partiestotransaction eq 'Y')
+		#		{
+		#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;X';
+		#		}
+		#	elsif ( $Shipment->partiestotransaction eq 'N' )
+		#		{
+		#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X';
+		#		}
+		#	}
+
+		$CO->update;
+		$Shipment->update;
+
+		#############################################
+		# GENERATE LABEL TO PRINT
+		#############################################
+		$self->generate_label($Shipment,$Service);
+		$c->stash(template => "templates/customer/order-label.tt");
+		}
+	}
+
+sub generate_label
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $Service = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $CO = $self->get_order;
+
+	my $ShipmentData = $self->BuildShipmentInfo;
+
+	# Alt SOP mangling
+	# if ( $CgiRef->{'usingaltsop'} )
+		# {
+		# $CgiRef->{'addressname'} = $self->GetAltSOPConsigneeName($CgiRef->{'customerserviceid'},$CgiRef->{'addressname'});
+		# }
+
+	$c->stash->{fromAddress} = $Shipment->origin_address;
+	$c->stash->{toAddress} = $Shipment->destination_address;
+	$c->stash->{shipdate} = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
+	$c->stash->{tracking1} = $Shipment->tracking1;
+	$c->stash->{custnum} = $Shipment->custnum;
+
+	my $BillingAccount = $Shipment->billingaccount;
+	if (defined($BillingAccount) and $BillingAccount ne '')
+		{
+		$c->stash->{billingtype} = "3RD PARTY";
+		}
+	else
+		{
+		$c->stash->{billingtype} = "P/P";
+		}
+
+	if (defined($Shipment->dimweight) and $Shipment->dimweight == 0)
+		{
+		$c->stash->{dimweight} = undef;
+		}
+
+	$c->stash->{enteredweight} = $CO->total_weight;
+	$c->stash->{ponumber} = $Shipment->ponumber;
+	$c->stash->{tracking1} = $Shipment->tracking1;
+	$c->stash->{service} = uc($Service->{'servicename'});
+	$c->stash->{totalquantity} = $CO->total_quantity;
+
+	if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+		{
+		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+		}
+
+	######### TODO IMPLEMENT PARENT ORDER NUMBER AS REFNUMBER #########
+	# if ( defined($CgiRef->{'originalcoid'}) and $CgiRef->{'originalcoid'} ne '' )
+		# {
+		# my $ParentCO = new CO($self->{'dbref'}->{'aos'},$self->{'customer'});
+		# $ParentCO->Load($CgiRef->{'originalcoid'});
+		# $CgiRef->{'refnumber'} = $ParentCO->GetValueHashRef()->{'ordernumber'};
+		# }
+	# else
+		# {
+		# $CgiRef->{'refnumber'} = $CgiRef->{'ordernumber'};
+		# }
+
+	# if ( defined($CgiRef->{'ponumber'}) and $CgiRef->{'ponumber'} ne '' )
+		# {
+		# $CgiRef->{'refnumber'} .= " - $CgiRef->{'ponumber'}";
+		# }
+	# elsif ( defined($CgiRef->{'custnum'}) and $CgiRef->{'custnum'} ne '' )
+		# {
+		# $CgiRef->{'refnumber'} .= " - $CgiRef->{'custnum'}";
+		# }
+	######################################################################
+
+	my $refnumber = $CO->ordernumber;
+	if ( defined($CO->{'ponumber'}) and $CO->ponumber ne '' )
+		{
+		$refnumber .= " - " . $CO->{'ponumber'};
+		}
+	$c->stash->{refnumber} = $refnumber;
+
+	#$CgiRef = $self->ProcessPrinterStream($CgiRef);
+
+	my $template = $params->{'carrier'} || 'default';
+	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+	$c->stash($params);
 	}
 
 # Push all shipment charges onto a simple delimited string, for passing back so that all
@@ -1520,53 +1727,86 @@ sub BuildShipmentInfo
 	my $c = $self->context;
 	my $params = $c->req->params;
 	my $Customer = $self->customer;
+	my $CO = $self->get_order;
+
+	my $myDBI = $c->model('MyDBI');
 
 	my $ShipmentData = { 'shipmentid' => $params->{'new_shipmentid'} };
 
-	$ShipmentData->{'addressname'} = $params->{'addressname'};
-	$ShipmentData->{'address1'} = $params->{'address1'};
-	$ShipmentData->{'address2'} = $params->{'address2'};
-	$ShipmentData->{'addresscity'} = $params->{'addresscity'};
-	$ShipmentData->{'addressstate'} = $params->{'addressstate'};
-	$ShipmentData->{'addresszip'} = $params->{'addresszip'};
-	$ShipmentData->{'addresscountry'} = $params->{'addresscountry'};
-	$ShipmentData->{'customername'} = $params->{'customername'};
-	$ShipmentData->{'branchaddress1'} = $params->{'branchaddress1'};
-	$ShipmentData->{'branchaddress2'} = $params->{'branchaddress2'};
-	$ShipmentData->{'branchaddresscity'} = $params->{'branchaddresscity'};
-	$ShipmentData->{'branchaddressstate'} = $params->{'branchaddressstate'};
-	$ShipmentData->{'branchaddresszip'} = $params->{'branchaddresszip'};
-	$ShipmentData->{'branchaddresscountry'} = $params->{'branchaddresscountry'};
-	$ShipmentData->{'contactname'} = $params->{'contactname'};
-	$ShipmentData->{'contactphone'} = $params->{'contactphone'};
-	$ShipmentData->{'contacttitle'} = $params->{'contacttitle'};
-	$ShipmentData->{'dimlength'} = $params->{'dimlength'};
-	$ShipmentData->{'dimwidth'} = $params->{'dimwidth'};
-	$ShipmentData->{'dimheight'} = $params->{'dimheight'};
+	my $FromAddress = $Customer->address;
+	$ShipmentData->{'customername'}         = $FromAddress->addressname;
+	$ShipmentData->{'branchaddress1'}       = $FromAddress->address1;
+	$ShipmentData->{'branchaddress2'}       = $FromAddress->address2;
+	$ShipmentData->{'branchaddresscity'}    = $FromAddress->city;
+	$ShipmentData->{'branchaddressstate'}   = $FromAddress->state;
+	$ShipmentData->{'branchaddresszip'}     = $FromAddress->zip;
+	$ShipmentData->{'branchaddresscountry'} = $FromAddress->country;
+
+	my $ToAddress = $CO->to_address;
+	$ShipmentData->{'addressname'}    = $ToAddress->addressname;
+	$ShipmentData->{'address1'}       = $ToAddress->address1;
+	$ShipmentData->{'address2'}       = $ToAddress->address2;
+	$ShipmentData->{'addresscity'}    = $ToAddress->city;
+	$ShipmentData->{'addressstate'}   = $ToAddress->state;
+	$ShipmentData->{'addresszip'}     = $ToAddress->zip;
+	$ShipmentData->{'addresscountry'} = $ToAddress->country;
+	$ShipmentData->{'addresscountryname'} = $ToAddress->country_description;
+
+	$ShipmentData->{'coid'} = $CO->coid;
+	$ShipmentData->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
+	$ShipmentData->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
+
+	$ShipmentData->{'contactname'} = $CO->contactname;
+	$ShipmentData->{'contactphone'} = $CO->contactphone;
+	$ShipmentData->{'contacttitle'} = $CO->contacttitle;
+	$ShipmentData->{'dimlength'} = $CO->dimlength;
+	$ShipmentData->{'dimwidth'} = $CO->dimwidth;
+	$ShipmentData->{'dimheight'} = $CO->dimheight;
+	$ShipmentData->{'currencytype'} = $CO->currencytype;
+	$ShipmentData->{'destinationcountry'} = $CO->destinationcountry;
+	$ShipmentData->{'manufacturecountry'} = $CO->manufacturecountry;
+	$ShipmentData->{'dutypaytype'} = $CO->dutypaytype;
+	$ShipmentData->{'termsofsale'} = $CO->termsofsale;
+	$ShipmentData->{'commodityquantity'} = $CO->commodityquantity;
+	$ShipmentData->{'commodityunitvalue'} = $CO->commodityunitvalue;
+	$ShipmentData->{'commoditycustomsvalue'} = $CO->commoditycustomsvalue;
+	$ShipmentData->{'unitquantity'} = $CO->unitquantity;
+	$ShipmentData->{'partiestotransaction'} = $CO->partiestotransaction;
+	$ShipmentData->{'dutyaccount'} = $CO->dutyaccount;
+	$ShipmentData->{'commodityunits'} = $CO->commodityunits;
+	$ShipmentData->{'bookingnumber'} = $CO->bookingnumber;
+	$ShipmentData->{'ordernumber'} = $CO->ordernumber;
+	$ShipmentData->{'description'} = $CO->description;
+	$ShipmentData->{'extcd'} = $CO->extcd;
+	$ShipmentData->{'shipmentnotification'} = $CO->shipmentnotification;
+	$ShipmentData->{'deliverynotification'} = $CO->deliverynotification;
+	$ShipmentData->{'hazardous'} = $CO->hazardous;
+	$ShipmentData->{'ponumber'} = $CO->ponumber;
+	$ShipmentData->{'securitytype'} = $CO->securitytype;
+	$ShipmentData->{'contactid'} = $CO->contactid;
+	$ShipmentData->{'extid'} = $CO->extid;
+	$ShipmentData->{'custref2'} = $CO->custref2;
+	$ShipmentData->{'custref3'} = $CO->custref3;
+	$ShipmentData->{'department'} = $CO->department;
+	$ShipmentData->{'freightcharges'} = $CO->freightcharges;
+	$ShipmentData->{'isinbound'} = $CO->isinbound;
+	$ShipmentData->{'isdropship'} = $CO->isdropship;
+	$ShipmentData->{'datereceived'} = IntelliShip::DateUtils->american_date_time($CO->datereceived);
+	$ShipmentData->{'datepacked'} = IntelliShip::DateUtils->american_date_time($CO->datepacked);
+	$ShipmentData->{'daterouted'} = IntelliShip::DateUtils->american_date_time($CO->daterouted);
+	$ShipmentData->{'usealtsop'} = $CO->usealtsop;
+	$ShipmentData->{'quantityxweight'} = $CO->quantityxweight;
+
+	$ShipmentData->{'dimweight'} = $params->{'dimweight'};
+	$ShipmentData->{'customsdescription'} = $params->{'customsdescription'};
 	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
-	$ShipmentData->{'currencytype'} = $params->{'currencytype'};
-	$ShipmentData->{'destinationcountry'} = $params->{'destinationcountry'};
-	$ShipmentData->{'manufacturecountry'} = $params->{'manufacturecountry'};
-	$ShipmentData->{'dutypaytype'} = $params->{'dutypaytype'};
-	$ShipmentData->{'termsofsale'} = $params->{'termsofsale'};
-	$ShipmentData->{'commodityquantity'} = $params->{'commodityquantity'};
 	$ShipmentData->{'commodityweight'} = $params->{'commodityweight'};
-	$ShipmentData->{'commodityunitvalue'} = $params->{'commodityunitvalue'};
-	$ShipmentData->{'commoditycustomsvalue'} = $params->{'commoditycustomsvalue'};
-	$ShipmentData->{'unitquantity'} = $params->{'unitquantity'};
 	$ShipmentData->{'customsvalue'} = $params->{'customsvalue'};
-	$ShipmentData->{'partiestotransaction'} = $params->{'partiestotransaction'};
 	$ShipmentData->{'customsdesription'} = $params->{'customsdesription'};
 	$ShipmentData->{'harmonizedcode'} = $params->{'harmonizedcode'};
 	$ShipmentData->{'ssnein'} = $params->{'ssnein'};
 	$ShipmentData->{'naftaflag'} = $params->{'naftaflag'};
-	$ShipmentData->{'dutyaccount'} = $params->{'dutyaccount'};
-	$ShipmentData->{'commodityunits'} = $params->{'commodityunits'};
-	$ShipmentData->{'customsdescription'} = $params->{'customsdescription'};
-	$ShipmentData->{'bookingnumber'} = $params->{'bookingnumber'};
 	$ShipmentData->{'slac'} = $params->{'slac'};
-	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
-	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
 	$ShipmentData->{'billingaccount'} = $params->{'billingaccount'};
 	$ShipmentData->{'billingpostalcode'} = $params->{'billingpostalcode'};
 	$ShipmentData->{'tracking1'} = $params->{'tracking1'};
@@ -1574,43 +1814,20 @@ sub BuildShipmentInfo
 	$ShipmentData->{'carrier'} = $params->{'carrier'};
 	$ShipmentData->{'service'} = $params->{'service'};
 	$ShipmentData->{'quantity'} = $params->{'quantity'};
-	$ShipmentData->{'coid'} = $params->{'coid'};
-	$ShipmentData->{'datetoship'} = IntelliShip::DateUtils->american_date($params->{'datetoship'});
-	$ShipmentData->{'dateneeded'} = IntelliShip::DateUtils->american_date($params->{'dateneeded'});
 	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
-	$ShipmentData->{'ordernumber'} = $params->{'ordernumber'};
-	$ShipmentData->{'dimweight'} = $params->{'dimweight'};
+	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
+	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
 	$ShipmentData->{'density'} = $params->{'density'};
-	$ShipmentData->{'description'} = $params->{'description'};
 	$ShipmentData->{'ipaddress'} = $params->{'ipaddress'};
 	$ShipmentData->{'custnum'} = $params->{'custnum'};
 	$ShipmentData->{'shipasname'} = $params->{'customername'};
-	$ShipmentData->{'extcd'} = $params->{'extcd'};
-	$ShipmentData->{'shipmentnotification'} = $params->{'shipmentnotification'};
-	$ShipmentData->{'deliverynotification'} = $params->{'deliverynotification'};
-	$ShipmentData->{'hazardous'} = $params->{'hazardous'};
 	$ShipmentData->{'manualthirdparty'} = $params->{'manualthirdparty'};
-	$ShipmentData->{'ponumber'} = $params->{'ponumber'};
-	$ShipmentData->{'securitytype'} = $params->{'securitytype'};
-	$ShipmentData->{'contactid'} = $params->{'contactid'};
 	$ShipmentData->{'originid'} = 3;
 	$ShipmentData->{'insurance'} = $params->{'insurance'};
-	$ShipmentData->{'extid'} = $params->{'extid'};
-	$ShipmentData->{'custref2'} = $params->{'custref2'};
-	$ShipmentData->{'custref3'} = $params->{'custref3'};
-	$ShipmentData->{'department'} = $params->{'department'};
-	$ShipmentData->{'freightcharges'} = $params->{'freightcharges'} || 0;
 	$ShipmentData->{'oacontactname'} = $params->{'branchcontact'};
 	$ShipmentData->{'oacontactphone'} = $params->{'branchphone'};
-	$ShipmentData->{'isinbound'} = $params->{'isinbound'};
-	$ShipmentData->{'isdropship'} = $params->{'isdropship'};
-	$ShipmentData->{'datereceived'} = IntelliShip::DateUtils->american_date_time($params->{'datereceived'});
-	$ShipmentData->{'datepacked'} = IntelliShip::DateUtils->american_date_time($params->{'datepacked'});
-	$ShipmentData->{'daterouted'} = IntelliShip::DateUtils->american_date_time($params->{'daterouted'});
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
-	$ShipmentData->{'usealtsop'} = $params->{'usealtsop'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};
-	$ShipmentData->{'quantityxweight'} = $params->{'quantityxweight'};
 	$ShipmentData->{'dryicewt'} = $params->{'dryicewt'};
 	$ShipmentData->{'dryicewtlist'} = $params->{'dryicewtlist'};
 	$ShipmentData->{'dgunnum'} = $params->{'dgunnum'};
@@ -1632,12 +1849,12 @@ sub BuildShipmentInfo
 		$params->{'billingaccount'} = undef;
 		}
 
-	if (length $params->{'billingaccount'})
+	if ($CO->tpacctnumber)
 		{
 		$ShipmentData->{'thirdpartybilling'} = 1;
 
 		# Get third party address bits into params (in case we picked up a 3p account from 'BuildShipmentData'
-		if (my $ThirdPartyAccountObj = $Customer->third_party_account($ShipmentData->{'billingaccount'}))
+		if (my $ThirdPartyAccountObj = $Customer->third_party_account($CO->tpacctnumber))
 			{
 			$ShipmentData->{'tpcompanyname'} = $ThirdPartyAccountObj->tpcompanyname;
 			$ShipmentData->{'tpaddress1'}    = $ThirdPartyAccountObj->tpaddress1;
@@ -1649,17 +1866,9 @@ sub BuildShipmentInfo
 			}
 		}
 
-	my $myDBI = $c->model('MyDBI');
-	# Get Country Name - for DHL mainly at this point, but likely others will come up.
-	if ($ShipmentData->{'addresscountry'})
-		{
-		my $sth = $myDBI->select->("SELECT countryname FROM country WHERE countryiso2 = '" . $ShipmentData->{'addresscountry'} . "'");
-		$ShipmentData->{'addresscountryname'} = $sth->fetchrow(0)->{'countryname'} if $sth->numrows;
-		}
-
 	# If carrier/service is FedEx/Freight, set 3rd party billing to the Engage heavy account
 	my $host_name = IntelliShip::MyConfig->getHostname;
-	if ($params->{'carrier'} eq 'FedEx' and $params->{'service'} =~ /Freight/ and !$params->{'billingaccount'} and $host_name !~ /rml/)
+	if ($params->{'carrier'}  =~ /FedEx/ and $params->{'service'} =~ /Freight/ and !$params->{'billingaccount'} and $host_name !~ /rml/)
 		{
 		$c->log->debug("*** In FedEx billingaccount/thirdpartybillinghack");
 		$ShipmentData->{'billingaccount'} = '232191376';
@@ -1682,6 +1891,7 @@ sub BuildShipmentInfo
 		unless ($ThirdPartyAcct)
 			{
 			$ThirdPartyAcct = $self->API->get_CS_value($params->{'customerserviceid'}, 'thirdpartyacct', $self->customer->customerid, 0);
+			#$c->log->debug("API ThirdPartyAcct: " . Dumper $ThirdPartyAcct);
 			}
 
 		if ( $ThirdPartyAcct =~ m/^engage::(.*?)$/ )

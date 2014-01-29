@@ -269,6 +269,11 @@ img { border: none }
     border: 1px solid #98A7AF;
 }
 
+#label {
+    width: 400px;
+    margin: 0 auto;
+}
+
 /* Footer */
 
 #footer {

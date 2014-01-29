@@ -928,7 +928,7 @@ sub is_fullfilled
 	my $order_number = shift;
 	my $cotype_id = shift || 0;
 
-	my @products = $self->products($order_number);
+	my @products = $self->products();
 
 	foreach my $Product (@products)
 		{

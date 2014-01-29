@@ -212,9 +212,9 @@
 		console.log("SELECTED CARRIER: " + carrier);
 		if (carrier == undefined) return;
 
-		if (carrier.toUpperCase() != 'FEDEX')
+		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS')
 			{
-			showError("Only FedEx is supported, please select correct carrier from list.");
+			showError("Only FedEx/UPS is supported, please select correct carrier from list.");
 			return;
 			}
 

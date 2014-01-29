@@ -105,15 +105,16 @@ sub get_carrier_service_list
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	IntelliShip::Utils->hash_decode($params);
+
 	$self->save_order;
 
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	my $APIRequest = IntelliShip::Arrs::API->new;
-	$APIRequest->context($c);
-	my $carrier_Details = $APIRequest->get_carrrier_service_rate_list($CO, $Contact, $Customer);
+	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer);
+	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
 	my ($CS_list_1, $CS_list_2) = ([], []);
 	foreach my $customerserviceid (keys %$carrier_Details)
@@ -122,6 +123,12 @@ sub get_carrier_service_list
 
 		my @carrier_service = split(/ - /,$CSData->{'NAME'});
 		my $carrier = $carrier_service[0];
+		my $no_on_time;
+		if ($carrier =~ /^\*+\s/)
+			{
+			$carrier =~ s/^\*+\s//;
+			$no_on_time = 1;
+			}
 
 		my ($service, $estimated_date, $shipment_charge);
 		if (@carrier_service == 2)
@@ -148,6 +155,7 @@ sub get_carrier_service_list
 						customerserviceid => $customerserviceid,
 						carrier => $carrier,
 						service => $service,
+						no_on_time => $no_on_time,
 						};
 
 		$shipment_charge =~ s/\$// if $shipment_charge;

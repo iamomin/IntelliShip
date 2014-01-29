@@ -19,7 +19,7 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float_left">
-		<div class="orange"><input type="button" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
+		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/>
 		<div id="special-requirements"></div>
 	</div>
 
@@ -56,10 +56,10 @@
 		console.log("SELECTED CARRIER: " + carrier);
 		if (carrier == undefined) return;
 
-		if (carrier.toUpperCase() != 'FEDEX')
+		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS')
 			{
-			//showError("Only FedEx is supported, please select correct carrier from list.");
-			//return;
+			showError("Only FedEx/UPS is supported, please select correct carrier from list.");
+			return;
 			}
 
 		$("#do").val("ship");

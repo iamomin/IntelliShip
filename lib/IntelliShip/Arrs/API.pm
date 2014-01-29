@@ -76,7 +76,8 @@ sub get_CS_value
 		allownull => $AllowNull,
 		};
 
-	return $self->APIRequest($http_request);
+	my $dataHash = $self->APIRequest($http_request);
+	return $dataHash->{'value'};
 	}
 
 sub get_CS_shipping_values
@@ -177,7 +178,7 @@ sub get_carrrier_service_rate_list
 		}
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
-	$self->context->log->debug("API REQUEST: ". Dumper($request));
+	#$self->context->log->debug("API REQUEST: ". Dumper($request));
 
 	my $response = $self->APIRequest($request);
 

@@ -123,10 +123,15 @@ sub end : Private {
 	my $Controller = $c->controller;
 	my $Token = $Controller->token;
 	my $ajax = $c->req->param('ajax') || 0;
+	my $print_label = $c->stash->{print_label} || 0;
 
 	if ($Token and $ajax)
 		{
 		$c->forward($c->view('Ajax'));
+		}
+	elsif ($Token and $print_label)
+		{
+		$c->forward($c->view('Label'));
 		}
 	elsif ($Token)
 		{

@@ -26,7 +26,7 @@ sub date_to_text_long
 	my $self = shift;
 	my $fulldate = shift;
 
-	($fulldate, my $time) = split(/\ /, $fulldate) if $fulldate =~ /\:/;
+	($fulldate, my $time) = split($&, $fulldate) if $fulldate =~ /(\ |T)/;
 
 	my ($yy, $mm, $dd);
 	($yy, $mm, $dd) = split(/\-/, $fulldate) if $fulldate =~ /-/;
@@ -151,7 +151,9 @@ sub get_db_format_date_time
 
 	$datetime =~ s/%2F/\//g if $datetime =~ /%2F/;
 
-	my ($date, $time) = split(/\ /, $datetime);
+	my ($date, $time) = split($&, $datetime) if $datetime =~ /(\ |T)/;
+	$date = $datetime unless $date;
+
 	my ($mm, $dd, $yy) = split(/\//, $date);
 	$mm = '0' . $mm if length $mm == 1;
 	$dd = '0' . $dd if length $dd == 1;
@@ -257,7 +259,8 @@ sub format_to_yyyymmdd
 	my $self = shift;
 	my $date = shift;
 
-	($date,my $time) = split(/\ /, $date) if $date =~ /\ /;
+	($date,my $time) = split(/$&/, $date) if $date =~ /(\ |T)/;
+
 	my ($yy,$mm,$dd) = split(/\-/, $date) if $date =~ /\-/;
 	   ($mm,$dd,$yy) = split(/\//, $date) if $date =~ /\//;
 
@@ -270,10 +273,10 @@ sub get_delta_days
 	my $date1 = shift;
 	my $date2 = shift || $self->current_date;
 
-	if ($date1 =~ /\:/g) ## 0000-00-00 00:00:00
+	if ($date1 =~ /(\ |T)/g) ## 0000-00-00T00:00:00
 		{
-		my ($date,$time) = split(/\ /,$date1);
-		$date1 = $date ;
+		my ($date, $time) = split($&, $date1);
+		$date1 = $date;
 		}
 
 	my ($d1yy, $d1mm, $d1dd) = $self->parse_date($date1);
@@ -509,9 +512,9 @@ sub is_valid_date
 	my $self = shift;
 	my $dateIs = shift;
 
-	if ($dateIs =~ /\:/g) ## 0000-00-00 00:00:00
+	if ($dateIs =~ /(\ |T)/g) ## 0000-00-00T00:00:00
 		{
-		my ($date,$time) = split(/\ /,$dateIs);
+		my ($date, $time) = split($&, $dateIs);
 		$dateIs = $date;
 		}
 

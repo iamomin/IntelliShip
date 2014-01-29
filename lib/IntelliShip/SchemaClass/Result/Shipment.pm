@@ -816,6 +816,18 @@ __PACKAGE__->many_to_many("coids", "shipmentcoassocs", "coid");
 # Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SIqsoxucVnH7m+CvW/xJxg
 
+__PACKAGE__->belongs_to(
+	origin_address => 
+	"IntelliShip::SchemaClass::Result::Address",
+	"addressidorigin"
+	);
+
+__PACKAGE__->belongs_to(
+	destination_address => 
+	"IntelliShip::SchemaClass::Result::Address",
+	"addressiddestin"
+	);
+
 __PACKAGE__->has_many(
 	shipment_charges =>
 		'IntelliShip::SchemaClass::Result::Shipmentcharge',
