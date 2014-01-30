@@ -1,0 +1,120 @@
+<table width="383" border="1" cellspacing="0" cellpadding="0" align="center" bordercolor="#000000" bgcolor="#FFFFFF">
+	<tr>
+		<td>
+			<table width=90% cellpadding=0 cellspacing=0>
+				<tr valign=top><td width=15% align=right><font size="-1" face="Arial, Helvetica, sans-serif">FROM</font></td><td width=5%>&nbsp;</td><td width=80%><font size="-1" face="Arial, Helvetica, sans-serif">[% fullfrom %]</font></td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width=90% cellpadding=0 cellspacing=0>
+				<tr valign=top>
+					<td width=15% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">SRef#</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=30%>
+						<font size="-1" face="Arial, Helvetica, sans-serif">[% refnumber %]</font>
+					</td>
+					<td width=30% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">Weight:</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=15%>
+						<font size="-1" face="Arial, Helvetica, sans-serif">[% enteredweight %]</font>
+					</td>
+				</tr>
+				<tr valign=top>
+					<td width=15% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">GBL#</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=30%>
+						<font size="-1" face="Arial, Helvetica, sans-serif">&nbsp;</font>
+					</td>
+					<td width=30% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">Dimensions:<font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=15%>
+						<font size="-1" face="Arial, Helvetica, sans-serif">[% dims %]</font>
+					</td>
+				</tr>
+				<tr valign=top>
+					<td width=15% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">PO#</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=30%>
+						<font size="-1" face="Arial, Helvetica, sans-serif">[% ponumber %]</font>
+					</td>
+					<td width=30% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">Total Pieces:</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=15%>
+						<font size="-1" face="Arial, Helvetica, sans-serif">[% totalquantity %]</font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+			<td>
+				<div align="center"><b><font size="4" face="Arial, Helvetica, sans-serif"></b></font></div>
+			</td>
+			</tr>
+			<tr>
+			<td>
+				<div align="center"><b><font size="4" face="Arial, Helvetica, sans-serif">[% service %]</b></font></div>
+			</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+	 <tr>
+		<td>
+			<table width=90% cellpadding=0 cellspacing=0>
+				<tr>
+					<td align=center><font face="Arial, Helvetica, sans-serif" size="-1">
+						Piece [% currentpiece %] of [% totalquantity %]
+						</font>
+					</td>
+				<tr>
+				</tr>
+					<td align=center><font face="Arial, Helvetica, sans-serif" size="-1">
+						Ship: [% shipdate %]
+					</font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	 </tr>
+	<tr>
+		<td>
+			<table width=90% cellpadding=0 cellspacing=0>
+				<tr valign=top><td width=15% align=right><font size="-1" face="Arial, Helvetica, sans-serif">TO</font></td><td width=5%>&nbsp;</td><td width=80%><font size="-1" face="Arial, Helvetica, sans-serif">[% fullto %]</font></td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width=100% cellpadding=0 cellspacing=0>
+				<tr>
+					<td align=left bgcolor="000000">
+			<font size="4" color="FFFFFF" face="Arial, Helvetica, sans-serif"><b>[% carrier %]</b></font>
+					</td>
+				</tr>
+				<tr>
+					<td align=left bgcolor="000000">
+						<font size="4" face="Arial, Helvetica, sans-serif"><b></b></font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>

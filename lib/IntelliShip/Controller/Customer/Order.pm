@@ -1337,15 +1337,22 @@ sub SHIP_ORDER :Private
 
 	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
 	$c->log->debug("SERVICE: " . Dumper $Service);
-	return undef unless ($Service);
+
+	unless ($Service)
+		{
+		$c->log->debug("SERVICE INFORMATION NOT FOUND ***********");
+		return undef;
+		}
 
 	if ($ShippingData->{'webhandlername'})
 		{
 		$Service->{'webhandlername'} = $ShippingData->{'webhandlername'};
 		}
 
-	my $ObjectName = $Service->{'webhandlername'};
-	$ObjectName =~ s/\.pl$//;
+	foreach my $key (%$Service)
+		{
+		$ShipmentData->{$key} = $Service->{$key};
+		}
 
 	###################################################################
 	## Process shipment down through the carrrier handler
@@ -1371,12 +1378,17 @@ sub SHIP_ORDER :Private
 		{
 		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
 		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
-		return;
+		return $self->display_error_details($Response->message);
 		}
 
 	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
 
 	my $Shipment = $Response->data;
+	unless ($Shipment)
+		{
+		$c->log->debug("ERROR: No response received. " . $Response->message);
+		return $self->display_error_details($Response->message);
+		}
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
@@ -2078,6 +2090,17 @@ sub clear_CO_details :Private
 	$c->stash->{CO} = undef;
 	$c->stash->{coid} = undef;
 	$c->stash({});
+	}
+
+sub display_error_details :Private
+	{
+	my $self = shift;
+	my $msg = shift;
+
+	my $c = $self->context;
+
+	$c->stash(MESSAGE => $msg);
+	$c->stash(template => "templates/customer/order-review.tt");
 	}
 
 __PACKAGE__->meta->make_immutable;

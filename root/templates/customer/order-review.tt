@@ -1,3 +1,4 @@
+<!--
 <h1>Order Summary</h1>
 
 <table>
@@ -119,3 +120,11 @@
 		<input type="button" class="button" id="editOrder" value="Edit Order"/>
 	</div>
 </form>
+-->
+
+<h2>Order Shipment Response</h2>
+
+[% IF MESSAGE %]
+	<div class="notice">[% MESSAGE %]</div>
+	<div class="notice">Please give one more try. Thank you for using our services!</div>
+[% END %]

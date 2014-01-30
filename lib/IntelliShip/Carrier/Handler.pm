@@ -119,7 +119,7 @@ sub process_request
 	###############################################
 	my $DriverModule = "IntelliShip::Carrier::Driver::" . $carriers->{uc $self->carrier} . "::" . $self->request_type;
 
-	print STDERR "\n... CARRIER DRIVER MODULE: " . $DriverModule;
+	#print STDERR "\n... CARRIER DRIVER MODULE: " . $DriverModule;
 
 	eval "use $DriverModule;";
 

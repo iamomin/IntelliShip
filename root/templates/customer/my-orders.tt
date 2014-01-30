@@ -104,7 +104,7 @@
 	<table>
 		<tr>
 		<td style="width: 90%">&nbsp;</td>
-		<td><input type="submit" class="gray" id="new_order" value="ADD SHIPMENT" onclick="$('#frm_my_ordres').attr('action', '/customer/order/new');"/></td>
+		<td><input type="submit" class="gray" id="new_order" value="ADD SHIPMENT" onclick="$('#frm_my_ordres').attr('action', '/customer/order/onepage');"/></td>
 		<td><div class="green-forward"><input type="submit" id="quick_ship" value="QUICK SHIP" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"/></div></td>
 		</tr>
 	</table>

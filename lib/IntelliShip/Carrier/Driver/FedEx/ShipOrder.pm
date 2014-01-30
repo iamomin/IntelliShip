@@ -127,13 +127,13 @@ sub process_request
 		6		=>	$shipmentData->{'branchaddress2'},		#Sender Addr2 -> but only if pop'd.  Probly pull from ref.
 		7		=>	$shipmentData->{'branchaddresscity'},	#Sender City
 		8		=>	$shipmentData->{'branchaddressstate'},	#Sender State
-		9		=>	$shipmentData->{'branchaddresszip'},		#Sender Postal Code
+		9		=>	$shipmentData->{'branchaddresszip'},	#Sender Postal Code
 		11		=>	$shipmentData->{'addressname'},			#Recipient Company
 		12		=>	$shipmentData->{'contactname'},			#Recipient contactname
-		13		=>	$shipmentData->{'address1'},				#Recipient Addr1
-		14		=>	$shipmentData->{'address2'},				#Recipient Addr2
+		13		=>	$shipmentData->{'address1'},			#Recipient Addr1
+		14		=>	$shipmentData->{'address2'},			#Recipient Addr2
 		15		=>	$shipmentData->{'addresscity'},			#Recipient City
-		16		=>	$shipmentData->{'addressstate'},			#Recipient State
+		16		=>	$shipmentData->{'addressstate'},		#Recipient State
 		17		=>	$shipmentData->{'addresszip'},			#Recipient Postal Code
 		18		=>	$ContactPhone,							#Recipient Phone Number
 		20		=>	$AccountNumber, 						#Payer Account Number
@@ -159,13 +159,13 @@ sub process_request
 	## Multiplying by 100 just puts things to rights.
 	$ShipData{'1670'} = ceil($shipmentData->{'enteredweight'} * 100);
 
-	$ShipData{'75'} = $shipmentData->{'weighttype'};		#Weight Units
+	$ShipData{'75'} = $shipmentData->{'weighttype'};	#Weight Units
 	$ShipData{'69'} = $insurance; 						#Declared Value/Carriage Value
 
 	# Heavy
-	$ShipData{'57'} = $shipmentData->{'dimheight'}; 		#Required for heavyweight
+	$ShipData{'57'} = $shipmentData->{'dimheight'}; 	#Required for heavyweight
 	$ShipData{'58'} = $shipmentData->{'dimwidth'}; 		#Required for heavyweight
-	$ShipData{'59'} = $shipmentData->{'dimlength'}; 		#Required for heavyweight
+	$ShipData{'59'} = $shipmentData->{'dimlength'}; 	#Required for heavyweight
 
 	# International
 	$ShipData{'1090'} = $shipmentData->{'currencytype'};
@@ -307,8 +307,12 @@ sub process_request
 
 	# Pass shipment string to fedex, and get the return value
 
-	my $ShipmentReturn = $self->ProcessLocalRequest($ShipmentString);
+	$self->log('... ShipmentString: ' . $ShipmentString);
+	my $ShipmentReturn;
 
+	eval {
+	$ShipmentReturn = $self->ProcessLocalRequest($ShipmentString); ##**
+	};
 	$self->log('... ShipmentReturnResponse: ' . $ShipmentReturn);
 
 	# Check return string for errors;
@@ -343,6 +347,13 @@ sub process_request
 		return $shipmentData;
 		}
 
+	unless ($ShipmentReturn)
+		{
+		$self->add_error("No response received from FedEx");
+		print STDERR "\n... Warning: No response received from FedEx";
+		return $shipmentData;
+		}
+
 	# Build the shipment object to pass back to service
 	my $TrackingNumber = $ShipmentReturn =~ /"29,"(\w+?)"/;
 	my $PrinterString = $ShipmentReturn =~ /188,"(.*\nP1\nN\n)"/s;
@@ -374,7 +385,7 @@ sub process_request
 	$shipmentData->{'printerstring'} = $PrinterString;
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	$self->log('*** shipmentData ***: ' . Dumper $shipmentData);
+	$self->log('### shipmentData ###: ' . Dumper $shipmentData);
 
 	my $Shipment = $self->model('MyDBI::Shipment')->new($shipmentData);
 	$Shipment->shipmentid($shipmentData->{'shipmentid'});
@@ -382,7 +393,7 @@ sub process_request
 
 	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
 
-	$Shipment->{'printerstring'} = $PrinterString;
+	#$Shipment->{'printerstring'} = $PrinterString;
 
 	return $Shipment;
 	}
@@ -390,9 +401,9 @@ sub process_request
 sub ProcessLocalRequest
 	{
 	my $self = shift;
-	my $Request = @_;
+	my $Request = shift;
 
-	$self->log('... ProcessLocalRequest');
+	$self->log('... ProcessLocalRequest, REQUEST: ' . $Request);
 
 	#$Request = '0,"020"1,"GlobalIntl#1"4,"Shipper Name"5,"Shipper Address #1"6,"Shipper Address #2"7,"Paris"8,"PA"9,"19406"11,"Recipient Company Name"12,"Recipient Contact Name"13,"660 American Ave"14,"3rd Floor"15,"North York"17,"20122"18,"6107680246"21,"15"23,"1"25,"Reference Notes"50,"IT"72,"FOB"74,"IT"77,"8"78,"19.950000"79,"commodity description"80,"US"81,"harmonized code"82,"1"113,"Y"117,"US"183,"6107680246"187,"299"414,"ea"498,"203618"1090,"USD"1273,"01"1274,"01"1282,"T"1349,"S"1958,"Box"1030,"19.950000"99,""';
 
