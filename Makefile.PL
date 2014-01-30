@@ -45,6 +45,7 @@ requires 'Date::Calendar';
 requires 'Date::Manip';
 requires 'Date::Calc';
 requires 'DateTime';
+requires 'Net::Telnet';
 requires 'Email::Stuff';
 requires 'Sys::Hostname';
 requires 'XML::Simple';

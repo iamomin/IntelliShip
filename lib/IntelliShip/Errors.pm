@@ -33,6 +33,12 @@ sub add_error
 	push (@$err_array, $error_msg);
 	}
 
+sub error_string
+	{
+	my $self = shift;
+	return $self->print_errors('TEXT');
+	}
+
 sub print_errors
 	{
 	my $self = shift;

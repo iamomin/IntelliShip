@@ -5,6 +5,9 @@ use Data::Dumper;
 use IntelliShip::Utils;
 
 BEGIN {
+
+	extends 'IntelliShip::Errors';
+
 	has 'CO' => ( is => 'rw' );
 	has 'context' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );

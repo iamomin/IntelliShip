@@ -1182,15 +1182,13 @@ sub SHIP_ORDER :Private
 	my $CO = $self->get_order;
 	my $Customer = $self->customer;
 
-	if (length $params->{'defaultcsid'}
-		and $params->{'defaultcsidtotalcost'} > 0
-		and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
+	if ($params->{'defaultcsid'} and $params->{'defaultcsidtotalcost'} > 0 and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
 		{
 		$self->CheckChargeThreshold;
 		}
 
 	## Create or Update the thirdpartyacct table with address info if this is 3rd party
-	if ($params->{'deliverymethod'} == 2) # Third Party
+	if ($CO->freightcharges == 2) # Third Party
 		{
 		$self->save_third_party_details;
 		}
@@ -1279,7 +1277,7 @@ sub SHIP_ORDER :Private
 				}
 
 			# Push all shipmentcharges onto a list for use by all shipments
-			if ($params->{'packagecosts'} > 0)
+			if ($params->{'packagecosts'} and $params->{'packagecosts'} > 0)
 				{
 				$params->{'shipmentchargepassthru'} = $self->BuildShipmentChargePassThru;
 				$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
@@ -1372,6 +1370,7 @@ sub SHIP_ORDER :Private
 	unless ($Response->is_success)
 		{
 		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
+		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
 		return;
 		}
 
@@ -1382,7 +1381,9 @@ sub SHIP_ORDER :Private
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
 	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
-	$params = {%$params, %$Shipment};
+	#$params = {%$params, %{$Shipment->{'_column_data'}}};
+	$c->log->debug(Dumper $Shipment->{'_column_data'});
+
 	$params->{'pickuprequest'} = $params->{'storepickuprequest'};
 
 	# Process good shipment
@@ -1836,7 +1837,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'dgpackinggroup'} = $params->{'dgpackinggroup'};
 	$ShipmentData->{'assessorial_names'} = $params->{'assessorial_names'};
 
-	if ($params->{'aostype'} == 1)
+	if ($params->{'aostype'} and $params->{'aostype'} == 1)
 		{
 		$ShipmentData->{'shipqty'} = $params->{'shipqty'};
 		$ShipmentData->{'shiptypeid'} = $params->{'shiptypeid'};
@@ -1894,7 +1895,7 @@ sub BuildShipmentInfo
 			#$c->log->debug("API ThirdPartyAcct: " . Dumper $ThirdPartyAcct);
 			}
 
-		if ( $ThirdPartyAcct =~ m/^engage::(.*?)$/ )
+		if ($ThirdPartyAcct and $ThirdPartyAcct =~ m/^engage::(.*?)$/)
 			{
 			$ShipmentData->{'thirdpartybilling'} = 0;
 			(my $junk,$ThirdPartyAcct) = split(/::/,$ThirdPartyAcct);

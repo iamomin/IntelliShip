@@ -249,12 +249,15 @@ function distribute_insurance_among_products()
 			}
 		});
 
+	if (TotalProductCount==0) TotalProductCount = 1; //Set default product count to 1 if no product
+	if (PackageProductCount==0) PackageProductCount = 1; //Set default package product count to 1 if no product
+
 	if (ParentPackageID > 0) {
 		//alert("Package ID: " + ParentPackageID + ", PackageProductCount: " + PackageProductCount);
 		PackageProductsCountDetails[ParentPackageID] = +PackageProductCount;
 		}
 
-	ValuePerProduct = +insurance_value / +TotalProductCount
+	ValuePerProduct = +insurance_value / +TotalProductCount;
 
 	$('#package-detail-list li').each(function() {
 

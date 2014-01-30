@@ -318,7 +318,7 @@
 			<td class="sc-hover">[% item.service %]</td>
 			[% IF IS_PREPAID %]
 			<td class="sc-hover">[% item.days %]</td>
-			<td class="sc-hover"[% IF no_on_time %]style="color: #D44444;"[% END %]>[% item.delivery %]</td>
+			<td class="sc-hover"[% IF item.no_on_time %]style="color: #D44444;"[% END %]>[% item.delivery %]</td>
 			<td class="sc-hover" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
 			<td class="sc-hover" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
 			<td class="sc-hover" style="text-align: right; padding-right: 20px;"><green>[% item.shipment_charge %]</green></td>
@@ -378,8 +378,8 @@
 				draggable: false,
 				resizable: false,
 				title: "Estimated Shipment Charges",
-                                open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide(); },
-                                closeText: ""
+				open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide(); },
+				closeText: ""
 				});
 
 		$(".sc-hover").mouseover(function() {

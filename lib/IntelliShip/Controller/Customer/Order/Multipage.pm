@@ -50,7 +50,7 @@ sub index :Path :Args(0) {
 		}
 	elsif ($do_value eq 'ship')
 		{
-		$self->ship_order;
+		$self->SHIP_ORDER;
 		}
 	else
 		{

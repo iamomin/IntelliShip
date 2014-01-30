@@ -1,7 +1,9 @@
 package IntelliShip::Carrier::Driver::FedEx::ShipOrder;
 
 use Moose;
+use Net::Telnet;
 use Data::Dumper;
+use POSIX qw(ceil);
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
 
@@ -12,9 +14,10 @@ sub process_request
 	my $self = shift;
 
 	my $CO = $self->CO;
-	my $c = $self->context;
 	my $Customer = $CO->customer;
 	my $shipmentData = $self->data;
+
+	$self->log("Process FedEx Ship Order");
 
 	###############################
 	# The incoming variables
@@ -38,23 +41,23 @@ sub process_request
 		($insurance = $shipmentData->{'insurance'}) =~ s/\.//;
 		}
 
-	$shipmentData->{'oacontactphone'} =~ s/-//g;
+	$shipmentData->{'oacontactphone'} =~ s/-//g if $shipmentData->{'oacontactphone'};
 
 	# Attempt to distill Remel's various phone formats into something fedex will take
-	my $ContactPhone = $shipmentData->{'contactphone'};
+	my $ContactPhone = $shipmentData->{'contactphone'} || '';
 	$ContactPhone =~ s/-//g;
 	$ContactPhone =~ s/\s+//g;
 	$ContactPhone =~ s/\(//g;
 	$ContactPhone =~ s/\)//g;
 
-	if ( $shipmentData->{'addresscountry'} eq 'US' or $shipmentData->{'addresscountry'} eq 'CA' )
+	if ($shipmentData->{'addresscountry'} eq 'US' or $shipmentData->{'addresscountry'} eq 'CA')
 		{
 		$ContactPhone = $ContactPhone =~ /^(\d{10})/;
 		}
 
 	# Allow for LTR type packages (0 weight)
 	my $PackageType = "01";
-	if ($shipmentData->{'enteredweight'} == 0)
+	if (!$shipmentData->{'enteredweight'} or $shipmentData->{'enteredweight'} == 0)
 		{
 		$PackageType = "06";
 		$shipmentData->{'enteredweight'} = "1.0";
@@ -63,7 +66,7 @@ sub process_request
 
 	# Hardwire 'Total Customs Value' to be the same as 'Commodity Customs Value'
 	my $commoditycustomsvalue;
-	if ( $shipmentData->{'commoditycustomsvalue'} )
+	if ($shipmentData->{'commoditycustomsvalue'})
 		{
 		if ( $shipmentData->{'commoditycustomsvalue'} =~ /\./ )
 			{
@@ -108,20 +111,14 @@ sub process_request
 		}
 
 	# Strip non-numeric from ssnein field
-	if ($shipmentData->{'ssnein'})
-		{
-		$shipmentData->{'ssnein'} =~ s/\D//g;
-		}
+	$shipmentData->{'ssnein'} =~ s/\D//g if $shipmentData->{'ssnein'};
 
 	# Strip non alpha-numeric from harmonized code field
-	if ($shipmentData->{'harmonizedcode'})
-		{
-		$shipmentData->{'harmonizedcode'} =~ s/[^a-zA-Z0-9]//g;
-		}
+	$shipmentData->{'harmonizedcode'} =~ s/[^a-zA-Z0-9]//g if $shipmentData->{'harmonizedcode'};
 
 	# Hash with data to build up shipping string that we'll transmit to FedEx
 
-	my $ShipDate = IntelliShip->DateUtils->format_to_yyyymmdd($shipmentData->{'datetoship'});
+	my $ShipDate = IntelliShip::DateUtils->format_to_yyyymmdd($shipmentData->{'datetoship'});
 
 	my %ShipData = (
 		# Generic
@@ -312,8 +309,10 @@ sub process_request
 
 	my $ShipmentReturn = $self->ProcessLocalRequest($ShipmentString);
 
+	$self->log('... ShipmentReturnResponse: ' . $ShipmentReturn);
+
 	# Check return string for errors;
-	if ( $ShipmentReturn =~ /"2,"\w+?"/ )
+	if ($ShipmentReturn =~ /"2,"\w+?"/)
 		{
 		my ($ErrorCode) = $ShipmentReturn =~ /"2,"(\w+?)"/;
 		my ($ErrorMessage) = $ShipmentReturn =~ /"3,"(.*?)"/;
@@ -333,13 +332,14 @@ sub process_request
 			$shipmentData->{'errorcode'} = 'badzone';
 			}
 
+		$self->add_error($shipmentData->{'errorstring'});
+		print STDERR "\n... Error: " . $shipmentData->{'errorstring'};
 		return $shipmentData;
 		}
-	elsif ( $ShipmentReturn =~ /ERROR:(.*)\n/ )
+	elsif ($ShipmentReturn =~ /ERROR:(.*)\n/)
 		{
-		$shipmentData->{'errorstring'} = $1;
-		$shipmentData->{'screen'} = 'shipconfirm';
-
+		$self->add_error($1);
+		print STDERR "\n... Error: " . $1;
 		return $shipmentData;
 		}
 
@@ -374,12 +374,13 @@ sub process_request
 	$shipmentData->{'printerstring'} = $PrinterString;
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	$c->log->debug('*** shipmentData ***: ' . Dumper $shipmentData);
-	my $Shipment = $c->model('MyDBI::Shipment')->new($shipmentData);
+	$self->log('*** shipmentData ***: ' . Dumper $shipmentData);
+
+	my $Shipment = $self->model('MyDBI::Shipment')->new($shipmentData);
 	$Shipment->shipmentid($shipmentData->{'shipmentid'});
 	$Shipment->insert;
 
-	$c->log->debug('New shipment inserted, ID: ' . $Shipment->shipmentid);
+	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
 
 	$Shipment->{'printerstring'} = $PrinterString;
 
@@ -391,6 +392,8 @@ sub ProcessLocalRequest
 	my $self = shift;
 	my $Request = @_;
 
+	$self->log('... ProcessLocalRequest');
+
 	#$Request = '0,"020"1,"GlobalIntl#1"4,"Shipper Name"5,"Shipper Address #1"6,"Shipper Address #2"7,"Paris"8,"PA"9,"19406"11,"Recipient Company Name"12,"Recipient Contact Name"13,"660 American Ave"14,"3rd Floor"15,"North York"17,"20122"18,"6107680246"21,"15"23,"1"25,"Reference Notes"50,"IT"72,"FOB"74,"IT"77,"8"78,"19.950000"79,"commodity description"80,"US"81,"harmonized code"82,"1"113,"Y"117,"US"183,"6107680246"187,"299"414,"ea"498,"203618"1090,"USD"1273,"01"1274,"01"1282,"T"1349,"S"1958,"Box"1030,"19.950000"99,""';
 
 	#my $Host = "160.209.84.51";
@@ -399,7 +402,6 @@ sub ProcessLocalRequest
 	my $Host = '216.198.214.5';
 	my $Port = "2000";
 
-	use Net::Telnet;
 	my $telnet = Net::Telnet->new(
 					Host => $Host,
 					Port => $Port,

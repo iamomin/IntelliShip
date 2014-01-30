@@ -80,9 +80,9 @@
 			<img src="/static/images/company-logo-transperent.png">
 			<span>&nbsp;Welcome Back [% username %]</span>
 			<ul>
-				<li><a href="/customer/settings" id="a_settings"><img src="/static/images/settings.png"><label for="a_settings">SETTINGS</label></a></li>
-				<li><a href="/customer/dashboard" id="a_help"><img src="/static/images/help.png"><label for="a_help">HELP</label></a></li>
-				<li><a href="/customer/logout" id="a_logout"><img src="/static/images/signout.png"><label for="a_logout">SIGNOUT</label></a></li>
+				<li><a href="/customer/settings" id="settings"><img src="/static/images/settings.png"><label for="settings">SETTINGS</label></a></li>
+				<li><a href="/customer/dashboard" id="help"><img src="/static/images/help.png"><label for="help">HELP</label></a></li>
+				<li><a href="/customer/logout" id="logout"><img src="/static/images/signout.png"><label for="logout">SIGNOUT</label></a></li>
 			</ul>
 		</div>
 		<!-- end header -->

@@ -126,6 +126,7 @@ sub get_carrier_service_list
 		my $no_on_time;
 		if ($carrier =~ /^\*+\s/)
 			{
+			#$c->log->debug("CSData: " . Dumper($CSData));
 			$carrier =~ s/^\*+\s//;
 			$no_on_time = 1;
 			}

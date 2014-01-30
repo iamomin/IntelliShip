@@ -48,33 +48,32 @@ sub process_request
 	###############################################
 	# GET INPUT
 	###############################################
-	my ($context,$myDBI);
+	my $context = $input_hash->{'CONTEXT'};
+	my $myDBI   = $input_hash->{'MYDBI'};
 
-	$context  = $input_hash->{'CONTEXT'};
-	$myDBI    = $input_hash->{'MYDBI'};
+	###############################################
+	# SETUP RESPONSE OBJECT
+	###############################################
+	my $Response = IntelliShip::Carrier::Response->new;
+
+	$context = $self->context unless $context;
+
+	unless ($context)
+		{
+		$Response->message('Accessed is denied. Invalid request context');
+		$Response->response_code('100');
+		return $Response;
+		}
 
 	###############################################
 	# SETUP DB CONNECTION
 	###############################################
-
-	my $Response = IntelliShip::Carrier::Response->new;
-
-	unless ($context)
-		{
-		#$Response->message('Accessed is denied. Invalid request context');
-		#$Response->response_code('100');
-		#return $Response;
-		}
-
-	unless ($myDBI)
-		{
-		$myDBI = $self->myDBI;
-		}
+	$myDBI   = $self->myDBI unless $myDBI;
 
 	unless ($myDBI)
 		{
 		$Response->message('Accessed is denied. Invalid DB');
-		$Response->response_code('1001');
+		$Response->response_code('101');
 		return $Response;
 		}
 
@@ -101,10 +100,26 @@ sub process_request
 			}
 		}
 
+	unless ($self->carrier)
+		{
+		$Response->message('Accessed is denied. Invalid Carrier Name');
+		$Response->response_code('104');
+		return $Response;
+		}
+
+	unless ($self->request_type)
+		{
+		$Response->message('Accessed is denied. Invalid Request Type');
+		$Response->response_code('105');
+		return $Response;
+		}
+
 	###############################################
 	# IDENTIFY TRANSACTION BROKER
 	###############################################
 	my $DriverModule = "IntelliShip::Carrier::Driver::" . $carriers->{uc $self->carrier} . "::" . $self->request_type;
+
+	print STDERR "\n... CARRIER DRIVER MODULE: " . $DriverModule;
 
 	eval "use $DriverModule;";
 
@@ -112,7 +127,7 @@ sub process_request
 		{
 		print STDERR "\n$@\n";
 		$Response->message($@);
-		$Response->response_code('103');
+		$Response->response_code('106');
 		return $Response;
 		}
 
@@ -141,10 +156,18 @@ sub process_request
 
 	if ($@)
 		{
+		print STDERR "\n... process_request ERROR: " . $@;
 		my $error_detail = $@;
 		chomp $error_detail;
 		$Response->message($error_detail);
-		$Response->response_code('104');
+		$Response->response_code('107');
+		return $Response;
+		}
+
+	if ($Driver->has_errors)
+		{
+		$Response->message($Driver->error_string);
+		$Response->response_code('108');
 		return $Response;
 		}
 
