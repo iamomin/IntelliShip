@@ -122,13 +122,16 @@
 					<li><a id="mnu_myshipments" href="/customer/myshipments" class="ms"><div>MY SHIPMENTS</div></a></li>
 					[% END %]
 					<li><a id="mnu_report" href="/customer/report" class="reports"><div>REPORTS</div></a></li>
-					<li><label><select id="searchtype" name="searchtype"><option>Search Type</select></label></li>
-					<li><input type="text"id="searchterm" name="searchterm" placeholder="Search...." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></li>
 				</ul>
+				<table id="search-bar">
+					<tr>
+					<td><select id="searchtype" name="searchtype"><option>Search Type</select></td>
+					<td><input type="text"id="searchterm" name="searchterm" placeholder="Search..." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></td>
+					</tr>
+				</table>
 			</form>
 			</div>
 		</div> <!-- end menu -->
-
 		<div id="page"> <!-- start page -->
 
 			<div id="content"> <!-- start content -->

@@ -205,7 +205,7 @@ img { border: none }
 
 #menu input[type=submit] {
     background: url("/static/images/search.png") no-repeat center center;
-    width: 20px;
+    width: 24px;
     height:24px;
     border: none;
     color: transparent;
@@ -222,6 +222,12 @@ img { border: none }
     background: #FFF;
     color: #98A7AF;
     border: 1px solid #98A7AF;
+}
+
+#search-bar {
+    float: right;
+    display: inline;
+    margin-right: 24px;
 }
 
 /* Page */
@@ -252,7 +258,7 @@ img { border: none }
 
 #footer {
     height: 100px;
-    margin: 10px auto;
+    margin-top: 10px;
     background-color: #F5F5F5;
     border: solid 1px #ddd;
 }
