@@ -6,7 +6,7 @@
 	<tr>
 	<td class="L"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
 	<td class="C"><input type="button" class="active" value="SHIPMENT DETAILS"/></td>
-	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
+	<td class="R"><input type="button" onclick="$('#frm_shipment').submit();" class="inactive" value="FINAL REVIEW"/></td>
 	</tr>
 	<tr>
 	<td colspan="3">

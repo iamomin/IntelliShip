@@ -330,8 +330,8 @@ label {
 #row {display: table-row; width: 100%}
 #row table {min-height: 260px}
 #row div {display: table-cell;padding: 0 10px;vertical-align: top}
-#row div.21 {display: table-cell;padding-right: 10px;vertical-align: top}
-#row div.22 {display: table-cell;padding-left: 10px;vertical-align: top}
+#row div.add-summary {display: table-cell; padding-right: 10px;vertical-align: top; width: 68%}
+#row div.sd-summary {display: table-cell; padding-left: 10px;vertical-align: top; width: 32%}
 #row div.31 {display: table-cell;padding-right: 10px;vertical-align: top}
 #row div.32 {display: table-cell;padding: 0 10px;vertical-align: top}
 #row div.33 {display: table-cell;padding-left: 10px;vertical-align: top}
@@ -382,7 +382,7 @@ table.gray-app td {
 table.summary-app {
     width: 100%;
     margin: 10px 0;
-    padding: 10px;
+    padding-bottom: 5px;
     background: #F0F0F0;
     border: solid 1px #ccc;
 }
@@ -406,7 +406,7 @@ table.summary-app th {
 }
 
 table.summary-app td {
-    padding: 5px;
+    padding: 2px;
     color: #9BA7AF;
 }
 
@@ -449,6 +449,15 @@ table.app caption a {
 table.app td green {
     color: green;
     font-weight: bold;
+}
+
+table.app input[type="text"].labellike {
+    border: none;
+    background-color: transparent;
+    font-weight: bold;
+    color: #4B4B4B;
+    height: 19px;
+    width: 100%;
 }
 
 table.app b {
@@ -519,8 +528,7 @@ div.error {
     font-weight: bold;
 }
 
-.default_text {
-    padding: 3px;
+.default_text {    
     font-weight: bold;
 }
 
@@ -905,7 +913,7 @@ input.orange  {
 .ui-corner-top { border-radius: 0 }
 
 #carrier-service-list ul li { width: 32%; }
-#carrier-service-list ul li a { width: 100%; text-align: center; }
+#carrier-service-list ul li a { width: 92%; text-align: center; }
 #carrier-service-list li.ui-tabs-active a { background-color: #5DBD53; color: #FFF; }
 #carrier-service-list table { text-align: center; }
 /*
