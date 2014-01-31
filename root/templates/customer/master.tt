@@ -77,55 +77,59 @@
 
 		<!-- start header -->
 		<div id="header">
-			<img src="/static/images/company-logo-transperent.png">
-			<span>&nbsp;Welcome Back [% username %]</span>
-			<ul>
-				<li><a href="/customer/settings" id="settings"><img src="/static/images/settings.png"><label for="settings">SETTINGS</label></a></li>
-				<li><a href="/customer/dashboard" id="help"><img src="/static/images/help.png"><label for="help">HELP</label></a></li>
-				<li><a href="/customer/logout" id="logout"><img src="/static/images/signout.png"><label for="logout">SIGNOUT</label></a></li>
-			</ul>
+			<div id="content">
+				<img src="/static/images/company-logo-transperent.png">
+				<span>&nbsp;Welcome Back [% username %]</span>
+				<ul>
+					<li><a href="/customer/settings" id="settings"><img src="/static/images/settings.png"><label for="settings">SETTINGS</label></a></li>
+					<li><a href="/customer/dashboard" id="help"><img src="/static/images/help.png"><label for="help">HELP</label></a></li>
+					<li><a href="/customer/logout" id="logout"><img src="/static/images/signout.png"><label for="logout">SIGNOUT</label></a></li>
+				</ul>
+			</div>
 		</div>
 		<!-- end header -->
 
 		<!-- <div style="clear: both;">&nbsp;</div> -->
 
 		<div ID="menu"> <!-- start menu -->
-		<form method=post action="" name="menu">
-		  <input type="hidden" name="action">
-		  <input type="hidden" name="do">
-		  <ul>
-			<li><a id="mnu_dashboard" href="/customer/dashboard" class="dashboard"><div>DASHBOARD</div></a></li>
-			[% IF DISPLAY_MYORDERS %]
-			<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
-			[% END %]
-			[% IF DISPLAY_MYSHIPMENT %]
-			<li><a id="mnu_myshipments" href="/customer/myshipments" class="mo"><div>MY SHIPMENTS</div></a></li>
-			[% END %]
-			[% IF DISPLAY_NEW_ORDER %]
-			<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
-			[% END %]
-			<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>SHIP A PACKAGE</div></a></li>
-			[% IF DISPLAY_QUICKSHIP %]
-			<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>
-			[% END %]
-			[% IF DISPLAY_SHIP_PACKAGE %]
-			<li><a id="mnu_shippackages" href="/customer/shippackages" class="sp"><div>PROCESS SHIPMENT</div></a></li>
-			[% END %]
-			[%IF DISPLAY_BATCH_SHIPPING %]
-			<li><a id="mnu_batchshipping" href="/customer/batchshipping" class="batch"><div>BATCH SHIPPING</div></a></li>
-			[% END %]
-			[% IF DISPLAY_UPLOAD_FILE %]
-			<li><a id="mnu_uploadfile" href="/customer/uploadfile" class="upload"><div>UPLOAD FILE</div></a></li>
-			[% END %]
-			[% IF DISPLAY_SHIPMENT_MAINTENANCE %]
-			<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance" class="sm"><div>SHIPMENT MAINTENANCE</div></a></li>
-			[% END %]
-			<li><a id="mnu_report" href="/customer/report" class="reports"><div>REPORTS</div></a></li>
-			<li><label><select id="searchtype" name="searchtype"><option>Search Type</select></label></li>
-			<li><input type="text"id="searchterm" name="searchterm" placeholder="Search...." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></li>
-			<li>&nbsp;</li>
-		  </ul>
-		</form>
+			<div id="content">
+			<form method=post action="" name="menu">
+				<input type="hidden" name="action">
+				<input type="hidden" name="do">
+				  <ul>
+					<li><a id="mnu_dashboard" href="/customer/dashboard" class="dashboard"><div>DASHBOARD</div></a></li>
+					[% IF DISPLAY_MYORDERS %]
+					<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
+					[% END %]
+					[% IF DISPLAY_MYSHIPMENT %]
+					<li><a id="mnu_myshipments" href="/customer/myshipments" class="mo"><div>MY SHIPMENTS</div></a></li>
+					[% END %]
+					[% IF DISPLAY_NEW_ORDER %]
+					<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
+					[% END %]
+					<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>SHIP A PACKAGE</div></a></li>
+					[% IF DISPLAY_QUICKSHIP %]
+					<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>
+					[% END %]
+					[% IF DISPLAY_SHIP_PACKAGE %]
+					<li><a id="mnu_shippackages" href="/customer/shippackages" class="sp"><div>PROCESS SHIPMENT</div></a></li>
+					[% END %]
+					[%IF DISPLAY_BATCH_SHIPPING %]
+					<li><a id="mnu_batchshipping" href="/customer/batchshipping" class="batch"><div>BATCH SHIPPING</div></a></li>
+					[% END %]
+					[% IF DISPLAY_UPLOAD_FILE %]
+					<li><a id="mnu_uploadfile" href="/customer/uploadfile" class="upload"><div>UPLOAD FILE</div></a></li>
+					[% END %]
+					[% IF DISPLAY_SHIPMENT_MAINTENANCE %]
+					<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance" class="sm"><div>SHIPMENT MAINTENANCE</div></a></li>
+					[% END %]
+					<li><a id="mnu_report" href="/customer/report" class="reports"><div>REPORTS</div></a></li>
+					<li><label><select id="searchtype" name="searchtype"><option>Search Type</select></label></li>
+					<li><input type="text"id="searchterm" name="searchterm" placeholder="Search...." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></li>
+					<li>&nbsp;</li>
+				</ul>
+			</form>
+			</div>
 		</div> <!-- end menu -->
 
 		<div id="page"> <!-- start page -->
@@ -146,12 +150,14 @@
 
 		<!-- start footer -->
 		<div id="footer">
+			<div id="content">
 			<ul>
 				<li><img src="/static/images/engage-logo.gif"></li>
 				<li>&copy; 2013 Engage Technology, LLC.</li>
 				<li>|&nbsp<a href="#">Privacy</a>&nbsp;</li>
 				<li>|&nbsp<a href="#">Legal</a></li>
-		  </ul>
+			</ul>
+			</div
 		</div>
 		<!-- end footer -->
 

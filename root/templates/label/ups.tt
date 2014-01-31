@@ -154,3 +154,8 @@
 		</td>
 	</tr>
 </table>
+<script>
+$(document).ready(function(){
+	[% IF totalquantity > 0 %]print_label();[% END %]
+	});
+</script>

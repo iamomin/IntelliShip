@@ -36,6 +36,12 @@ img { border: none }
     position: fixed;
 }
 
+/* Centered 1000 pixel content of all section body */
+#content {
+    width: 1000px;
+    margin: 0 auto;
+}
+
 /* Header */
 
 #header {
@@ -93,7 +99,6 @@ img { border: none }
 #menu ul {
     margin: 0;
     padding: 0;
-    float: right;
     list-style: none;
     text-align: center;
     white-space: nowrap;
@@ -205,58 +210,14 @@ img { border: none }
     background: #FFF;
     color: #98A7AF;
     border: 1px solid #98A7AF;
-/*
-    outline: none;
-    display: inline-block;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    cursor: pointer;
-*/
-}
-/*
-#menu label { position: relative }
-
-#menu label:after {
-    content: '<>';
-    font: 11px "Consolas", monospace;
-    color: #98A7AF;
-    -webkit-transform: rotate(90deg);
-    -moz-transform: rotate(90deg);
-    -ms-transform: rotate(90deg);
-    transform: rotate(90deg);
-    right: 8px;
-    top: 2px;
-    padding: 0 0 2px;
-    border-bottom: 1px solid #98A7AF;
-    position: absolute;
-    pointer-events: none;
 }
 
-#menu label:before {
-    content: '';
-    right: 6px;
-    top: 0px;
-    width: 20px;
-    height: 20px;
-    background: #FFF;
-    position: absolute;
-    pointer-events: none;
-    display: block;
-}
-*/
 /* Page */
 
 #page {
-    width: 1000px;
     padding: 10px;
     margin-left:  auto;
     margin-right: auto;
-}
-
-#content {
-    margin: 0 10px;
-    width: auto;
 }
 
 /* Post */
@@ -285,7 +246,7 @@ img { border: none }
 }
 
 #footer ul {
-    padding: 20px 40px;
+    padding: 10px 0;
     list-style: none;
     float: right;
     color: #9BA7AF;
@@ -318,7 +279,7 @@ img { border: none }
 }
 
 h1, h2, h3 {
-    font: bold;
+    font-weight: bold;
     color: #1875BA;
     margin: 10px 0;
     clear: both;
@@ -346,25 +307,6 @@ h3 {
 label {
     white-space:nowrap;
 }
-
-/*
-.styled-select {
-    width: auto;
-    height: 22px;
-    overflow: hidden;
-    background: url(/static/images/arrowhead-down.png) no-repeat right #FFF;
-    border: 1px solid #98A7AF;
-}
-
-.styled-select select {
-    background: transparent;
-    padding: 5px;
-    line-height: 1;
-    border: none;
-    border-radius: 0;
-    -webkit-appearance: none;
-}
-*/
 
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}
@@ -652,13 +594,13 @@ div.error {
 
 #list ul {
     position: relative;
-    margin: 10px 10px;
+    margin: 10px 20px;
     list-style: none;
-    list-style-type:circle;
+    list-style-type: square;
 }
 
 #list li {
-    padding: 3px 5px;
+    padding: 5px;
 }
 
 ul.sortable {
