@@ -101,13 +101,10 @@
 					[% IF DISPLAY_MYORDERS %]
 					<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
 					[% END %]
-					[% IF DISPLAY_MYSHIPMENT %]
-					<li><a id="mnu_myshipments" href="/customer/myshipments" class="mo"><div>MY SHIPMENTS</div></a></li>
-					[% END %]
 					[% IF DISPLAY_NEW_ORDER %]
 					<li><a id="mnu_onepage" href="/customer/order/onepage" class="new"><div>NEW ORDER</div></a></li>
 					[% END %]
-					<li><a id="mnu_multipage" href="/customer/order/multipage" class="new"><div>SHIP A PACKAGE</div></a></li>
+					<li><a id="mnu_multipage" href="/customer/order/multipage" class="sap"><div>SHIP A PACKAGE</div></a></li>
 					[% IF DISPLAY_QUICKSHIP %]
 					<li><a id="mnu_quickship" href="/customer/order/quickship" class="qs"><div>QUICK SHIP</div></a></li>
 					[% END %]
@@ -121,12 +118,12 @@
 					<li><a id="mnu_uploadfile" href="/customer/uploadfile" class="upload"><div>UPLOAD FILE</div></a></li>
 					[% END %]
 					[% IF DISPLAY_SHIPMENT_MAINTENANCE %]
-					<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance" class="sm"><div>SHIPMENT MAINTENANCE</div></a></li>
+					<!--<li><a id="mnu_shipmentmaintenance" href="/customer/shipmentmaintenance" class="sm"><div>SHIPMENT MAINTENANCE</div></a></li>-->
+					<li><a id="mnu_myshipments" href="/customer/myshipments" class="ms"><div>MY SHIPMENTS</div></a></li>
 					[% END %]
 					<li><a id="mnu_report" href="/customer/report" class="reports"><div>REPORTS</div></a></li>
 					<li><label><select id="searchtype" name="searchtype"><option>Search Type</select></label></li>
 					<li><input type="text"id="searchterm" name="searchterm" placeholder="Search...." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></li>
-					<li>&nbsp;</li>
 				</ul>
 			</form>
 			</div>

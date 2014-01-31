@@ -3,7 +3,6 @@ use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
 use namespace::autoclean;
-
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
 =head1 NAME
@@ -30,11 +29,11 @@ sub index :Path :Args(0) {
 
 	$self->populate_my_shipment_list;
 
-	$c->stash->{view_list} = [
-			{ name => 'Shipped', value => 'shipped' },
-			{ name => 'Delivered', value => 'delivered' },
+	$c->stash->{date_list} = [
+			{ name => 'Today', value => 'today' },
+			{ name => 'This Week', value => 'this_week' },
+			{ name => 'This Month', value => 'this_month' },
 			];
-
 	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
 
 	$c->stash(template => "templates/customer/my-shipments.tt");
@@ -54,9 +53,11 @@ sub ajax :Local
 	$c->stash(template => "templates/customer/my-shipments.tt");
 	}
 
-my $TITLE = {
-	'shipped' => 'Shipped',
-	'delivered'  => 'Delivered',
+my $TITLE ;
+my $TITLE_DATE = {
+	'today' => 'Today',
+	'this_week'  => 'This Week',
+	'this_month'  => 'This Month',
 	};
 
 sub populate_my_shipment_list :Private
@@ -64,22 +65,20 @@ sub populate_my_shipment_list :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-
-	my $view = $params->{'view'} || 'shipped';
 	my $SQL;
-	if ($view eq 'shipped')
+
+	my $do_value = $params->{'do'} || '';
+	if ($do_value eq 'batchoptions')
 		{
-		$SQL = $self->get_shipped_sql;
+		#$self->batch_options;
 		}
 	else
 		{
-		$SQL = $self->get_delivered_sql;
+		$SQL = $self->get_shipped_sql;
 		}
 
 	my $myDBI = $c->model("MyDBI");
-	#$c->log->debug("SQL: " . $SQL);
 	my $sth = $myDBI->select($SQL);
-	#$c->log->debug("sth->numrows: " . $sth->numrows);
 
 	my $myshipment_list = [];
 	for (my $row=0; $row < $sth->numrows; $row++)
@@ -89,7 +88,7 @@ sub populate_my_shipment_list :Private
 		push(@$myshipment_list, $row_data);
 		}
 
-	my $my_shipments_batches = $self->process_pagination('shipmentid',$myshipment_list);
+	my $my_shipments_batches = $self->process_pagination($myshipment_list);
 	my $first_batch = $my_shipments_batches->[0];
 	$myshipment_list = [splice @$myshipment_list, 0, scalar @$first_batch] if $first_batch;
 	$c->stash->{myshipment_list} = $myshipment_list;
@@ -98,7 +97,7 @@ sub populate_my_shipment_list :Private
 
 	$c->stash($params);
 	$c->stash->{MY_SHIPMENTS} = 1;
-	$c->stash->{refresh_interval_sec} = 60;
+
 	$c->stash->{view_datedelivered} = ($params->{'view'} and $params->{'view'} eq 'delivered');
 	$c->stash->{list_title} = $TITLE->{$params->{'view'}} if $params->{'view'};
 	}
@@ -112,6 +111,42 @@ sub get_shipped_sql :Private
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
 
+	my ($date_shipped_sql,$search_by_term_sql);
+
+	if (my $filter_value = $params->{'filter'})
+		{
+		$c->log->debug("Filter : " . $filter_value);
+		$search_by_term_sql = "AND s.shipmentid = '$filter_value' OR s.tracking1 = '$filter_value' OR co.ordernumber = '$filter_value' ";
+		}
+
+	if (my $check_value = $params->{'date_apply'})
+		{
+		my $date_from= IntelliShip::DateUtils->get_db_format_date_time($params->{'datefrom'}) if $params->{'datefrom'};
+		my $date_to= IntelliShip::DateUtils->get_db_format_date_time($params->{'dateto'}) if $params->{'dateto'};
+		$date_shipped_sql = "AND s.dateshipped between  date_trunc('day',TIMESTAMP '$date_from') AND date_trunc('day',TIMESTAMP '$date_to') ";
+		}
+	else
+		{
+		my $view = $params->{'view_date'} || 'today';
+		my $date_current = IntelliShip::DateUtils->get_timestamp_with_time_zone;
+		if ($view eq 'this_week')
+			{
+			my $weekday =IntelliShip::DateUtils->get_day_of_week($date_current);
+			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$date_current') - s.dateshipped) <= (interval '$weekday days')";
+			}
+		elsif ($view eq 'this_month')
+			{
+			$c->log->debug("This month ");
+			my $dd = substr($date_current, 8, 2)-1;
+			$c->log->debug($dd);
+			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$date_current') - s.dateshipped) <= (interval '$dd days')";
+			}
+		elsif($view eq 'today' || '')
+			{
+			$date_shipped_sql = "AND s.dateshipped = date_trunc('day',TIMESTAMP '$date_current')";
+			}
+		}
+
 	my $CustomerID = $Customer->customerid;
 
 	my $and_shipment_in_sql = $self->get_shipmentid_in_sql;
@@ -120,11 +155,13 @@ sub get_shipped_sql :Private
 		SELECT
 			s.shipmentid,
 			co.coid,
+			co.ordernumber,
 			da.addressname as customername,
 			oa.city || ', ' || oa.state as origin,
 			da.city || ', ' || da.state as destin,
 			to_char(s.dateshipped,'MM/DD/YY') as dateshipped,
 			to_char(s.datedue,'MM/DD/YY') as duedate,
+			s.tracking1 as tracking,
 			s.service,
 			s.cost,
 			s.carrier,
@@ -141,52 +178,9 @@ sub get_shipped_sql :Private
 		WHERE
 			s.dateshipped IS NOT NULL
 			$and_shipment_in_sql
+			$date_shipped_sql
+			$search_by_term_sql
 			AND s.datedelivered IS NULL
-			AND (s.dateshipped - interval '5 days') <= date('now')
-	";
-
-	return $SQL;
-	}
-
-sub get_delivered_sql :Private
-	{
-	my $self = shift;
-
-	my $c = $self->context;
-	my $params = $c->req->params;
-	my $Customer = $self->customer;
-	my $Contact = $self->contact;
-
-	my $CustomerID = $Customer->customerid;
-
-	my $and_shipment_in_sql = $self->get_shipmentid_in_sql;
-
-	my $SQL = "
-		SELECT
-			s.shipmentid,
-			co.coid,
-			da.addressname as customername,
-			oa.city || ', ' || oa.state as origin,
-			da.city || ', ' || da.state as destin,
-			to_char(s.dateshipped,'MM/DD/YY') as dateshipped,
-			s.service,
-			s.cost,
-			s.carrier,
-			s.mode,
-			5 as condition,
-			da.addressname as shiptoname,
-			oa.addressname as shipfromname,
-			to_char(s.datedelivered,'MM/DD/YY') as datedelivered
-		FROM
-			shipment s
-			INNER JOIN co ON s.coid = co.coid AND co.customerid = '$CustomerID'
-			INNER JOIN address oa ON oa.addressid = s.addressidorigin
-			INNER JOIN address da ON da.addressid = s.addressiddestin
-		WHERE
-			s.dateshipped IS NOT NULL
-			$and_shipment_in_sql
-			AND s.datedelivered IS NOT NULL
-			AND (s.datedelivered - interval '5 days') <= date('now')
 	";
 
 	return $SQL;

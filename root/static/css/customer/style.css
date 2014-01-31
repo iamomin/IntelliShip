@@ -133,6 +133,12 @@ img { border: none }
     background: url("/static/images/new-order.png") no-repeat;
 }
 
+#menu li a.sap {
+    height: 32px;
+    padding-left: 28px;
+    background: url("/static/images/ship-a-package.png") no-repeat;
+}
+
 #menu li a.batch {
     height: 32px;
     padding-left: 28px;
@@ -142,7 +148,7 @@ img { border: none }
 #menu li a.qs {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/box.png") no-repeat;
+    background: url("/static/images/quick-ship.png") no-repeat;
 }
 
 #menu li a.sp {
@@ -158,6 +164,12 @@ img { border: none }
 }
 
 #menu li a.sm {
+    height: 32px;
+    padding-left: 28px;
+    background: url("/static/images/maintenance.png") no-repeat;
+}
+
+#menu li a.ms {
     height: 32px;
     padding-left: 28px;
     background: url("/static/images/maintenance.png") no-repeat;
@@ -310,7 +322,7 @@ label {
 
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}
-#row table {min-height: 200px}
+#row table {min-height: 260px}
 #row div {display: table-cell;padding: 0 10px;vertical-align: top}
 #row div.21 {display: table-cell;padding-right: 10px;vertical-align: top}
 #row div.22 {display: table-cell;padding-left: 10px;vertical-align: top}
@@ -318,37 +330,16 @@ label {
 #row div.32 {display: table-cell;padding: 0 10px;vertical-align: top}
 #row div.33 {display: table-cell;padding-left: 10px;vertical-align: top}
 
-table {
-    margin: 0;
-    padding: 0;
-    border-spacing: 0px;
-}
-
-table th {
-    color: #FFF;
-    text-align: center;
-    background: #9BA7AF;
-    text-transform: uppercase;
-}
-
-table a {
-    text-align: center;
-}
-
-table td {
-    padding: 3px;
-}
+table { margin: 0; padding: 0; border-spacing: 0px; }
+table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
+table td { padding: 3px; }
+table a { text-align: center; }
 
 #package-detail-list table {padding: 10px 0;border-spacing: 0px; text-align: center}
 #package-detail-list table th {color: #FFF; background: #9BA7AF; text-transform: uppercase; white-space: nowrap}
 #package-detail-list table td {padding: 0; text-align: center}
 
-table.center {
-    width: auto;
-    padding: 10px;
-    margin: 10px auto;
-    text-align: center;
-}
+table.center { width: auto; padding: 10px; margin: 10px auto; text-align: center; }
 
 table.order-nav { width: 100%;  text-align: center }
 table.order-nav td { width: 33%; margin: 0; }
@@ -538,70 +529,169 @@ div.error {
     z-index: -1;
 }
 
-#myOrders table  {width: 100%; margin: 10px 0; border-spacing: 0px; text-align: center}
-#myOrders table tr {padding: 2px}
+#list ul { position: relative; margin: 10px 20px; list-style: none; list-style-type: square; }
+#list li { padding: 5px; }
+
+#myOrders table  {width: 100%; margin: 10px 0; font-size: 11px; border-spacing: 0px; text-align: center}
 #myOrders table th {padding: 5px; color: #FFF; background-color: #9BA7AF}
 #myOrders table td {padding: 5px; color: #9BA7AF; background: #F5F5F5; border-bottom: 1px solid #9BA7AF}
 
 #myOrders a.red {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #D44444; /* old browsers */
-	background: -moz-linear-gradient(top, #8DD297 0%, #D44444 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D44444), color-stop(100%,#D44444)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #D44444; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #D44444 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D44444), color-stop(100%,#D44444)); /* webkit */
 }
 
 #myOrders a.orange {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #E3831F; /* old browsers */
-	background: -moz-linear-gradient(top, #8DD297 0%, #E3831F 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#E3831F), color-stop(100%,#E3831F)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #E3831F; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #E3831F 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#E3831F), color-stop(100%,#E3831F)); /* webkit */
 }
 
 #myOrders a.green {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #398525; /* old browsers */
-	background: -moz-linear-gradient(top, #8DD297 0%, #398525 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8DD297), color-stop(100%,#398525)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #398525; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #398525 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8DD297), color-stop(100%,#398525)); /* webkit */
 }
 
 #myOrders a.blue {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #0F9BF2; /* old browsers */
-	background: -moz-linear-gradient(top, #0F9BF2 0%, #F20C0C 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0F9BF2), color-stop(100%,#0F9BF2)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #0F9BF2; /* old browsers */
+    background: -moz-linear-gradient(top, #0F9BF2 0%, #F20C0C 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0F9BF2), color-stop(100%,#0F9BF2)); /* webkit */
 }
 
 #myOrders a.yellow {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #B89400; /* old browsers */
-	background: -moz-linear-gradient(top, #B89400 0%, #F20C0C 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#B89400), color-stop(100%,#B89400)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #B89400; /* old browsers */
+    background: -moz-linear-gradient(top, #B89400 0%, #F20C0C 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#B89400), color-stop(100%,#B89400)); /* webkit */
 }
 
 #myOrders a.black {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #9B9B9B; /* old browsers */
-	background: -moz-linear-gradient(top, #9B9B9B 0%, #F20C0C 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9B9B9B), color-stop(100%,#9B9B9B)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #9B9B9B; /* old browsers */
+    background: -moz-linear-gradient(top, #9B9B9B 0%, #F20C0C 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9B9B9B), color-stop(100%,#9B9B9B)); /* webkit */
 }
 
 #myOrders a.pink {
-	display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-	background: #FFA9D6; /* old browsers */
-	background: -moz-linear-gradient(top, #FFA9D6 0%, #F20C0C 100%); /* firefox */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFA9D6), color-stop(100%,#FFA9D6)); /* webkit */
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #FFA9D6; /* old browsers */
+    background: -moz-linear-gradient(top, #FFA9D6 0%, #F20C0C 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFA9D6), color-stop(100%,#FFA9D6)); /* webkit */
 }
 
-#list ul {
+/* My Shipment styling START */
+
+table.shipment-date-range { margin: 10px 0; font-size: 11px; background-color: #E4E5E7; text-align: center; border: 1px solid #A2A1A6; }
+table.shipment-date-range th { padding: 5px; background-color: #FFF; }
+table.shipment-date-range td { padding: 5px; }
+table.shipment-date-range label { position: relative; color:#AAACAB; font-size: x-small; margin: 5px; }
+table.shipment-date-range input[type=text]  { border: 1px solid #AFAFAF; padding: 1px 3px; vertical-align: inherit; width: 80px; }
+
+.quick-ship div {
+    background: url(/static/images/open-box-white.png) no-repeat center center;
+    width: 24px;
+    height: 24px;
+    color: #58B94E;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.quick-ship button {
+    color: #FFF;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    white-space: nowrap;
+    background-color: #58B94E;
+    vertical-align: top;
+    padding: 0 20px;
+}
+
+table.shipment-filter  { width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
+table.shipment-filter td { padding: 10px 0; color: #1875BA; font-weight: bold; white-space: nowrap; }
+table.shipment-filter input[type=text] { width: 160px; }
+
+table.shipment-filter div {
+    height: 32px;
+    display: inline;
+    overflow: hidden;
+    background: url(/static/images/add.png) no-repeat center center;
+}
+
+input.apply-filter {
     position: relative;
-    margin: 10px 20px;
-    list-style: none;
-    list-style-type: square;
+    display: inline-block;
+    padding: 2px 2px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #9BA7AF;
+    border: 1px solid #9BA7AF;
+    vertical-align: middle;
+    min-width: 80px;
+    cursor: pointer;
 }
 
-#list li {
-    padding: 5px;
+table.batch-option  {width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
+table.batch-option th { padding: 10px; color: #FFF; background-color: #98A4B0; font-weight: bold; white-space: nowrap; }
+table.batch-option td { padding: 10px; background-color: #E4E5E7; white-space: nowrap; text-align: left; }
+table.batch-option  input[type=button] {
+    position: relative;
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #1875BA;
+    border: 1px solid #27A9DE;
+    vertical-align: middle;
+    cursor: pointer;
 }
+
+label.track {font-size: 13px; font-weight: bold; white-space: nowrap; color: #1875BA;}
+label.reprint {font-size: 13px; font-weight: bold; white-space: nowrap; color: #59B850;}
+label.void {font-size: 13px; font-weight: bold; white-space: nowrap; color: #A25454;}
+
+#myShipments table  {width: 100%; margin: 40px 0; border-spacing: 0px; font-size: 11px; text-align: center; border: 1px solid #A2A1A6; border-collapse: collapse }
+#myShipments table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+#myShipments table tr:nth-child(even) {color: #000; background: #E4E5E7 }
+#myShipments table th {padding: 5px; color: #FFF; background-color: #9AA4AD; }
+#myShipments table td {padding: 5px; border: 1px solid #A2A1A6; }
+
+#myShipments a.red {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #D44444; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #D44444 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D44444), color-stop(100%,#D44444)); /* webkit */
+}
+
+#myShipments a.green {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #398525; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #398525 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8DD297), color-stop(100%,#398525)); /* webkit */
+}
+
+#myShipments a.blue {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #0F9BF2; /* old browsers */
+    background: -moz-linear-gradient(top, #0F9BF2 0%, #F20C0C 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0F9BF2), color-stop(100%,#0F9BF2)); /* webkit */
+}
+
+#myShipments a.track {color: #1875BA;}
+#myShipments a.reprint {color: #59B850;}
+#myShipments a.void {color: #A25454;}
+
+/* My Shipment styling END */
 
 ul.sortable {
     margin: 0;

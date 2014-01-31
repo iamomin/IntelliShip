@@ -3,66 +3,110 @@
 [% #---------------------------------------------------------- %]
 [% IF MY_SHIPMENTS %]
 	[% UNLESS ajax %]
+
 	<form id="frm_my_shipments" method="post" action="/customer/myshipments">
-	<input type="hidden" name="do" id="do"/>
-	<h1>My Shipments
-		<div class="float_right" style="white-space: nowrap;">
-			<select name="view" id="view" onChange="refreshMyShipments()">
-				[% FOREACH item IN view_list %]
-				<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-			</select>
-			<label style="font-size: 10px;" for="records_per_page"><span id="myshipment_count"></span> Records, Records Per Page&nbsp;</label>
-			<select name="records_per_page" id="records_per_page">
-				[% FOREACH item IN recordsperpage_list %]
-					<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
-				[% END %]
-			</select>
-			<select name="shipmentids" id="shipmentids">
-				[% FOREACH ids IN myshipment_batches %]
-					<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
-				[% END %]
-				[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
-			</select>
-		</div>
-	</h1>
-
-	[% IF refresh_interval_sec %]
-	<div class="notice">Shipment list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
-	[% END %]
-
-	<div id="myOrders">
-	[% END %]
-
+	<input type="hidden" name="do" id="do" value="do"/>
+	<input type="hidden" name="do" id="do" value="batchoptions"/>
+	<h2>
 		<table>
+		<tr>
+			<td style="white-space: nowrap;">My Shipments</td>
+			<td style="width: 1%;">&nbsp;</td>
+			<td>
+				<table class="shipment-date-range">
+				<tr>
+					<th>
+					<label>
+						<select id="view_date" name="view_date">
+							[% FOREACH item IN date_list %]
+							<option [% IF view_date == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
+							[% END %]
+						</select>
+					</label>
+					</th>
+					<td>
+					<table>
+						<tr>
+							<td><input type="text" title="Enter from Date " name="datefrom" id="datefrom" value="[% datefrom %]" readonly/></td>
+							<td><label>To</label></td>
+							<td><input type="text" title="Enter to Date " name="dateto" id="dateto" value="[% dateto %]" readonly/></td>
+						</tr>
+					</table>
+					</td>
+					<td>
+						<input type="button" class="apply-filter" id="date_apply" name="date_apply "value="Apply"/>
+					</td>
+					</tr>
+				</table>
+			</td>
+			<td style="width: 20%;">&nbsp;</td>
+			<td>
+				<div class="quick-ship"><button type="button"><table><tr><td><div></div></td><td>QUICK SHIP</td></tr></table></button></div>
+			</td>
+		</tr>
+		</table>
+	</h2>
+
+	<table class="shipment-filter">
+		<tr>
+			<td>Show Filters</td>
+			<td><img src="/static/images/add.png"/></td>
+			<td style="width: 60%">&nbsp;</td>
+			<td><label for="filter">Instant Filter</label>:</td>
+			<td><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
+		</tr>
+	</table>
+
+	<b>X Shipments Selected</b>
+
+	<table class="batch-option css3-radios">
+		<tr>
+			<th>BATCH OPTIONS:</th>
+			<td><label><input type="radio" id="track" name="batch_action" value="track"><span><label for="track" class="track">TRACK</label></span></label></td>
+			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
+			<td><label><input type="radio" id="void" name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
+			<td><label><input type="button" value="SUBMIT"></td>
+			<td width="510px"> Batch tracking limited to 25 shipments</td>
+		</tr>
+	</table>
+
+	</form>
+
+	<div id="myShipments">
+	[% END %]
+		<table class="css3-checkboxes">
 			<tr>
-				<th>Status</th>
-				<th>Customer</th>
-				<th>Origin</th>
-				<th>Destination</th>
-				<th>Shipped Date</th>
-				[% IF view_datedelivered %]<th>Delivered Date</th>[% END %]
-				<th>Cost</th>
-				<th>Carrier</th>
-				<th>Service</th>
-				<th>Mode</th>
+				<th><label><input type="checkbox"/><span></span></label></th>
+				<th>STATUS</th>
+				<th>TRACKING#</th>
+				<th>ORDER#</th>
+				<th>CUSTOMER</th>
+				<th>ORIGIN</th>
+				<th>DESTINATION</th>
+				<th>DATE</th>
+				<th>DUE DATE</th>
+				<th>CARRIER</th>
+				<th>MODE</th>
+				<th>OPTIONS</th>
 			</tr>
 			[% FOREACH item IN myshipment_list %]
 			<tr>
+				<td><label><input type="checkbox" id="[% item.shipmentid %]" name="[% item.shipmentid %] value="[% item.shipmentid %]/><span></span></label></td>
 				<td><a class="[% item.a_class %]" href="javascript:void(0);"></a></td>
+				<td>[% item.tracking %]</td>
+				<td>[% item.ordernumber %]</td>
 				<td>[% item.customername %]</td>
 				<td>[% item.origin %]</td>
 				<td>[% item.destin %]</td>
 				<td>[% item.dateshipped %]</td>
-				[% IF view_datedelivered %]<td>[% item.datedelivered %]</td>[% END %]
-				<td>[% item.cost %]</td>
+				<td>[% item.duedate %]</td>
 				<td>[% item.carrier %]</td>
-				<td>[% item.service %]</td>
 				<td>[% item.mode %]</td>
+				<td><a href="#" class="track">TRACK</a>&nbsp;&nbsp;<a href="#" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="#" class="void">VOID</a></td>
 			</tr>
 			[% END %]
 			[% IF myshipment_list_count == 0 %]
-				<tr><td colspan="11">No qualified shipments found</td></tr>
+				<tr><td colspan="12">No qualified shipments found</td></tr>
 			[% END %]
 		<table>
 
@@ -71,34 +115,42 @@
 	</form>
 	[% END %]
 
-	<script>
+<script>
 
-	[% UNLESS ajax %]
-	function refreshMyShipments() {
-		$("#shipmentids").prop('disabled','disabled');
-		$('#frm_my_shipments').submit();
-		}
-	[% END %]
-
-	var refresh_interval_sec = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
+	$("#datefrom").datepicker({ maxDate: '0d' });
+	$("#dateto").datepicker({ maxDate: '2w' });
 
 	$(document).ready(function() {
 
+		if ($("#view_date").val() == 'today') {
+			$("#datefrom").datepicker('setDate', '+0d');
+			$("#dateto").datepicker('setDate', '+0d');
+			}
+
 		$("#myshipment_count").text('[% myshipment_list_count %]');
 
-		$("#refresh_interval").text(refresh_interval_sec);
-		setInterval("refreshMyShipments()", refresh_interval_sec * 1000);
-
 		$("#records_per_page").change(function() {
-				$("#shipmentids").prop('disabled','disabled');
-				$('#frm_my_shipments').submit();
-				});
-
-		$("#shipmentids").change(function() {
-			var query_param = "view=" + $("#view").val() + "&shipmentids=" + $("#shipmentids").val();
-			send_ajax_request('myOrders', 'HTML', 'myshipments', '', query_param);
+			$("#shipmentids").prop('disabled','disabled');
+			$('#frm_my_shipments').submit();
 			});
 
+		$("#view_date").change(function() {
+			var query_param = "&view_date=" + $("#view_date").val();
+			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+			});
+
+		$("#date_apply").click(function() {
+			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
+			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+			});
+
+		$('#filter').keypress(function(event){
+			var keycode = (event.keyCode ? event.keyCode : event.which);
+			if(keycode == '13') {
+				var query_param = "&filter=" + $("#filter").val();
+				send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+				}
+			});
 		});
 	</script>
 
