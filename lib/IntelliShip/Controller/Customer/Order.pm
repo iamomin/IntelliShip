@@ -1,6 +1,7 @@
 package IntelliShip::Controller::Customer::Order;
 use Moose;
 use Data::Dumper;
+use POSIX qw(ceil);
 use IntelliShip::Utils;
 use IntelliShip::MyConfig;
 use IntelliShip::Carrier::Handler;
@@ -1563,6 +1564,7 @@ sub generate_label
 		# $CgiRef->{'addressname'} = $self->GetAltSOPConsigneeName($CgiRef->{'customerserviceid'},$CgiRef->{'addressname'});
 		# }
 
+	$c->stash($params);
 	$c->stash->{fromAddress} = $Shipment->origin_address;
 	$c->stash->{toAddress} = $Shipment->destination_address;
 	$c->stash->{shipdate} = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
