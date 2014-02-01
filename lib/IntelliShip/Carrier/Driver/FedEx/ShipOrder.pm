@@ -387,11 +387,7 @@ sub process_request
 
 	$self->log('### shipmentData ###: ' . Dumper $shipmentData);
 
-	my $Shipment = $self->model('MyDBI::Shipment')->new($shipmentData);
-	$Shipment->shipmentid($shipmentData->{'shipmentid'});
-	$Shipment->insert;
-
-	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
+	my $Shipment = $self->insert_shipment($shipmentData);
 
 	#$Shipment->{'printerstring'} = $PrinterString;
 

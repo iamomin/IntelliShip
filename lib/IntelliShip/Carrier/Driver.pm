@@ -87,6 +87,116 @@ sub TagPrinterString
 	#return $tagged_string;
 	}
 
+sub insert_shipment
+	{
+	my $self = shift;
+	my $shipmentData = shift;
+
+	return unless $shipmentData;
+
+	my $shipmentObj = {
+			'department' => $shipmentData->{'department'},
+			'coid' => $shipmentData->{'coid'},
+			'dateshipped' => $shipmentData->{'dateshipped'},
+			'quantityxweight' => $shipmentData->{'quantityxweight'},
+			'freightinsurance' => $shipmentData->{'freightinsurance'},
+			'hazardous' => $shipmentData->{'hazardous'},
+			'deliverynotification' => $shipmentData->{'deliverynotification'},
+			'custnum' => $shipmentData->{'custnum'},
+			'oacontactphone' => $shipmentData->{'oacontactphone'},
+			'securitytype' => $shipmentData->{'securitytype'},
+			'description' => $shipmentData->{'description'},
+			'shipasname' => $shipmentData->{'shipasname'},
+			'density' => $shipmentData->{'density'},
+			'destinationcountry' => $shipmentData->{'destinationcountry'},
+			'partiestotransaction' => $shipmentData->{'partiestotransaction'},
+			'defaultcsid' => $shipmentData->{'defaultcsid'},
+			'ponumber' => $shipmentData->{'ponumber'},
+			'dimweight' => $shipmentData->{'dimweight'},
+			'dimlength' => $shipmentData->{'dimlength'},
+			'dimheight' => $shipmentData->{'dimheight'},
+			'naftaflag' => $shipmentData->{'naftaflag'},
+			'carrier' => $shipmentData->{'carrier'},
+			'dimwidth' => $shipmentData->{'dimwidth'},
+			'commodityunits' => $shipmentData->{'commodityunits'},
+			'manualthirdparty' => $shipmentData->{'manualthirdparty'},
+			'contactphone' => $shipmentData->{'contactphone'},
+			'customsvalue' => $shipmentData->{'customsvalue'},
+			'contactname' => $shipmentData->{'contactname'},
+			'customsdescription' => $shipmentData->{'customsdescription'},
+			'billingaccount' => $shipmentData->{'billingaccount'},
+			'commodityweight' => $shipmentData->{'commodityweight'},
+			'dutyaccount' => $shipmentData->{'dutyaccount'},
+			'manufacturecountry' => $shipmentData->{'manufacturecountry'},
+			'contacttitle' => $shipmentData->{'contacttitle'},
+			'shipmentnotification' => $shipmentData->{'shipmentnotification'},
+			'originid' => $shipmentData->{'originid'},
+			'bookingnumber' => $shipmentData->{'bookingnumber'},
+			'custref3' => $shipmentData->{'custref3'},
+			'dutypaytype' => $shipmentData->{'dutypaytype'},
+			'extid' => $shipmentData->{'extid'},
+			'datereceived' => $shipmentData->{'datereceived'},
+			'weight' => $shipmentData->{'weight'},
+			'shipmentid' => $shipmentData->{'shipmentid'},
+			'billingpostalcode' => $shipmentData->{'billingpostalcode'},
+			'insurance' => $shipmentData->{'insurance'},
+			'currencytype' => $shipmentData->{'currencytype'},
+			'service' => $shipmentData->{'service'},
+			'isdropship' => $shipmentData->{'isdropship'},
+			'ssnein' => $shipmentData->{'ssnein'},
+			'harmonizedcode' => $shipmentData->{'harmonizedcode'},
+			'tracking1' => $shipmentData->{'tracking1'},
+			'isinbound' => $shipmentData->{'isinbound'},
+			'oacontactname' => $shipmentData->{'oacontactname'},
+			'daterouted' => $shipmentData->{'daterouted'},
+			'quantity' => $shipmentData->{'quantity'},
+			'commodityquantity' => $shipmentData->{'commodityquantity'},
+			'dimunits' => $shipmentData->{'dimunits'},
+			'freightcharges' => $shipmentData->{'freightcharges'},
+			'termsofsale' => $shipmentData->{'termsofsale'},
+			'commoditycustomsvalue' => $shipmentData->{'commoditycustomsvalue'},
+			'datepacked' => $shipmentData->{'datepacked'},
+			'unitquantity' => $shipmentData->{'unitquantity'},
+			'ipaddress' => $shipmentData->{'ipaddress'},
+			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'}
+		};
+
+	my $orignAddress = {
+			addressname	=> $shipmentData->{'customername'},
+			address1	=> $shipmentData->{'branchaddress1'},
+			address2	=> $shipmentData->{'branchaddress2'},
+			city		=> $shipmentData->{'branchaddresscity'},
+			state		=> $shipmentData->{'branchaddressstate'},
+			zip			=> $shipmentData->{'branchaddresszip'},
+			country		=> $shipmentData->{'branchaddresscountry'},
+			};
+
+	my @arr1 = $self->model('MyDBI::Address')->search($orignAddress);
+	$shipmentObj->{'addressidorigin'} = $arr1[0]->addressid if @arr1;
+
+	my $destinAddress = {
+			addressname	=> $shipmentData->{'addressname'},
+			address1	=> $shipmentData->{'address1'},
+			address2	=> $shipmentData->{'address2'},
+			city		=> $shipmentData->{'addresscity'},
+			state		=> $shipmentData->{'addressstate'},
+			zip			=> $shipmentData->{'addresszip'},
+			country		=> $shipmentData->{'addresscountry'},
+			};
+
+	my @arr2 = $self->model('MyDBI::Address')->search($destinAddress);
+	$shipmentObj->{'addressiddestin'} = $arr2[0]->addressid if @arr2;
+
+	#$self->log('*** shipmentData ***: ' . Dumper $shipmentObj);
+
+	my $Shipment = $self->model('MyDBI::Shipment')->new($shipmentObj);
+	$Shipment->insert;
+
+	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
+
+	return $Shipment;
+	}
+
 sub log
 	{
 	my $self = shift;
