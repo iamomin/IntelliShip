@@ -193,8 +193,8 @@ sub jsonify
 					push @$list, $self->jsonify($item);
 				}
 			}
-		return "[" . join(",",@$list) . "]";
 
+		return "[" . join(",",@$list) . "]";
 		}
 	elsif (ref($struct) eq "HASH")
 		{

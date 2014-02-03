@@ -1630,6 +1630,7 @@ sub generate_label
 
 	my $template = $params->{'carrier'} || 'default';
 	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+	$c->stash(MEDIA_PRINT => 1);
 	$c->stash($params);
 	}
 

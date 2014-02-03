@@ -94,6 +94,20 @@ sub get_CS_shipping_values
 	return $self->APIRequest($http_request);
 	}
 
+sub get_carrier_list
+	{
+	my $self = shift;
+	my ($SOPID,$CustomerID) = @_;
+
+	my $http_request = {
+		action => 'GetCarrierList',
+		sopid => $SOPID,
+		customerid => $CustomerID,
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub get_carrrier_service_rate_list
 	{
 	my $self = shift;
@@ -131,6 +145,13 @@ sub get_carrrier_service_rate_list
 
 	$request->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
+
+	 unless ($request->{'dateneeded'})
+		{
+		my $future_date = IntelliShip::DateUtils->get_timestamp_delta_days_from_now(7);
+		$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($future_date);
+		$self->context->log->debug("NO DATE NEEDED, FUTURE DATE SELECTED: ". $request->{'dateneeded'});
+		}
 
 	$request->{'hasrates'} = $Customer->hasrates;
 	$request->{'autocsselect'} = $Customer->autocsselect;

@@ -1,12 +1,30 @@
 <form id="frm_label" name="frm_label" action="/customer/dashboard">
 
-	<div id="label">[% LABEL %]</div>
+	<div id="label" class="Print">[% LABEL %]</div>
 
-	<table class="center">
+	<table class="center DoNotPrint">
 		<tr>
-			<td><input type="button" class="blue" value="PRINT"/></td>
+			<td><input type="button" class="blue" value="PRINT" onclick="window.print();"/></td>
 			<td><input type="submit" class="green" value="QUICK SHIP" onclick="$('#frm_label').attr('action', '/customer/order/quickship');"></td>
 		</tr>
 	</table>
 
 </form>
+
+<script>
+function Print()
+	{
+	var printWin = window.open('', '', 'left=0,top=0,width=400,height=500,status=0');
+	var printWin = $("#label").html();
+	printWin.document.write(printWin);
+	printWin.focus();
+	printWin.print();
+	printWin.close();
+	}
+
+$(document).ready(function(){
+	print();
+	//[% IF totalquantity > 0 %]window.print(false);[% END %]
+	});
+
+</script>

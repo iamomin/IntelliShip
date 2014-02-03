@@ -53,7 +53,7 @@
 	$("#ship_now").click(function() {
 
 		var carrier = $("#carrier").val();
-		console.log("SELECTED CARRIER: " + carrier);
+
 		if (carrier == undefined) return;
 
 		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS')

@@ -111,11 +111,10 @@
 		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/> 
 		<table>
 		<tr>
-		[% IF one_page %]
 			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
 			<td style="width: 04%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
-			<td style="width: 05%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% sku %]"/></td>
-			<td style="width: 20%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>
+			<td style="width: 04%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% sku %]"/></td>
+			<td style="width: 11%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>
 			<td style="width: 10%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %] selected [% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td style="width: 07%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>
 			<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/></td>
@@ -127,18 +126,6 @@
 			<td style="width: 05%"><input type="text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]" value="[% class %]"/></td>
 			<td style="width: 07%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" value="[% decval %]"/></td>
 			<td style="width: 07%"><input type="text" name="frtins_[% ROW_COUNT %]" class="total_pkg_detail" id="frtins_[% ROW_COUNT %]" value="[% frtins %]"/></td>
-		[% ELSE %]
-			<td style="width: 05%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="package" /></td>
-			<td style="width: 20%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
-			<td style="width: 15%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %] selected [% END %]>[% item.name %]</option>[% END %]</select></td>
-			<td style="width: 08%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>
-			<td style="width: 08%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/></td>
-			<td style="width: 08%"><input type="text" class="total_pkg_detail" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" value="[% dimlength %]"/></td>
-			<td style="width: 08%"><input type="text" class="total_pkg_detail" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" value="[% dimwidth %]"/></td>
-			<td style="width: 08%"><input type="text" class="total_pkg_detail" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]"/></td>
-			<td style="width: 10%"><input type="text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></td>
-			<td style="width: 10%"><input type="text" name="decval_[% ROW_COUNT %]" class="total_pkg_detail" id="decval_[% ROW_COUNT %]" value="[% decval %]"/></td>
-		[% END %]
 		</tr>
 		</table>
 	</li>
@@ -348,7 +335,6 @@
 		function setCarrier(carrier)
 			{
 			$("#carrier").val(carrier);
-			console.log("RADIO CHECK VAL: " + $("#carrier").val());
 			}
 		function displayShipmentChargeDetails(ID)
 			{

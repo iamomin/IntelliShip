@@ -86,11 +86,11 @@
 	<br>
 [% END %]
 
+[% IF one_page %]
 	<ul class="sortable css3-checkboxes" id="package-detail-list">
 		<li class="ui-state-fixed">
 		<table>
 			<tr>
-			[% IF one_page %]
 				<th style="width: 01%"><label><input type="checkbox" id="all_packages" /><span></span></label></th>
 				<th style="width: 01%">QTY</th>
 				<th style="width: 02%">SKU#</th>
@@ -106,18 +106,6 @@
 				<th style="width: 05%">Class</th>
 				<th style="width: 07%">Dec. Value</th>
 				<th style="width: 07%">Freight Ins.</th>
-			[% ELSE %]
-				<th style="width: 06%">QTY</th>
-				<th style="width: 20%">Description</th>
-				<th style="width: 14%">Type</th>
-				<th style="width: 09%">Weight</th>
-				<th style="width: 07%">Dim Weight</th>
-				<th style="width: 07%">Length</th>
-				<th style="width: 08%">Width</th>
-				<th style="width: 09%">Height</th>
-				<th style="width: 10%">Density</th>
-				<th style="width: 10%">Dec. Value</th>
-			[% END %]
 			</tr>
 		</table>
 		</li>
@@ -125,73 +113,93 @@
 	[% IF package_detail_section %]
 		[% package_detail_section %]
 	[% ELSE %]
-		[% IF one_page %]
-			<li id="new_package_1" class="ui-state-package ui-state-fixed">
-				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
-				<table>
-				<tr>
-					<td style="width: 01%"><input  type="hidden" name="type_1" id="type_1" value="package"/><label><input type="checkbox" id="ppd_1" value="package"/><span></span></label></td>
-					<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
-					<td style="width: 04%"><input  type="text" class="sku_id" name="sku_1" id="sku_1"/></td>
-					<td style="width: 11%"><input  type="text" class="broad_text" name="description_1" id="description_1" readonly/></td>
-					<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"/></td>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"/></td>
-					<td style="width: 07%"><input  type="text" name="density_1" id="density_1"/></td>
-					<td style="width: 05%"><input  type="text" name="nmfc_1" id="nmfc_1"/></td>
-					<td style="width: 05%"><input  type="text" name="class_1" id="class_1"/></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00"/></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" value="0.00"/></td>
-				</tr>
-				</table>
-			</li>
-			<li id="new_product_2" class="ui-state-product">
-				<input type="hidden" id="rownum_id_2" name="rownum_id_2" value="2"/>
-				<table>
-				<tr>
-					<td style="width: 01%"><input  type="hidden" name="type_2" id="type_2" value="product"/><label><input type="checkbox" id="ppd_2" value="product"/><span></span></label></td>
-					<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_2" id="quantity_2" value="1"/></td>
-					<td style="width: 04%"><input  type="text" class="sku_id" name="sku_2" id="sku_2"/></td>
-					<td style="width: 11%"><input  type="text" class="broad_text" name="description_2" id="description_2" readonly/></td>
-					<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_2" id="weight_2"/></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2"/></td>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_2" id="dimlength_2"/></td>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_2" id="dimwidth_2"/></td>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_2" id="dimheight_2"/></td>
-					<td style="width: 07%"><input  type="text" name="density_2" id="density_2"/></td>
-					<td style="width: 05%"><input  type="text" name="nmfc_2" id="nmfc_2"/></td>
-					<td style="width: 05%"><input  type="text" name="class_2" id="class_2"/></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_2" id="decval_2" value="0.00"/></td>
-					<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_2" id="frtins_2" value="0.00"/></td>
-				</tr>
-				</table>
-			</li>
-		[% ELSE %]
-			<li id="new_package_1" class="ui-state-package ui-state-fixed">
-				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
-				<input  type="hidden" name="type_1" id="type_1" value="package"/>
-				<table>
-				<tr>
-					<td style="width: 05%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
-					<td style="width: 20%"><input  type="text" class="broad_text" name="description_1" id="description_1"/></td>
-					<td style="width: 15%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
-					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
-					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
-					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"/></td>
-					<td style="width: 08%"><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"/></td>
-					<td style="width: 10%"><input  type="text" name="density_1" id="density_1" value="0.00"/></td>
-					<td style="width: 10%"><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00"/></td>
-				</tr>
-				</table>
-			</li>
-		[% END %]
-		</ul>
+		<li id="new_package_1" class="ui-state-package ui-state-fixed">
+			<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+			<table>
+			<tr>
+				<td style="width: 01%"><input  type="hidden" name="type_1" id="type_1" value="package"/><label><input type="checkbox" id="ppd_1" value="package"/><span></span></label></td>
+				<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
+				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_1" id="sku_1"/></td>
+				<td style="width: 11%"><input  type="text" class="broad_text" name="description_1" id="description_1" readonly/></td>
+				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"/></td>
+				<td style="width: 07%"><input  type="text" name="density_1" id="density_1"/></td>
+				<td style="width: 05%"><input  type="text" name="nmfc_1" id="nmfc_1"/></td>
+				<td style="width: 05%"><input  type="text" name="class_1" id="class_1"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" value="0.00"/></td>
+			</tr>
+			</table>
+		</li>
+		<li id="new_product_2" class="ui-state-product">
+			<input type="hidden" id="rownum_id_2" name="rownum_id_2" value="2"/>
+			<table>
+			<tr>
+				<td style="width: 01%"><input  type="hidden" name="type_2" id="type_2" value="product"/><label><input type="checkbox" id="ppd_2" value="product"/><span></span></label></td>
+				<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_2" id="quantity_2" value="1"/></td>
+				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_2" id="sku_2"/></td>
+				<td style="width: 11%"><input  type="text" class="broad_text" name="description_2" id="description_2" readonly/></td>
+				<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_2" id="weight_2"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_2" id="dimlength_2"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_2" id="dimwidth_2"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_2" id="dimheight_2"/></td>
+				<td style="width: 07%"><input  type="text" name="density_2" id="density_2"/></td>
+				<td style="width: 05%"><input  type="text" name="nmfc_2" id="nmfc_2"/></td>
+				<td style="width: 05%"><input  type="text" name="class_2" id="class_2"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_2" id="decval_2" value="0.00"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_2" id="frtins_2" value="0.00"/></td>
+			</tr>
+			</table>
+		</li>
 	[% END %]
+	</ul>
+[% ELSE %]
+	<ul class="sortable css3-checkboxes" id="package-detail-list">
+		<li id="new_package_1" class="ui-state-fixed">
+		<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+		<input  type="hidden" name="type_1" id="type_1" value="package"/>
+		<table class="app">
+			<tr>
+				<th>QTY</th>
+				<th>Description</th>
+				<th>Type</th>
+				<th>Weight</th>
+				<th>Dim Weight</th>
+				<th>Length</th>
+				<th>Width</th>
+				<th>Height</th>
+				<th>Density</th>
+				<th>Dec. Value</th>
+			</tr>
+			<tr>
+				<td colspan="10">&nbsp;</td>
+			</tr>
+		[% IF package_detail_section %]
+			[% package_detail_section %]
+		[% ELSE %]
+			<tr>
+				<td><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;"/></td>
+				<td><input  type="text" class="broad_text" name="description_1" id="description_1" style="width: 150px;"/></td>
+				<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" style="width: 50px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" style="width: 50px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" style="width: 50px;"/></td>
+				<td><input  type="text" name="density_1" id="density_1" value="0.00" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00" style="width: 100px;"/></td>
+			</tr>
+		[% END %]
+		</table>
+		</li>
+	</ul>
+[% END %]
 
 	<div style="clear: both;">&nbsp;</div>
 

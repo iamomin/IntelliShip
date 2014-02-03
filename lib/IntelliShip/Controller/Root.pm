@@ -1,6 +1,7 @@
 package IntelliShip::Controller::Root;
 use Moose;
 use Data::Dumper;
+use IntelliShip::Utils;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -86,9 +87,17 @@ sub auto :Private
 	my $tokenid;
 	unless ($tokenid = $Controller->authorize_user)
 		{
-		#$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
-		$c->response->redirect($c->uri_for('/customer/login'));
-		$c->stash->{template} = undef;
+		if ($c->req->param('ajax') == 1)
+			{
+			$c->response->body(IntelliShip::Utils->jsonify({ error => 'You are not logged in. Please login first.' }));
+			}
+		else
+			{
+			#$c->log->debug('**** Root::auto Not a valid user, forwarding to customer/login ');
+			$c->response->redirect($c->uri_for('/customer/login'));
+			$c->stash->{template} = undef;
+			}
+
 		return 0;
 		}
 

@@ -1,6 +1,6 @@
-body { background-color:#FFF; }
+body { background-color: #FFF; }
 #header { display: none; }
 #menu { display: none; }
 #footer { display: none; }
-.DoNotPrint { display:none; }
-Print { display:block; }
+.DoNotPrint { display: none; }
+Print { display: block; }
