@@ -119,6 +119,7 @@ sub find_order
 		{
 		my $CO = $cos[0];
 		$c->stash->{CO} = $CO;
+		$c->req->params->{coid} = $CO->coid;
 		return $CO;
 		}
 	}
