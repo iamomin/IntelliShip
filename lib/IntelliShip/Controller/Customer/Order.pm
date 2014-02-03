@@ -775,7 +775,7 @@ sub setup_quickship_page :Private
 
 	$c->stash->{quickship} = 1;
 	$c->stash->{title} = 'Quick Ship Order';
-	$self->populate_order;
+	$self->setup_one_page;
 	}
 
 sub populate_order :Private

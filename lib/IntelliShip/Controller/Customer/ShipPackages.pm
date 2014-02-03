@@ -54,7 +54,7 @@ sub load_order :Private
 	my $params = $c->req->params;
 
 	return unless $self->is_valid_detail;
-	$c->log->debug("Co is" . $self->CO->coid);
+	$c->log->debug("Co is" . $c->stash->{CO}->coid);
 	$self->setup_quickship_page;
 	}
 
@@ -89,7 +89,7 @@ sub find_order
 
 	my $customerid = $self->customer->customerid;
 
-	return $self->CO if $self->CO;
+	return $c->stash->{CO} if $c->stash->{CO};
 
 	my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
 
@@ -118,8 +118,8 @@ sub find_order
 	if (@cos)
 		{
 		my $CO = $cos[0];
-		$self->CO($CO);
-		return $self->CO;
+		$c->stash->{CO} = $CO;
+		return $CO;
 		}
 	}
 
