@@ -461,7 +461,7 @@ function validate_package_details()
 		for (var i=0; i<controls.length; i++) {
 			var element = controls[i];
 			if (element == 'quantity') requiredPkgProduct[element+'_'+row_ID] = { numeric: true };
-			if (element == 'description') requiredPkgProduct[element+'_'+row_ID] = { minlength: 2 };
+			if (element == 'description' && $('#ppd_'+row_ID).val() == 'product') requiredPkgProduct[element+'_'+row_ID] = { minlength: 2 };
 			if (element == 'weight') requiredPkgProduct[element+'_'+row_ID] = { numeric: true };
 			}
 		});
