@@ -476,6 +476,9 @@ sub get_allowed_ext_cust_num_sql :Private
 sub review_order :Private
 	{
 	my $self = shift;
+	my $c = $self->context;
+
+	$c->req->params->{do} = undef;
 	$self->setup_one_page;
 	}
 

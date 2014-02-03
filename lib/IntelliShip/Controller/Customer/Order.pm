@@ -88,6 +88,13 @@ sub setup_address :Private
 	my $Customer = $self->customer;
 	#($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
+	my $do = $c->req->param('do') || '';
+	if (!$do or $do eq 'address')
+		{
+		$c->stash->{populate} = 'address';
+		$self->populate_order;
+		}
+
 	$c->stash->{fromCustomer} = $Customer;
 	$c->stash->{fromCustomerAddress} = $Customer->address;
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
@@ -116,13 +123,6 @@ sub setup_address :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('address');
 
-	my $do = $c->req->param('do') || '';
-	if ($do eq 'address')
-		{
-		$c->stash->{populate} = 'address';
-		$self->populate_order;
-		}
-
 	$c->stash->{tocountry} = "US";
 	$c->stash(template => "templates/customer/order-address.tt");
 	}
@@ -136,6 +136,13 @@ sub setup_shipment_information :Private
 
 	my $CO = $self->get_order;
 	my $Customer = $self->customer;
+
+	my $do = $c->req->param('do') || '';
+	if (!$do or $do eq 'shipment')
+		{
+		$c->stash->{populate} = 'shipment';
+		$self->populate_order;
+		}
 
 	if ($Customer->address->country ne $CO->to_address->country)
 		{
@@ -157,9 +164,6 @@ sub setup_shipment_information :Private
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	$c->stash->{populate} = 'shipment';
-	$self->populate_order;
-
 	$c->stash(template => "templates/customer/order-shipment.tt");
 	}
 
@@ -172,10 +176,14 @@ sub setup_carrier_service :Private
 	my $Contact = $self->contact;
 
 	$c->stash->{review_order} = 1;
-	$c->stash->{populate} = 'summary';
 	$c->stash->{customer} = $Contact;
 
-	$self->populate_order;
+	my $do = $c->req->param('do') || '';
+	if (!$do or $do eq 'summary')
+		{
+		$c->stash->{populate} = 'summary';
+		$self->populate_order;
+		}
 
 	#$c->stash->{deliverymethod} = '0';
 	#$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
@@ -773,8 +781,10 @@ sub setup_quickship_page :Private
 	my $self = shift;
 	my $c = $self->context;
 
-	$c->stash->{quickship} = 1;
 	$c->stash->{title} = 'Quick Ship Order';
+	$c->req->params->{do} = undef;
+	$c->stash->{quickship} = 1;
+
 	$self->setup_one_page;
 	}
 

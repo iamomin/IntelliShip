@@ -54,7 +54,7 @@ sub load_order :Private
 	my $params = $c->req->params;
 
 	return unless $self->is_valid_detail;
-	$c->log->debug("Co is" . $c->stash->{CO}->coid);
+
 	$self->setup_quickship_page;
 	}
 
