@@ -46,6 +46,8 @@ $(document).ready(function(){
 			};
 
 	$("#frm_ship_packages").submit(function() {
+		showMessage("Under construction!","Developer at work");
+		return false;
 		return validateForm(requireHash);
 		});
 	});
