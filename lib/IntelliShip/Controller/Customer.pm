@@ -913,6 +913,8 @@ sub set_navigation_rules
 		$navRules->{DISPLAY_SHIP_PACKAGE} = !$Contact->get_contact_data_value('disallowshippackages') || 0;
 		}
 
+	$navRules->{DISPLAY_SHIP_PACKAGE} = ($Customer->username eq 'sprint' and $Contact->username eq 'user');
+
 	unless ($Contact->is_restricted)
 		{
 		$navRules->{DISPLAY_QUICKSHIP} = ($Customer->quickship and !$Contact->get_contact_data_value('myorders'));

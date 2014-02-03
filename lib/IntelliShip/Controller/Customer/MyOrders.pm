@@ -476,7 +476,7 @@ sub get_allowed_ext_cust_num_sql :Private
 sub review_order :Private
 	{
 	my $self = shift;
-	$self->populate_order;
+	$self->setup_one_page;
 	}
 
 =encoding utf8
