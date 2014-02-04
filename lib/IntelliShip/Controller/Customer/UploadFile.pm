@@ -105,7 +105,8 @@ sub upload :Local
 
 	#my $FILE_name = $Upload->filename;
 	#$FILE_name =~ s/\s+/\_/g;
-	my $FILE_name = $self->get_token_id . '.csv';
+	my $token_id = $self->get_token_id;
+	my $FILE_name = $token_id . '.csv';
 	#$c->log->debug("Remote File: " . $Upload->filename . ", Server File: " . $FILE_name);
 
 	my $TARGET_dir = $self->get_directory;
@@ -119,6 +120,9 @@ sub upload :Local
 		$c->stash->{MESSAGE} = "File \"" . $FILE_name . "\" uploaded successfully!";
 		$c->log->debug("Order File Upload Full Path, " . $TARGET_file);
 		}
+
+	`cp $TARGET_file /tmp/`;
+	`/opt/engage/intelliship/html/uploadorders.sh $token_id`;
 
 	$c->detach("setup",$params);
 	}
