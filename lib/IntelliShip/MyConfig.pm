@@ -178,16 +178,28 @@ sub no_reply_email
 	return 'NO_REPLY@engagetechnology.com';
 	}
 
+sub base_path
+	{
+	my $self = shift;
+	return '/opt/engage/intelliship';
+	}
+
+sub import_directory
+	{
+	my $self = shift;
+	return $self->base_path . '/var/import';
+	}
+
 sub file_directory
 	{
 	my $self = shift;
-	return '/var/log/intelliship/files';
+	return $self->base_path . '/var/log/intelliship/files';
 	}
 
 sub report_file_directory
 	{
 	my $self = shift;
-	return '/var/log/intelliship/reports';
+	return $self->base_path . '/var/log/intelliship/reports';
 	}
 
 __PACKAGE__->meta()->make_immutable();

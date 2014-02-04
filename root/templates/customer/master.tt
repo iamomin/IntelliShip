@@ -124,12 +124,14 @@
 					[% END %]
 					<li><a id="mnu_report" href="/customer/report" class="reports"><div>REPORTS</div></a></li>
 				</ul>
+				<!--
 				<table id="search-bar">
 					<tr>
 					<td><select id="searchtype" name="searchtype"><option>Search Type</select></td>
 					<td><input type="text"id="searchterm" name="searchterm" placeholder="Search..." size="12"/><input type="submit" value="Search" id="submit" src="search.png"/></td>
 					</tr>
 				</table>
+				-->
 			</form>
 			</div>
 		</div> <!-- end menu -->

@@ -59,10 +59,10 @@
 				<tr>
 					<td><label class="float_right">City:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %]' /> </td>
 				</tr>
-                                <tr>
+				<tr>
 					<td><label class="float_right">State:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.state %]'/></td>
 				</tr>
-                                <tr>
+				<tr>
 					<td><label class="float_right">Zipcode:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.zip %]'/></td>
 				</tr>
 				<tr>
@@ -102,28 +102,28 @@
 					<input type="text" name="tocity" id="tocity" size="6" value="[% toAddress.city %]"/>
 					</td>
 				</tr>
-                                <tr>
-                                    <td>
-                                        <label class="float_right" for="tostate">State</label>
-                                    </td>
-                                    <td>
-                                        <label>
+				<tr>
+					<td>
+						<label class="float_right" for="tostate">State</label>
+					</td>
+					<td>
+						<label>
 					<select name="tostate" id="tostate">
 						[% FOREACH item IN statelist_loop %]
 							<option value="[% item.value %]" [% IF item.value == toAddress.state %] selected [% END %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <label class="float_right" for="tozip">Zipcode:</label>
-                                    </td>
-                                    <td>
-                                        <input type="text" name="tozip" id="tozip" style="width: 70px;" value="[% toAddress.zip %]"/>
-                                    </td>
-                                </tr>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label class="float_right" for="tozip">Zipcode:</label>
+					</td>
+					<td>
+						<input type="text" name="tozip" id="tozip" style="width: 70px;" value="[% toAddress.zip %]"/>
+					</td>
+				</tr>
 				<tr>
 					<td><label for="tocountry" class="float_right">Country:</label></td><td>
 					<label>

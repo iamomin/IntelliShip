@@ -791,6 +791,21 @@ sub get_select_list
 			{ name => 'Graphic Text', value => '2' },
 			];
 		}
+	elsif ($list_name eq 'FREIGHT_CHARGE_EDITABILITY_LIST')
+		{
+		$list = [
+			{ name => 'None' , value => '0' },
+			{ name => 'Always', value => '1' },
+			{ name => 'Only w/o Existing Rates', value => '2' },
+			];
+		}
+	elsif ($list_name eq 'LABEL_STUB_LIST')
+		{
+		$list = [
+			{ name => 'None' , value => '0' },
+			{ name => 'Generic', value => 'stub_generic.stream' },
+			];
+		}
 	elsif ($list_name eq 'QUICKSHIP_DROPLIST')
 		{
 		$list = [

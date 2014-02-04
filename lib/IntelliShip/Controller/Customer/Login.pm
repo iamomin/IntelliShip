@@ -57,7 +57,7 @@ sub index :Path :Args(0)
 
 		$c->res->cookies->{'TokenID'} = { value => $TokenID, expires => '+3600' };
 
-		$c->stash(template => "templates/customer/dashboard.tt");
+		return $c->response->redirect($c->uri_for('/customer/dashboard'));
 		}
 	else
 		{

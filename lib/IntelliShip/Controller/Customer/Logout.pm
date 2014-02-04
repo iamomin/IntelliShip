@@ -35,7 +35,7 @@ sub index :Path :Args(0) {
 		$c->response->cookies->{'TokenID'} = { value => '', expires => '-20M' };
 		}
 
-	$c->stash(template => "templates/customer/login.tt");
+	return $c->response->redirect($c->uri_for('/customer/login'));
 }
 
 

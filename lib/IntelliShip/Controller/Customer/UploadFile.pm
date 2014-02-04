@@ -103,8 +103,10 @@ sub upload :Local
 		return;
 		}
 
-	my $FILE_name = $Upload->filename;
-	$FILE_name =~ s/\s+/\_/g;
+	#my $FILE_name = $Upload->filename;
+	#$FILE_name =~ s/\s+/\_/g;
+	my $FILE_name = $self->get_token_id . '.csv';
+	#$c->log->debug("Remote File: " . $Upload->filename . ", Server File: " . $FILE_name);
 
 	my $TARGET_dir = $self->get_directory;
 
@@ -118,7 +120,7 @@ sub upload :Local
 		$c->log->debug("Order File Upload Full Path, " . $TARGET_file);
 		}
 
-		$c->detach("setup",$params);
+	$c->detach("setup",$params);
 	}
 
 sub get_directory :Private
@@ -126,9 +128,10 @@ sub get_directory :Private
 	my $self = shift;
 	my $params = $self->context->req->params;
 
-	my $TARGET_dir = IntelliShip::MyConfig->file_directory;
+	my $TARGET_dir = IntelliShip::MyConfig->import_directory;
 	$TARGET_dir .= '/' . 'co' if $params->{type} eq 'ORDER';
 	$TARGET_dir .= '/' . 'productsku' if $params->{type} eq 'PRODUCTSKU';
+	$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
