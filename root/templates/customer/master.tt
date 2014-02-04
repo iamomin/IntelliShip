@@ -98,7 +98,9 @@
 				<input type="hidden" name="action">
 				<input type="hidden" name="do">
 				  <ul>
+					[% IF DISPLAY_DASHBOARD %]
 					<li><a id="mnu_dashboard" href="/customer/dashboard" class="dashboard"><div>DASHBOARD</div></a></li>
+					[% END %]
 					[% IF DISPLAY_MYORDERS %]
 					<li><a id="mnu_myorders" href="/customer/myorders" class="mo"><div>MY ORDERS</div></a></li>
 					[% END %]

@@ -478,6 +478,7 @@ sub review_order :Private
 	my $self = shift;
 	my $c = $self->context;
 
+	$c->stash->{parent} = 'myorders';
 	$c->req->params->{do} = undef;
 	$self->setup_one_page;
 	}

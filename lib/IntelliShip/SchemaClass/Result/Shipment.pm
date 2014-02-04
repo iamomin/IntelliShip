@@ -834,6 +834,65 @@ __PACKAGE__->has_many(
 		'shipmentid'
 	);
 
+__PACKAGE__->has_many(
+	packprodata =>
+	"IntelliShip::SchemaClass::Result::Packprodata",
+	{ "foreign.ownerid" => "self.shipmentid" }
+	);
+
+# OwnerTypeID:
+# 1000 = order (CO)
+# 2000 = shipment
+# 3000 = product (for packages)
+
+# DataTypeId
+# 1000 = Package
+# 2000 = Product
+
+sub packages
+	{
+	my $self = shift;
+	my $WHERE = { ownertypeid => '2000', datatypeid => '1000' };
+	return $self->packprodata($WHERE);
+	}
+
+sub shipment_products
+	{
+	my $self = shift;
+	my $WHERE = { ownertypeid => '2000', datatypeid => '2000' };
+	return $self->packprodata($WHERE);
+	}
+
+sub package_details
+	{
+	my $self = shift;
+
+	my @packageArr;
+
+	# Step 1: Find Packages belog to Order
+	my @packages = $self->packages;
+	foreach my $Package (@packages)
+		{
+		push (@packageArr, $Package);
+
+		# Step 2: Find Product belog to Package
+		my @products = $Package->products;
+		foreach my $Product (@products)
+			{
+			push (@packageArr, $Product);
+			}
+		}
+
+	# Step 3: Find product belog to Order
+	my @co_products = $self->co_products;
+	foreach my $Product (@co_products)
+		{
+		push (@packageArr, $Product);
+		}
+
+	return @packageArr;
+	}
+
 sub get_assessorial_charges
 	{
 	my $self = shift;

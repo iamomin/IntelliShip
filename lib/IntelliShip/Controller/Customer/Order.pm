@@ -665,6 +665,18 @@ sub void_shipment :Private
 
 	my $CO = $self->get_order;
 	$CO->update({ statusid => '200' });
+
+	my $parent = $c->req->params->{'parent'} || '';
+	if (length $parent)
+		{
+		$c->response->redirect($c->uri_for('/customer/$parent'));
+		}
+	else
+		{
+		$self->clear_CO_details;
+		$c->req->params->{do} = undef;
+		$c->detach($c->action,$c->req->params);
+		}
 	}
 
 sub get_order :Private

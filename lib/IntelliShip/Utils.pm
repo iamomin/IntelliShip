@@ -443,6 +443,7 @@ my $CUSTOMER_CONTACT_RULES = {
 	93 => { name => 'Live Product TAB' , value => 'liveproduct' , type => 'SELECT', datatypeid => 2 },
 	94 => { name => 'Freight Charge Editablity' , value => 'fceditability' , type => 'SELECT', datatypeid => 1 },
 	95 => { name => 'Label Stub' , value => 'labelstub' , type => 'SELECT', datatypeid => 2 },
+	96 => { name => 'Dashboard' , value => 'dashboard' , type => 'CHECKBOX', datatypeid => 1 },
 	};
 
 sub customer_contact_rules

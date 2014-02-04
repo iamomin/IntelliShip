@@ -35,7 +35,8 @@ sub index :Path :Args(0)
 		$self->token($Token);
 
 		$c->log->debug('redirect to customer dashboard');
-		return $c->response->redirect($c->uri_for('/customer/dashboard'));
+		#return $c->response->redirect($c->uri_for('/customer/dashboard'));
+		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
 		}
 
 	$c->log->debug("********* LOG IN CUSTOMER USER *********");
@@ -57,7 +58,8 @@ sub index :Path :Args(0)
 
 		$c->res->cookies->{'TokenID'} = { value => $TokenID, expires => '+3600' };
 
-		return $c->response->redirect($c->uri_for('/customer/dashboard'));
+		#return $c->response->redirect($c->uri_for('/customer/dashboard'));
+		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
 		}
 	else
 		{

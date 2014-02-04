@@ -7,6 +7,9 @@
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="do" name="do" value="save"/>
+	[% IF parent %]
+	<input type="hidden" name="parent" value="[% parent %]"/>
+	[% END %]
 
 	<h2>Address Information</h2>
 	[% ADDRESS_SECTION %]
