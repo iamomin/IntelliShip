@@ -669,7 +669,7 @@ sub void_shipment :Private
 	my $parent = $c->req->params->{'parent'} || '';
 	if (length $parent)
 		{
-		$c->response->redirect($c->uri_for('/customer/$parent'));
+		$c->response->redirect($c->uri_for('/customer/' . $parent));
 		}
 	else
 		{
