@@ -138,7 +138,7 @@
 
 	<h3>[% IF customerid %]Edit[% ELSE %]Add New[% END %] Customer</h3>
 
-	<form id="frm_setup_customer" method="post" action="/customer/settings/company/setup">
+	<form id="frm_setup_customer" method="post" action="/customer/settings/company/configure">
 		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
 		<input type="hidden" id="do" name="do" value="configure"/>
 

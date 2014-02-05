@@ -601,56 +601,30 @@ $(document).ready(function(){
 
 		<table class="center_app">
 		<tr>
-			<td colspan="2"><b>Contact Details</b></td>
-		</tr>
-		<tr>
 			<td><label class="float_right" for="firstnamedisplay">First Name:</label></td>
 			<td id="firstnamedisplay">[% contactInfo.firstname %]</td>
+
+			<td><label class="float_right" for="address1">Shipping Address1:</label></td>
+			<td><input type="text" name="contact_address1" id="contact_address1" value="[% contactAddress.address1 %]" class="broad_text"></td>		
 		</tr>
 		<tr>
 			<td><label class="float_right" for="lastname">Last Name:</label></td>
 			<td id="lastnamedisplay">[% contactInfo.lastname %]</td>
+
+			<td><label class="float_right" for="address2">Shipping Address2:</label></td>
+			<td><input type="text" name="contact_address2" id="contact_address2" value="[% contactAddress.address2 %]" class="broad_text"></td>		
 		</tr>
 		<tr>
 			<td><label class="float_right" for="department">Department:</label></td>
 			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]"></td>
+			
+			<td><label class="float_right" for="city">Shipping City:</label></td>
+			<td><input type="text" name="contact_city" id="contact_city" value="[% contactAddress.city %]" class="broad_text"></td>		
 		</tr>
 		<tr>
 			<td><label class="float_right" for="phonemobile">Mobile Phone:</label></td>
 			<td><input type="text" name="phonemobile" id="phonemobile" value="[% contactInfo.phonemobile %]" class="broad_text"></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="phonebusiness">Business Phone:</label></td>
-			<td><input type="text" name="phonebusiness" id="phonebusiness" value="[% contactInfo.phonebusiness %]" class="broad_text"></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="phonehome">Home Phone:</label></td>
-			<td><input type="text" class="broad_text" name="phonehome" id="phonehome" value="[% contactInfo.phonehome %]" ></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="fax">Fax:</label></td>
-			<td><input type="text" name="fax" id="fax" value="[% contactInfo.fax %]" class="broad_text"></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="email">E-mail:</label></td>
-			<td><input type="text" name="email" id="email" value="[% contactInfo.email %]" class="broad_text"></td>
-		</tr>
-		<tr>
-			<td colspan="2"><b>Address Details</b></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="address1">Shipping Address1:</label></td>
-			<td><input type="text" name="contact_address1" id="contact_address1" value="[% contactAddress.address1 %]" class="broad_text"></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="address2">Shipping Address2:</label></td>
-			<td><input type="text" name="contact_address2" id="contact_address2" value="[% contactAddress.address2 %]" class="broad_text"></td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="city">Shipping City:</label></td>
-			<td><input type="text" name="contact_city" id="contact_city" value="[% contactAddress.city %]" class="broad_text"></td>
-		</tr>
-		<tr>
+			
 			<td><label class="float_right" for="state">Shipping State:</label></td>
 			<td>
 			<label>
@@ -660,13 +634,19 @@ $(document).ready(function(){
 					[% END %]
 				</select>
 			</label>
-			</td>
+			</td>		
 		</tr>
 		<tr>
+			<td><label class="float_right" for="phonebusiness">Business Phone:</label></td>
+			<td><input type="text" name="phonebusiness" id="phonebusiness" value="[% contactInfo.phonebusiness %]" class="broad_text"></td>
+			
 			<td><label class="float_right" for="zip">Shipping Zip:</label></td>
-			<td><input type="text" name="contact_zip" id="contact_zip" value="[% contactAddress.zip %]" class="broad_text"></td>
+			<td><input type="text" name="contact_zip" id="contact_zip" value="[% contactAddress.zip %]" class="broad_text"></td>		
 		</tr>
 		<tr>
+			<td><label class="float_right" for="phonehome">Home Phone:</label></td>
+			<td><input type="text" class="broad_text" name="phonehome" id="phonehome" value="[% contactInfo.phonehome %]" ></td>
+			
 			<td><label for="country" class="float_right">Country:</label></td>
 			<td>
 			<label>
@@ -679,27 +659,95 @@ $(document).ready(function(){
 			</td>
 		</tr>
 		<tr>
+			<td><label class="float_right" for="fax">Fax:</label></td>
+			<td><input type="text" name="fax" id="fax" value="[% contactInfo.fax %]" class="broad_text"></td>
+			
 			<td><label class="float_right" for="location">Location:</label></td>
 			<td>[% location %]</td>
 		</tr>
 		<tr>
+			<td><label class="float_right" for="email">E-mail:</label></td>
+			<td><input type="text" name="email" id="email" value="[% contactInfo.email %]" class="broad_text"></td>
+			<td></td>
+			<td></td>
+		</tr>
+		
+		<tr>			
 			<td><label class="float_right" for="ownerid">OwnerID:</label></td>
 			<td>[% ownerid %]</td>
+			
+			<td><label class="float_right" for="sourcedate">Source Date:</label></td>
+			<td>[% sourcedate %]</td>			
 		</tr>
 		<tr>
 			<td><label class="float_right" for="origdate">Orig Date:</label></td>
 			<td>[% origdate %]</td>
-		</tr>
-		<tr>
-			<td><label class="float_right" for="sourcedate">Source Date:</label></td>
-			<td>[% sourcedate %]</td>
-		</tr>
-		<tr>
+			
 			<td><label class="float_right" for="disabledate">Disable Date:</label></td>
 			<td>[% disabledate %]</td>
 		</tr>
 		</table>
 
+		[% IF DISPLAY_RULE_SETTINGS %]
+		<h2>RULES</h2>
+		<table class="center_app css3-checkboxes">
+
+			[% count=0 %]
+			<tr>
+				[% FOREACH item IN contactsetting_loop %]
+					[%IF item.type == 'CHECKBOX' %]
+					[% count=count+1 %]
+						[% IF count == 5 %]
+							</tr><tr>
+							[% count = 1 %]
+						[% END %]
+					<td id="td_[% item.value %]">
+						<label>
+							<input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked ? "CHECKED" : '' %]/>
+							<span>
+								<label for = "[% item.value %]">[% item.name %]</label>
+							</span>
+						</label>
+					</td>
+					[% END %]
+				[% END %]
+			</tr>
+		</table>
+
+		<h2>DEFUALT SETTINGS</h2>
+		<table class="center_app">
+			
+			[% count=1 %]
+			<tr>			
+				[% FOREACH item IN contactsetting_loop %]																
+					[%IF item.type == 'INPUT' %]
+						[% count=count+1 %]
+						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
+					    <td><input type="text" class="broad_text" name="[% item.value %]" id="[% item.value %]" value="[% item.text %]"></td>
+					[% ELSE %]
+						[% IF item.type == 'SELECT'%]
+						[% count=count+1 %]
+						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
+						<td>
+							<label>
+							<select name="[% item.value %]" id="[% item.value %]">
+							[% FOREACH list_item IN item.loop %]
+								<option value="[% list_item.value %]" [% IF list_item.value == item.selected %] selected [% END %]>[% list_item.name %]</option>
+							[% END %]
+							</select>
+							</label>
+						</td>
+						[% END %]
+					[% END %]
+					[% IF count == 3 %]
+						</tr><tr>
+						[% count = 1 %]
+					[% END %]
+				[% END %]
+			</tr>
+		</table>			
+
+		[% END %]
 		<center>
 			<input type="button" class="green" id="update_contact" value="Update Contact" onclick="updateContact();"/>
 			&nbsp;&nbsp;
