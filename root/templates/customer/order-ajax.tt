@@ -107,6 +107,7 @@
 [% END %]
 
 [% IF PKG_DETAIL_ROW %]
+	[% IF one_page %]
 	<li id="new_[% DETAIL_TYPE %]_[% ROW_COUNT %]" class="ui-state-[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]">
 		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/> 
 		<table>
@@ -129,6 +130,21 @@
 		</tr>
 		</table>
 	</li>
+	[% ELSE %]
+		<tr>
+			<td><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;" value="[% quantity %]"/></td>
+			<td><input  type="text" class="broad_text" name="description_1" id="description_1" style="width: 150px;" value="[% description %]"/></td>
+			<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == unittype %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+			<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;" value="[% weight %]"/></td>
+			<td><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" style="width: 100px;" value="[% dimweight %]"/></td>
+			<td><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" style="width: 50px;" value="[% dimlength %]"/></td>
+			<td><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" style="width: 50px;" value="[% dimwidth %]"/></td>
+			<td><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" style="width: 50px;" value="[% dimheight %]"/></td>
+			<td><input  type="text" name="density_1" id="density_1" value="0.00" style="width: 100px;" value="[% density %]"/></td>
+			<td><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00" style="width: 100px; value="[% decval %]""/></td>
+		</tr>
+	[% END %]
+
 [% END %]
 
 [% IF REVIEW_PKG_DETAIL_ROW %]

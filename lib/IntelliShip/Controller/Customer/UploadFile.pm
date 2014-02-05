@@ -107,22 +107,43 @@ sub upload :Local
 	#$FILE_name =~ s/\s+/\_/g;
 	my $token_id = $self->get_token_id;
 	my $FILE_name = $token_id . '.csv';
+
 	#$c->log->debug("Remote File: " . $Upload->filename . ", Server File: " . $FILE_name);
 
-	my $TARGET_dir = $self->get_directory;
+	my $TMP_file = '/tmp/' . $token_id . '.csv';
 
-	return unless $TARGET_dir;
-
-	my $TARGET_file = $TARGET_dir . '/' . $FILE_name;
-
-	if( $Upload->link_to($TARGET_file) or $Upload->copy_to($TARGET_file) ) 
+	if( $Upload->link_to($TMP_file) or $Upload->copy_to($TMP_file) ) 
 		{
-		$c->stash->{MESSAGE} = "File \"" . $FILE_name . "\" uploaded successfully!";
-		$c->log->debug("Order File Upload Full Path, " . $TARGET_file);
+		$c->stash->{MESSAGE} = "File '" . $Upload->filename . "' uploaded successfully!";
+		$c->log->debug("Order File Upload Path, " . $TMP_file);
 		}
 
-	`cp $TARGET_file /tmp/`;
-	`/opt/engage/intelliship/html/uploadorders.sh $token_id`;
+	my $TARGET_file = $self->get_directory . '/' . $FILE_name;
+	if (system "cp $TMP_file $TARGET_file")
+		{
+		$c->log->debug("... Unable to copy to destination " . $TARGET_file);
+		$c->log->debug("Error: " . $!);
+		$c->stash->{MESSAGE} = "File Copy Error: " . $!;
+		$c->detach("setup",$params);
+		}
+
+	if (system "/opt/engage/intelliship/html/uploadorders.sh $token_id")
+		{
+		$c->log->debug("Error: " . $!);
+		$c->stash->{MESSAGE} = "Upload Order Error: " . $!;
+		$c->detach("setup",$params);
+		}
+
+	$c->log->debug("... File converted successfully from CSV to TXT");
+
+	if (system "/opt/engage/intelliship/html/import_tab.pl")
+		{
+		$c->log->debug("Error: " . $!);
+		$c->stash->{MESSAGE} = "Import Tab Error: " . $!;
+		$c->detach("setup",$params);
+		}
+
+	$c->log->debug("... File imported successfully");
 
 	$c->detach("setup",$params);
 	}

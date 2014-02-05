@@ -135,10 +135,11 @@ sub setup_shipment_information :Private
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
 	my $CO = $self->get_order;
+	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
 	my $do = $c->req->param('do') || '';
-	if (!$do or $do eq 'shipment')
+	if (!$do or $do eq 'shipment' or $do eq 'step1')
 		{
 		$c->stash->{populate} = 'shipment';
 		$self->populate_order;
@@ -158,6 +159,9 @@ sub setup_shipment_information :Private
 		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 		}
+
+	$c->stash->{default_package_type} = $Contact->default_package_type;
+	$c->stash->{default_product_type} = $Contact->default_product_type;
 
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
@@ -179,7 +183,7 @@ sub setup_carrier_service :Private
 	$c->stash->{customer} = $Contact;
 
 	my $do = $c->req->param('do') || '';
-	if (!$do or $do eq 'summary')
+	if (!$do or $do eq 'summary' or $do eq 'step2')
 		{
 		$c->stash->{populate} = 'summary';
 		$self->populate_order;

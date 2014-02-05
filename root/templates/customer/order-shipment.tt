@@ -64,7 +64,7 @@
 [% END %]
 <div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
 
-<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" />
+<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 
 [% IF one_page %]
 	<table class="css3-radios css3-checkboxes">
@@ -121,7 +121,7 @@
 				<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
 				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_1" id="sku_1"/></td>
 				<td style="width: 11%"><input  type="text" class="broad_text" name="description_1" id="description_1" readonly/></td>
-				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
 				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
@@ -143,7 +143,7 @@
 				<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_2" id="quantity_2" value="1"/></td>
 				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_2" id="sku_2"/></td>
 				<td style="width: 11%"><input  type="text" class="broad_text" name="description_2" id="description_2" readonly/></td>
-				<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_product_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_2" id="weight_2"/></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2"/></td>
 				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_2" id="dimlength_2"/></td>
@@ -186,7 +186,7 @@
 			<tr>
 				<td><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;"/></td>
 				<td><input  type="text" class="broad_text" name="description_1" id="description_1" style="width: 150px;"/></td>
-				<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.name == 'Envelope' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 				<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;"/></td>
 				<td><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" style="width: 100px;"/></td>
 				<td><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" style="width: 50px;"/></td>
@@ -349,7 +349,7 @@
 
 	$("#frm_shipment").submit(function() {
 		if ($("#do").val() == 'address') return true;
-		update_package_product_sequence();
+		[% IF one_page %]update_package_product_sequence();[% END %]
 		return validateForm(requiredFieldHash);
 		});
 

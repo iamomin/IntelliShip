@@ -285,6 +285,20 @@ sub is_administrator
 	return ($self->get_contact_data_value('administrator') or $self->customer->administrator);
 	}
 
+sub default_package_type
+	{
+	my $self = shift;
+	my $type = shift;
+	$self->get_contact_data_value('defaultpackageunittype');
+	}
+
+sub default_product_type
+	{
+	my $self = shift;
+	my $type = shift;
+	$self->get_contact_data_value('defaultproductunittype');
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

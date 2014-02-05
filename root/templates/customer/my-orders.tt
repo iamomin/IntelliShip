@@ -121,7 +121,6 @@
 		}
 
 	function refreshMyOrders () {
-		$("#coids").prop('disabled','disabled');
 		$('#frm_my_ordres').submit();
 		}
 	[% END %]
@@ -135,7 +134,6 @@
 		setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
 
 		$("#records_per_page").change(function () {
-			$("#coids").prop('disabled','disabled');
 			$('#frm_my_ordres').submit();
 			});
 
@@ -143,6 +141,10 @@
 			var query_param = "view=" + $("#view").val() + "&coids=" + $("#coids").val();
 			send_ajax_request('myOrders', 'HTML', 'myorders', '', query_param);
 			});
+
+		$('#frm_my_ordres').submit(function() {
+			$("#coids").prop('disabled','disabled');
+			})
 		});
 
 	</script>
