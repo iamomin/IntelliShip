@@ -198,15 +198,15 @@ sub configure :Local
 
 	if ($params->{'cust_quickship'} && !$params->{'cust_defaulttoquickship'} )
 		{
-		$Customer->{'quickship'} = $params->{'cust_quickship'} ? '1' : '0';
+		$Customer->quickship($params->{'cust_quickship'} ? '1' : '0');
 		}
 	elsif ( $params->{'cust_quickship'} && $params->{'cust_defaulttoquickship'} )
 		{
-		$Customer->{'quickship'} ='2';
+		$Customer->quickship('2');
 		}
 	else
 		{
-		$Customer->{'quickship'} ='0';
+		$Customer->quickship('0');
 		}
 
 	my $msg;
@@ -302,11 +302,12 @@ sub configure :Local
 			}
 		}
 
-	my $CUSTOMER_RULES = IntelliShip::Utils->customer_contact_rules;
+	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');	
 
-	foreach my $key (sort keys %$CUSTOMER_RULES)
+	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
+
+	foreach my $ruleHash (@$CUSTOMER_RULES)
 		{
-		my $ruleHash = $CUSTOMER_RULES->{$key};
 		#$c->log->debug("___FIELD : cust_$ruleHash->{value} = " . $params->{'cust_'.$ruleHash->{value}});
 		if($params->{'cust_'.$ruleHash->{value}})
 			{
@@ -403,7 +404,7 @@ sub configure :Local
 	$Customer->update;
 
 	$c->stash->{MESSAGE} = $msg;
-	$c->detach("company",$params);
+	$c->detach("index",$params);
 
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
 	$c->stash->{template} = "templates/customer/settings-company.tt";
@@ -490,13 +491,12 @@ sub get_company_setting_list :Private
 	my $Customer = shift;
 	my $c = $self->context;
 
-	my $CUSTOMER_RULES = IntelliShip::Utils->customer_contact_rules;
+	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
+	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
 	my $list = [];
-	foreach my $key (sort keys %$CUSTOMER_RULES)
+	foreach my $ruleHash (@$CUSTOMER_RULES)
 		{
-		my $ruleHash = $CUSTOMER_RULES->{$key};
-
 		my $value = ($Customer and $Customer->get_contact_data_value($ruleHash->{value})) || '';
 
 		if($ruleHash->{type} eq 'CHECKBOX')

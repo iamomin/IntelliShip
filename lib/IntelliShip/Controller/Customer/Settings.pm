@@ -498,6 +498,8 @@ sub contactinformation :Local
 	my $Address = $Contact->address;
 	$c->stash->{contactid} = $params->{'contactid'};
 
+	$c->stash->{DISPLAY_RULE_SETTINGS} = 1 if $params->{'ajax'};
+
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
 	if ($params->{'do'} eq 'configure')
@@ -537,6 +539,34 @@ sub contactinformation :Local
 		$Contact->phonemobile($params->{'phonemobile'});
 		$Contact->phonebusiness($params->{'phonebusiness'});
 		$Contact->phonehome($params->{'phonehome'});
+
+	# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
+	$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
+	$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
+
+	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+
+	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
+
+	#INSERT NEW CONTACT SETTING RECORDS
+	foreach my $ruleHash (@$CONTACT_RULES)
+		{
+		$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
+		if($params->{$ruleHash->{value}})
+			{
+			my $customerContactData = {
+				ownertypeid	=> 2,
+				ownerid		=> $Contact->contactid,
+				datatypeid	=> $ruleHash->{datatypeid},
+				datatypename=> $ruleHash->{value},
+				value       => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
+				};
+
+			my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
+			$NewCCData->custcondataid($self->get_token_id);
+			$NewCCData->insert;
+			}
+		}
 		$Contact->update;
 
 		$c->stash->{MESSAGE} = 'Contact information updated successfully';
@@ -552,18 +582,30 @@ sub contactinformation :Local
 		}
 	else
 		{
-		$c->stash->{CONTACT_INFO} = 1;
-		$c->stash->{contactInfo} = $Contact;
-		$c->stash->{contactAddress} = $Address;
+		$c->stash->{CONTACT_INFO}			 = 1;
+		$c->stash->{contactInfo}			 = $Contact;
+		$c->stash->{contactAddress}			 = $Address;
+		$c->stash->{location}				 = $Contact->get_contact_data_value('location');
+		$c->stash->{ownerid}				 = $Contact->get_contact_data_value('ownerid');
+		$c->stash->{origdate}				 = $Contact->get_contact_data_value('origdate');
+		$c->stash->{sourcedate}				 = $Contact->get_contact_data_value('sourcedate');
+		$c->stash->{disabledate}			 = $Contact->get_contact_data_value('disabledate');
+				
+		$c->stash->{statelist_loop}			 = $self->get_select_list('US_STATES');
+		$c->stash->{countrylist_loop}		 = $self->get_select_list('COUNTRY');
 
-		$c->stash->{location}	= $Contact->get_contact_data_value('location');
-		$c->stash->{ownerid}	= $Contact->get_contact_data_value('ownerid');
-		$c->stash->{origdate}	= $Contact->get_contact_data_value('origdate');
-		$c->stash->{sourcedate}	= $Contact->get_contact_data_value('sourcedate');
-		$c->stash->{disabledate}= $Contact->get_contact_data_value('disabledate');
-
-		$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
-		$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
+		$c->stash->{capability_loop}         = $self->get_select_list('CAPABILITY_LIST');
+		$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
+		$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
+		$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
+		$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE');
+		$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
+		$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
+		$c->stash->{defaultpackinglist_loop} = $self->get_select_list('DEFAULT_PACKING_LIST');
+		$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
+		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
+		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');	
+		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);		
 
 		$c->stash(template => "templates/customer/settings.tt");
 		}
@@ -605,6 +647,50 @@ sub get_customer_contacts :Private
 	$c->stash->{CONTACT_MANAGEMENT} = 1;
 
 	$c->stash(template => "templates/customer/settings-company.tt");
+	}
+
+sub get_contact_setting_list :Private
+	{
+	my $self = shift;
+	my $Contact = shift;
+	my $c = $self->context;
+
+	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+	
+	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
+
+	#my $list = [];
+	foreach my $ruleHash (@$CONTACT_RULES)
+		{
+		my $value = ($Contact and $Contact->get_contact_data_value($ruleHash->{value})) || '';
+
+		if ($ruleHash->{type} eq 'CHECKBOX')
+			{
+			$ruleHash->{checked} = $value ;
+			}
+		elsif ($ruleHash->{type} eq 'SELECT')
+			{
+			$ruleHash->{selected} = $value;
+			if ($ruleHash->{value} eq 'defaultproductunittype' or $ruleHash->{value} eq 'defaultpackageunittype')
+				{
+				$ruleHash->{loop} = $c->stash->{'unittype_loop'};
+				}
+			elsif ($ruleHash->{value} eq 'returncapability' or $ruleHash->{value} eq 'dropshipcapability')
+				{
+				$ruleHash->{loop} = $c->stash->{'capability_loop'};
+				}
+			else
+				{
+				$ruleHash->{loop} = $c->stash->{$ruleHash->{value}.'_loop'};
+				}
+			}
+		else
+			{
+			$ruleHash->{text } = $value;
+			}
+		}
+
+	return $CONTACT_RULES;
 	}
 
 =encoding utf8
