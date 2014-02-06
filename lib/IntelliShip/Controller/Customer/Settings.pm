@@ -38,7 +38,8 @@ sub index :Path :Args(0) {
 	## Display settings
 	# Customer ID: 8ETKCWZXZC0UY (Motorola Solutions, Inc.)
 	push (@$settings, { name => 'Change Password', url => '/customer/settings/changepassword' }) if $Customer->customerid ne '8ETKCWZXZC0UY';
-	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
+	#push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
+	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'});
 	push (@$settings, { name => 'Company Management', url => '/customer/settings/company'}) if $Contact->is_superuser;
 	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Customer->login_level != 25 and $Contact->get_contact_data_value('skumanager');
 	push (@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
