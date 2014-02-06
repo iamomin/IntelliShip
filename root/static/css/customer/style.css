@@ -329,12 +329,12 @@ label {
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}
 #row table {min-height: 100px}
-#row div {display: table-cell;padding: 0 10px;vertical-align: top}
+#row div {display: table-cell; padding: 0 10px;vertical-align: top; height: 100%}
 #row div.add-summary {display: table-cell; padding-right: 10px;vertical-align: top; width: 68%}
 #row div.sd-summary {display: table-cell; padding-left: 10px;vertical-align: top; width: 32%}
-#row div.31 {display: table-cell;padding-right: 10px;vertical-align: top}
-#row div.32 {display: table-cell;padding: 0 10px;vertical-align: top}
-#row div.33 {display: table-cell;padding-left: 10px;vertical-align: top}
+#row div.ship-from {display: table-cell; padding-right: 10px;vertical-align: top}
+#row div.ship-to {display: table-cell; padding: 0 10px;vertical-align: top}
+#row div.ship-info {display: table-cell; padding-left: 10px;vertical-align: top}
 
 table { margin: 0; padding: 0; border-spacing: 0px; }
 table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
@@ -526,6 +526,10 @@ div.error {
 
 .bold_text {
     font-weight: bold;
+}
+
+.text_align_right {
+    text-align: right;
 }
 
 .default_text {    

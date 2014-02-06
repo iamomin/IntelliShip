@@ -44,7 +44,7 @@
 
 	<div id="equal">
 		<div id="row">
-			<div class="31" [% UNLESS one_page %]style="width: 40%"[% END %]>
+			<div class="ship-from" [% UNLESS one_page %] style="width: 40%"[% END %]>
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
@@ -84,7 +84,7 @@
 			</table>
 			</div>
 
-			<[% one_page ? 'div class="32"' : 'div class="33" style="width: 40%"' %]>
+			<[% one_page ? 'div class="ship-to"' : 'div class="33" style="width: 40%"' %]>
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
@@ -141,16 +141,23 @@
 				<tr>
 					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
+                                [% IF one_page %]
 				<tr>
 					<td><label for="tocustomernumber" class="float_right">Customer<br>Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
+                                [% ELSE %]
+                                <tr>
+					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
+				</tr>
+                                [% END %]
 				<tr>
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
 			</table>
 			</div>
 [% IF one_page %]
-			<div class="33">
+                        
+			<div class="ship-info">
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
@@ -168,18 +175,32 @@
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
-				<tr>
-					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-					<td class="css3-radios">
-						[% FOREACH item IN deliverymethod_loop %]
+                                [% count = 0%]
+                                [% FOREACH item IN deliverymethod_loop %]				
+                                        [% IF count == 0%]
+                                        <tr>
+					<td rowspan="3"><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+                                        <td class="css3-radios">
+						<div id="third-party-details"></div>    
 						<label>
 						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
 						<span><label for="[% item.value %]">[% item.name %]</label></span>
-						</label><br>
-						[% END %]
-						<div id="third-party-details"></div>
+						</label>
 					</td>
-				</tr>
+                                        </tr>
+                                        [% ELSE %]
+                                        <tr>                                        
+                                        <td class="css3-radios">
+						
+						<label>
+						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
+						<span><label for="[% item.value %]">[% item.name %]</label></span>
+						</label>
+					</td>
+                                        </tr>                                        
+                                        [% END %]
+                                        [% count = count + 1 %]
+                                [% END %]
 				[% IF PONUMBER %]
 				<tr>
 					<td><label for="ponumber" class="float_right">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
@@ -204,7 +225,7 @@
 					<td><label for="custref3" class="float_right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
 				</tr>
 				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				<tr style="height: 33px"><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF AMDELIVERY %]
 				<tr>
@@ -212,7 +233,7 @@
 					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
 				</tr>
 				[% ELSE %]
-				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+				
 				[% END %]
 			</table>
 			</div>

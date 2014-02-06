@@ -30,8 +30,8 @@
 			<table class="summary-app">
 				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
-					<th>SHIP TO </th><td>[% toAddress.addressname %]</td>
-					<th>SHIP FROM </th><td>[% customer.customername %]</td>
+					<td class="float_right bold_text">SHIP TO </th><td>[% toAddress.addressname %]</td>
+					<td class="float_right bold_text">SHIP FROM </th><td>[% customer.customername %]</td>
 				</tr>
 				<tr>
 					<td>&nbsp;</td><td>[% toAddress.address1 %][% IF toAddress.address2 %], [% toAddress.address2 %][% END %]</td>
@@ -60,23 +60,23 @@
 			<table class="summary-app">
 				<caption>SHIPMENT DETAIL SUMMARY:<div class="float_right"><a id="edit_shipment" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
-					<th>Due Date: </th>
+					<td class="text_align_right bold_text" style="width: 50%">Due Date: </td>
 					<td>[% dateneeded %]</td>
 				</tr>
 				<tr>
-					<th>#Packages: </th>
+					<td class="text_align_right bold_text" style="width: 50%">#Packages: </td>
 					<td>[% total_packages %]</td>
 				</tr>
 				<tr>
-					<th>Total Weight: </th>
+					<td class="text_align_right bold_text" style="width: 50%">Total Weight: </td>
 					<td>[% total_weight ? total_weight : '0.00' %]</td>
 				</tr>
 				<tr>
-					<th>Declared Value: </th>
+					<td class="text_align_right bold_text" style="width: 50%">Declared Value: </td>
 					<td>[% insurance ? insurance : '0.00' %]</td>
 				</tr>
 				<tr>
-					<th>International: </th>
+					<td class="text_align_right bold_text" style="width: 50%">International: </td>
 					<td>[% international ? international : '0.00' %]</td>
 				</tr>
 				<tr>
