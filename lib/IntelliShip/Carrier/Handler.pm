@@ -7,6 +7,7 @@ use IntelliShip::Carrier::Constants;
 
 BEGIN {
 	has 'CO' => ( is => 'rw' );
+	has 'SHIPMENT' => ( is => 'rw' );
 	has 'token' => ( is => 'rw' );
 	has 'context' => ( is => 'rw' );
 	has 'carrier' => ( is => 'rw' );
@@ -138,6 +139,7 @@ sub process_request
 	my $Driver = $DriverModule->new;
 	$Driver->DB_ref($myDBI);
 	$Driver->CO($self->CO);
+	$Driver->SHIPMENT($self->SHIPMENT);
 	$Driver->customerservice($self->customerservice);
 	$Driver->service($self->service);
 	$Driver->context($self->context);

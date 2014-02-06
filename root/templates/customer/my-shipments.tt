@@ -57,7 +57,7 @@
 		</tr>
 	</table>
 
-	<b>X Shipments Selected</b>
+	<b><table><tr><td><span id="count">0</span></td><td>Shipments Selected</td></tr></table></b>
 
 	<table class="batch-option css3-radios">
 		<tr>
@@ -76,7 +76,7 @@
 	[% END %]
 		<table class="css3-checkboxes">
 			<tr>
-				<th><label><input type="checkbox"/><span></span></label></th>
+				<th><label><input type="checkbox" id="checkAll" name="selectAll"/><span></span></label></th>
 				<th>STATUS</th>
 				<th>TRACKING#</th>
 				<th>ORDER#</th>
@@ -102,7 +102,7 @@
 				<td>[% item.duedate %]</td>
 				<td>[% item.carrier %]</td>
 				<td>[% item.mode %]</td>
-				<td><a href="#" class="track">TRACK</a>&nbsp;&nbsp;<a href="#" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="#" class="void">VOID</a></td>
+				<td><a href="#" class="track" name="track">TRACK</a>&nbsp;&nbsp;<a href="#" class="reprint" name = "reprint">REPRINT</a>&nbsp;&nbsp;<a href="#" class="void" name="void">VOID</a></td>
 			</tr>
 			[% END %]
 			[% IF myshipment_list_count == 0 %]
@@ -120,6 +120,22 @@
 	$("#datefrom").datepicker({ maxDate: '0d' });
 	$("#dateto").datepicker({ maxDate: '2w' });
 
+	[% UNLESS ajax %]
+	$(document).on("click","a[name='track']", function (e) {
+		var query_param = "&row_date=" + $(this).closest('tr').children('td:eq(2)').text() + "&row_name=" + "track";
+		send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+		});
+
+	$(document).on("click","a[name='reprint']", function (e) {
+		var query_param = "&row_date=" + $(this).closest('tr').children('td:eq(2)').text() + "&row_name=" + "reprint";
+		send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+		});
+
+	$(document).on("click","a[name='void']", function (e) {
+		var query_param = "&row_date=" + $(this).closest('tr').children('td:eq(2)').text() + "&row_name=" + "void" + "&shipment_id=" + $(this).closest('tr').children('td:eq(0)').children('label').children('input').attr('id');
+		send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+		});
+
 	$(document).ready(function() {
 
 		if ($("#view_date").val() == 'today') {
@@ -128,6 +144,37 @@
 			}
 
 		$("#myshipment_count").text('[% myshipment_list_count %]');
+/*
+		master = function() {
+				if ($( '#checkall:checkbox' ).is(":checked"))
+					$('input:checkbox').prop('checked',true);
+				else
+					$('input:checkbox').prop('checked',false);
+			}
+			slave = function() {
+				var allSelected = true;
+				$( '.slave[type="checkbox"]' ).prop(function() {
+					if ($( this ).is(":not(:checked)")){
+						allSelected = false;
+						//return;
+					}
+				});
+				if (!allSelected) {
+					//$( '#checkall:checkbox' ).removeAttr('checked');
+					alert("REMOVE: \nFrom " + $( '#checkall:checkbox' ).prop('checked') );
+					$( '#checkall:checkbox' ).prop('checked',false);
+					alert("to " + $( '#checkall:checkbox' ).prop('checked') );
+
+				} else {
+					alert("ADD: \nFrom " + $( '#checkall:checkbox' ).prop('checked') );
+					$( '#checkall:checkbox' ).prop('checked',true);
+					alert("to " + $( '#checkall:checkbox' ).prop('checked') );
+				}
+			}
+*/
+		$("input[type=checkbox]").click(function () {
+			$("#count").html($("input[type=checkbox]:checked").length || '0');
+			});
 
 		$("#records_per_page").change(function() {
 			$("#shipmentids").prop('disabled','disabled');
@@ -152,6 +199,8 @@
 				}
 			});
 		});
+	[% END %]
+
 	</script>
 
 [% END %]

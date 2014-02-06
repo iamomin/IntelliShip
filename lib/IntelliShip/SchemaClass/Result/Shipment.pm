@@ -787,6 +787,12 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+__PACKAGE__->belongs_to(
+	CO => 
+		'IntelliShip::SchemaClass::Result::Co',
+		'coid'
+	);
+
 =head2 shipmentproducts
 
 Type: has_many

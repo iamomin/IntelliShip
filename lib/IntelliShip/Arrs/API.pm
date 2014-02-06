@@ -18,17 +18,19 @@ sub process_request
 	return $response;
 	}
 
-sub populate_cs_name
+sub get_carrier_service_name
 	{
 	my $self = shift;
-	my $request = $self->request;
+	my $CSID = shift;
 
 	my $http_request = {
-		action => 'GetCarrierServiceName',
-		csid => $request->{'csid'},
-		};
+		action	=>	'GetCarrierServiceName',
+		csid		=>	$CSID,
+	};
 
-	return $http_request;
+	my $response = $self->APIRequest($http_request);
+
+	return ($response->{'carriername'},$response->{'servicename'});
 	}
 
 sub get_dim_weight

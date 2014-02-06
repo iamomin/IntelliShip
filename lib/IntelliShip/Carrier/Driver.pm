@@ -9,6 +9,7 @@ BEGIN {
 	extends 'IntelliShip::Errors';
 
 	has 'CO' => ( is => 'rw' );
+	has 'SHIPMENT' => ( is => 'rw' );
 	has 'context' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
 	has 'DB_ref' => ( is => 'rw' );
@@ -44,6 +45,22 @@ sub get_token_id
 sub process_request
 	{
 	my $self = shift;
+	}
+
+sub void_shipment
+	{
+	my $self = shift;
+
+	$self->log("SET SHIPMENT STATUS TO VOID");
+
+	my $Shipment = $self->SHIPMENT;
+	my $CO = $Shipment->CO;
+
+	$Shipment->statusid(7); ## Void Shipment complete
+	$Shipment->update;
+
+	$CO->statusid(5); ## Void Shipment
+	$CO->update;
 	}
 
 sub TagPrinterString
