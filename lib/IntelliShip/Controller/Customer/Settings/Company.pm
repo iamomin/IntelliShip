@@ -72,7 +72,7 @@ sub setup :Local
 		$c->stash($Customer->{'_column_data'});
 		$c->stash->{customerAddress} = $Customer->address;
 		$c->stash->{customerAuxFormAddress} = $Customer->auxilary_address;
-		$c->stash->{cust_defaulttoquickship} = 1 if ( $Customer->{'quickship'} && ($Customer->{'quickship'} eq '2') );
+		$c->stash->{cust_defaulttoquickship} = 1 if ($Customer->quickship eq '2');
 
 
 		my @shipmentmarkupdata =$c->model('MyArrs::RateData')->search({
@@ -403,6 +403,10 @@ sub configure :Local
 
 	$Customer->update;
 
+	if ($Customer->customerid eq $self->customer->customerid)
+		{
+		$self->customer($c->model('MyDBI::Customer')->find({ customerid => $self->customer->customerid }));
+		}
 	$c->stash->{MESSAGE} = $msg;
 	$c->detach("index",$params);
 
