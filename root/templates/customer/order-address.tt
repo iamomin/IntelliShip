@@ -99,7 +99,7 @@
 				<tr>
 					<td><label class="float_right"><label for="tocity">City</label></label></td>
 					<td>
-					<input type="text" name="tocity" id="tocity" size="10" value="[% toAddress.city %]"/>
+					<input type="text" name="tocity" id="tocity" style="width: 210px" value="[% toAddress.city %]"/>
 					</td>
 				</tr>
 				<tr>
