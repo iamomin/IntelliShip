@@ -57,6 +57,13 @@ sub default :Path
 	$c->response->redirect($c->uri_for('/customer/login'));
 	}
 
+sub help :Path
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/customer/help.tt");
+	return 1;
+	}
+
 sub flush_expired_tokens :Private
 	{
 	my $self = shift;

@@ -63,6 +63,7 @@ sub index :Path :Args(0)
 		}
 	else
 		{
+		$c->stash->{branding_id} = $self->get_branding_id;
 		$c->stash(template => "templates/customer/login.tt"); ## SHOW LOGIN PAGE FIRST
 		}
 

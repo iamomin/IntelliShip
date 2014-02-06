@@ -82,7 +82,7 @@
 				<span>&nbsp;Welcome Back [% username %]</span>
 				<ul>
 					<li><a href="/customer/settings" id="settings"><img src="/static/images/settings.png"><label for="settings">SETTINGS</label></a></li>
-					<li><a href="/customer/dashboard" id="help"><img src="/static/images/help.png"><label for="help">HELP</label></a></li>
+					<li><a href="/customer/help" id="help"><img src="/static/images/help.png"><label for="help">HELP</label></a></li>
 					<li><a href="/customer/logout" id="logout"><img src="/static/images/signout.png"><label for="logout">SIGNOUT</label></a></li>
 				</ul>
 			</div>
