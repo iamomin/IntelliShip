@@ -254,6 +254,25 @@ sub get_formatted_timestamp
 	return $timestamp;
 	}
 
+sub display_timestamp
+	{
+	my $self      = shift;
+	my $timestamp = shift;
+
+	return undef unless $timestamp;
+
+	my ($year, $month, $day, $hours, $min, $sec);
+
+	$year  = substr($timestamp, 0,  4);
+	$month = substr($timestamp, 4,  2);
+	$day   = substr($timestamp, 6,  2);
+	$hours = substr($timestamp, 8,  2);
+	$min   = substr($timestamp, 10, 2);
+	$sec   = substr($timestamp, 12, 2);
+
+	return "$month/$day/$year $hours:$min:$sec";
+	}
+
 sub format_to_yyyymmdd
 	{
 	my $self = shift;

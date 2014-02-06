@@ -2,6 +2,7 @@ package IntelliShip::Controller::Customer::UploadFile;
 use Moose;
 use IO::File;
 use Data::Dumper;
+use IntelliShip::DateUtils;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
@@ -68,25 +69,22 @@ sub display_uploaded_order_files
 		}
 
 	my @files = grep (!/^\.$|^\.\.$/, readdir($DH));
+	@files = sort { -M "$dir/$a" cmp -M "$dir/$b" } @files;
+
 	closedir ($DH);
 
-	my ($dir_array,$file_array) = ([],[]);
-
-	foreach my $file (@files) 
+	my $file_list = [];
+	foreach my $file (@files)
 		{
-		-d $dir . '/' . $file ? push(@$dir_array, $file) : push(@$file_array, $file);
+		next if -d $dir . '/' . $file;
+		my $fileDetails = { name => $file };
+		($fileDetails->{datecreated},$fileDetails->{size}) = $self->get_file_size_and_date_creation("$dir/$file");
+		 push(@$file_list, $fileDetails);
 		}
 
-	@$dir_array  = sort {uc($a) cmp uc($b)} @$dir_array;
-	@$file_array = sort {uc($a) cmp uc($b)} @$file_array;
+	#$c->log->debug("file_list: " . Dumper $file_list);
 
-	#$c->log->debug("dir_array: " . Dumper $dir_array);
-	#$c->log->debug("file_array: " . Dumper $file_array);
-
-	$c->stash->{directory_file_list} = [
-		{ caption => 'Directory', items => $dir_array },
-		{ caption => 'Files', items => $file_array },
-		];
+	$c->stash->{directory_file_list} = $file_list if @$file_list;
 	}
 
 sub upload :Local
@@ -103,47 +101,48 @@ sub upload :Local
 		return;
 		}
 
-	#my $FILE_name = $Upload->filename;
-	#$FILE_name =~ s/\s+/\_/g;
-	my $token_id = $self->get_token_id;
-	my $FILE_name = $token_id . '.csv';
-
+	my $FILE_name = $Upload->filename;
 	#$c->log->debug("Remote File: " . $Upload->filename . ", Server File: " . $FILE_name);
 
+	my $token_id = $self->get_token_id;
 	my $TMP_file = '/tmp/' . $token_id . '.csv';
 
-	if( $Upload->link_to($TMP_file) or $Upload->copy_to($TMP_file) ) 
+	if( $Upload->link_to($TMP_file) or $Upload->copy_to($TMP_file) )
 		{
 		$c->stash->{MESSAGE} = "File '" . $Upload->filename . "' uploaded successfully!";
 		$c->log->debug("Order File Upload Path, " . $TMP_file);
 		}
 
-	my $TARGET_file = $self->get_directory . '/' . $FILE_name;
+	my $TARGET_file = $self->get_directory . "/\Q$FILE_name\E";
+	$TARGET_file .= '.' . IntelliShip::DateUtils->timestamp if stat $TARGET_file;
+
+	$c->log->debug("cp $TMP_file $TARGET_file");
+
 	if (system "cp $TMP_file $TARGET_file")
 		{
 		$c->log->debug("... Unable to copy to destination " . $TARGET_file);
-		$c->log->debug("Error: " . $!);
 		$c->stash->{MESSAGE} = "File Copy Error: " . $!;
 		$c->detach("setup",$params);
 		}
 
 	if (system "/opt/engage/intelliship/html/uploadorders.sh $token_id")
 		{
-		$c->log->debug("Error: " . $!);
 		$c->stash->{MESSAGE} = "Upload Order Error: " . $!;
 		$c->detach("setup",$params);
+		return;
 		}
 
 	$c->log->debug("... File converted successfully from CSV to TXT");
 
 	if (system "/opt/engage/intelliship/html/import_tab.pl")
 		{
-		$c->log->debug("Error: " . $!);
-		$c->stash->{MESSAGE} = "Import Tab Error: " . $!;
+		$c->stash->{MESSAGE} = "File Import Process Error: " . $!;
 		$c->detach("setup",$params);
+		return;
 		}
 
 	$c->log->debug("... File imported successfully");
+	$c->stash->{MESSAGE} = "File Imported Successfully";
 
 	$c->detach("setup",$params);
 	}
@@ -165,6 +164,23 @@ sub get_directory :Private
 		}
 
 	return $TARGET_dir;
+	}
+
+sub get_file_size_and_date_creation
+	{
+	my $self = shift;
+	my $file_path = shift;
+
+	my @file_status = stat($file_path);
+
+	my $bytes = $file_status[7];
+	my $size = sprintf "%.2f KB", ($bytes/1024);
+
+	my $datetime_string = IntelliShip::DateUtils->display_timestamp(IntelliShip::DateUtils->timestamp($file_status[9]));
+
+	#$self->context->log->debug("File: " . $file_path . ", Created On: " . $datetime_string . ", Size: " . $size);
+
+	return ($datetime_string,$size);
 	}
 
 =encoding utf8

@@ -43,6 +43,8 @@ sub index :Path :Args(0)
 
 	$self->token(undef); ## IMP
 
+	$c->stash->{branding_id} = $self->get_branding_id;
+
 	my $params = $c->request->parameters;
 	if (defined $params->{'username'} and defined $params->{'password'})
 		{
@@ -63,7 +65,6 @@ sub index :Path :Args(0)
 		}
 	else
 		{
-		$c->stash->{branding_id} = $self->get_branding_id;
 		$c->stash(template => "templates/customer/login.tt"); ## SHOW LOGIN PAGE FIRST
 		}
 

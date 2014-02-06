@@ -210,7 +210,7 @@ sub get_branding_id
 
 	my $branding_id = 'engage';
 
-	my $http_host = $ENV{HTTP_HOST};
+	my $http_host = $ENV{HTTP_HOST} || '';
 
 	#$c->log->debug("**** ENV: " . Dumper %ENV);
 	$c->log->debug("**** HTTP_HOST: " . $http_host);
@@ -949,7 +949,7 @@ sub set_navigation_rules
 	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
 
 	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
-	$c->stash->{$_} = 1 foreach keys %$navRules;
+	#$c->stash->{$_} = 1 foreach keys %$navRules;
 	#$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
 	}
 

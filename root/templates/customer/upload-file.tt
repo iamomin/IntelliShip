@@ -1,5 +1,6 @@
 
-<!-- <script src="/static/jquery/jquery.fileupload.js"></script> -->
+<!--<script src="/static/jquery/jquery.fileupload.js"></script>-->
+<!--<script src="/static/jquery/jquery.fixheadertable.min.js" type="text/javascript"></script>-->
 
 [% IF UPLOADFILE_LINKS %]
 	<h2>Upload File</h2>
@@ -46,15 +47,23 @@
 	</form>
 
 	[% IF directory_file_list %]
-	<h3>Server Order Files</h3>
+	<h3>System Order Files</h3>
+	<div id="myShipments">
 		<table>
-		[% FOREACH list IN directory_file_list %]
-			<tr><th>[% list.caption %]</th></tr>
-			[% FOREACH item IN list.items %]
-			<tr><td>[% item %]</td></tr>
-			[% END %]
-		[% END %]
+			<tr>
+				<th style="text-align: left;" width=50%>File Name</th>
+				<th style="text-align: left;" width=30%>Date Created</th>
+				<th style="text-align: left;" width=20%>Size</th>
+			</tr>
 		</table>
+	</div>
+	<div id="myShipments" style="height: 300px; overflow-y: scroll;">
+		<table id="uploaded-files" style="margin-top: 0;">
+			[% FOREACH file IN directory_file_list %]
+			<tr><td width=50%>[% file.name %]</td><td width=30%>[% file.datecreated %]</td><td width=20%>[% file.size %]</td></tr>
+			[% END %]
+		</table>
+	</div>
 	[% END %]
 
 	<script>
@@ -62,7 +71,11 @@
 	$(document).ready(function() {
 		$("#submit").val("Upload File");
 		$("#submit").attr("disabled", false);
-
+/*
+		$("#uploaded-files").fixheadertable({
+				height: 300
+			});
+*/
 		var requireHash = {
 				orderfile : { minlength: 1 , description: "Please select file to be uploaded" }
 				};
