@@ -109,7 +109,7 @@ img { border: none }
 }
 
 #menu a {
-    padding: 0 2x;
+    padding: 0 2px;
     float: left;
     color: #1875BA;
     text-decoration: none;
@@ -674,12 +674,11 @@ label.track {font-size: 13px; font-weight: bold; white-space: nowrap; color: #18
 label.reprint {font-size: 13px; font-weight: bold; white-space: nowrap; color: #59B850;}
 label.void {font-size: 13px; font-weight: bold; white-space: nowrap; color: #A25454;}
 
-#myShipments table  { width: 100%; margin: 40px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
-#myShipments table tr:nth-child(odd) { color: #000; background: #F6F6F8 }
-#myShipments table tr:nth-child(even) { color: #000; background: #E4E5E7 }
-#myShipments table th { padding: 5px; color: #FFF; background-color: #9AA4AD; text-align: center; }
-#myShipments table td { padding: 5px; border: 1px solid #A2A1A6; }
-#myShipments table td.center { text-align: center; }
+#myShipments table  {width: 100%; margin: 40px 0; border-spacing: 0px; font-size: 11px; text-align: center; border: 1px solid #A2A1A6; border-collapse: collapse }
+#myShipments table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+#myShipments table tr:nth-child(even) {color: #000; background: #E4E5E7 }
+#myShipments table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap}
+#myShipments table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap}
 
 #myShipments a.red {
     display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;

@@ -267,6 +267,19 @@ sub format_to_yyyymmdd
 	return $yy . $mm . $dd;
 	}
 
+sub format_to_mmddyy
+	{
+	my $self = shift;
+	my $date = shift;
+
+	($date,my $time) = split(/$&/, $date) if $date =~ /(\ |T)/;
+
+	my ($yy,$mm,$dd) = split(/\-/, $date) if $date =~ /\-/;
+	   ($mm,$dd,$yy) = split(/\//, $date) if $date =~ /\//;
+
+	return $mm . '/' . $dd . '/' . substr($yy,-2);
+	}
+
 sub get_delta_days
 	{
 	my $self = shift;

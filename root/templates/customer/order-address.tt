@@ -99,7 +99,7 @@
 				<tr>
 					<td><label class="float_right"><label for="tocity">City</label></label></td>
 					<td>
-					<input type="text" name="tocity" id="tocity" size="6" value="[% toAddress.city %]"/>
+					<input type="text" name="tocity" id="tocity" size="10" value="[% toAddress.city %]"/>
 					</td>
 				</tr>
 				<tr>
@@ -154,10 +154,10 @@
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" style="margin-right: 3px; width: 70px" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" style="margin-right: 3px;" size="10" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" style="margin-right: 3px; width: 70px" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" style="margin-right: 3px;" size="10" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
 				</tr>
 				<tr>
 					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
@@ -233,17 +233,11 @@
 //$("#tophone").mask("999-999-9999");
 //$("#tozip").mask("99999");
 [% IF one_page %]
-$("#datetoship").datepicker({
-		showOn: "button",
-		buttonImage: "/static/images/calendar.png",
-		buttonImageOnly: true,
+$("#datetoship").datepicker({		
 		minDate: '-0d'
 		});
 [% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
-$("#dateneeded").datepicker({
-		showOn: "button",
-		buttonImage: "/static/images/calendar.png",
-		buttonImageOnly: true,
+$("#dateneeded").datepicker({		
 		minDate: '-0d'
 		});
 [% END %]

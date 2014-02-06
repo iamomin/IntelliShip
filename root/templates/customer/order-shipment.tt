@@ -247,18 +247,12 @@
 <script>
 
 [% UNLESS one_page %]
-	$("#datetoship").datepicker({
-		showOn: "button",
-		buttonImage: "/static/images/calendar.png",
-		buttonImageOnly: true,
+	$("#datetoship").datepicker({		
 		minDate: '-0d' });
 
 	[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
 
-	$("#dateneeded").datepicker({
-		showOn: "button",
-		buttonImage: "/static/images/calendar.png",
-		buttonImageOnly: true,
+	$("#dateneeded").datepicker({		
 		minDate: '-0d'
 		});
 

@@ -62,7 +62,7 @@
 	<table class="batch-option css3-radios">
 		<tr>
 			<th>BATCH OPTIONS:</th>
-			<td><label><input type="radio" id="track" name="batch_action" value="track"><span><label for="track" class="track">TRACK</label></span></label></td>
+			<td><label><input type="radio" id="track" name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
 			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
 			<td><label><input type="radio" id="void" name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
 			<td><label><input type="button" value="SUBMIT"></td>
@@ -182,7 +182,20 @@
 			});
 
 		$("#view_date").change(function() {
-			var query_param = "&view_date=" + $("#view_date").val();
+                        var vDate = $("#view_date").val();
+                        if(vDate == 'today'){
+                            $("#datefrom").datepicker('setDate', '+0d');
+                            $("#dateto").datepicker('setDate', '+0d');
+                        }
+                        if(vDate == 'this_week'){
+                            $("#datefrom").datepicker('setDate', '-1w');
+                            $("#dateto").datepicker('setDate', '+0d');
+                        }
+                        if(vDate == 'this_month'){
+                            $("#datefrom").datepicker('setDate', '-1m');
+                            $("#dateto").datepicker('setDate', '+0d');
+                        }
+			var query_param = "&view_date=" + vDate;
 			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
 			});
 
