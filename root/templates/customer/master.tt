@@ -78,8 +78,7 @@
 		<!-- start header -->
 		<div id="header">
 			<div id="content">
-				<!-- <img src="/static/images/company-logo-transperent.png"> -->
-				<img src="/static/images/visionship.png" width=200 height=33>
+				<img src="/static/images/[% branding_id %]/company-logo.png" width=200 height=30>
 				<span>&nbsp;Welcome Back [% username %]</span>
 				<ul>
 					<li><a href="/customer/settings" id="settings"><img src="/static/images/settings.png"><label for="settings">SETTINGS</label></a></li>

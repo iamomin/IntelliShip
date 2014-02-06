@@ -330,7 +330,7 @@ sub VOID_SHIPMENT :Private
 
 	$c->log->debug("noteData" . Dumper $noteData);
 
-	my $Note = $c->model('MyDBI::Note')->new($NoteRef);
+	my $Note = $c->model('MyDBI::Note')->new($noteData);
 	$Note->insert;
 	}
 
