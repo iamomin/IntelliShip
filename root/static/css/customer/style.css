@@ -3,6 +3,10 @@
     padding:0;
 }
 
+:required{
+    background-color: #FCF8E8; 
+}
+
 body{
     font: 12px Verdana, Arial, sans-serif, Helvetica;
     color: #4B4B4B;

@@ -306,6 +306,10 @@ $(document).ready(function(){
 	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 	setToolTip();
 	[% END %]
+        
+        if(requiredFieldHash){
+            markRequiredFields(requiredFieldHash);
+        }
 	});
 [% END %]
 </script>

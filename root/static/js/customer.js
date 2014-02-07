@@ -191,7 +191,7 @@ function validateForm( requireFields ) {
 	{
 	Object.keys(requireFields).forEach(function (control) {
 		var boolRequired = false;
-		var properties = requireFields[control]
+		var properties = requireFields[control];
 
 		// this check is added to breack forEach for one by one validation
 		//if (boolRequired) return false;
@@ -264,3 +264,23 @@ function add_new_row(ui_id, rowHTML) {
 	//$(rowHTML).appendTo("#" + table_id + " tbody").fadeIn();
 	//$("#" + table_id + " tbody").append(rowHTML);
 	}
+
+function markRequiredFields(requireFields){
+        
+        Object.keys(requireFields).forEach(function (control) {
+                
+                var properties = requireFields[control];
+
+                Object.keys(properties).forEach(function (property) {
+                        var value = properties[property];
+
+                        if ( property == "email" || property == "phone" || property == "date" || property == "numeric"){
+                            $('#'+control).prop("required", value);
+                        }
+                        else{
+                            $('#'+control).prop("required", true);
+                        }
+                });
+        });
+        
+    }
