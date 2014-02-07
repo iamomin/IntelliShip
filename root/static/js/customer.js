@@ -238,7 +238,7 @@ function validateForm( requireFields ) {
 	if (boolResult == false) {
 		if (tips.length == 0) {
 			if (messageStr.length == 0)
-				messageStr = "<div class='error'>Please fillup the valid information.</div>";
+				messageStr = "<div class='error'>Please provide all required information.</div>";
 			else
 				messageStr = "<div class='error'>"+messageStr+"</div>";
 
