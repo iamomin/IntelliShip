@@ -44,7 +44,9 @@
 
 	<div id="equal">
 		<div id="row">
-			<div class="ship-from" [% UNLESS one_page %] style="width: 40%"[% END %]>
+                        <table class="single-row">
+                        <tr>
+                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]">			
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
@@ -81,10 +83,9 @@
 				<tr>
 					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
-			</table>
-			</div>
-
-			<[% one_page ? 'div class="ship-to"' : 'div class="33" style="width: 40%"' %]>
+			</table>			
+                        </td>
+                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]">						
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
@@ -143,7 +144,7 @@
 				</tr>
                                 [% IF one_page %]
 				<tr>
-					<td><label for="tocustomernumber" class="float_right">Customer<br>Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
+					<td><label for="tocustomernumber" class="float_right">Customer#:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
                                 [% ELSE %]
                                 <tr>
@@ -153,11 +154,10 @@
 				<tr>
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
-			</table>
-			</div>
+			</table>			
+                        </td>
 [% IF one_page %]
-                        
-			<div class="ship-info">
+                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]">			
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
@@ -235,9 +235,11 @@
 				[% ELSE %]
 				
 				[% END %]
-			</table>
-			</div>
+			</table>			
+                        </td>
 [% END %]
+                </tr>
+                </table>
 		</div>
 	</div>
 [% UNLESS one_page %]

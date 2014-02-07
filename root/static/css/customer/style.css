@@ -426,10 +426,10 @@ table.summary-app a:hover {
 }
 
 table.app {
-    width: 100%;
-    margin: 10px 0;
+    width: 100%;    
     background: #F5F5F5;
     border: solid 1px #ccc;
+    height: 92%;
 }
 
 table.app caption {
@@ -468,6 +468,28 @@ table.app input[type="text"].labellike {
 table.app b {
     font-weight: bold;
     padding: 10px 5px;
+}
+
+table.single-row {
+    width: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+table.single-row td{         
+    vertical-align: top;     
+}
+
+td.twocolumns {    
+    height: 340px;
+    width: 50%;
+    padding: 20px;    
+}
+
+td.threecolumns {
+    height: 360px;
+    width: 33%;
+    padding: 5px;
 }
 
 table.center_app {
