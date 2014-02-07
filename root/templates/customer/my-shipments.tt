@@ -81,7 +81,7 @@
 				<th>TRACKING#</th>
 				<th>ORDER#</th>
 				<th>CUSTOMER</th>
-				<th>ORIGIN</th>
+				<th style="padding-left: 10px; padding-right: 10px;">ORIGIN</th>
 				<th>DESTINATION</th>
 				<th>DATE</th>
 				<th>DUE DATE</th>
@@ -91,7 +91,7 @@
 			</tr>
 			[% FOREACH item IN myshipment_list %]
 			<tr>
-				<td><label><input type="checkbox" id="[% item.shipmentid %]" name="[% item.shipmentid %] value="[% item.shipmentid %]/><span></span></label></td>
+				<td><label><input type="checkbox" id="[% item.shipmentid %]" name="[% item.shipmentid %]" value="[% item.shipmentid %]" class="items"/><span></span></label></td>
 				<td><a class="[% item.a_class %]" href="javascript:void(0);"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
@@ -119,6 +119,20 @@
 
 	$("#datefrom").datepicker({ maxDate: '0d' });
 	$("#dateto").datepicker({ maxDate: '2w' });
+
+        $('.items').change(function(){
+
+            var v = +($("#count").html());
+            if($(this).is(':checked'))
+            {                
+                $("#count").html(v+1);
+            }
+            else
+            {
+                $("#count").html(v-1);
+            }    
+
+        });
 
 	[% UNLESS ajax %]
 	$(document).on("click","a[name='track']", function (e) {
@@ -172,9 +186,9 @@
 				}
 			}
 */
-		$("input[type=checkbox]").click(function () {
-			$("#count").html($("input[type=checkbox]:checked").length || '0');
-			});
+		//$("input[type=checkbox]").click(function () {
+		//	$("#count").html($("input[type=checkbox]:checked").length || '0');
+		//	});
 
 		$("#records_per_page").change(function() {
 			$("#shipmentids").prop('disabled','disabled');
@@ -194,9 +208,10 @@
                         if(vDate == 'this_month'){
                             $("#datefrom").datepicker('setDate', '-1m');
                             $("#dateto").datepicker('setDate', '+0d');
-                        }
+                        }                        
 			var query_param = "&view_date=" + vDate;
 			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+                        $("#count").html("0");
 			});
 
 		$("#date_apply").click(function() {

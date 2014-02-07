@@ -105,9 +105,7 @@ sub populate_my_shipment_list :Private
 	my $myshipment_list = [];
 	for (my $row=0; $row < $sth->numrows; $row++)
 		{
-		my $row_data = $sth->fetchrow($row);                
-                $row_data->{'duedate'} = IntelliShip::DateUtils->format_to_mmddyy($row_data->{'duedate'}); 
-                $row_data->{'dateshipped'} = IntelliShip::DateUtils->format_to_mmddyy($row_data->{'dateshipped'}); 
+		my $row_data = $sth->fetchrow($row);                                
 		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
 		push(@$myshipment_list, $row_data);
 		}
@@ -186,8 +184,8 @@ sub get_shipped_sql :Private
 			da.addressname as customername,
 			oa.city || ', ' || oa.state as origin,
 			da.city || ', ' || da.state as destin,
-			to_char(s.dateshipped,'yyyy/mm/dd') as dateshipped,
-			to_char(s.datedue,'yyyy/mm/dd') as duedate,
+			to_char(s.dateshipped,'mm/dd/yy') as dateshipped,
+			to_char(s.datedue,'mm/dd/yy') as duedate,
 			s.tracking1 as tracking,
 			s.service,
 			s.cost,
