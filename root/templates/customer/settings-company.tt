@@ -33,7 +33,7 @@
 					</select>
 				</td>
 				<td>
-					<select name="customer_page" id="customer_page">
+					<select name="customers" id="customers">
 					[% FOREACH ids IN customer_batches %]
 						<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
 					[% END %]
@@ -116,13 +116,16 @@
 
 		$("#records_per_page").change(function() {
 			$('#frm_company_management').attr('action', '/customer/settings/company');
-			$("#customer_page").prop('disabled','disabled');
 			$("#frm_company_management").submit();
 			});
 
-		$("#customer_page").change(function() {
+		$("#customers").change(function() {
 			var query_param = "&customername=1&page=" + $(this).val();
 			send_ajax_request('divCustomerList', 'HTML', 'settings/company', '', query_param);
+			});
+
+		$("#frm_company_management").submit(function() {
+			$("#customers").prop('disabled','disabled');
 			});
 		});
 	</script>

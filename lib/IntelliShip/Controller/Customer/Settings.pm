@@ -478,7 +478,7 @@ sub process_pagination
 
 	my $sth = $c->model('MyDBI')->select($sql);
 
-	$c->log->debug("SQL: " . $sql);
+	#$c->log->debug("SQL: " . $sql);
 
 	my @matching_ids = map { @$_ } @{ $sth->query_data };
 	my $batches = $self->spawn_batches(\@matching_ids,$batch_size);

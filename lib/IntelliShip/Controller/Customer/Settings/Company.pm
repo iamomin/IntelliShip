@@ -293,37 +293,41 @@ sub configure :Local
 
 	$AuxilaryAddress->update($auxAddressData);
 
-	if (my @CustConData = $c->model("MyDBI::CustConData")->search({ ownerid => $Customer->customerid ,ownertypeid => '1' }))
-		{
-		$c->log->debug("___ Flush old custcondata for company: " . $Customer->customerid);
-		foreach my $custdata (@CustConData)
-			{
-			$custdata->delete;
-			}
-		}
+	$c->log->debug("___ Flush old custcondata for company: " . $Customer->customerid);
+	$Customer->settings->delete;
 
-	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');	
+	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
 
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
+	my $customerContactSql = "INSERT INTO custcondata (custcondataid, ownertypeid, ownerid, datatypeid, datatypename, value) VALUES ";
+	my $customerContactValues = [];
 	foreach my $ruleHash (@$CUSTOMER_RULES)
 		{
-		#$c->log->debug("___FIELD : cust_$ruleHash->{value} = " . $params->{'cust_'.$ruleHash->{value}});
-		if($params->{'cust_'.$ruleHash->{value}})
-			{
-			#$c->log->debug("___ Inserting New custcondata $ruleHash->{value} for company: " . $Customer->customerid);
-			my $customerContactData = {
-				ownertypeid	=> 1,
-				ownerid		=> $Customer->customerid,
-				datatypeid	=> $ruleHash->{datatypeid},
-				datatypename=> $ruleHash->{value},
-				value       => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{'cust_'.$ruleHash->{value}},
-				};
+		next unless $params->{'cust_'.$ruleHash->{value}};
+=as
+		#$c->log->debug("___ Inserting New custcondata $ruleHash->{value} for company: " . $Customer->customerid);
+		my $customerContactData = {
+			ownertypeid	 => 1,
+			ownerid		 => $Customer->customerid,
+			datatypeid	 => $ruleHash->{datatypeid},
+			datatypename => $ruleHash->{value},
+			value		 => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{'cust_'.$ruleHash->{value}},
+			};
 
-			my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
-			$NewCCData->custcondataid($self->get_token_id);
-			$NewCCData->insert;
-			}
+		my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
+		$NewCCData->custcondataid($self->get_token_id);
+		$NewCCData->insert;
+=cut
+		push (@$customerContactValues, "('".$self->get_token_id."', '1', '".$Customer->customerid."', '".$ruleHash->{datatypeid}."', '".$ruleHash->{value}."', '".($ruleHash->{type} eq 'CHECKBOX' ? 1 : $params->{'cust_'.$ruleHash->{value}})."')" );
+		}
+
+	if (@$customerContactValues)
+		{
+		$c->log->debug("..... Inserting New Customer Settings");
+		my $SQL = $customerContactSql . join(' , ',@$customerContactValues);
+		$c->log->debug("Customer Settings SQL: " . $SQL);
+		$c->model("MyDBI")->dbh->do($SQL);
 		}
 
 	# FREIGHT MARKUP
@@ -344,7 +348,7 @@ sub configure :Local
 		$RateData->delete;
 		}
 
-	if($params->{'shipmentmarkup'} and $params->{'shipmentmarkuptype'})
+	if ($params->{'shipmentmarkup'} and $params->{'shipmentmarkuptype'})
 		{
 		my $column = "freightmarkup" . $params->{'shipmentmarkuptype'};
 		my $amt = $params->{'shipmentmarkup'};
@@ -405,13 +409,11 @@ sub configure :Local
 
 	if ($Customer->customerid eq $self->customer->customerid)
 		{
-		$self->customer($c->model('MyDBI::Customer')->find({ customerid => $self->customer->customerid }));
+		$self->customer($Customer);
 		}
+
 	$c->stash->{MESSAGE} = $msg;
 	$c->detach("index",$params);
-
-	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
-	$c->stash->{template} = "templates/customer/settings-company.tt";
 	}
 
 sub ajax :Local
