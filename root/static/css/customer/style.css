@@ -84,6 +84,11 @@ img { border: none }
     cursor: pointer;
 }
 
+#header img {
+    max-height: 50px;
+    max-width: 450px;
+}
+
 /* Menu */
 
 #menu {

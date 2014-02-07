@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<form id="login" name="login" method="post" action="/customer/login">
-			<img src="/static/images/login/[% branding_id %].png" width="auto" height="45px">
+			<img src="/static/images/login/[% branding_id %].png">
 			<fieldset id="message">
 				&nbsp;[% IF error %] [% error %] [% END %]
 			</fieldset>
