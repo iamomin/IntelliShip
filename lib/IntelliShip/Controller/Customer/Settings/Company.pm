@@ -495,13 +495,18 @@ sub get_company_setting_list :Private
 	my $Customer = shift;
 	my $c = $self->context;
 
+	return unless $Customer;
+
 	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
+
+	my @Settings = $Customer->settings;
+	my %customerRules = map { $_->datatypename => $_->value } @Settings;
 
 	my $list = [];
 	foreach my $ruleHash (@$CUSTOMER_RULES)
 		{
-		my $value = ($Customer and $Customer->get_contact_data_value($ruleHash->{value})) || '';
+		my $value = $customerRules{$ruleHash->{value}} || '';
 
 		if($ruleHash->{type} eq 'CHECKBOX')
 			{

@@ -628,6 +628,12 @@ __PACKAGE__->has_many(
 		{ "foreign.customerid" => "self.customerid" },
 	);
 
+sub settings
+	{
+	my $self = shift;
+	return $self->custcondata({ ownertypeid => '1' });
+	}
+
 sub get_contact_data_value
 	{
 	my $self = shift;
@@ -646,7 +652,7 @@ sub get_contact_data_value
 sub login_level
 	{
 	my $self = shift;
-	return $self->get_contact_data_value('loginlevel');
+	return $self->get_contact_data_value('loginlevel') || 0;
 	}
 
 sub has_extid_data

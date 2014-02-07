@@ -78,7 +78,7 @@
 		<!-- start header -->
 		<div id="header">
 			<div id="content">
-				<img src="/static/images/[% branding_id %]/company-logo.png" width=200 height=30>
+				<img src="/static/images/[% branding_id %]/company-logo.png" width="auto" height="45px">
 				<span>&nbsp;Welcome Back [% username %]</span>
 				<ul>
 					<li><a href="/customer/settings" id="settings"><img src="/static/images/settings.png"><label for="settings">SETTINGS</label></a></li>
