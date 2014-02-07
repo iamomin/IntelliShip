@@ -339,8 +339,8 @@ label {
 #row {display: table-row; width: 100%}
 #row table {min-height: 100px}
 #row div {display: table-cell; padding: 0 10px;vertical-align: top; height: 100%}
-#row div.add-summary {display: table-cell; padding-right: 10px;vertical-align: top; width: 68%}
-#row div.sd-summary {display: table-cell; padding-left: 10px;vertical-align: top; width: 32%}
+#row div.add-summary {display: table-cell; padding: 0px 22px 0px 0px; vertical-align: top; width: 655px}
+#row div.sd-summary {display: table-cell; padding: 0px; vertical-align: top; width: 322px}
 #row div.ship-from {display: table-cell; padding-right: 10px;vertical-align: top}
 #row div.ship-to {display: table-cell; padding: 0 10px;vertical-align: top}
 #row div.ship-info {display: table-cell; padding-left: 10px;vertical-align: top}
@@ -357,7 +357,7 @@ table a { text-align: center; }
 table.center { width: auto; padding: 10px; margin: 10px auto; text-align: center; }
 
 table.order-nav { width: 100%;  text-align: center }
-table.order-nav td { width: 33%; margin: 0; }
+table.order-nav td { width: 33%; margin: 0; padding: 0px }
 table.order-nav td.L { padding: 5px 10px 5px  0px; }
 table.order-nav td.C { padding: 5px 10px 5px 10px; }
 table.order-nav td.R { padding: 5px  0px 5px 10px; }
@@ -475,25 +475,23 @@ table.app b {
 }
 
 table.single-row {
-    width: 100%;
-    margin-left: 5px;
-    margin-right: 5px;
+    width: 100%;    
 }
 
 table.single-row td{         
-    vertical-align: top;     
+    vertical-align: top;      
 }
 
 td.twocolumns {    
     height: 340px;
     width: 50%;
-    padding: 20px;    
+    padding: 0px;
 }
 
 td.threecolumns {
     height: 360px;
-    width: 33%;
-    padding: 5px;
+    width: 33%;  
+    padding: 0px;
 }
 
 table.center_app {
@@ -870,7 +868,7 @@ input.delete {
     height: 32px;
     overflow: hidden;
     background: url(/static/images/green-arrowhead-right.png) no-repeat right;
-    color: transparent;
+    color: transparent;    
 }
 
 .green-forward input {

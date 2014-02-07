@@ -46,7 +46,7 @@
 		<div id="row">
                         <table class="single-row">
                         <tr>
-                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]">			
+                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-right: 10px">			
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
@@ -85,7 +85,7 @@
 				</tr>
 			</table>			
                         </td>
-                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]">						
+                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 10px">						
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
@@ -157,7 +157,7 @@
 			</table>			
                         </td>
 [% IF one_page %]
-                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]">			
+                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 20px">			
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
@@ -245,7 +245,7 @@
 [% UNLESS one_page %]
 	<br/>
 
-	<div class="green-forward float_right"><input type="submit" id="quick_ship" value="NEXT STEP"/></div>
+	<div class="green-forward float_right">&nbsp;&nbsp;<input type="submit" id="quick_ship" value="NEXT STEP"/></div>
 
 </form>
 
