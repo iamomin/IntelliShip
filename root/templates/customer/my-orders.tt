@@ -6,27 +6,34 @@
 	<form id="frm_my_ordres" method="post" action="/customer/myorders">
 		<input type="hidden" name="do" id="do"/>
 		<input type="hidden" name="coid" id="coid"/>
-	<h1>My Orders
-		<div class="float_right" style="white-space: nowrap;">
-			<select name="view" id="view" onChange="refreshMyOrders()">
-				[% FOREACH item IN view_list %]
-				<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-			</select>
-			<label style="font-size: 10px;" for="records_per_page"><span id="myorder_count"></span> Records, Records Per Page&nbsp;</label>
-			<select name="records_per_page" id="records_per_page">
-				[% FOREACH item IN recordsperpage_list %]
-					<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
-				[% END %]
-			</select>
-			<select name="coids" id="coids">
-				[% FOREACH ids IN myorder_batches %]
-					<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
-				[% END %]
-				[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
-			</select>
-		</div>
-	</h1>
+	<h2>
+		<table style="width:100%">
+		<tr>
+			<td >My Orders</td>
+			<td class="float_right">			
+				<div  style="white-space: nowrap;">
+					<select name="view" id="view" onChange="refreshMyOrders()">
+						[% FOREACH item IN view_list %]
+						<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+					</select>
+					<label style="font-size: 10px;" for="records_per_page"><span id="myorder_count"></span> Records, Records Per Page&nbsp;</label>
+					<select name="records_per_page" id="records_per_page">
+						[% FOREACH item IN recordsperpage_list %]
+							<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+						[% END %]
+					</select>
+					<select name="coids" id="coids">
+						[% FOREACH ids IN myorder_batches %]
+							<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+						[% END %]
+						[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
+					</select>
+				</div>
+			</td>
+		<tr>
+		</table>
+	</h2>
 
 	[% IF refresh_interval_sec %]
 	<div class="notice">Order list will automatically refresh in <span id="refresh_interval"></span> seconds</div>

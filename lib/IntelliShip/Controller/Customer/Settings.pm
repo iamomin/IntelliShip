@@ -606,6 +606,7 @@ sub contactinformation :Local
 		$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');	
+		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);		
 
 		$c->stash(template => "templates/customer/settings.tt");
@@ -669,7 +670,7 @@ sub get_contact_setting_list :Private
 			{
 			$ruleHash->{checked} = $value ;
 			}
-		elsif ($ruleHash->{type} eq 'SELECT')
+		elsif ($ruleHash->{type} eq 'SELECT' or $ruleHash->{type} eq 'RADIO')
 			{
 			$ruleHash->{selected} = $value;
 			if ($ruleHash->{value} eq 'defaultproductunittype' or $ruleHash->{value} eq 'defaultpackageunittype')

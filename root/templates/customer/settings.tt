@@ -720,12 +720,13 @@ $(document).ready(function(){
 			[% count=1 %]
 			<tr>			
 				[% FOREACH item IN contactsetting_loop %]																
-					[%IF item.type == 'INPUT' %]
+					[% IF item.type == 'INPUT' %]
 						[% count=count+1 %]
 						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
 					    <td><input type="text" class="broad_text" name="[% item.value %]" id="[% item.value %]" value="[% item.text %]"></td>
-					[% ELSE %]
-						[% IF item.type == 'SELECT'%]
+					[% END %]
+
+					[% IF item.type == 'SELECT'%]
 						[% count=count+1 %]
 						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
 						<td>
@@ -737,7 +738,19 @@ $(document).ready(function(){
 							</select>
 							</label>
 						</td>
-						[% END %]
+					[% END %]
+
+					[% IF item.type == 'RADIO'%]
+						[% count=count+1 %]
+						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
+						<td class="css3-radios">
+							[% FOREACH list_item IN item.loop %]				
+								<label>
+								<input type="radio" name="[% item.value %]" id="[% list_item.value %]" value="[% list_item.value %]" [% list_item.value == item.selected ? 'CHECKED' : ''%]/>
+								<span><label for="[% list_item.value %]">[% list_item.name %]</label></span>
+								</label>
+							[% END %]
+						</td>						
 					[% END %]
 					[% IF count == 3 %]
 						</tr><tr>

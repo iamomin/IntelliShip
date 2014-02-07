@@ -46,7 +46,9 @@
 
 
 	[% UNLESS ajax %]<div id="divCustomerList">[% END %]
-	<h3>Customer Count [% customer_count %]</h3>
+	
+	<div style="clear: both;">&nbsp;</div>
+	<table class="float_right"><tr><td><b>Customer Count: [% customer_count %]</b></tr></td></table>
 
 	<div id="myShipments">
 	<table>
@@ -629,14 +631,13 @@
 							<input type="text" class="broad_text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
 
 						<td><label class="float_right" for="cust_labeltype">Label Type:</label></td>
-						<td>
-						<label>
-							<select name="cust_labeltype" id="cust_labeltype">
-							[% FOREACH item IN labeltype_loop %]
-								<option value="[% item.value %]" [% (cust_labeltype and item.value == cust_labeltype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						<td class="css3-radios">
+							[% FOREACH item IN labeltype_loop %]				
+								<label>
+								<input type="radio" name="cust_labeltype" id="[% item.value %]" value="[% item.value %]" [% item.value == cust_labeltype ? 'CHECKED' : ''%]/>
+								<span><label for="[% item.value %]">[% item.name %]</label></span>
+								</label>
 							[% END %]
-							</select>
-						</label>
 						</td>
 					</tr>
 					<tr>
@@ -665,6 +666,8 @@
 	</form>
 
 	<script>
+	$( "#company-settings" ).tabs();
+
 	$("#frm_setup_customer").submit(function () {
 		var requireHash = {
 			customername : { minlength: 1, description: "Please specify customer name" },
@@ -685,7 +688,6 @@
 		});
 
 	$(document).ready(function(){
-		$( "#company-settings" ).tabs();
 		$("#update_customer").attr("disabled", false);
 		});
 	</script>

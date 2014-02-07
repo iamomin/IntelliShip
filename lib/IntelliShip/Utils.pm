@@ -451,6 +451,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'HALO Username' , value => 'halousername' , type => 'INPUT', datatypeid => 2 , ownertype => ['CONTACT']},
 	{ name => 'HALO Password' , value => 'halopassword' , type => 'INPUT', datatypeid => 2 , ownertype => ['CONTACT']},
 	{ name => 'HALO URL' , value => 'halourl' , type => 'INPUT', datatypeid => 2 , ownertype => ['CONTACT']},
+	{ name => 'Label Type' , value => 'labeltype' , type => 'RADIO', datatypeid => 2 , ownertype => ['CUSTOMER', 'CONTACT']},
 	];
 
 sub get_rules

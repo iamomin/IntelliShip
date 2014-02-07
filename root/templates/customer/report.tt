@@ -160,14 +160,18 @@
 		<div class="notice">[% MESSAGE %]</div>
 	[% END %]
 
+	<table class="float_right DoNotPrint">
+		<tr>
+			<td>
+			[% IF report_output_row_loop %]
+			<input type="button" class="button" id="print" value="Print Report" onclick="javascript:window.print();"/>
+			[% END %]
+			<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/>
+			</td>
+		</tr>
+	</table>
 	<div style="clear: both;">&nbsp;</div>
-	<div class="float_right DoNotPrint">
-		[% IF report_output_row_loop %]
-		<input type="button" class="button" id="print" value="Print Report" onclick="javascript:window.print();"/>
-		[% END %]
-		<input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/>
-	</div>
-
+	<div id="myShipments">
 	<table><tr>
 	[% IF filter_criteria_loop %]
 		[% FOREACH item IN filter_criteria_loop %]
@@ -175,8 +179,8 @@
 		[% END %]
 	[% END %]
 	</tr></table>
-
-	<table class="report Print">
+	
+	<table>
 
 		[% IF report_heading_loop %]
 		<tr>
@@ -194,7 +198,7 @@
 		[% FOREACH column_loop IN report_output_row_loop %]
 		<tr>
 			[% FOREACH column IN column_loop %]
-				<td [% IF column.align %]align=[% column.align %][% END %] [% IF column.colspan %]colspan=[% column.colspan %][% END %] [% IF column.rowspan %]rowspan=[% column.rowspan %][% END %]>
+				<td [% IF column.align %]align=[% column.align %][% END %] [% IF column.colspan %]colspan=[% column.colspan %][% END %] [% IF column.rowspan %]rowspan=[% column.rowspan %][% END %] style="white-space:nowrap;">
 				[% column.value %]
 				</td>
 			[% END %]
@@ -205,6 +209,7 @@
 	[% END %]
 
 	</table>
+	</div>
 [% END %]
 [% #---------------------------------------------------------- %]
 [% # HTML REPORT FORMAT %]

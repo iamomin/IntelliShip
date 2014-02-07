@@ -545,6 +545,14 @@ sub get_select_list
 			push(@$list, { name => $ass_displays[$row], value => $ass_names[$row] });
 			}
 		}
+	elsif ($list_name eq 'LOGIN_LEVEL')
+		{
+		my @records = $c->model('MyDBI::Loginlevel')->all;
+		foreach my $Loginlevel (@records)
+			{
+			push(@$list, { name => $Loginlevel->loginlevelname, value => $Loginlevel->loginlevelid});
+			}
+		}
 	elsif ($list_name eq 'ACTIVE_INACTIVE')
 		{
 		$list = [
@@ -829,14 +837,6 @@ sub get_select_list
 			{ name => 'Generic', value => 'poinstructions' },
 			];
 		}
-	elsif ($list_name eq 'LOGIN_LEVEL')
-		{
-		my @records = $c->model('MyDBI::Loginlevel')->all;
-		foreach my $Loginlevel (@records)
-			{
-			push(@$list, { name => $Loginlevel->loginlevelname, value => $Loginlevel->loginlevelid});
-			}
-		}
 	elsif ($list_name eq 'QUOTE_MARKUP')
 		{
 		$list = [
@@ -851,6 +851,14 @@ sub get_select_list
 			{ name => '40%', value => '1.4'  },
 			{ name => '45%', value => '1.45' },
 			{ name => '50%', value => '1.5'  },
+			];
+		}
+	elsif ($list_name eq 'LABEL_TYPE')
+		{
+		$list = [
+			{ name => 'EPL', value => 'epl' },
+			{ name => 'ZPL', value => 'zpl' },
+			{ name => 'JPG', value => 'jpg' },
 			];
 		}
 
