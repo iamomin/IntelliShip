@@ -213,7 +213,7 @@ sub get_branding_id
 	my $http_host = $ENV{HTTP_HOST} || '';
 
 	#$c->log->debug("**** ENV: " . Dumper %ENV);
-	$c->log->debug("**** HTTP_HOST: " . $http_host);
+	#$c->log->debug("**** HTTP_HOST: " . $http_host);
 
 	#override brandingid based on url
  	if ( $http_host =~ /d?visionship\d?\.*\.*/ )
@@ -239,7 +239,7 @@ sub get_branding_id
 
 	$c->stash->{branding_id} = $branding_id;
 
-	$c->log->debug("**** BRANDING: " . $branding_id);
+	#$c->log->debug("**** BRANDING: " . $branding_id);
 
 	return $branding_id;
 	}
