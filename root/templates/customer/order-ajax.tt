@@ -333,7 +333,7 @@
 
 	<input type="hidden" id="carrier" name="carrier" value=""/>
 	<div id="carrier-service-list">
-		<ul>
+		<ul style="padding: 0;">
 			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
 			<li><a href="#freight-charges-list-2">TRANSIT DAYS</a></li>
 			<li><a href="#freight-charges-list-3">VIEW ALL</a></li>
