@@ -13,7 +13,7 @@
 		<div style="position: relative;">
 			<hr class="solid_line"/>
 			<img style="z-index: 1; float: left; margin-left: 14%; margin-top: -0.2%;" src="/static/images/thumbs-up-grayed.png">
-			<img style="z-index: 1; float: left; margin-left: 33%; margin-top: -0.2%;" src="/static/images/navigation-down.png">
+			<img style="z-index: 1; float: left; margin-left: 31%; margin-top: -0.2%;" src="/static/images/navigation-down.png">
 		</div>
 	</td>
 	</tr>
