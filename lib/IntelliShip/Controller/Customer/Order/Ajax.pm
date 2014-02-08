@@ -225,7 +225,7 @@ sub get_carrier_service_list
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge);
+	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,\@CS_list_2);
 	$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP}->[0]->{checked} = 0;
 
@@ -244,6 +244,7 @@ sub get_recommened_carrier_service :Private
 	my $self = shift;
 	my $sortByDays = shift;
 	my $sortByCharge = shift;
+	my $otherCarriers = shift;
 
 	my $c = $self->context;
 	my $CO = $self->get_order;
@@ -260,6 +261,7 @@ sub get_recommened_carrier_service :Private
 
 	push(@$recommended, $price_asc[0]) if @price_asc;
 	push(@$recommended, $sortByCharge->[0]) unless (@$recommended);
+	push(@$recommended, $otherCarriers->[0]) unless (@$recommended);
 
 	$recommended->[0]->{checked} = 1;
 	#$c->log->debug("recommended: ". Dumper($recommended));
