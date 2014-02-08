@@ -170,7 +170,7 @@
 			</td>
 		</tr>
 	</table>
-	<div style="clear: both;">&nbsp;</div>
+	<br/><br/>
 	<div id="myShipments">
 	<table><tr>
 	[% IF filter_criteria_loop %]
@@ -188,7 +188,7 @@
 				[% IF item.sortable %]
 					<th><a href="javascript:sortreport('[% item.name %]');">%item.name%</a></th>
 				[% ELSE %]
-					<th><a href="#">[% item.name %]</a></th>
+					<th>[% item.name %]</th>
 				[% END %]
 			[% END %]
 		</tr>

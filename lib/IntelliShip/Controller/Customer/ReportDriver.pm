@@ -366,7 +366,7 @@ sub generate_shipment_report
 				{ value => $row_data->{'podname'} },
 				{ value => $row_data->{'dimweight'} },
 				{ value => $row_data->{'tracking1'} },
-				{ value => $row_data->{'cost'} },
+				{ value => $row_data->{'cost'}, align => 'right' },
 				{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) },
 			];
 
@@ -483,8 +483,8 @@ sub generate_summary_service_report
 				{ value => $row_data->{'shipmentid'} },
 				{ value => $Shipment->carrier },
 				{ value => $Shipment->service },
-				{ value => $row_data->{'total_chargeamount'} },
-				{ value => $row_data->{'total_weight'} },
+				{ value => $row_data->{'total_chargeamount'}, align => 'right' },
+				{ value => $row_data->{'total_weight'}, align => 'right' },
 			];
 
 		push(@$report_output_row_loop, $report_output_column_loop);
@@ -611,7 +611,7 @@ sub get_carrier_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return '' if $params->{'carriers'} eq 'all';
+	return '' if (ref $params->{'carriers'} eq 'ARRAY' and grep(/all/, @{$params->{'carriers'}})) or  $params->{'carriers'} eq 'all';
 
 	my $and_carrier_sql;
 	if (ref $params->{'carriers'} eq 'ARRAY')
@@ -631,7 +631,7 @@ sub get_co_status_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return '' if $params->{'costatus'} eq 'all';
+	return '' if (ref $params->{'costatus'} eq 'ARRAY' and grep(/all/, @{$params->{'costatus'}})) or  $params->{'costatus'} eq 'all';
 
 	my $and_status_id_sql = ''; #" AND sh.statusid IN (10,100) "
 	if (ref $params->{'costatus'} eq 'ARRAY')
