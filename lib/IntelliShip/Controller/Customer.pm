@@ -949,8 +949,8 @@ sub set_navigation_rules
 
 	unless ($Contact->is_restricted)
 		{
-		$navRules->{DISPLAY_QUICKSHIP} = ($Customer->quickship and !$Contact->get_contact_data_value('myorders'));
-		$navRules->{DISPLAY_NEW_ORDER} = (!$Contact->get_contact_data_value('myorders') and !$Contact->get_contact_data_value('disallowneworder'));
+		$navRules->{DISPLAY_QUICKSHIP} = $Customer->quickship;
+		$navRules->{DISPLAY_NEW_ORDER} = !$Contact->get_contact_data_value('disallowneworder');
 		}
 
 	$navRules->{DISPLAY_MYORDERS} = $navRules->{DISPLAY_MYSHIPMENT} = $Contact->get_contact_data_value('myorders');
