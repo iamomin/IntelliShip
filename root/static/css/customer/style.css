@@ -60,13 +60,9 @@ img { border: none }
     margin: auto;
 }
 
-#header span {
-    color: #FFF;
-}
-
 #header ul {
-    margin-top: 15px;
     float: right;
+    margin-top: 15px;
     list-style: none;
     white-space: nowrap;
 }
@@ -79,18 +75,39 @@ img { border: none }
 #header label {
     vertical-align: super;
     padding-left: 5px;
-    cursor: pointer;
+    color: #FFF;
 }
 
 #header a {
     color: #FFF;
-    text-align:center;
+    text-align: center;
     cursor: pointer;
 }
 
 #header img {
     max-height: 50px;
     max-width: 450px;
+}
+
+#header input[type=text] {
+    margin: 0;
+    padding: 0;
+    height: 24px;
+    border: none;
+    color: #98A7AF;
+    width: 120px;
+}
+
+#header input[type=submit] {
+    background: url("/static/images/search.png") no-repeat center center;
+    width: 24px;
+    height:24px;
+    border: none;
+    color: transparent;
+    font-size: 0;
+    cursor: pointer;
+    background-color: #98A7AF;
+    position:absolute;
 }
 
 /* Menu */
@@ -101,7 +118,7 @@ img { border: none }
     padding: 10px 20px;
     color: #9BA7AF;
     background-color: #F5F5F5;
-    font: 11px Arial, Helvetica;
+    font: bold 11px Arial, Helvetica;
     border-bottom: solid 1px #ddd;
 }
 
@@ -120,56 +137,56 @@ img { border: none }
 #menu a {
     padding: 0 2px;
     float: left;
-    color: #1875BA;
+    color: #9AA4AD;
     text-decoration: none;
 }
 
 #menu li a.dashboard {
     height: 28px;
     padding-left: 28px;
-    background: url("/static/images/dashboard.png") no-repeat;
+    background: url("/static/images/menu/dashboard-grayed.png") no-repeat;
 }
 
 #menu li a.mo {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/my-orders.png") no-repeat;
+    background: url("/static/images/menu/order-management-grayed.png") no-repeat;
 }
 
 #menu li a.new {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/new-order.png") no-repeat;
+    background: url("/static/images/menu/new-order-grayed.png") no-repeat;
 }
 
 #menu li a.sap {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/ship-a-package.png") no-repeat;
+    background: url("/static/images/menu/new-order-grayed.png") no-repeat;
 }
 
 #menu li a.batch {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/batch.png") no-repeat;
+    background: url("/static/images/menu/batch-shipping-grayed.png") no-repeat;
 }
 
 #menu li a.qs {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/quick-ship.png") no-repeat;
+    background: url("/static/images/menu/quick-ship-grayed.png") no-repeat;
 }
 
 #menu li a.sp {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/open-box.png") no-repeat;
+    background: url("/static/images/menu/scan-automation-grayed.png") no-repeat;
 }
 
 #menu li a.upload {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/upload.png") no-repeat;
+    background: url("/static/images/menu/upload-grayed.png") no-repeat;
 }
 
 #menu li a.sm {
@@ -181,18 +198,17 @@ img { border: none }
 #menu li a.ms {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/maintenance.png") no-repeat;
+    background: url("/static/images/menu/my-shipments-grayed.png") no-repeat;
 }
 
 #menu li a.reports {
     height: 32px;
     padding-left: 28px;
-    background: url("/static/images/reports.png") no-repeat;
+    background: url("/static/images/menu/reports-grayed.png") no-repeat;
 }
 
-#menu a:hover {
-    text-decoration: underline;
-    color: #aaa;
+#menu li :hover {
+    background-color: #E2E2E2;
 }
 
 #menu a.selected {
@@ -204,6 +220,7 @@ img { border: none }
     margin-top: 8px;
 }
 
+/*
 #menu input[type=text] {
     margin: 0;
     padding:0;
@@ -238,7 +255,7 @@ img { border: none }
     display: inline;
     margin-right: 24px;
 }
-
+*/
 /* Page */
 
 #page {
@@ -275,15 +292,16 @@ img { border: none }
 #footer ul {
     padding: 10px 0;
     list-style: none;
-    float: right;
+    float: left;
     color: #9BA7AF;
 }
 
 #footer li {
     display: inline;
+    padding: 0 5px;
 }
 
-#footer img {
+#footer img.logo {
     width: 97px;
     height: 37px;
     margin-right: 30px;
@@ -296,6 +314,19 @@ img { border: none }
 #footer a:hover {
     color: #1875BA;
     text-decoration: underline;
+}
+
+#footer label {
+    vertical-align: super;
+    padding-left: 5px;
+    cursor: pointer;
+}
+
+#footer ul.links {
+    float: right;
+    margin: 20px 0;
+    font-weight: bold;
+    color: #9BA7AF;
 }
 
 /* Dashboard */

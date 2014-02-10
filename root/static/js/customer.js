@@ -175,7 +175,7 @@ function validDate( DateStr ) {
 function updateTips( tips, t )
 	{
 	tips
-		.html( t )
+		.html( "<div class='error'>" + t + "</div>")
 		.addClass( "ui-state-highlight" );
 		setTimeout(function() {
 			tips.removeClass( "ui-state-highlight", 1500 );
@@ -217,7 +217,8 @@ function validateForm( requireFields ) {
 			else if ( proerty == "passwordmatch" )
 				boolRequired = ( $('#'+control).val() != $('#'+value).val());
 
-			if ( proerty == "description" && boolRequired) messageStr += "<p>" + value + "</p>";
+			//if ( proerty == "description" && boolRequired) messageStr += "<p>" + value + "</p>";
+			if ( proerty == "description" && boolRequired) messageStr += " " + value + ",";
 
 			//alert("proerty= " + proerty + ", value = " + value + ", boolRequired = " + boolRequired);
 			});
@@ -234,6 +235,10 @@ function validateForm( requireFields ) {
 
 	var tips = $(".validateTips");
 	//alert("tips: " + tips.length);
+
+	messageStr = messageStr.replace(/Please specify /ig, "");
+	messageStr = messageStr.replace(/,$/ig, "");
+	messageStr = "Please specify " + messageStr;
 
 	if (boolResult == false) {
 		if (tips.length == 0) {

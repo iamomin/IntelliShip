@@ -53,7 +53,7 @@
 			<td colspan=2>&nbsp;</td>
 		</tr>
 	</table>
-	<center><input type="submit" class="green" id="change_password" value="Update Password"/><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
+	<center><input type="submit" class="green" id="change_password" value="Update Password"/>&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 </form>
 
 <script>
@@ -61,7 +61,7 @@ $(document).ready(function(){
 
 	$("#frm_change_password").submit(function() {
 		var requireHash = {
-				oldpassword : { minlength: 1, description: "Please enter current password" },
+				oldpassword : { minlength: 1, description: "Please specify current password" },
 				newpassword1 : { minlength: 6, description: "New password at least 6 characters long" }
 				};
 		if (validateForm(requireHash)) {

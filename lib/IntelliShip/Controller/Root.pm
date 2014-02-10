@@ -128,6 +128,7 @@ sub end : Private {
 	$c->response->body($c->stash->{template});
 
 	$self->set_selected_menu($c);
+	$c->stash->{landing_page} = '/customer/order/multipage';
 
 	my $Controller = $c->controller;
 	my $Token = $Controller->token;
