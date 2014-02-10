@@ -30,28 +30,28 @@
 			<table class="summary-app">
 				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
-					<td class="float_right bold_text">SHIP TO </th><td>[% toAddress.addressname %]</td>
-					<td class="float_right bold_text">SHIP FROM </th><td>[% customer.customername %]</td>
+                                        <td class="float_right bold_text">SHIP FROM </th><td>[% customer.customername %]</td>
+					<td class="float_right bold_text">SHIP TO </th><td>[% toAddress.addressname %]</td>					
 				</tr>
 				<tr>
+                                        <td>&nbsp;</td><td>[% customerAddress.address1 %][% IF customerAddress.address2 %], [% customerAddress.address2 %][% END %]</td>
 					<td>&nbsp;</td><td>[% toAddress.address1 %][% IF toAddress.address2 %], [% toAddress.address2 %][% END %]</td>
-					<td>&nbsp;</td><td>[% customerAddress.address1 %][% IF customerAddress.address2 %], customerAddress.address2[% END %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% SHIP.zip %]</td>
 					<td>&nbsp;</td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
+                                        <td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% SHIP.zip %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td>[% toAddress.country_description %]</td>
 					<td>&nbsp;</td><td>[% customerAddress.country_description %]</td>
+                                        <td>&nbsp;</td><td>[% toAddress.country_description %]</td>
 				</tr>
 				</tr>
-					<td>&nbsp;</td><td>[% tophone %]</td>
 					<td>&nbsp;</td><td>[% customer.phone %]</td>
+                                        <td>&nbsp;</td><td>[% tophone %]</td>
 				<tr>
-				<tr>
-					<td>&nbsp;</td><td>[% toemail %]</td>
+				<tr>					
 					<td>&nbsp;</td><td>[% fromemail %]</td>
+                                        <td>&nbsp;</td><td>[% toemail %]</td>
 				</tr>
 			</table>
 			</div>
@@ -184,6 +184,7 @@
 
 	$("#btn_address").click(function() {
 		$("#do").val('address');
+                $("#gotoAddress").val(true);
 		$("#frm_order_sumary").submit();
 		});
 
