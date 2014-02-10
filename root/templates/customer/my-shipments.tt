@@ -81,7 +81,7 @@
 				<th>TRACKING#</th>
 				<th>ORDER#</th>
 				<th>CUSTOMER</th>
-				<th style="padding-left: 10px; padding-right: 10px;">ORIGIN</th>
+				<th style="padding-left: 20px; padding-right: 20px;">ORIGIN</th>
 				<th>DESTINATION</th>
 				<th>DATE</th>
 				<th>DUE DATE</th>
