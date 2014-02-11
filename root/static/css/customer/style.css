@@ -62,44 +62,17 @@ img { border: none }
 /* Header */
 
 #header {
-    height: 50px;
+    height: 40px;
     margin: 0 auto;
     padding: 10px 50px;
     background-color: #1875BA;
-    border: 1px solid #6F8DB0;
-}
-
-#header img {
-    margin: auto;
-}
-
-#header ul {
-    float: right;
-    margin-top: 15px;
-    list-style: none;
-    white-space: nowrap;
-}
-
-#header li {
-    display: inline;
-    padding: 0 8px;
-}
-
-#header label {
-    vertical-align: super;
-    padding-left: 5px;
-    color: #FFF;
-}
-
-#header a {
-    color: #FFF;
-    text-align: center;
-    cursor: pointer;
+    border: none;
 }
 
 #header img {
     max-height: 50px;
     max-width: 450px;
+    vertical-align: middle; 
 }
 
 #header input[type=text] {
