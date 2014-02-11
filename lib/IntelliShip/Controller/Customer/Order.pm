@@ -98,7 +98,7 @@ sub setup_address :Private
 	$c->stash->{fromCustomer} = $Customer;
 	$c->stash->{fromCustomerAddress} = $Customer->address;
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
-	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid);
+	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
