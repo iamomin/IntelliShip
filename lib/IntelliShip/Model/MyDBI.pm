@@ -7,8 +7,8 @@ __PACKAGE__->config(
     schema_class => 'IntelliShip::SchemaClass',
     
     connect_info => {
-#           dsn      => 'dbi:Pg:dbname=aos_intelliship;host=dintelliship.engagetechnology.com;port=5432;',
-           dsn      => 'dbi:Pg:dbname=aos_intelliship;host=localhost;port=5432;',
+           dsn      => 'dbi:Pg:dbname=aos_intelliship;host=dintelliship.engagetechnology.com;port=5432;',
+#           dsn      => 'dbi:Pg:dbname=aos_intelliship;host=localhost;port=5432;',
            user     => 'webuser',
            password => 'Byt#Yu2e',
            disable_sth_caching => 1,
