@@ -1,5 +1,10 @@
 @charset "utf-8";
 
+*{
+    margin:0;
+    padding:0;
+}
+
 html {
     font-size: 62.5%; /* Corrects text resizing oddly in IE6/7 when body font-size is set using em units */
     overflow-y: scroll; /* Keeps page centred in all browsers regardless of content height */
