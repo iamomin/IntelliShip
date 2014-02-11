@@ -151,7 +151,7 @@ sub get_db_format_date_time
 
 	$datetime =~ s/%2F/\//g if $datetime =~ /%2F/;
 
-	my ($date, $time) = split($&, $datetime) if $datetime =~ /(\ |T)/;
+	my ($date, $time) = split(/\ |T/, $datetime) if $datetime =~ /(\ |T)/;
 	$date = $datetime unless $date;
 
 	my ($mm, $dd, $yy) = split(/\//, $date);
@@ -159,8 +159,10 @@ sub get_db_format_date_time
 	$dd = '0' . $dd if length $dd == 1;
 
 	$time = $self->current_time unless $time;
-
-	return "$yy-$mm-$dd $time";
+        my $returnVal = "$yy-$mm-$dd $time";
+        $date = undef;
+        $time = undef;
+	return $returnVal;
 	}
 
 =head2 timestamp
