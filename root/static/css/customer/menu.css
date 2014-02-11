@@ -1,0 +1,71 @@
+@charset "utf-8";
+
+/* MENU STYLE */
+
+a { /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
+-webkit-transition: all 0.3s ease-in;
+-moz-transition: all 0.3s ease-in;
+-o-transition: all 0.3s ease-in;
+}
+
+nav ul ul {
+	display:none;
+}
+
+nav ul li:hover > ul {
+	display: block;
+}
+
+nav {
+	margin: 20px auto 0 auto;
+}
+
+nav a {
+	color: #000;
+	text-decoration: none;
+	padding: 5px;
+	display: block;
+}
+
+nav a:hover {
+	background: #16a085;
+}
+
+nav ul {
+	position: relative;
+	display: inline-table;
+}
+
+nav ul:after {
+	content: ""; clear: both; display: block;
+}
+
+nav ul li {
+	float:left;
+}
+
+nav ul ul {
+	position:absolute;
+	top:100%;
+}
+
+nav ul ul li {
+		float: none;
+		position: relative;
+}
+
+nav ul ul li a {
+		color: #000;
+		min-width: 80px;
+}
+
+nav ul ul li a:hover {
+	background: #FFF;
+	padding: 5px;
+	border: 1px solid #AAA;
+}
+
+nav ul ul ul {
+	position: absolute; left: 100%; top:0;
+	min-width: 100px;
+}

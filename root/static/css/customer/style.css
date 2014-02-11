@@ -1,10 +1,10 @@
-*{
-    margin:0;
-    padding:0;
-}
+@charset "utf-8";
 
-:required{
-    background-color: #FCF8E8;
+html {
+    font-size: 62.5%; /* Corrects text resizing oddly in IE6/7 when body font-size is set using em units */
+    overflow-y: scroll; /* Keeps page centred in all browsers regardless of content height */
+    -webkit-text-size-adjust: 100%; /* Prevents iOS text size adjust after orientation change, without disabling user zoom */
+    -ms-text-size-adjust: 100%; /* www.456bereastreet.com/archive/201012/controlling_text_size_in_safari_for_ios_without_disabling_user_zoom/ */
 }
 
 body{
@@ -20,6 +20,10 @@ a {
 a:hover {
     text-decoration: underline;
     color: #555;
+}
+
+a:active { /* Improves readability when focused and also mouse hovered in all browsers people.opera.com/patrickl/experiments/keyboard/test */
+    outline: 0;
 }
 
 img { border: none }
@@ -38,6 +42,10 @@ img { border: none }
     display: none;
     z-index: 999;
     position: fixed;
+}
+
+:required{
+    background-color: #FCF8E8;
 }
 
 /* Centered 1000 pixel content of all section body */
@@ -113,13 +121,12 @@ img { border: none }
 /* Menu */
 
 #menu {
-    height: 30px;
+    height: 32px;
     margin: 0 auto;
-    padding: 10px 20px;
     color: #9BA7AF;
     background-color: #F5F5F5;
     font: bold 11px Arial, Helvetica;
-    border-bottom: solid 1px #ddd;
+    border-bottom: solid 1px #DDD;
 }
 
 #menu ul {
@@ -134,90 +141,30 @@ img { border: none }
     display: inline;
 }
 
-#menu a {
-    padding: 0 2px;
-    float: left;
-    color: #9AA4AD;
-    text-decoration: none;
-}
-
-#menu li a.dashboard {
-    height: 28px;
-    padding-left: 28px;
-    background: url("/static/images/menu/dashboard-grayed.png") no-repeat;
-}
-
-#menu li a.mo {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/order-management-grayed.png") no-repeat;
-}
-
-#menu li a.new {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/new-order-grayed.png") no-repeat;
-}
-
-#menu li a.sap {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/new-order-grayed.png") no-repeat;
-}
-
-#menu li a.batch {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/batch-shipping-grayed.png") no-repeat;
-}
-
-#menu li a.qs {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/quick-ship-grayed.png") no-repeat;
-}
-
-#menu li a.sp {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/scan-automation-grayed.png") no-repeat;
-}
-
-#menu li a.upload {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/upload-grayed.png") no-repeat;
-}
-
-#menu li a.sm {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/maintenance.png") no-repeat;
-}
-
-#menu li a.ms {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/my-shipments-grayed.png") no-repeat;
-}
-
-#menu li a.reports {
-    height: 32px;
-    padding-left: 28px;
-    background: url("/static/images/menu/reports-grayed.png") no-repeat;
-}
-
 #menu li :hover {
     background-color: #E2E2E2;
 }
 
-#menu a.selected {
-    border-bottom: 3px solid #1875BA;
-    cursor: default;
+#menu a {
+    float: left;
+    color: #9AA4AD;
+    padding-right: 5px;
+    text-decoration: none;
+    border-right: 1px solid #DDD;
 }
 
-#menu div {
-    margin-top: 8px;
+#menu img {
+    vertical-align: middle;
+}
+
+#menu a.selected {
+    color: #FFF;
+    cursor: default;
+    background-color: #98A7AF;
+}
+
+#menu a.selected :hover {
+    background-color: #98A7AF;
 }
 
 /*
