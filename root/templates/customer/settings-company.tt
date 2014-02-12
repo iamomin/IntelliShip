@@ -737,13 +737,23 @@
 			<tr><td colspan="6">No contacts found</td></tr>
 		[% END %]
 	</table>
+
+	<center><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></center>
 	[% UNLESS ajax %]
 	</div>
 
 	<script>
 
 	function editContact(contactid) {
-		var params = '&contactid='+ contactid + '&' + $("#frm_setup_contact").serialize();
+		var customerid = $("#customerid").val();
+		var params = '&do=&SHOW_RULES=1&customerid=' + customerid + '&contactid=' + contactid;
+		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', params, '');
+		}
+
+	function addContact()
+		{
+		var customerid = $("#customerid").val();
+		var params = '&do=&SHOW_RULES=1&customerid=' + customerid + '&contactid=';
 		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', params, '');
 		}
 

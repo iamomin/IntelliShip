@@ -1,3 +1,4 @@
+[% JSON_DATA %]
 [% #---------------------------------------------------------- %]
 [% # DISPLAY SETTINGS %]
 [% #---------------------------------------------------------- %]
@@ -597,26 +598,39 @@ $(document).ready(function(){
 
 	<form id="frm_setup_contact" method="post" action="/customer/settings/contactinformation">
 		<input type="hidden" id="do" name="do" value="configure"/>
-		<input type="hidden" id="contactid" name="contactid" value="[% contactid %]"/>
-
+		<input type="hidden" id="ajax" name="ajax" value="[% ajax %]"/>
+		<input type="hidden" id="contactid" name="contactid" value="[% contactInfo.contactid %]"/>
+		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>		
 		<table class="center_app">
 		<tr>
-			<td><label class="float_right" for="firstnamedisplay">First Name:</label></td>
-			<td id="firstnamedisplay">[% contactInfo.firstname %]</td>
+			<td><label class="float_right" for="firstname">First Name:</label></td>
+			<td id="firstnamedisplay">
+			[% IF contactInfo.contactid %]
+				[% contactInfo.firstname %]
+			[% ELSE %]
+			<input type="text" name="firstname" id="firstname" value="[% contactInfo.firstname %]" class="broad_text">
+			[% END %]
+			</td>
 
 			<td><label class="float_right" for="contact_address1">Shipping Address1:</label></td>
 			<td><input type="text" name="contact_address1" id="contact_address1" value="[% contactAddress.address1 %]" class="broad_text"></td>		
 		</tr>
 		<tr>
 			<td><label class="float_right" for="lastname">Last Name:</label></td>
-			<td id="lastnamedisplay">[% contactInfo.lastname %]</td>
+			<td id="lastnamedisplay">
+			[% IF contactInfo.contactid %]
+				[% contactInfo.lastname %]
+			[% ELSE %]
+				<input type="text" name="lastname" id="lastname" value="[% contactInfo.lastname %]" class="broad_text">
+			[% END %]
+			</td>
 
 			<td><label class="float_right" for="contact_address2">Shipping Address2:</label></td>
 			<td><input type="text" name="contact_address2" id="contact_address2" value="[% contactAddress.address2 %]" class="broad_text"></td>		
 		</tr>
 		<tr>
 			<td><label class="float_right" for="department">Department:</label></td>
-			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]"></td>
+			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]" onblur="validateDepartment();"></td>
 			
 			<td><label class="float_right" for="contact_city">Shipping City:</label></td>
 			<td><input type="text" name="contact_city" id="contact_city" value="[% contactAddress.city %]" class="broad_text"></td>		
@@ -688,7 +702,7 @@ $(document).ready(function(){
 		</tr>
 		</table>
 
-		[% IF DISPLAY_RULE_SETTINGS %]
+		[% IF SHOW_RULES %]
 		<h2>RULES</h2>
 		<table class="center_app css3-checkboxes">
 
@@ -762,19 +776,38 @@ $(document).ready(function(){
 
 		[% END %]
 		<center>
-			<input type="button" class="green" id="update_contact" value="Update Contact" onclick="updateContact();"/>
+			<input type="button" class="green" id="update_contact" value="[% IF contactInfo.contactid %] Update [% ELSE %] Add [% END %] Contact" onclick="updateContact();"/>
 			&nbsp;&nbsp;
-			<input type="button" class="button" value="Cancel" onclick=[% IF contactid %] "cancelUpdate();" [% ELSE %] javascript:history.back(); [% END %]/>
+			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %] "cancelUpdate();" [% ELSE %] javascript:history.back(); [% END %]/>
 		</center>
 	</form>
 
 	<script>
 
+
+	function validateDepartment() {
+		var customerid = $("#customerid").val();
+		var department = $("#department").val();
+		var query  = 'customerid=' + customerid + '&term=' + department;
+		if(department.length > 0)
+			{			
+			send_ajax_request('', 'JSON', 'settings', 'validate_department', query, function () {
+				boolResult = (JSON_data.COUNT > 0);
+				if (!boolResult)					
+					{
+					showError("Please specify valid department");
+					$("#department").val("");					
+					}
+				});
+			}		
+		}
+		
+
 	function updateContact()
 		{
 		if(validateContactDetials())
 			{
-			if($("#contactid").val())
+			if($("#ajax").val())
 				send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '&'+$('#frm_setup_contact').serialize(), '');
 			else
 				$("#frm_setup_contact").submit();
@@ -791,6 +824,7 @@ $(document).ready(function(){
 			contact_state    : { minlength: 2, description: "Please specify state" },
 			contact_zip      : { minlength: 5, description: "Please specify zip code" },
 			contact_country  : { minlength: 1, description: "Please specify country" },
+			department		 : { minlength: 5, description: "Please specify department" },	
 			};
 
 		if (validateForm(requireHash)) {

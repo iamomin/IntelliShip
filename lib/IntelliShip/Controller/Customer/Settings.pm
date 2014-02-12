@@ -230,6 +230,10 @@ sub ajax :Local
 		$c->stash->{EXTID_DROP_LIST} = 1;
 		$c->stash->{EXTID_MANAGEMENT} = 1;
 		}
+	elsif ($params->{'action'} eq 'validate_department')
+		{
+		$self->validate_department;
+		}
 
 	$c->stash($params);
 	$c->stash(template => "templates/customer/settings.tt");
@@ -488,18 +492,34 @@ sub process_pagination
 	return $batches;
 	}
 
+sub validate_department :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = { 
+				customerid => $params->{'customerid'}, 
+				field => 'department', 
+				fieldvalue => $params->{'term'}
+				};
+	
+	my $department_count = $c->model('MyDBI::Droplistdata')->search($WHERE)->count;
+	$c->log->debug("___ Drop list data Department count : " . $department_count);
+
+	my $json_DATA = IntelliShip::Utils->jsonify({ COUNT => $department_count });
+	$c->log->debug("___ json_DATA : " . $json_DATA);
+	$c->stash->{JSON_DATA} = $json_DATA;
+	}
+
 sub contactinformation :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
 
 	my $params = $c->req->params;
-	my $Contact = $params->{'ajax'} ? $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}}) : $self->contact;
 
-	my $Address = $Contact->address;
-	$c->stash->{contactid} = $params->{'contactid'};
-
-	$c->stash->{DISPLAY_RULE_SETTINGS} = 1 if $params->{'ajax'};
+	$c->stash($params);
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
@@ -507,6 +527,18 @@ sub contactinformation :Local
 		{
 		IntelliShip::Utils->hash_decode($params);
 
+		my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+
+		unless ($Contact)
+			{
+			$c->log->debug("....... NO CONTACT INFO, CREATING NEW FOR CUSTOMER ID: " . $params->{'customerid'});
+			$Contact = $c->model('MyDBI::Contact')->new({});
+			$Contact->contactid($self->get_token_id);
+			$Contact->customerid($params->{'customerid'});
+			$Contact->password($Contact->contactid);
+			$Contact->insert;
+			}
+		
 		my $addressData = {
 			address1	=> $params->{'contact_address1'},
 			address2	=> $params->{'contact_address2'},
@@ -515,8 +547,13 @@ sub contactinformation :Local
 			zip			=> $params->{'contact_zip'},
 			country		=> $params->{'contact_country'},
 			};
-
-		unless ($Address)
+		
+		my $Address;
+		if ($Contact->addressid)
+			{
+			$Address = $Contact->address;
+			}
+		else
 			{
 			my @addresses = $c->model('MyDBI::Address')->search($addressData);
 
@@ -533,7 +570,9 @@ sub contactinformation :Local
 			}
 
 		$Address->update($addressData);
-
+		
+		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
+		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
 		$Contact->email($params->{'email'});
 		$Contact->fax($params->{'fax'});
 		$Contact->department($params->{'department'});
@@ -552,7 +591,7 @@ sub contactinformation :Local
 	#INSERT NEW CONTACT SETTING RECORDS
 	foreach my $ruleHash (@$CONTACT_RULES)
 		{
-		$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
+		#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
 		if($params->{$ruleHash->{value}})
 			{
 			my $customerContactData = {
@@ -568,6 +607,7 @@ sub contactinformation :Local
 			$NewCCData->insert;
 			}
 		}
+
 		$Contact->update;
 
 		$c->stash->{MESSAGE} = 'Contact information updated successfully';
@@ -583,14 +623,28 @@ sub contactinformation :Local
 		}
 	else
 		{
-		$c->stash->{CONTACT_INFO}			 = 1;
-		$c->stash->{contactInfo}			 = $Contact;
-		$c->stash->{contactAddress}			 = $Address;
-		$c->stash->{location}				 = $Contact->get_contact_data_value('location');
-		$c->stash->{ownerid}				 = $Contact->get_contact_data_value('ownerid');
-		$c->stash->{origdate}				 = $Contact->get_contact_data_value('origdate');
-		$c->stash->{sourcedate}				 = $Contact->get_contact_data_value('sourcedate');
-		$c->stash->{disabledate}			 = $Contact->get_contact_data_value('disabledate');
+		my $Contact;
+		if (defined $params->{'contactid'})
+			{
+			$Contact = $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+			}
+		else
+			{
+			$c->log->debug(" GETTING SELF CONTACT = ");
+			$Contact = $self->contact;
+			$c->stash->{customerid} = $Contact->customerid
+			}
+
+		if ($Contact)
+			{
+			$c->stash->{contactInfo}			 = $Contact;
+			$c->stash->{contactAddress}			 = $Contact->address;
+			$c->stash->{location}				 = $Contact->get_contact_data_value('location');
+			$c->stash->{ownerid}				 = $Contact->get_contact_data_value('ownerid');
+			$c->stash->{origdate}				 = $Contact->get_contact_data_value('origdate');
+			$c->stash->{sourcedate}				 = $Contact->get_contact_data_value('sourcedate');
+			$c->stash->{disabledate}			 = $Contact->get_contact_data_value('disabledate');
+			}
 				
 		$c->stash->{statelist_loop}			 = $self->get_select_list('US_STATES');
 		$c->stash->{countrylist_loop}		 = $self->get_select_list('COUNTRY');
@@ -607,8 +661,10 @@ sub contactinformation :Local
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');	
 		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
-		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);		
+		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
+			
 
+		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
 	}
