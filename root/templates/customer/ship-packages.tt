@@ -1,53 +1,110 @@
+[% IF MULTIORDER_DISPLAY%]
+
+	<table class="css3-checkboxes" style="text-align: center;">
+		<tr>
+			<th><label><input type="checkbox" id="all"/><span></span></label></th>
+			<th>Condition</th>
+			<th>Order Number</th>
+			<th>Consignee</th>
+			<th>Address</th>
+			<th>City</th>
+			<th>Zip</th>
+			<th>Country</th>
+		</tr>
+		[% IF multi_order_list %]
+			[% FOREACH item IN multi_order_list %]
+			<tr>
+				<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]"/><span></span></label></td>
+				<td><a class="green" href="javascript:void(0);"></a></td>
+				<td>[% item.ordernumber %]</td>
+				<td>[% address_info.addressname %]</td>
+				<td>[% address_info.address1 %][% address_info.address2 %]</td>
+				<td>[% address_info.city %]</td>
+				<td>[% address_info.zip %]</td>
+				<td>[% address_info.country %]</td>
+			</tr>
+			[% END %]
+		[% ELSE %]
+			<tr>
+				<td colspan="8"><center>No matching orders found</center></td>
+			</tr>
+		[% END %]
+	</table>
+
+[% ELSE %]
 
 <h2>Ship Packages</h2>
 
-<div class="notice">
-	<p>Please enter the order number and package weight.</p>
-	<p>Click &quot;Submit&quot; when finished.</p>
-	<p>&nbsp;</p>
-	<p class="require_text">* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges.</p>
-</div>
+	<div class="notice">
+		<p>Please enter the order number and package weight.</p>
+		<p>Click &quot;Submit&quot; when finished.</p>
+		<p>&nbsp;</p>
+		<p class="require_text">* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges.</p>
+	</div>
 
-[% IF ERROR %]<div class="error">[% ERROR %]</div>[% END %]
+	[% IF ERROR %]<div class="error">[% ERROR %]</div>[% END %]
 
-<!-- <p class="validateTips"></p> -->
+	<div class="validateTips"></div>
 
-<form id="frm_ship_packages" method="post" action="/customer/shippackages">
-	<input type="hidden" id="do" name="do" value="shippackages"/>
+	<form id="frm_ship_packages" method="post" action="/customer/shippackages">
+		<input type="hidden" id="do" name="do" value="shippackages"/>
 
-	<table class="center_app css3-checkboxes">
-		<tr>
-			<td><label for="ordernumber" class="float_right">Order Number :</label></td>
-			<td><input type="text" class="broad_text" name="ordernumber" id="ordernumber" value="[% ordernumber %]"></td>
-			<td><label><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><span><label for="multiordershipment">Multiple Order Numbers</label></span></label></td>
-		</tr>
-		<tr>
-			<td><label for="enteredweight" class="float_right">Weight :</label></td>
-			<td><input type="text" class="broad_text" name="enteredweight" id="enteredweight" value="[% enteredweight %]"></td>
-			<td><label><input type="checkbox" name="variableweightshipment" id="variableweightshipment" value="1"/><span><label for="variableweightshipment">Multiple Shipment Weights</label></span></label></td>
-		</tr>
-		<tr>
-			<td><label for="quantity" class="float_right">Packages :</label></td>
-			<td><input type="text" class="broad_text" name="quantity" id="quantity" value="[% quantity %]"></td>
-			<td><label><input type="checkbox" name="overrideautoprocess" id="overrideautoprocess" value="1"/><span><label for="overrideautoprocess">Manually Process Shipment</label></span></label></td>
-		</tr>
-	</table>
-	<center><input type="submit" class="green" value="Submit"/></center>
-</form>
+		<table class="app css3-checkboxes">
+			<tr>
+				<td><label for="ordernumber" class="float_right">Order Number:</label></td>
+				<td><input type="text" class="broad_text" name="ordernumber" id="ordernumber" value="[% ordernumber %]"></td>
+				<td><label><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><span><label for="multiordershipment">Multiple Order Numbers</label></span></label></td>
+			</tr>
+			<tr>
+				<td><label for="enteredweight" class="float_right">Weight:</label></td>
+				<td><input type="text" class="broad_text" name="enteredweight" id="enteredweight" value="[% enteredweight %]"></td>
+				<td><label><input type="checkbox" name="variableweightshipment" id="variableweightshipment" value="1"/><span><label for="variableweightshipment">Multiple Shipment Weights</label></span></label></td>
+			</tr>
+			<tr>
+				<td><label for="quantity" class="float_right">Number of Packages:</label></td>
+				<td><input type="text" class="broad_text" name="quantity" id="quantity" value="[% quantity %]"></td>
+				<td><label><input type="checkbox" name="overrideautoprocess" id="overrideautoprocess" value="1"/><span><label for="overrideautoprocess">Manually Process Shipment</label></span></label></td>
+			</tr>
+		</table>
+		<div id="myShipments"></div>
+		<br/>
+		<center><input type="submit" id="submit_multiorder" class="green" value="Submit"/></center>
+	</form>
 
-<script>
+	<script>
 
-$(document).ready(function(){
+	$(document).ready(function() {
 
-	var requireHash = {
-			ordernumber : { minlength: 1 , description: "Please enter order number" },
-			enteredweight : { minlength: 1, description: "Please enter total weight" },
-			quantity : { minlength: 1, description: "Please enter total packages" },
+		$("#multiordershipment").attr("checked", false);
+		$("#variableweightshipment").attr("checked", false);
+		$("#overrideautoprocess").attr("checked", false);
+
+		$("#enteredweight").mask("99999");
+		$("#quantity").mask("99999");
+
+		$('#multiordershipment').change(function() {
+			if ($(this).is(":checked") && $("#ordernumber").val().length > 0)
+				{
+				var query_param = "&ordernumber=" + $("#ordernumber").val() + "&multiordershipment=" + $("#multiordershipment").val();
+				send_ajax_request('myShipments', 'HTML', 'shippackages', '', query_param, function() {
+					$("#myShipments").slideDown(1000);
+					});
+				}
+			else
+				{
+				$("#myShipments").slideUp(1000);
+				}
+			});
+
+		var requiredFieldHash = {
+				ordernumber: { minlength: 5, description: "Please specify order number" },
 			};
 
-	$("#frm_ship_packages").submit(function() {
-		return validateForm(requireHash);
-		});
-	});
+		$( "#frm_ship_packages" ).submit(function() {
+			return validateForm(requiredFieldHash);
+			});
 
-</script>
+		});
+
+	</script>
+[% END %]

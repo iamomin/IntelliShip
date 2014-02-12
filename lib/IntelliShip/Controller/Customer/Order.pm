@@ -848,12 +848,32 @@ sub populate_order :Private
 		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 
 		$c->stash->{'totalweight'} = 0;
-		$c->stash->{'totalpackages'} = 0;my $rownum_id = 0;
-		my $package_detail_section_html;
+		$c->stash->{'totalpackages'} = 0;
+
+		my $packages = [];
+		if ($params->{'coids'})
+			{
+			foreach my $coid (@{$params->{coids}})
+				{
+				my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+				my @co_packages = $CoObj->packages;
+				push @$packages, $_ foreach @co_packages;
+
+				$c->log->debug("Total No of Packages in COID ($coid): " . @$packages);
+				}
+
+			$c->log->debug("Total Packages: " . @$packages);
+			}
 
 		# Step 1: Find Packages belog to Order
-		my @packages = $CO->packages;
-		foreach my $Package (@packages)
+		my @COspackages = $CO->packages;
+
+		push @$packages, $_ foreach @COspackages;
+		$c->log->debug("Total No of packages  " . @$packages);
+
+		my $rownum_id = 0;
+		my $package_detail_section_html;
+		foreach my $Package (@$packages)
 			{
 			$rownum_id++;
 			$c->stash->{'totalpackages'}++;
@@ -946,7 +966,7 @@ sub add_detail_row :Private
 
 		$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 		}
-
+	$c->stash->{'coid'}      = $PackProData->ownerid;
 	$c->stash->{'weight'}      = $PackProData->weight;
 	$c->stash->{'class'}       = $PackProData->class;
 	$c->stash->{'dimweight'}   = $PackProData->dimweight;

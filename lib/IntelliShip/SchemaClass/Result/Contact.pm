@@ -238,8 +238,8 @@ sub get_restricted_values
 	my $self = shift;
 	my $field_name = shift;
 	my $field_values = [];
-	my @arr = $self->restrictions;
-	$_->fieldname =~ /$field_name/ and push(@$field_values, $_->fieldvalue) foreach @arr;
+	my @arr = $self->restrictions->search({ fieldname => $field_name });
+	push(@$field_values, $_->fieldvalue) foreach @arr;
 	return $field_values;
 	}
 

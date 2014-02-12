@@ -184,7 +184,7 @@
 
 	$("#btn_address").click(function() {
 		$("#do").val('address');
-                $("#gotoAddress").val(true);
+		$("#gotoAddress").val(true);
 		$("#frm_order_sumary").submit();
 		});
 

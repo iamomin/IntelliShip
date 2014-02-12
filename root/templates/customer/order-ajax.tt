@@ -112,7 +112,7 @@
 		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/> 
 		<table>
 		<tr>
-			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
+			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" title="[% coid %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
 			<td style="width: 04%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
 			<td style="width: 04%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% sku %]"/></td>
 			<td style="width: 11%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>

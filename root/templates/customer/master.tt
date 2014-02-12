@@ -60,11 +60,13 @@
 
 		<script>
 			$(document).ready(function() {
-				var src = $('img.conversation_img[alt="example"]').attr('src');
-				$("#[% selected_mnu %]").addClass("selected ");
-				$("#[% selected_mnu %]").removeAttr('href');
+				var link = $("#[% selected_mnu %]");
+				if (link == undefined) return;
+				var src = link.attr('src');
+				link.addClass("selected ");
+				link.removeAttr('href');
 				var src = $("#[% selected_mnu %] > img").attr('src');
-				$("#[% selected_mnu %] > img").attr('src', src.replace(/grayed/,"white"));
+				if (src != undefined) $("#[% selected_mnu %] > img").attr('src', src.replace(/grayed/,"white"));
 				});
 		</script>
 	</head>
