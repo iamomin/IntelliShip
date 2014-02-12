@@ -316,6 +316,7 @@
 					[% END %]
 					</table>
 				</div>
+			[% IF item.checked %]<script>$("#carrier").val('[% item.carrier %]');</script>[% END %]
 			</td>
 			<td class="sc-hover">[% item.carrier %]</td>
 			<td class="sc-hover">[% item.service %]</td>
