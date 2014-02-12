@@ -49,8 +49,12 @@ img { border: none }
     position: fixed;
 }
 
-:required{
+:required {
     background-color: #FCF8E8;
+}
+
+.require {
+    color: #A22827;
 }
 
 /* Centered 1000 pixel content of all section body */

@@ -143,7 +143,7 @@ sub load_order :Private
 
 	my $CO = $c->stash->{CO};
 
-	if ($params->{'multiordershipment'})
+	if ($params->{'multiordershipment'} and $params->{'coids'})
 		{
 		$params->{'coids'} = $c->stash->{COIDS};
 		}

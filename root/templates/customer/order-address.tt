@@ -44,9 +44,9 @@
 
 	<div id="equal">
 		<div id="row">
-                        <table class="single-row">
-                        <tr>
-                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-right: 10px">			
+			<table class="single-row">
+			<tr>
+			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-right: 10px">
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
@@ -83,30 +83,26 @@
 				<tr>
 					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
-			</table>			
-                        </td>
-                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 10px">						
+			</table>
+			</td>
+			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 10px">
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
-					<td><label for="toname" class="float_right">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
+					<td><label for="toname" class="float_right require">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress1" class="float_right">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
+					<td><label for="toaddress1" class="float_right require">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
 				</tr>
 				<tr>
 					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
 				</tr>
 				<tr>
-					<td><label class="float_right"><label for="tocity">City</label></label></td>
-					<td>
-					<input type="text" name="tocity" id="tocity" style="width: 210px" value="[% toAddress.city %]"/>
-					</td>
+					<td><label class="float_right require"><label for="tocity">City</label></label></td>
+					<td><input type="text" name="tocity" id="tocity" style="width: 210px" value="[% toAddress.city %]"/></td>
 				</tr>
 				<tr>
-					<td>
-						<label class="float_right" for="tostate">State</label>
-					</td>
+					<td><label class="float_right require" for="tostate">State</label></td>
 					<td>
 						<label>
 					<select name="tostate" id="tostate">
@@ -118,15 +114,11 @@
 					</td>
 				</tr>
 				<tr>
-					<td>
-						<label class="float_right" for="tozip">Zipcode:</label>
-					</td>
-					<td>
-						<input type="text" name="tozip" id="tozip" style="width: 70px;" value="[% toAddress.zip %]"/>
-					</td>
+					<td><label class="float_right require" for="tozip">Zipcode:</label></td>
+					<td><input type="text" name="tozip" id="tozip" style="width: 70px;" value="[% toAddress.zip %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="tocountry" class="float_right">Country:</label></td><td>
+					<td><label for="tocountry" class="float_right require">Country:</label></td><td>
 					<label>
 					<select name="tocountry" id="tocountry">
 						[% FOREACH item IN countrylist_loop %]
@@ -142,22 +134,22 @@
 				<tr>
 					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
-                                [% IF one_page %]
+								[% IF one_page %]
 				<tr>
 					<td><label for="tocustomernumber" class="float_right">Customer#:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
-                                [% ELSE %]
-                                <tr>
+								[% ELSE %]
+								<tr>
 					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
-                                [% END %]
+								[% END %]
 				<tr>
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
-			</table>			
-                        </td>
+			</table>
+			</td>
 [% IF one_page %]
-                        <td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 20px">			
+			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 20px">
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
@@ -175,32 +167,31 @@
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
-                                [% count = 0%]
-                                [% FOREACH item IN deliverymethod_loop %]				
-                                        [% IF count == 0%]
-                                        <tr>
+				[% count = 0%]
+				[% FOREACH item IN deliverymethod_loop %]
+				[% IF count == 0%]
+				<tr>
 					<td rowspan="3"><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
-                                        <td class="css3-radios">
-						<div id="third-party-details"></div>    
+					<td class="css3-radios">
+						<div id="third-party-details"></div>
 						<label>
 						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
 						<span><label for="[% item.value %]">[% item.name %]</label></span>
 						</label>
 					</td>
-                                        </tr>
-                                        [% ELSE %]
-                                        <tr>                                        
-                                        <td class="css3-radios">
-						
+				</tr>
+				[% ELSE %]
+				<tr>
+					<td class="css3-radios">
 						<label>
-						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
-						<span><label for="[% item.value %]">[% item.name %]</label></span>
+							<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
+							<span><label for="[% item.value %]">[% item.name %]</label></span>
 						</label>
 					</td>
-                                        </tr>                                        
-                                        [% END %]
-                                        [% count = count + 1 %]
-                                [% END %]
+				</tr>
+				[% END %]
+				[% count = count + 1 %]
+				[% END %]
 				[% IF PONUMBER %]
 				<tr>
 					<td><label for="ponumber" class="float_right">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
@@ -232,14 +223,12 @@
 					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
 					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
 				</tr>
-				[% ELSE %]
-				
 				[% END %]
-			</table>			
-                        </td>
+			</table>
+		</td>
 [% END %]
-                </tr>
-                </table>
+		</tr>
+		</table>
 		</div>
 	</div>
 [% UNLESS one_page %]
@@ -256,11 +245,11 @@
 //$("#tophone").mask("999-999-9999");
 //$("#tozip").mask("99999");
 [% IF one_page %]
-$("#datetoship").datepicker({		
+$("#datetoship").datepicker({
 		minDate: '-0d'
 		});
 [% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
-$("#dateneeded").datepicker({		
+$("#dateneeded").datepicker({
 		minDate: '-0d'
 		});
 [% END %]
@@ -306,10 +295,10 @@ $(document).ready(function(){
 	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 	setToolTip();
 	[% END %]
-        
-        if(requiredFieldHash){
-            markRequiredFields(requiredFieldHash);
-        }
+
+		if(requiredFieldHash){
+			markRequiredFields(requiredFieldHash);
+		}
 	});
 [% END %]
 </script>

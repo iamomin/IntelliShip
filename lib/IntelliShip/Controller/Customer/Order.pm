@@ -270,7 +270,7 @@ sub save_CO_details :Private
 	$coData->{'freightcharges'} = $params->{'deliverymethod'} if length $params->{'deliverymethod'};
 
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
-	#$coData->{'tocustomernumber'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
+	$coData->{'custnum'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
 
 	$coData->{'cotypeid'} = ($params->{'action'} and $params->{'action'} eq 'clearquote') ? 10 : 1;
 
@@ -838,6 +838,7 @@ sub populate_order :Private
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
 		$c->stash->{toAddress} = $CO->to_address;
+		$c->stash->{tocustomernumber} = $CO->custnum;
 		}
 
 	## Package Details

@@ -52,17 +52,17 @@
 		<table class="app css3-checkboxes">
 			<tr>
 				<td><label for="ordernumber" class="float_right">Order Number:</label></td>
-				<td><input type="text" class="broad_text" name="ordernumber" id="ordernumber" value="[% ordernumber %]"></td>
+				<td><input type="text" class="broad_text" name="ordernumber" id="ordernumber" value="[% ordernumber %]"/></td>
 				<td><label><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><span><label for="multiordershipment">Multiple Order Numbers</label></span></label></td>
 			</tr>
 			<tr>
 				<td><label for="enteredweight" class="float_right">Weight:</label></td>
-				<td><input type="text" class="broad_text" name="enteredweight" id="enteredweight" value="[% enteredweight %]"></td>
+				<td><input type="text" class="broad_text" name="enteredweight" id="enteredweight" value="[% enteredweight %]"/></td>
 				<td><label><input type="checkbox" name="variableweightshipment" id="variableweightshipment" value="1"/><span><label for="variableweightshipment">Multiple Shipment Weights</label></span></label></td>
 			</tr>
 			<tr>
 				<td><label for="quantity" class="float_right">Number of Packages:</label></td>
-				<td><input type="text" class="broad_text" name="quantity" id="quantity" value="[% quantity %]"></td>
+				<td><input type="text" class="broad_text" name="quantity" id="quantity" value="[% quantity %]"/></td>
 				<td><label><input type="checkbox" name="overrideautoprocess" id="overrideautoprocess" value="1"/><span><label for="overrideautoprocess">Manually Process Shipment</label></span></label></td>
 			</tr>
 		</table>
@@ -82,7 +82,12 @@
 		$("#enteredweight").mask("99999");
 		$("#quantity").mask("99999");
 
-		$('#multiordershipment').change(function() {
+		$("#ordernumber").change(function() {
+			$('#multiordershipment').attr('checked', false);
+			$("#myShipments").slideUp(1000);
+			});
+
+		$("#multiordershipment").change(function() {
 			if ($(this).is(":checked") && $("#ordernumber").val().length > 0)
 				{
 				var query_param = "&ordernumber=" + $("#ordernumber").val() + "&multiordershipment=" + $("#multiordershipment").val();
