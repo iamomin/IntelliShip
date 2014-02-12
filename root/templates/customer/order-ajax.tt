@@ -348,10 +348,15 @@
 
 	<script>
 
+		$(document).ready(function() {
+			$("#carrier-service-list").tabs();
+			});
+
 		function setCarrier(carrier)
 			{
 			$("#carrier").val(carrier);
 			}
+
 		function displayShipmentChargeDetails(ID)
 			{
 			var dlg = $("#" + ID).dialog({
@@ -367,6 +372,7 @@
 				});
 			dlg.dialog("open");
 			}
+
 		function sortCarrierServiceList(ID)
 			{
 			if (ID == 'RECOMMENDED')  $("#freight-charges-list").html(recommendedCarrierList);

@@ -31,7 +31,7 @@ sub APIRequest
 	my $request = shift;
 
 	my $arrs_path = '/opt/engage/arrs';
-	if (-r "/opt/engage/arrs/lib" )
+	if (0 and -r "/opt/engage/arrs/lib" )
 		{
 		eval "use lib '$arrs_path/lib'";
 		eval "use ARRS";
@@ -44,8 +44,8 @@ sub APIRequest
 		$request->{'screen'} = 'api';
 		$request->{'username'} = 'engage';
 		$request->{'password'} = 'ohila4';
-		#$request->{'httpurl'} = "http://darrs.engagetechnology.com";
-		$request->{'httpurl'} = "http://localhost";
+		$request->{'httpurl'} = "http://darrs.engagetechnology.com";
+		#$request->{'httpurl'} = "http://localhost";
 =as
 		my $hostname = IntelliShip::MyConfig->getHostname;
 
