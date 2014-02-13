@@ -98,13 +98,13 @@
 					<td>
 					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
 					<label>
-					<select name="tostate" id="tostate">
+					<select name="tostate" id="tostate" style="width: 45px;">
 						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]" title="[% item.name %]" [% IF item.value == toAddress.state %]SELECTED[% END %]>[% item.value %]</option>
+							<option value="[% item.value %]" [% IF item.value == toAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
 						[% END %]
 					</select>
 					</label>
-					<input type="text" name="tozip" id="tozip" style="width: 50px;" value="[% toAddress.zip %]"/>
+					<input type="text" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]"/>
 					</td>
 				</tr>
 				<tr>

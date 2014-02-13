@@ -921,12 +921,6 @@ input.orange  {
 #carrier-service-list.ui-tabs-nav { margin: 0; padding: 0; }
 #carrier-service-list.ui-widget-header { background-color: #FFF; border: none; }
 
-/*
-.ui-widget-header { border: none; background-color: #FFF; }
-.ui-state-default { width: 300px; background-color: #F5F5F5; }
-.ui-widget-header .ui-state-default  .ui-state-active { background-image: none; }
-*/
-
 .float_right {float: right;}
 .float_left {float: left;}
 

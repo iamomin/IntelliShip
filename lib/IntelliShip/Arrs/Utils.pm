@@ -1,8 +1,8 @@
 package IntelliShip::Arrs::Utils;
 
 use Moose;
-use ARRS;
 use LWP::UserAgent;
+use HTTP::Request::Common;
 
 BEGIN { has 'context' => ( is => 'rw'); }
 

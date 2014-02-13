@@ -616,10 +616,13 @@ function get_customer_service_list(params)
 
 	//$('#carrier-service-list').tabs('destroy').tabs();
 
-	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function (){
+	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
+
+		$("#carrier-service-list").tabs();
+
 		$("#route").attr("disabled",false);
 		$("#route").val(origVal);
-		has_FC = true;
+		has_FC=true;
 
 		$("#service-level-summary").slideDown(1000);
 		});

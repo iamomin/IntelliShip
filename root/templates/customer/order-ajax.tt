@@ -349,10 +349,6 @@
 
 	<script>
 
-		$(document).ready(function() {
-			$("#carrier-service-list").tabs();
-			});
-
 		function setCarrier(carrier)
 			{
 			$("#carrier").val(carrier);
@@ -372,13 +368,6 @@
 					}
 				});
 			dlg.dialog("open");
-			}
-
-		function sortCarrierServiceList(ID)
-			{
-			if (ID == 'RECOMMENDED')  $("#freight-charges-list").html(recommendedCarrierList);
-			if (ID == 'TRANSIT_DAYS') $("#freight-charges-list").html(transitDaysCarrierList);
-			if (ID == 'VIEW_ALL')     $("#freight-charges-list").html(viewAllCarrierList);;
 			}
 
 		var shipmentChargeDlg = $("#SC-DLG").dialog({
