@@ -271,6 +271,15 @@ $("#dateneeded").change(function() {
 //$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
+
+$("#fromdepartment").blur(function() {
+	validateDepartment('[%fromCustomer.customerid%]', $("#fromdepartment").val(), function () {
+		if (JSON_data.COUNT > 0) return;
+		showError("Please specify valid department name");
+		$("#fromdepartment").val("");
+		});
+	});
+
 [% UNLESS one_page %]
 [% FOREACH item IN requiredfield_list %]
 requiredFieldHash['[% item.name %]']=[% item.details %];

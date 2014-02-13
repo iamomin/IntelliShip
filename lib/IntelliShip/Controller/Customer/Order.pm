@@ -2150,7 +2150,7 @@ sub display_error_details :Private
 	my $c = $self->context;
 
 	$c->stash(MESSAGE => $msg);
-	$c->stash(template => "templates/customer/order-review.tt");
+	$c->stash(template => "templates/customer/order-error.tt");
 	}
 
 __PACKAGE__->meta->make_immutable;

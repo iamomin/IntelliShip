@@ -784,24 +784,13 @@ $(document).ready(function(){
 
 	<script>
 
-
-	function validateDepartment() {
-		var customerid = $("#customerid").val();
-		var department = $("#department").val();
-		var query  = 'customerid=' + customerid + '&term=' + department;
-		if(department.length > 0)
-			{			
-			send_ajax_request('', 'JSON', 'settings', 'validate_department', query, function () {
-				boolResult = (JSON_data.COUNT > 0);
-				if (!boolResult)					
-					{
-					showError("Please specify valid department");
-					$("#department").val("");					
-					}
-				});
-			}		
-		}
-		
+	$("#department").blur(function() {
+		validateDepartment($("#customerid").val(), $("#department").val(), function() {
+			if (JSON_data.COUNT > 0) return;
+			showError("Please specify valid department name");
+			$("#department").val("");
+			});
+		});
 
 	function updateContact()
 		{
@@ -824,7 +813,6 @@ $(document).ready(function(){
 			contact_state    : { minlength: 2, description: "Please specify state" },
 			contact_zip      : { minlength: 5, description: "Please specify zip code" },
 			contact_country  : { minlength: 1, description: "Please specify country" },
-			department		 : { minlength: 5, description: "Please specify department" },	
 			};
 
 		if (validateForm(requireHash)) {

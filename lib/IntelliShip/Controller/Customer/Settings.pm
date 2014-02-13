@@ -230,10 +230,6 @@ sub ajax :Local
 		$c->stash->{EXTID_DROP_LIST} = 1;
 		$c->stash->{EXTID_MANAGEMENT} = 1;
 		}
-	elsif ($params->{'action'} eq 'validate_department')
-		{
-		$self->validate_department;
-		}
 
 	$c->stash($params);
 	$c->stash(template => "templates/customer/settings.tt");
@@ -490,26 +486,6 @@ sub process_pagination
 	#$c->log->debug("TOTAL PAGES: " . @$batches);
 	#$c->log->debug("TOTAL PAGES: " . Dumper $batches);
 	return $batches;
-	}
-
-sub validate_department :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $WHERE = { 
-				customerid => $params->{'customerid'}, 
-				field => 'department', 
-				fieldvalue => $params->{'term'}
-				};
-	
-	my $department_count = $c->model('MyDBI::Droplistdata')->search($WHERE)->count;
-	$c->log->debug("___ Drop list data Department count : " . $department_count);
-
-	my $json_DATA = IntelliShip::Utils->jsonify({ COUNT => $department_count });
-	$c->log->debug("___ json_DATA : " . $json_DATA);
-	$c->stash->{JSON_DATA} = $json_DATA;
 	}
 
 sub contactinformation :Local

@@ -31,7 +31,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 		JSON_data = null;
 		$.ajax({
 			type: "GET",
-			url: request_url, 
+			url: request_url,
 			data: data_string,
 			contentType: "application/json; charset=utf-8",
 			dataType: 'json',
@@ -162,7 +162,8 @@ function validNumericField( Numeric )
 	return Numeric.match(/^\d+(\.\d+)?$/g);
 	}
 
-function validDate( DateStr ) {
+function validDate( DateStr )
+	{
 	var matches = /^(\d{2})[-\/](\d{2})[-\/](\d{4})$/.exec(DateStr);
 	if (matches == null) return false;
 	var mm = matches[1] - 1;
@@ -182,7 +183,8 @@ function updateTips( tips, t )
 			}, 500 );
 	}
 
-function validateForm( requireFields ) {
+function validateForm( requireFields )
+	{
 	//alert("in validateForm");
 	var boolResult = true;
 	var messageStr = "";
@@ -264,28 +266,34 @@ function validateForm( requireFields ) {
 	return boolResult;
 	}
 
-function add_new_row(ui_id, rowHTML) {
+function add_new_row(ui_id, rowHTML)
+	{
 	$("#" + ui_id).append(rowHTML);
 	//$(rowHTML).appendTo("#" + table_id + " tbody").fadeIn();
 	//$("#" + table_id + " tbody").append(rowHTML);
 	}
 
-function markRequiredFields(requireFields){
-        
-        Object.keys(requireFields).forEach(function (control) {
-                
-                var properties = requireFields[control];
+function markRequiredFields(requireFields)
+	{
+	Object.keys(requireFields).forEach(function (control) {
+		var properties = requireFields[control];
 
-                Object.keys(properties).forEach(function (property) {
-                        var value = properties[property];
+		Object.keys(properties).forEach(function (property) {
+			var value = properties[property];
 
-                        if ( property == "email" || property == "phone" || property == "date" || property == "numeric"){
-                            $('#'+control).prop("required", value);
-                        }
-                        else{
-                            $('#'+control).prop("required", true);
-                        }
-                });
-        });
-        
-    }
+			if ( property == "email" || property == "phone" || property == "date" || property == "numeric"){
+				$('#'+control).prop("required", value);
+				}
+				else{
+					$('#'+control).prop("required", true);
+				}
+			});
+		});
+	}
+
+function validateDepartment(customerid, department, call_back_function)
+	{
+	var query  = 'customerid=' + customerid + '&term=' + department;
+	if (department == undefined || department.length == 0) return;
+	send_ajax_request('', 'JSON', '', 'validate_department', query, call_back_function);
+	}

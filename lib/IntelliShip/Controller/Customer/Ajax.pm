@@ -82,17 +82,30 @@ sub get_JSON_DATA :Private
 	my $params = $c->req->params;
 
 	my $dataHash;
-	if ($c->req->param('action') eq 'get_city_state')
+	if ($params->{'action'} eq 'get_city_state')
 		{
 		$dataHash = $self->get_city_state;
 		}
-	elsif ($c->req->param('action') eq 'get_address_detail')
+	elsif ($params->{'action'} eq 'get_address_detail')
 		{
 		$dataHash = $self->get_address_detail;
 		}
+	elsif ($params->{'action'} eq 'validate_department')
+		{
+		$dataHash = $self->validate_department;
+		}
+	else
+		{
+		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
+		}
+
+	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	$c->response->body($json_DATA);
 	}
 
-sub get_city_state
+sub get_city_state :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -136,7 +149,7 @@ sub get_city_state
 	return { city => $city, state => $state, zip => $zip, country => $country };
 	}
 
-sub get_address_detail
+sub get_address_detail :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -145,6 +158,21 @@ sub get_address_detail
 	my $Address = $self->context->model('MyDBI::Address')->find({addressid => $addressid});
 
 	return { address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country };
+	}
+
+sub validate_department :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = { 
+				customerid => $params->{'customerid'}, 
+				field => 'department', 
+				fieldvalue => $params->{'term'}
+				};
+
+	return { COUNT => $c->model('MyDBI::Droplistdata')->search($WHERE)->count };
 	}
 
 =encoding utf8
