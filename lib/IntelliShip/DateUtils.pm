@@ -479,10 +479,10 @@ sub get_timestamp_delta_HMS_from_given_datetime
 
 sub get_timestamp_delta_days_from_now
 	{
-	my $self		= shift;
-	my $adddays		= shift;
-	my $option		= shift;
-	my @time		= localtime;
+	my $self	= shift;
+	my $adddays	= shift;
+	my $option	= shift || '';
+	my @time	= localtime;
 
 	$time[4] += 1;
 

@@ -50,32 +50,26 @@
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
-					<td><label for="fromname" class="float_right">Company:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.customername %]'/></td>
+					<td><label class="float_right">Company:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.customername %]'/></td>
 				</tr>
 				<tr>
-					<td><label for="fromaddress1" class="float_right">Address 1:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address1 %]'/></td>
+					<td><label class="float_right">Address 1:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address1 %]'/></td>
 				</tr>
 				<tr>
-					<td><label for="fromaddress2" class="float_right">Address 2:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address2 %]'/></td>
+					<td><label class="float_right">Address 2:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address2 %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">City:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %]' /> </td>
+					<td><label class="float_right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">State:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.state %]'/></td>
-				</tr>
-				<tr>
-					<td><label class="float_right">Zipcode:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.zip %]'/></td>
-				</tr>
-				<tr>
-					<td><label for="fromcountry" class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
+					<td><label class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
 					</td>
 				</tr>
 				<tr>
-					<td><label for="fromcontact" class="float_right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.contact %]'/></td>
+					<td><label class="float_right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.contact %]'/></td>
 				</tr>
 				</tr>
-					<td><label for="fromphone" class="float_right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.phone %]'/></td>
+					<td><label class="float_right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.phone %]'/></td>
 				<tr>
 				</tr>
 					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
@@ -98,29 +92,25 @@
 					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
 				</tr>
 				<tr>
-					<td><label class="float_right require"><label for="tocity">City</label></label></td>
-					<td><input type="text" name="tocity" id="tocity" style="width: 210px" value="[% toAddress.city %]"/></td>
-				</tr>
-				<tr>
-					<td><label class="float_right require" for="tostate">State</label></td>
 					<td>
-						<label>
+						<label class="float_right require"><label for="tocity">City</label>, <label for="tostate">State</label>, <label for="tozip">Zip</label>:</label>
+					</td>
+					<td>
+					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
+					<label>
 					<select name="tostate" id="tostate">
 						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]" [% IF item.value == toAddress.state %] selected [% END %]>[% item.name %]</option>
+							<option value="[% item.value %]" title="[% item.name %]" [% IF item.value == toAddress.state %]SELECTED[% END %]>[% item.value %]</option>
 						[% END %]
 					</select>
 					</label>
+					<input type="text" name="tozip" id="tozip" style="width: 50px;" value="[% toAddress.zip %]"/>
 					</td>
-				</tr>
-				<tr>
-					<td><label class="float_right require" for="tozip">Zipcode:</label></td>
-					<td><input type="text" name="tozip" id="tozip" style="width: 70px;" value="[% toAddress.zip %]"/></td>
 				</tr>
 				<tr>
 					<td><label for="tocountry" class="float_right require">Country:</label></td><td>
 					<label>
-					<select name="tocountry" id="tocountry">
+					<select name="tocountry" id="tocountry" style="width: 220px;">
 						[% FOREACH item IN countrylist_loop %]
 							<option value="[% item.value %]" [% (toAddress.country and item.value == toAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]

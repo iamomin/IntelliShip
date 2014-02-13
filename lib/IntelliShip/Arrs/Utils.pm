@@ -1,10 +1,8 @@
 package IntelliShip::Arrs::Utils;
 
 use Moose;
-use Data::Dumper;
+use ARRS;
 use LWP::UserAgent;
-use HTTP::Request::Common;
-use IntelliShip::Utils;
 
 BEGIN { has 'context' => ( is => 'rw'); }
 
@@ -30,10 +28,12 @@ sub APIRequest
 	my $self = shift;
 	my $request = shift;
 
-	my $arrs_path = '/opt/engage/arrs';
+	#my $ARRS = new ARRS();
+	#return $ARRS->APICall($request);
+
 	if (0 and -r "/opt/engage/arrs/lib" )
 		{
-		eval "use lib '$arrs_path/lib'";
+		eval "use lib '/opt/engage/arrs/lib'";
 		eval "use ARRS";
 
 		my $ARRS = new ARRS();

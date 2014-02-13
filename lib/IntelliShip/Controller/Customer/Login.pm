@@ -39,7 +39,7 @@ sub index :Path :Args(0)
 		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
 		}
 
-	$c->log->debug("********* LOG IN CUSTOMER USER *********");
+	#$c->log->debug("********* LOG IN CUSTOMER USER *********");
 
 	$self->token(undef); ## IMP
 
