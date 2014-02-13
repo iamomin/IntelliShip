@@ -336,12 +336,12 @@ sub get_select_list
 		{
 		my @customers = $c->model('MyDBI::Customer')->search( {},
 			{
-			select => [ 'customername', 'addressid' ],
+			select => [ 'customerid', 'customername' ],
 			}
 			);
 		foreach my $Customer (@customers)
 			{
-			push(@$list, { name => $Customer->customername, value => $Customer->addressid});
+			push(@$list, { name => $Customer->customername, value => $Customer->customerid});
 			}
 		}
 	elsif ($list_name eq 'ADDRESS_BOOK_CUSTOMERS')
