@@ -195,7 +195,7 @@ sub configure :Local
 	$Customer->losspreventemailordercreate($params->{'cust_losspreventemailordercreate'}) if ($params->{'cust_losspreventemailordercreate'});
 	$Customer->smartaddressbook($params->{'cust_smartaddressbook'}) if ($params->{'cust_smartaddressbook'});
 	$Customer->apiaosaddress($params->{'cust_apiaosaddress'}) if ($params->{'cust_apiaosaddress'});
-
+	$Customer->weighttype($params->{'weighttype'}) if ($params->{'weighttype'});
 
 	if ($params->{'cust_quickship'} && !$params->{'cust_defaulttoquickship'} )
 		{

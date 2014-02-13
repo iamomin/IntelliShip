@@ -355,7 +355,7 @@
 						<label>
 							<select name="weighttype" id="weighttype">
 								[% FOREACH item IN weighttype_loop %]
-									<option value="[% item.value %]" [% (item.value == customer.weighttype) ? 'SELECTED' : '' %]>[% item.name %]</option>
+									<option value="[% item.value %]" [% (item.value == weighttype) ? 'SELECTED' : '' %]>[% item.name %]</option>
 								[% END %]
 							</select>
 						</label>
@@ -396,6 +396,7 @@
 						<label>
 							<select name="cust_quotemarkup" id="cust_quotemarkup">
 							[% FOREACH item IN quotemarkup_loop %]
+								[% cust_quotemarkup = 0 IF !cust_quotemarkup %]
 								<option value="[% item.value %]" [% (item.value == cust_quotemarkup) ? 'SELECTED' : '' %]>[% item.name %]</option>
 							[% END %]
 							</select>
