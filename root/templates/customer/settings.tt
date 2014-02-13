@@ -630,7 +630,7 @@ $(document).ready(function(){
 		</tr>
 		<tr>
 			<td><label class="float_right" for="department">Department:</label></td>
-			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]" onblur="validateDepartment();"></td>
+			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]" onblur="validateCustomerDepartment();"></td>
 			
 			<td><label class="float_right" for="contact_city">Shipping City:</label></td>
 			<td><input type="text" name="contact_city" id="contact_city" value="[% contactAddress.city %]" class="broad_text"></td>		
@@ -784,13 +784,13 @@ $(document).ready(function(){
 
 	<script>
 
-	$("#department").blur(function() {
+	function validateCustomerDepartment() {
 		validateDepartment($("#customerid").val(), $("#department").val(), function() {
 			if (JSON_data.COUNT > 0) return;
 			showError("Please specify valid department name");
 			$("#department").val("");
 			});
-		});
+		}
 
 	function updateContact()
 		{
