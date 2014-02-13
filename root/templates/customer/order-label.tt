@@ -5,7 +5,6 @@
 	<table class="center DoNotPrint">
 		<tr>
 			<td><input type="button" class="blue" value="PRINT" onclick="window.print();"/></td>
-			<td><input type="submit" class="green" value="QUICK SHIP" onclick="$('#frm_label').attr('action', '/customer/order/quickship');"></td>
 		</tr>
 	</table>
 
