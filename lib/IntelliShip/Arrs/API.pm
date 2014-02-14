@@ -121,6 +121,8 @@ sub get_carrrier_service_rate_list
 	$request->{'action'} = 'GetCSList';
 	$request->{'customerid'} = $Customer->customerid;
 
+	my $contact_login_level = $Contact->login_level || 0;
+
 	## Add support for dropship & inbound
 	if ($CO->isinbound)
 		{
@@ -179,10 +181,10 @@ sub get_carrrier_service_rate_list
 	$request->{'thirdparty'} = ($CO->freightcharges == 2);
 
 	# Flag for sorting CS list in cost order - currently used for 'route only' login level
-	$request->{'sortcslist'} = $Contact->login_level == 20 ? 1 : 0;
+	$request->{'sortcslist'} = $contact_login_level == 20 ? 1 : 0;
 
 	# Flag for attaching rates to CS listing - currently 'route only' login level doesn't get display
-	$request->{'displaychargesincslist'} = $Contact->login_level == 20 ? 0 : 1;
+	$request->{'displaychargesincslist'} = $contact_login_level == 20 ? 0 : 1;
 
 	($request->{'sopid'}, my $UsingAltSOP, my $AltSOPID) = $Customer->get_sop_id($CO->usealtsop,$CO->custnum);
 
@@ -210,9 +212,9 @@ sub get_carrrier_service_rate_list
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
 
 	# my $DefaultCSID = $response->{'defaultcsid'};
-	# my $DefaultCost = $Contact->login_level == 20 ? undef : $response->{'defaultcost'};
-	# my $DefaultTotalCost = $Contact->login_level == 20 ? undef : $response->{'defaulttotalcost'};
-	my $CostList = $Contact->login_level == 20 ? undef : $response->{'costlist'};
+	# my $DefaultCost = $contact_login_level == 20 ? undef : $response->{'defaultcost'};
+	# my $DefaultTotalCost = $contact_login_level == 20 ? undef : $response->{'defaulttotalcost'};
+	my $CostList = $contact_login_level == 20 ? undef : $response->{'costlist'};
 	my @costlist_arr = split(/,/,$CostList) if ($CostList);
 
 	my $carrier_Details = {};

@@ -156,9 +156,39 @@ get the path to sendmail
 
 =cut
 
-sub getSendmailPath
+sub application_root
 	{
-	return $sendmail_path{getDomain()};
+	my $self = shift;
+
+	my $application_root = '';
+	if (uc(hostname()) eq 'RT-XML')
+		{
+		$application_root = '/var/intelliship/git/IntelliShip/';
+		}
+	else
+		{
+		$application_root = '/home/ALOHA11/IntelliShip';
+		}
+
+	return $application_root;
+	}
+
+my $ARRS_CONFIG = {
+	BASE_PATH      => application_root(),
+	DB_NAME        => 'arrs',
+	DB_HOST        => 'darrs.engagetechnology.com',
+	DB_USER        => 'webuser',
+	DB_PASSWORD    => 'Byt#Yu2e',
+	BASE_DOMAIN    => 'engagetechnology.com',
+	HALO_PATH      => '/opt/engage/halo',
+	ADMIN_USER     => 'engage',
+	ADMIN_PASSWORD => 'ohila4'
+	};
+
+sub get_ARRS_configuration
+	{
+	my $self = shift;
+	return $ARRS_CONFIG;
 	}
 
 sub getActiveDatabaseList

@@ -1,6 +1,7 @@
 package IntelliShip::Arrs::Utils;
 
 use Moose;
+use ARRS;
 use LWP::UserAgent;
 use HTTP::Request::Common;
 
@@ -28,8 +29,8 @@ sub APIRequest
 	my $self = shift;
 	my $request = shift;
 
-	#my $ARRS = new ARRS();
-	#return $ARRS->APICall($request);
+	my $ARRS = new ARRS();
+	return $ARRS->APICall($request);
 
 	if (0 and -r "/opt/engage/arrs/lib" )
 		{

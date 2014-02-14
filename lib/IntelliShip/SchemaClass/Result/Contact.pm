@@ -261,7 +261,7 @@ sub get_contact_data_value
 		}
 	else
 		{
-		$contact_data_value = $self->customer->get_contact_data_value($data_type_name);
+		$contact_data_value = $self->customer->get_contact_data_value($data_type_name) || '';
 		}
 
 	return $contact_data_value;
