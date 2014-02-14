@@ -172,7 +172,16 @@ sub validate_department :Private
 				fieldvalue => $params->{'term'}
 				};
 
-	return { COUNT => $c->model('MyDBI::Droplistdata')->search($WHERE)->count };
+	my $department_found = $c->model('MyDBI::Droplistdata')->search($WHERE)->count;
+
+	unless ($department_found)
+		{
+		## If no department found for customer then bypass the validations
+		delete $WHERE->{'fieldvalue'};
+		$department_found = ($c->model('MyDBI::Droplistdata')->search($WHERE)->count == 0);
+		}
+
+	return { COUNT => $department_found };
 	}
 
 =encoding utf8
