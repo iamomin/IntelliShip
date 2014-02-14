@@ -804,7 +804,22 @@ $(document).ready(function(){
 	</form>
 
 	<script>
-
+	function validateContactUsername(){
+			var customerid = $("#customerid").val();
+			var username = $("#username").val();
+			var query  = '&customerid=' + customerid + '&username=' + username;
+			
+			if (username == undefined || username.length == 0) return;
+			send_ajax_request('', 'JSON', 'settings/company', 'validate_contactusername', query, function() {
+			if (JSON_data.COUNT > 0) {
+				showError("User name exist. Please specify different user name");
+				$("#username").val("");
+			}
+			else
+				return ;
+			});
+		}
+	 
 	function updateContact()
 		{
 		if(validateContactDetials())
