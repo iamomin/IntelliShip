@@ -108,7 +108,7 @@
 			[% IF myshipment_list_count == 0 %]
 				<tr><td colspan="12">No qualified shipments found</td></tr>
 			[% END %]
-		<table>
+		</table>
 
 	[% UNLESS ajax %]
 	</div>
@@ -120,19 +120,15 @@
 	$("#datefrom").datepicker({ maxDate: '0d' });
 	$("#dateto").datepicker({ maxDate: '2w' });
 
-        $('.items').change(function(){
+	$('.items').change(function(){
 
-            var v = +($("#count").html());
-            if($(this).is(':checked'))
-            {                
-                $("#count").html(v+1);
-            }
-            else
-            {
-                $("#count").html(v-1);
-            }    
-
-        });
+		var v = +($("#count").html());
+		if($(this).is(':checked')) {
+			$("#count").html(v+1);
+			} else {
+			$("#count").html(v-1);
+			}
+		});
 
 	[% UNLESS ajax %]
 	$(document).on("click","a[name='track']", function (e) {
@@ -196,22 +192,22 @@
 			});
 
 		$("#view_date").change(function() {
-                        var vDate = $("#view_date").val();
-                        if(vDate == 'today'){
-                            $("#datefrom").datepicker('setDate', '+0d');
-                            $("#dateto").datepicker('setDate', '+0d');
-                        }
-                        if(vDate == 'this_week'){
-                            $("#datefrom").datepicker('setDate', '-1w');
-                            $("#dateto").datepicker('setDate', '+0d');
-                        }
-                        if(vDate == 'this_month'){
-                            $("#datefrom").datepicker('setDate', '-1m');
-                            $("#dateto").datepicker('setDate', '+0d');
-                        }                        
+			var vDate = $("#view_date").val();
+			if(vDate == 'today') {
+				$("#datefrom").datepicker('setDate', '+0d');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
+			if(vDate == 'this_week') {
+				$("#datefrom").datepicker('setDate', '-1w');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
+			if(vDate == 'this_month') {
+				$("#datefrom").datepicker('setDate', '-1m');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
 			var query_param = "&view_date=" + vDate;
 			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
-                        $("#count").html("0");
+			$("#count").html("0");
 			});
 
 		$("#date_apply").click(function() {
