@@ -15,8 +15,6 @@ use ARRS::BaseCalc;
 ##
 #####################################################################
 
-my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 # Take control from the constructor to insert ourselves into the loop.
 sub connect
 	{

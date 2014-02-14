@@ -12,9 +12,6 @@
 	package ARRS::screen_api;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::GENERICSCREEN;
 	@ARRS::screen_api::ISA = ("ARRS::GENERICSCREEN");
 

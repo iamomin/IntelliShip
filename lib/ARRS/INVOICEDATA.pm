@@ -20,9 +20,6 @@
 	package ARRS::INVOICEDATA;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::INVOICEDATA::ISA = ("ARRS::DBOBJECT");
 

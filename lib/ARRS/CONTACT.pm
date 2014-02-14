@@ -20,17 +20,16 @@
 	package ARRS::CONTACT;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::CONTACT::ISA = ("ARRS::DBOBJECT");
 
 	use ARRS::COMMON;
 	use ARRS::CONTACTIP;
 	use ARRS::TOKEN;
+	use IntelliShip::MyConfig;
 
 	my $UnderConstruction = 0;
+	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
 
 	sub new
 	{

@@ -20,9 +20,6 @@
 	package ARRS::RATETYPE;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::RATETYPE::ISA = ("ARRS::DBOBJECT");
 

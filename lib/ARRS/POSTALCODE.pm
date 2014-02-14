@@ -20,9 +20,6 @@
 	package ARRS::POSTALCODE;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::POSTALCODE::ISA = ("ARRS::DBOBJECT");
 

@@ -20,9 +20,6 @@
 	package ARRS::SERVICECSDATA;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::SERVICECSDATA::ISA = ("ARRS::DBOBJECT");
 

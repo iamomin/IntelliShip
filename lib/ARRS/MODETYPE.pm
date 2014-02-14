@@ -20,9 +20,6 @@
 	package ARRS::MODETYPE;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::MODETYPE::ISA = ("ARRS::DBOBJECT");
 

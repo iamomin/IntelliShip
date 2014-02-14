@@ -12,9 +12,6 @@
 	package ARRS::ONLINE;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::CARRIER;
 	use ARRS::COMMON;
 	use ARRS::CSOVERRIDE;
@@ -24,8 +21,10 @@
 	use Array::Compare;
 	use Date::Calc qw(Delta_Days);
 	use Date::Manip qw(ParseDate UnixDate);
+	use IntelliShip::MyConfig;
 
 	my $Benchmark = 0;
+	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
 
 	sub new
 	{
@@ -618,15 +617,25 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		my ($ETARef) = @_;
 		my $ETADate;
 
-		my $HandlerName = $ETARef->{'handlername'};
+		my $HandlerName = $ETARef->{'handlername'} || '';
 		my $Handler;
 
-		if ( defined($HandlerName) && $HandlerName ne '' && -r "$config->{BASE_PATH}/lib/ARRS/$HandlerName" )
+		if (length $HandlerName)
 		{
-   		require "$config->{BASE_PATH}/lib/ARRS/$HandlerName";
-   		$HandlerName =~ s/\.pl//;
-warn "HANDLERNAME: $HandlerName";
-   		$Handler = eval 'new ARRS::' . $HandlerName . '($self->{"dbref"}, $self->{"contact"})';
+		warn "passed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
+		$HandlerName =~ s/\.pl//;
+		$HandlerName = "ARRS::$HandlerName";
+
+		print STDERR "\n[GetETADate] HandlerName: $HandlerName";
+		eval "use $HandlerName;";
+
+		if ($@)
+			{
+			warn "[Error] GetCarrierHandler eval Exception: $@";
+			# other exception handling goes here...
+			}
+
+		$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
 		}
 		else
 		{

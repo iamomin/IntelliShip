@@ -20,9 +20,6 @@
 	package ARRS::ZONETYPE;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::ZONETYPE::ISA = ("ARRS::DBOBJECT");
 

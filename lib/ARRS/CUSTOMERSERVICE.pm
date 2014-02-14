@@ -986,9 +986,9 @@ warn "GetDimWeight dimfactor=$DimFactor ServiceID=$ServiceID";
 		my $Handler = $self->GetCarrierHandler();
 
 		unless ( ($DimWeight) = $Handler->GetDimWeight($DimLength,$DimWidth,$DimHeight,$DimFactor,$ServiceID) )
-		{
+			{
 			undef($DimWeight);
-		}
+			}
 warn "dimweight returning |$DimWeight|";
 
 		return $DimWeight;
@@ -1004,73 +1004,43 @@ warn "dimweight returning |$DimWeight|";
 		return $Handler->DimCheck($DimLength,$DimWidth,$DimHeight,$self->GetValueHashRef()->{'serviceid'});
 	}
 
-	sub GetCarrierHandler
+sub GetCarrierHandler
 	{
-		my $self = shift;
+	my $self = shift;
 
-		my $Service = new ARRS::SERVICE($self->{'object_dbref'}, $self->{'object_contact'});
-		$Service->Load($self->GetValueHashRef()->{'serviceid'});
+	my $Service = new ARRS::SERVICE($self->{'object_dbref'}, $self->{'object_contact'});
+	$Service->Load($self->GetValueHashRef()->{'serviceid'});
 
-		my $HandlerName = $Service->GetValueHashRef()->{'webhandlername'};
-		my $Handler;
-#		warn "GetCarrierHandler handlername=$HandlerName at sevice level webhandlername";
-		if ( defined($HandlerName) && $HandlerName ne '' && -r "$config->{BASE_PATH}/lib/ARRS/$HandlerName" )
+	my $HandlerName = $Service->GetValueHashRef()->{'webhandlername'} || '';
+	my $Handler;
+#	warn "GetCarrierHandler handlername=$HandlerName at sevice level webhandlername";
+	#if ( defined($HandlerName) && $HandlerName ne '' && -r "$config->{BASE_PATH}/lib/ARRS/$HandlerName" )
+	if (length $HandlerName)
 		{
-			warn "require $config->{BASE_PATH}/lib/ARRS/$HandlerName";
-			my $filename = "$config->{BASE_PATH}/lib/ARRS/$HandlerName";
-			foreach my $incpath ( @INC )
+		warn "passed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
+		$HandlerName =~ s/\.pl//;
+		$HandlerName = "ARRS::$HandlerName";
+
+		print STDERR "\n[GetCarrierHandler] HandlerName: $HandlerName";
+		eval "use $HandlerName;";
+
+		if ($@)
 			{
-				warn "PATH=$incpath";
+			warn "[Error] GetCarrierHandler eval Exception: $@";
+			# other exception handling goes here...
 			}
-=b
-			if (exists $INC{$filename})
-			{
-				warn "IT Exists";
-				if ( !$INC{$filename} )
-				{
-					die "Compilation failed in require";
-				}
-				else
-				{
-					warn "Its in the INC: $INC{$filename}";
-				}
-			}
-			else
-			{
-					warn "Its NOT in the INC: $INC{$filename}";
 
-			}
-			require "$filename" or die "Can't find $filename in \@INC";
-    			if ($@){
-				print "Exception: '$@'\n";
-				# other exception handling goes here...
-	   		}
-=cut
+		$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
 
-			warn "passed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
-			$HandlerName =~ s/\.pl//;
-			$HandlerName = "ARRS::$HandlerName";
-
-			warn "[Info] HandlerName: $HandlerName";
-			eval "use $HandlerName;";
-
-			if ($@)
-				{
-				warn "[Error] GetCarrierHandler eval Exception: $@";
-				# other exception handling goes here...
-				}
-
-			$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
-
-			warn "done with eval";
+		warn "done with eval";
 		}
-		else
+	else
 		{
-			use ARRS::CARRIERHANDLER;
-			$Handler = new ARRS::CARRIERHANDLER($self->{'dbref'},$self->{'contact'});
+		use ARRS::CARRIERHANDLER;
+		$Handler = new ARRS::CARRIERHANDLER($self->{'dbref'},$self->{'contact'});
 		}
 
-		return $Handler;
+	return $Handler;
 	}
 
 	sub GetCarrierScac

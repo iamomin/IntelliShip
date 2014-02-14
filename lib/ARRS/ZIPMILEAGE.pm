@@ -21,9 +21,6 @@
 	package ARRS::ZIPMILEAGE;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::ZIPMILEAGE::ISA = ("ARRS::DBOBJECT");
 

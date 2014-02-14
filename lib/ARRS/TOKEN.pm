@@ -20,9 +20,6 @@
 	package ARRS::TOKEN;
 
 	use strict;
-
-	my $config; BEGIN {$config = do "/opt/engage/arrs/arrs.conf";}
-
 	use ARRS::DBOBJECT;
 	@ARRS::TOKEN::ISA = ("ARRS::DBOBJECT");
 
