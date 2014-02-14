@@ -1,3 +1,5 @@
+<h2 class="DoNotPrint">SHIP A PACKAGE</h2>
+
 <form id="frm_label" name="frm_label" action="/customer/dashboard">
 
 	<div id="label" class="Print">[% LABEL %]</div>

@@ -195,6 +195,8 @@ function validateForm( requireFields )
 		var boolRequired = false;
 		var properties = requireFields[control];
 
+		if (properties == undefined) return;
+
 		// this check is added to breack forEach for one by one validation
 		//if (boolRequired) return false;
 
@@ -240,7 +242,7 @@ function validateForm( requireFields )
 
 	messageStr = messageStr.replace(/Please specify /ig, "");
 	messageStr = messageStr.replace(/,$/ig, "");
-	messageStr = "Please specify " + messageStr;
+	messageStr = "Please specify " + (messageStr.length > 0 ? messageStr : "valid information");
 
 	if (boolResult == false) {
 		if (tips.length == 0) {
@@ -291,9 +293,15 @@ function markRequiredFields(requireFields)
 		});
 	}
 
-function validateDepartment(customerid, department, call_back_function)
+function validateDepartment(control_ID, customerid)
 	{
-	var query  = 'customerid=' + customerid + '&term=' + department;
+	var department = $("#"+control_ID).val();
 	if (department == undefined || department.length == 0) return;
-	send_ajax_request('', 'JSON', '', 'validate_department', query, call_back_function);
+	var query_param  = 'customerid=' + customerid + '&term=' + department;
+
+	send_ajax_request('', 'JSON', '', 'validate_department', query_param, function() {
+			if (JSON_data.COUNT > 0) return;
+			showError("Please specify valid department name");
+			$("#"+control_ID).val("");
+			});
 	}

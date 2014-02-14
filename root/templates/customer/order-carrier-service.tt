@@ -1,5 +1,5 @@
 [% UNLESS one_page %]
-<h2>SHIP PACKAGES</h2>
+<h2>SHIP A PACKAGE</h2>
 
 <table class="order-nav">
 	<tr>

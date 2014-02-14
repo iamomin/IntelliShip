@@ -1,5 +1,5 @@
 
-<h1>[% quickship ? 'Quick Ship Order' : 'Ship Packages' %]</h1>
+<h1>[% quickship ? 'Quick Ship Order' : 'New Order' %]</h1>
 
 <script src="/static/js/customer-order.js"></script>
 
@@ -50,6 +50,7 @@
 		});
 
 	$('#save').click(function() {
+		delete requiredFieldHash['package-detail-list'];
 		$("#frm_order").submit();
 		});
 

@@ -31,7 +31,7 @@ a:active { /* Improves readability when focused and also mouse hovered in all br
     outline: 0;
 }
 
-img { border: none }
+img { border: none; vertical-align: middle }
 
 #wrapper {
 }
@@ -393,7 +393,7 @@ table.app {
     width: 100%;
     background: #F5F5F5;
     border: solid 1px #ccc;
-    height: 92%;
+    height: 85%;
 }
 
 table.app caption {
@@ -606,24 +606,24 @@ table.shipment-date-range td { padding: 5px; }
 table.shipment-date-range label { position: relative; color:#AAACAB; font-size: x-small; margin: 5px; }
 table.shipment-date-range input[type=text]  { border: 1px solid #AFAFAF; padding: 1px 3px; vertical-align: inherit; width: 80px; }
 
-.quick-ship div {
-    background: url(/static/images/open-box-white.png) no-repeat center center;
-    width: 24px;
-    height: 24px;
-    color: #58B94E;
-    overflow: hidden;
-    display: inline-block;
-}
-
-.quick-ship button {
+button.quick-ship {
     color: #FFF;
     border: none;
     cursor: pointer;
     font-weight: bold;
+    padding: 5px 15px;
     white-space: nowrap;
     background-color: #58B94E;
-    vertical-align: top;
-    padding: 0 20px;
+}
+
+button.quick-ship label {
+    width: 24px;
+    height: 24px;
+    padding-right: 5px;
+    color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    background: url(/static/images/open-box-white.png) no-repeat center center;
 }
 
 table.shipment-filter  { width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}

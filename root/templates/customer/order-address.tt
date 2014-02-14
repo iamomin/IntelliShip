@@ -1,5 +1,5 @@
 [% UNLESS one_page %]
-<h2>SHIP PACKAGES</h2>
+<h2>SHIP A PACKAGE</h2>
 
 <table class="order-nav">
 	<tr>
@@ -40,13 +40,13 @@
 		<tr>
 	</table>
 [% END %]
-	<div class="notice">Enter the recipient's (Ship To) address [% one_page ? 'and Shipment ' : '' %]details</div>
+	<div class="notice">Enter the recipient's (SHIP TO) address [% one_page ? 'and Shipment ' : '' %]details</div>
 
 	<div id="equal">
 		<div id="row">
 			<table class="single-row">
 			<tr>
-			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-right: 10px">
+			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-right: 5px">
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
@@ -66,10 +66,10 @@
 					</td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.contact %]'/></td>
+					<td><label class="float_right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromcontact %]'/></td>
 				</tr>
 				</tr>
-					<td><label class="float_right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.phone %]'/></td>
+					<td><label class="float_right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromphone %]'/></td>
 				<tr>
 				</tr>
 					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
@@ -79,7 +79,7 @@
 				</tr>
 			</table>
 			</td>
-			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 10px">
+			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 5px">
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
@@ -139,7 +139,7 @@
 			</table>
 			</td>
 [% IF one_page %]
-			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 20px">
+			<td class="[% IF one_page %] threecolumns [% ELSE %] twocolumns [% END %]" style="padding-left: 10px">
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
@@ -157,31 +157,23 @@
 				<tr>
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
 				</tr>
-				[% count = 0%]
-				[% FOREACH item IN deliverymethod_loop %]
-				[% IF count == 0%]
 				<tr>
 					<td rowspan="3"><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
 					<td class="css3-radios">
 						<div id="third-party-details"></div>
+						<ul>
+					[% FOREACH item IN deliverymethod_loop %]
+						<li>
 						<label>
 						<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
 						<span><label for="[% item.value %]">[% item.name %]</label></span>
 						</label>
+						</li>
+					[% END %]
+						</ul>
 					</td>
 				</tr>
-				[% ELSE %]
-				<tr>
-					<td class="css3-radios">
-						<label>
-							<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : ''%]/>
-							<span><label for="[% item.value %]">[% item.name %]</label></span>
-						</label>
-					</td>
-				</tr>
-				[% END %]
-				[% count = count + 1 %]
-				[% END %]
+
 				[% IF PONUMBER %]
 				<tr>
 					<td><label for="ponumber" class="float_right">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
@@ -232,6 +224,10 @@
 [% END %]
 <script>
 
+$("#fromdepartment").change(function() {
+	validateDepartment('fromdepartment', '[%fromCustomer.customerid%]');
+	});
+
 //$("#tophone").mask("999-999-9999");
 //$("#tozip").mask("99999");
 [% IF one_page %]
@@ -270,15 +266,6 @@ $("#dateneeded").change(function() {
 
 //$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
-
-
-$("#fromdepartment").blur(function() {
-	validateDepartment('[%fromCustomer.customerid%]', $("#fromdepartment").val(), function () {
-		if (JSON_data.COUNT > 0) return;
-		showError("Please specify valid department name");
-		$("#fromdepartment").val("");
-		});
-	});
 
 [% UNLESS one_page %]
 [% FOREACH item IN requiredfield_list %]

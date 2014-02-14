@@ -115,7 +115,7 @@
 			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" title="[% coid %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
 			<td style="width: 04%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
 			<td style="width: 04%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% sku %]"/></td>
-			<td style="width: 11%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]" readonly/></td>
+			<td style="width: 11%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
 			<td style="width: 10%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %] selected [% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td style="width: 07%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>
 			<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/></td>
@@ -133,7 +133,7 @@
 	[% ELSE %]
 		<tr>
 			<td><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;" value="[% quantity %]"/></td>
-			<td><input  type="text" class="broad_text" name="description_1" id="description_1" style="width: 150px;" value="[% description %]"/></td>
+			<td><input  type="text" style="width: 150px;" name="description_1" id="description_1" value="[% description %]"/></td>
 			<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == unittype %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 			<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;" value="[% weight %]"/></td>
 			<td><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" style="width: 100px;" value="[% dimweight %]"/></td>

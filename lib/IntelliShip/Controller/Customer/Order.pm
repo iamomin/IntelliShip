@@ -18,7 +18,7 @@ sub onepage :Local
 	my $do_value = $c->req->param('do') || '';
 	if ($do_value eq 'save')
 		{
-		$self->save_order;
+		$self->save_new_order;
 		}
 	elsif ($do_value eq 'ship')
 		{
@@ -84,8 +84,10 @@ sub setup_address :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $CO = $self->get_order;
+	my $Contact = $self->contact;
 	my $Customer = $self->customer;
+
+	my $CO = $self->get_order;
 	#($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
 	my $do = $c->req->param('do') || '';
@@ -115,7 +117,7 @@ sub setup_address :Private
 	unless ($Customer->login_level == 25)
 		{
 		$c->stash->{SHOW_PONUMBER} = $Customer->reqponum;
-		$c->stash->{SHOW_EXTID} = $Customer->get_contact_data_value('reqextid');
+		$c->stash->{SHOW_EXTID}    = $Customer->get_contact_data_value('reqextid');
 		$c->stash->{SHOW_CUSTREF2} = $Customer->get_contact_data_value('reqcustref2');
 		$c->stash->{SHOW_CUSTREF3} = $Customer->get_contact_data_value('reqcustref3');
 		}
@@ -123,7 +125,12 @@ sub setup_address :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('address');
 
-	$c->stash->{tocountry} = "US";
+	$c->stash->{tocountry}  = "US";
+	$c->stash->{fromemail}  = $Contact->email unless $c->stash->{fromemail};
+	$c->stash->{department} = $Contact->department unless $c->stash->{department};
+	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
+	$c->stash->{fromphone}  = $Contact->phonebusiness unless $c->stash->{fromphone};
+
 	$c->stash(template => "templates/customer/order-address.tt");
 	}
 
@@ -660,17 +667,15 @@ sub get_auto_order_number :Private
 	return ($OrderNumber,$HasAutoOrderNumber);
 	}
 
-sub void_shipment :Private
+sub save_new_order :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
-	$c->log->debug("___ CANCEL ORDER ___");
+	$self->save_order;
 
-	my $CO = $self->get_order;
-	$CO->update({ statusid => '200' });
-
-	my $parent = $c->req->params->{'parent'} || '';
+	my $parent = $params->{'parent'} || '';
 	if (length $parent)
 		{
 		$c->response->redirect($c->uri_for('/customer/' . $parent));
@@ -678,8 +683,32 @@ sub void_shipment :Private
 	else
 		{
 		$self->clear_CO_details;
-		$c->req->params->{do} = undef;
-		$c->detach($c->action,$c->req->params);
+		$params->{do} = undef;
+		$c->detach($c->action,$params);
+		}
+	}
+
+sub void_shipment :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ CANCEL ORDER ___");
+
+	my $CO = $self->get_order;
+	$CO->update({ statusid => '200' });
+
+	my $parent = $params->{'parent'} || '';
+	if (length $parent)
+		{
+		$c->response->redirect($c->uri_for('/customer/' . $parent));
+		}
+	else
+		{
+		$self->clear_CO_details;
+		$params->{do} = undef;
+		$c->detach($c->action,$params);
 		}
 	}
 
@@ -935,9 +964,9 @@ sub populate_order :Private
 		my @special_services = $CO->assessorials;
 		my %serviceHash =  map { $_->assname => 1 } @special_services;
 		my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
-		my $selected_special_service_loop = [grep { $serviceHash{$_->{'value'}} } @$special_service_loop];
-		$c->stash->{selected_special_service_loop} = $selected_special_service_loop;
-		#$c->log->debug("selected_special_service_loop: " . Dumper $selected_special_service_loop);
+		my @selected_special_service_loop = grep { $serviceHash{$_->{'value'}} } @$special_service_loop;
+		$c->stash->{selected_special_service_loop} = \@selected_special_service_loop if @selected_special_service_loop;
+		#$c->log->debug("selected_special_service_loop: " . Dumper @selected_special_service_loop);
 		}
 
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
