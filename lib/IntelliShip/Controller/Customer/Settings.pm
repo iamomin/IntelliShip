@@ -511,7 +511,7 @@ sub contactinformation :Local
 			$Contact = $c->model('MyDBI::Contact')->new({});
 			$Contact->contactid($self->get_token_id);
 			$Contact->customerid($params->{'customerid'});
-			$Contact->password($Contact->contactid);
+			#$Contact->password($Contact->contactid);
 			$Contact->insert;
 			}
 		
@@ -546,6 +546,9 @@ sub contactinformation :Local
 			}
 
 		$Address->update($addressData);
+
+		$Contact->username($params->{'username'}) if $params->{'username'};
+		$Contact->password($params->{'password'}) if $params->{'password'};
 		
 		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
 		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
@@ -614,6 +617,7 @@ sub contactinformation :Local
 		if ($Contact)
 			{
 			$c->stash->{contactInfo}			 = $Contact;
+			$c->stash->{password}			 	 = $Contact->password;
 			$c->stash->{contactAddress}			 = $Contact->address;
 			$c->stash->{location}				 = $Contact->get_contact_data_value('location');
 			$c->stash->{ownerid}				 = $Contact->get_contact_data_value('ownerid');
@@ -622,6 +626,7 @@ sub contactinformation :Local
 			$c->stash->{disabledate}			 = $Contact->get_contact_data_value('disabledate');
 			}
 				
+		$c->stash->{password} 				= $self->get_token_id unless $c->stash->{password};
 		$c->stash->{statelist_loop}			 = $self->get_select_list('US_STATES');
 		$c->stash->{countrylist_loop}		 = $self->get_select_list('COUNTRY');
 
@@ -639,12 +644,27 @@ sub contactinformation :Local
 		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 			
-
+		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser or (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
 	}
 
+sub validate_contactusername :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	$c->log->debug("in ajax loop".$params->{'contactid'},);
+	my $WHERE = { 
+				contactid => $params->{'contactid'}, 
+				username => $params->{'username'},
+				username => { '!=', $params->{'username'}}
+				};
+
+	return { COUNT => $c->model('MyDBI::Contact')->search($WHERE)->count };
+   }
+	
 sub get_customer_contacts :Private
 	{
 	my $self = shift;

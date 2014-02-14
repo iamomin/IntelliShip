@@ -467,7 +467,15 @@ sub ajax :Local
 		{
 		$self->get_customer_contacts;
 		}
-
+	elsif($params->{'action'} eq 'validate_contactusername')
+		{
+		$c->log->debug("in validate loop");
+		my $dataHash = $self->validate_contactusername;
+		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+		$c->response->body($json_DATA);
+		return;
+		}
+		
 	$c->stash($params);
 	$c->stash(template => "templates/customer/settings-company.tt");
 	}
