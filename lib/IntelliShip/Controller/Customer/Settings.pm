@@ -655,16 +655,18 @@ sub validate_contactusername :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	$c->log->debug("in ajax loop".$params->{'contactid'},);
-	my $WHERE = { 
-				contactid => $params->{'contactid'}, 
-				username => $params->{'username'},
-				username => { '!=', $params->{'username'}}
-				};
+	
+	if($params->{'contactid'})
+		{
+		my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+		return { COUNT => 0} if ($Contact->username eq $params->{'username'})
+		}
+
+	my $WHERE = {customerid => $params->{'customerid'}, username => $params->{'username'},};
 
 	return { COUNT => $c->model('MyDBI::Contact')->search($WHERE)->count };
    }
-	
+
 sub get_customer_contacts :Private
 	{
 	my $self = shift;

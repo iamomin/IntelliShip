@@ -448,6 +448,13 @@ sub ajax :Local
 		$c->stash->{CUSTOMER_LIST} = 1;
 		$c->stash->{CUSTOMER_MANAGEMENT} = 1;
 		}
+	elsif($params->{'action'} eq 'validate_contactusername')
+		{
+		my $dataHash = $self->validate_contactusername;
+		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+		$c->response->body($json_DATA);
+		return;
+		}
 	elsif (length $params->{'term'})
 		{
 		my $sql = "SELECT customername FROM customer WHERE customername LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
@@ -466,14 +473,6 @@ sub ajax :Local
 	elsif ($params->{'do'} eq 'cancel')
 		{
 		$self->get_customer_contacts;
-		}
-	elsif($params->{'action'} eq 'validate_contactusername')
-		{
-		$c->log->debug("in validate loop");
-		my $dataHash = $self->validate_contactusername;
-		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
-		$c->response->body($json_DATA);
-		return;
 		}
 		
 	$c->stash($params);

@@ -622,10 +622,10 @@ $(document).ready(function(){
 			</td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="contact_password">Password:</label></td>
+			<td><label class="float_right" for="password">Password:</label></td>
 			<td>
 			[% IF ENABLE_EDIT %]
-				<input type="text" name="contact_password" id="contact_password" value="[% password %]" class="broad_text">
+				<input type="text" name="password" id="password" value="[% password %]" class="broad_text">
 			[% ELSE %]
 				[% password %]
 			[% END %]
@@ -806,8 +806,9 @@ $(document).ready(function(){
 	<script>
 	function validateContactUsername(){
 			var customerid = $("#customerid").val();
+			var contactid = $("#contactid").val();
 			var username = $("#username").val();
-			var query  = '&customerid=' + customerid + '&username=' + username;
+			var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
 			
 			if (username == undefined || username.length == 0) return;
 			send_ajax_request('', 'JSON', 'settings/company', 'validate_contactusername', query, function() {
