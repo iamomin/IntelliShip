@@ -438,6 +438,7 @@ table.single-row {
 }
 
 table.single-row td{
+    padding: 0;
     vertical-align: top;
 }
 

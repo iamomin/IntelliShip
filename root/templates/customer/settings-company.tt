@@ -164,32 +164,41 @@
 
 						<td><label class="float_right" for="auxaddressname">Form Name:</label></td>
 						<td><input type="text" name="auxaddressname" id="auxaddressname" value="[%customerAuxFormAddress.addressname%]"  class="broad_text" maxlength="50"></td>
-                    </tr>
-                    <tr>
+					</tr>
+					<tr>
 						<td><label class="float_right" for="customername">Company Name:</label></td>
-                        <td><input type="text" name="customername" id="customername" value="[%customername%]"  class="broad_text"></td>
+						<td><input type="text" name="customername" id="customername" value="[%customername%]"  class="broad_text"></td>
 
-						<td><label class="float_right" for="auxaddress1">Form Address:</label></td>
+						<td><label class="float_right" for="auxaddress1">Form Address 1:</label></td>
 						<td><input type="text" class="broad_text" name="auxaddress1" id="auxaddress1" value="[% customerAuxFormAddress.address1 %]"></td>
-                    </tr>
-                    <tr>
-						<td><label class="float_right" for="halocustomerid">HALO Company ID</td>
-						<td><input type="text" name="halocustomerid" id="halocustomerid" value="[%halocustomerid%]"  class="broad_text"></td>
-
-						<td></td>
+					</tr>
+					<tr>
+						<td><label class="float_right" for="username">User Name:</label></td>
+						<td>
+							[% IF ENABLE_EDIT %]
+								<input type="text" name="username" id="username" value="[% username %]" class="broad_text" onchange="validateCustomerUsername();">
+							[% ELSE %]
+								[% username %]
+							[% END %]
+						</td>
+						<td><label class="float_right" for="auxaddress2">Form Address 2:</label></td>
 						<td><input type="text" class="broad_text" name="auxaddress2" id="auxaddress2" value="[% customerAuxFormAddress.address2 %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="address1">Address 1:</label></td>
-						<td><input type="text" class="broad_text" name="address1" id="address1" value="[% customerAddress.address1 %]"></td>
-
+						<td><label class="float_right" for="password">Password:</label></td>
+						<td>
+							[%IF ENABLE_EDIT %]
+								<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
+							[%ELSE%]
+								[%password%]
+							[%END%]
+						</td>
 						<td><label class="float_right" for="auxcity">Form City:</label></td>
 						<td><input type="text" class="broad_text" name="auxcity" id="auxcity" value="[% customerAuxFormAddress.city %]"></td>
 					</tr>
 					<tr>
-						<td></td>
-						<td><input type="text" class="broad_text" name="address2" id="address2" value="[% customerAddress.address2 %]"></td>
-
+						<td><label class="float_right" for="halocustomerid">HALO Company ID:</td>
+						<td><input type="text" name="halocustomerid" id="halocustomerid" value="[%halocustomerid%]"  class="broad_text"></td>
 						<td><label class="float_right" for="auxstate">Form State:</label></td>
 						<td>
 						<label>
@@ -202,11 +211,30 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="city">City:</label></td>
-						<td><input type="text" class="broad_text" name="city" id="city" value="[% customerAddress.city %]"></td>
-
+						<td><label class="float_right" for="address1">Address 1:</label></td>
+						<td><input type="text" class="broad_text" name="address1" id="address1" value="[% customerAddress.address1 %]"></td>
 						<td><label class="float_right" for="auxzip">Form Zipcode:</label></td>
 						<td><input type="text" class="broad_text" name="auxzip" id="auxzip" value="[% customerAuxFormAddress.zip %]"></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="text" class="broad_text" name="address2" id="address2" value="[% customerAddress.address2 %]"></td>
+						<td><label class="float_right" for="auxcountry">Form Country:</label></td>
+						<td>
+						<label>
+							<select name="auxcountry" id="auxcountry">
+							[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]" [% (item.value == customerAuxFormAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+					</tr>
+					<tr>
+						<td><label class="float_right" for="city">City:</label></td>
+						<td><input type="text" class="broad_text" name="city" id="city" value="[% customerAddress.city %]"></td>
+						<td></td>
+						<td></td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="state">State:</label></td>
@@ -215,17 +243,6 @@
 							<select name="state" id="state">
 							[% FOREACH item IN statelist_loop %]
 								<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
-						</td>
-
-						<td><label class="float_right" for="auxcountry">Form Country:</label></td>
-						<td>
-						<label>
-							<select name="auxcountry" id="auxcountry">
-							[% FOREACH item IN countrylist_loop %]
-								<option value="[% item.value %]" [% (item.value == customerAuxFormAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
 							[% END %]
 							</select>
 						</label>
@@ -284,19 +301,6 @@
 					<tr>
 						<td><label class="float_right" for="ssnein">EIN:</label></td>
 						<td><input type="text" class="broad_text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="password">Password:</label></td>
-						<td>
-							[%IF !customerid %]
-								<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
-							[%ELSE%]
-								[%password%]
-							[%END%]
-						</td>
 
 						<td></td>
 						<td></td>
@@ -666,6 +670,23 @@
 	</form>
 
 	<script>
+	
+		function validateCustomerUsername(){
+			var customerid = $("#customerid").val();
+			var username = $("#username").val();
+			var query  = '&customerid=' + customerid + '&username=' + username;
+			
+			if (username == undefined || username.length == 0) return;
+			send_ajax_request('', 'JSON', 'settings/company', 'validate_customer_username', query, function() {
+			if (JSON_data.COUNT > 0) {
+				showError("User name exist. Please specify different user name");
+				$("#username").val("");
+			}
+			else
+				return ;
+			});
+		}
+
 	$( "#company-settings" ).tabs();
 
 	$("#frm_setup_customer").submit(function () {

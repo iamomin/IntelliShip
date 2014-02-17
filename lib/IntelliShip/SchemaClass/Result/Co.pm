@@ -945,6 +945,16 @@ sub is_fullfilled
 	return 1;
 	}
 
+sub delete_all_package_details
+	{
+	my $self = shift;
+	my @arr = $self->package_details;
+	foreach my $PackPro (@arr)
+		{
+		$PackPro->delete;
+		}
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

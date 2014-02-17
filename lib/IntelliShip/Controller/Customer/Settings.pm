@@ -514,7 +514,7 @@ sub contactinformation :Local
 			#$Contact->password($Contact->contactid);
 			$Contact->insert;
 			}
-		
+
 		my $addressData = {
 			address1	=> $params->{'contact_address1'},
 			address2	=> $params->{'contact_address2'},
@@ -523,7 +523,7 @@ sub contactinformation :Local
 			zip			=> $params->{'contact_zip'},
 			country		=> $params->{'contact_country'},
 			};
-		
+
 		my $Address;
 		if ($Contact->addressid)
 			{
@@ -549,7 +549,7 @@ sub contactinformation :Local
 
 		$Contact->username($params->{'username'}) if $params->{'username'};
 		$Contact->password($params->{'password'}) if $params->{'password'};
-		
+
 		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
 		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
 		$Contact->email($params->{'email'});
@@ -625,7 +625,7 @@ sub contactinformation :Local
 			$c->stash->{sourcedate}				 = $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}			 = $Contact->get_contact_data_value('disabledate');
 			}
-				
+
 		$c->stash->{password} 				= $self->get_token_id unless $c->stash->{password};
 		$c->stash->{statelist_loop}			 = $self->get_select_list('US_STATES');
 		$c->stash->{countrylist_loop}		 = $self->get_select_list('COUNTRY');
@@ -640,32 +640,15 @@ sub contactinformation :Local
 		$c->stash->{defaultpackinglist_loop} = $self->get_select_list('DEFAULT_PACKING_LIST');
 		$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
-		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');	
+		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');
 		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
-			
+
 		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser or (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
 	}
-
-sub validate_contactusername :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-	
-	if($params->{'contactid'})
-		{
-		my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
-		return { COUNT => 0} if ($Contact->username eq $params->{'username'})
-		}
-
-	my $WHERE = {customerid => $params->{'customerid'}, username => $params->{'username'},};
-
-	return { COUNT => $c->model('MyDBI::Contact')->search($WHERE)->count };
-   }
 
 sub get_customer_contacts :Private
 	{
@@ -712,7 +695,7 @@ sub get_contact_setting_list :Private
 	my $c = $self->context;
 
 	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
-	
+
 	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
 
 	#my $list = [];

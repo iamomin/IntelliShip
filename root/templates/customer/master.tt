@@ -91,7 +91,7 @@
 				<a href="[% landing_page %]"><img src="/static/images/[% branding_id %]/company-logo.png"/></a>
 				<nav>
 					<ul>
-					<li><a href="#" id="settings"><img src="/static/images/settings.png"/><span>[% username %]</span></a>
+					<li><a href="#" id="settings"><img src="/static/images/settings.png"/><span>[% login_username %]</span></a>
 							<ul>
 								<li><a href="/customer/settings">ACCOUNT SETTINGS</a></li>
 								<li><hr></li>

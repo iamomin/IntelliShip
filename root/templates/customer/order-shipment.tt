@@ -6,7 +6,7 @@
 	<tr>
 	<td class="L"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
 	<td class="C"><input type="button" class="active" value="SHIPMENT DETAILS"/></td>
-	<td class="R"><input type="button" onclick="$('#frm_shipment').submit();" class="inactive" value="FINAL REVIEW"/></td>
+	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="$('#frm_shipment').submit();"/></td>
 	</tr>
 	<tr>
 	<td colspan="3">
@@ -352,10 +352,13 @@
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();
 		[% END %]
+
+		/*
 		calculate_total_weight();
 		calculate_total_packages();
 		calculate_total_declared_value_insurance();
 		calculate_total_freight_insurance();
+		*/
 		});
 [% END %]
 

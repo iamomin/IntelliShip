@@ -4,8 +4,8 @@
 <table class="order-nav">
 	<tr>
 	<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
-	<td class="C"><input type="button" onclick="$('#frm_address').submit();" class="inactive" value="SHIPMENT DETAILS"/></td>
-	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW"/></td>
+	<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="$('#frm_address').submit();"/></td>
+	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="reviewOrder();"/></td>
 	</tr>
 	<tr>
 	<td colspan="3">
@@ -18,7 +18,7 @@
 </table>
 
 <form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
-	<input type="hidden" name="do" value="step1"/>
+	<input type="hidden" id="do" name="do" value="step1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
@@ -270,6 +270,12 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 [% UNLESS one_page %]
 [% FOREACH item IN requiredfield_list %]
 requiredFieldHash['[% item.name %]']=[% item.details %];
+
+function reviewOrder() {
+	$("#do").val('review');
+	$("#frm_address").submit();
+	}
+
 [% END %]
 
 $("#frm_address").submit(function() {

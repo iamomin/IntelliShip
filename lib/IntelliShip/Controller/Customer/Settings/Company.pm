@@ -129,7 +129,8 @@ sub setup :Local
 		$self->get_customer_contacts($Customer->customerid)
 		}
 
-	$c->stash->{CONTACT_INFORMATION} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company.tt" ]);
+	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
+	$c->stash->{CONTACT_INFORMATION}     = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company.tt" ]);
 	$c->stash->{CONTACT_LIST}            = 0;
 	$c->stash->{CONTACT_MANAGEMENT}      = 0;
 	$c->stash->{companysetting_loop}     = $self->get_company_setting_list($Customer);
@@ -156,8 +157,11 @@ sub setup :Local
 	$c->stash->{labelstub_loop}          = $self->get_select_list('LABEL_STUB_LIST');
 	$c->stash->{markuptype_loop}         = $self->get_select_list('MARKUP_TYPE');
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
-	$c->stash->{SETUP_CUSTOMER}          = 1;
 
+	my $Contact = $self->contact;
+	$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser;
+
+	$c->stash->{SETUP_CUSTOMER}          = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
 	$c->stash->{template} = "templates/customer/settings-company.tt";
 	}
@@ -175,6 +179,7 @@ sub configure :Local
 
 	$Customer->halocustomerid($params->{'halocustomerid'}) if ($params->{'halocustomerid'});
 	$Customer->customername($params->{'customername'}) if ($params->{'customername'});
+	$Customer->username($params->{'username'}) if ($params->{'username'});
 	$Customer->contact($params->{'contact'}) if ($params->{'contact'});
 	$Customer->phone($params->{'phone'}) if ($params->{'phone'});
 	$Customer->email($params->{'email'}) if ($params->{'email'});
@@ -429,17 +434,10 @@ sub ajax :Local
 		{
 		my $WHERE = { customerid => [split(',', $params->{'page'})] };
 		$c->log->debug("WHERE: " . Dumper $WHERE);
-		my @customers = $c->model('MyDBI::Customer')->search($WHERE,{
-		select => [
-			'customerid',
-			'username',
-			'customername',
-			'contact',
-			'phone',
-			'email'
-			],
-		order_by => { -asc => 'customername' },
-		});
+		my @customers = $c->model('MyDBI::Customer')->search($WHERE, {
+								select => [ 'customerid', 'username', 'customername', 'contact', 'phone', 'email' ],
+								order_by => { -asc => 'customername' },
+							});
 
 		$c->log->debug("TOTAL CUSTOMERS: " . @customers);
 		$c->stash->{customerlist} = \@customers;
@@ -448,12 +446,17 @@ sub ajax :Local
 		$c->stash->{CUSTOMER_LIST} = 1;
 		$c->stash->{CUSTOMER_MANAGEMENT} = 1;
 		}
-	elsif($params->{'action'} eq 'validate_contactusername')
+	elsif($params->{'action'} eq 'validate_contact_username')
 		{
-		my $dataHash = $self->validate_contactusername;
+		my $dataHash = $self->validate_contact_username;
 		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
-		$c->response->body($json_DATA);
-		return;
+		return $c->response->body($json_DATA);
+		}
+	elsif($params->{'action'} eq 'validate_customer_username')
+		{
+		my $dataHash = $self->validate_customer_username;
+		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+		return $c->response->body($json_DATA);
 		}
 	elsif (length $params->{'term'})
 		{
@@ -474,10 +477,39 @@ sub ajax :Local
 		{
 		$self->get_customer_contacts;
 		}
-		
+
 	$c->stash($params);
 	$c->stash(template => "templates/customer/settings-company.tt");
 	}
+
+sub validate_contact_username :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = {
+		contactid => { '!=' => $params->{'contactid'}},
+		customerid => $params->{'customerid'},
+		username => $params->{'username'}
+		};
+
+	return { COUNT => $c->model('MyDBI::Contact')->search($WHERE)->count };
+	}
+
+sub validate_customer_username :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = {
+		customerid => { '!=' => $params->{'customerid'} },
+		username => $params->{'username'}
+		};
+
+	return { COUNT => $c->model('MyDBI::Customer')->search($WHERE)->count };
+   }
 
 sub get_customer
 	{

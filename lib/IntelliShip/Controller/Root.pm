@@ -146,7 +146,7 @@ sub end : Private {
 	elsif ($Token)
 		{
 		$Controller->set_navigation_rules;
-		$c->stash->{username} = $Controller->contact->full_name;
+		$c->stash->{login_username} = $Controller->contact->full_name;
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else

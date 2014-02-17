@@ -811,7 +811,7 @@ $(document).ready(function(){
 			var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
 			
 			if (username == undefined || username.length == 0) return;
-			send_ajax_request('', 'JSON', 'settings/company', 'validate_contactusername', query, function() {
+			send_ajax_request('', 'JSON', 'settings/company', 'validate_contact_username', query, function() {
 			if (JSON_data.COUNT > 0) {
 				showError("User name exist. Please specify different user name");
 				$("#username").val("");

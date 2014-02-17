@@ -44,13 +44,21 @@ sub index :Path :Args(0) {
 		{
 		$self->setup_shipment_information;
 		}
-	elsif ($do_value eq 'cancel')
+	elsif ($do_value eq 'address')
 		{
-		$self->cancel_order;
+		$self->edit_address_details;
 		}
 	elsif ($do_value eq 'ship')
 		{
 		$self->SHIP_ORDER;
+		}
+	elsif ($do_value eq 'review')
+		{
+		$self->review_order;
+		}
+	elsif ($do_value eq 'cancel')
+		{
+		$self->cancel_order;
 		}
 	else
 		{
@@ -82,6 +90,21 @@ sub complete_step3
 	$self->SHIP_ORDER;
 	$self->clear_CO_details;
 	$self->setup_address;
+	}
+
+sub edit_address_details
+	{
+	my $self = shift;
+	$self->save_CO_details;
+	$self->save_package_product_details if defined $self->context->req->params->{weight_1};
+	$self->setup_address;
+	}
+
+sub review_order
+	{
+	my $self = shift;
+	$self->save_address;
+	$self->setup_carrier_service;
 	}
 
 sub cancel_order

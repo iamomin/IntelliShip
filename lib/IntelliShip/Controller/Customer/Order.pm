@@ -155,10 +155,10 @@ sub setup_shipment_information :Private
 	if ($Customer->address->country ne $CO->to_address->country)
 		{
 		$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
-		my $CA = IntelliShip::Controller::Customer::Ajax->new;
+		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
 		$CA->context($c);
 		$CA->set_international_details;
-		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/ajax.tt" ]);
+		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		}
 
 	unless ($c->stash->{one_page})
@@ -274,7 +274,7 @@ sub save_CO_details :Private
 		$coData->{'contactphone'} = $params->{'tophone'};
 		}
 
-	$coData->{'freightcharges'} = $params->{'deliverymethod'} if length $params->{'deliverymethod'};
+	$coData->{'freightcharges'} = $params->{'deliverymethod'} if $params->{'deliverymethod'};
 
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
 	$coData->{'custnum'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
@@ -504,12 +504,47 @@ sub save_package_product_details :Private
 
 	my $CO = $self->get_order;
 
-	$c->log->debug("___ Flush old PackProData for ownerid: " . $CO->coid);
-	my @packages = $c->model("MyDBI::Packprodata")->search({ ownerid => $CO->coid });
-	foreach my $Pkg (@packages)
+	# Deal with packages/products.
+	# Delete packages & products for combined coids
+	if ($params->{'consolidatedorder'})
 		{
-		$c->model("MyDBI::Packprodata")->search({ ownerid => $Pkg->packprodataid })->delete;
-		$Pkg->delete;
+		for (my $i = 1; $i <= $params->{'productcount'}; $i++)
+			{
+			# Only packages are relevent for normal consolidates, skip products
+			if (!$params->{'cotypeid'} or $params->{'cotypeid'} != 2)
+				{
+				next if $params->{"datatypeid_" . $i} == 2000;
+				}
+
+			my $ComboCO = $c->model('MyDBI::CO')->find({ coid => $params->{"consolidatedcoid_" . $i} });
+			next unless $ComboCO;
+
+			$c->log->debug("___ consolidatedorder: Flush old PackProData for ComboCO: " . $ComboCO->coid);
+			$ComboCO->delete_all_package_details;
+
+			my $ConsolidationType = $ComboCO->consolidationtype || 0;
+			my $Status = $ComboCO->statusid || 0;
+
+			if ($Status == 200)
+				{
+				$ComboCO->consolidationtype($ConsolidationType);
+				}
+			elsif ($ConsolidationType and !$params->{'consolidationtype'})
+				{
+				$ComboCO->consolidationtype($ConsolidationType);
+				}
+			else
+				{
+				$ComboCO->consolidationtype($params->{'consolidationtype'});
+				}
+
+			$ComboCO->update;
+			}
+		}
+	else
+		{
+		$c->log->debug("___ Flush old PackProData");
+		$CO->delete_all_package_details;
 		}
 
 	my $last_package_id=0;
@@ -868,6 +903,7 @@ sub populate_order :Private
 		$c->stash->{ordernumber} = $CO->ordernumber;
 		$c->stash->{toAddress} = $CO->to_address;
 		$c->stash->{tocustomernumber} = $CO->custnum;
+		$c->stash->{description} = $CO->description;
 		}
 
 	## Package Details
@@ -983,29 +1019,14 @@ sub add_detail_row :Private
 	$c->stash->{ROW_COUNT} = $row_num_id;
 	$c->stash->{DETAIL_TYPE} = $type;
 
-	my $Unittype;
-	if ($c->stash->{review_order})
-		{
-		$c->stash->{REVIEW_PKG_DETAIL_ROW} = 1;
-		$c->stash->{'totalweight'} += $PackProData->weight;
-		$Unittype = $self->context->model('MyDBI::Unittype')->find({unittypeid => $PackProData->unittypeid});
-		}
-	else
-		{
-		$c->stash->{PKG_DETAIL_ROW} = 1;
-
-		$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-		}
-	$c->stash->{'coid'}      = $PackProData->ownerid;
+	$c->stash->{'coid'}        = $PackProData->ownerid;
 	$c->stash->{'weight'}      = $PackProData->weight;
 	$c->stash->{'class'}       = $PackProData->class;
 	$c->stash->{'dimweight'}   = $PackProData->dimweight;
 	$c->stash->{'unittype'}    = $PackProData->unittypeid;
-	$c->stash->{'unittype'}    = $Unittype->unittypename if ($c->stash->{review_order});
 	$c->stash->{'sku'}         = $PackProData->partnumber;
 	$c->stash->{'description'} = $PackProData->description;
 	$c->stash->{'quantity'}    = $PackProData->quantity;
-	$c->stash->{'quantity'}    = $PackProData->boxnum;
 	$c->stash->{'frtins'}      = $PackProData->frtins;
 	$c->stash->{'nmfc'}        = $PackProData->nmfc;
 	$c->stash->{'decval'}      = $PackProData->decval;
@@ -1013,6 +1034,9 @@ sub add_detail_row :Private
 	$c->stash->{'dimwidth'}    = $PackProData->dimwidth;
 	$c->stash->{'dimheight'}   = $PackProData->dimheight;
 	$c->stash->{'density'}     = $PackProData->density;
+
+	$c->stash->{PKG_DETAIL_ROW} = 1;
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
 	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	}
