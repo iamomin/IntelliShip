@@ -194,10 +194,10 @@
 				};
 
 		$("#btn_search").click(function() {
-			$("#myShipments").slideUp(1000);
-			$("#btn_search").prop('disabled', true);
 
+			$("#myShipments").slideUp(1000);
 			if (validateForm(requireHash) == false) return;
+			$("#btn_search").prop('disabled', true);
 
 			$("#btn_search").val('Please wait...');
 			send_ajax_request('myShipments', 'HTML', 'batchshipping', 'search_orders', $("#frm_batch_shipping").serialize(), function() {
