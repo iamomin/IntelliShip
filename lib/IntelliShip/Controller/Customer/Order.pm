@@ -592,7 +592,7 @@ sub save_package_product_details :Private
 				class       => sprintf("%.2f", $class),
 				decval      => sprintf("%.2f", $decval),
 				frtins      => sprintf("%.2f", $frtins),
-				dryicewt    => sprintf("%.2f", $dryicewt),
+				dryicewt    => int $dryicewt,
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
