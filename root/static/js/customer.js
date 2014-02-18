@@ -82,6 +82,7 @@ function afterSuccessCallBack(response_type, result_div, call_back_function, res
 		{
 		bollIsErrorResponse = false;
 		if (response_type == "HTML") {
+			//alert("RESPONSE CONTENT: " + $('#response-content').html());
 			//$('#' + result_div).fadeOut(1000);
 			$('#' + result_div).html($('#response-content').html());
 			// + result_div).fadeIn(1000);

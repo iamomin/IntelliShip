@@ -24,8 +24,8 @@ sub get_carrier_service_name
 	my $CSID = shift;
 
 	my $http_request = {
-		action	=>	'GetCarrierServiceName',
-		csid		=>	$CSID,
+		action	=> 'GetCarrierServiceName',
+		csid	=> $CSID,
 	};
 
 	my $response = $self->APIRequest($http_request);

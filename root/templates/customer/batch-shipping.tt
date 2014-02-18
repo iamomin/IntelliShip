@@ -1,132 +1,219 @@
+[% IF ajax %]
 
-<h2>Batch Shipping</h2>
-<form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
-	<table class="center_app css3-checkboxes">
+	[% IF MESSAGE %]<script>showMessage("[% MESSAGE %]");</script>[% END %]
+
+	[% IF carrier_service_list %]
+	<select name="csid" id="csid">
+		<option></option>
+	[% FOREACH item IN carrier_service_list %]
+		<option value="[% item.serviceid %]">[% item.servicename %]</option>
+	[% END %]
+	</select>
+	[% END %]
+
+	[% IF matching_order_list %]
+
+	<table>
 		<tr>
-			<td><label for="excludeshipped" class="float_right">Exclude Shipped :</label></td>
-			<td><label><input type="checkbox" onclick=checkExclude() name="excludeshipped" id="excludeshipped" value=1 checked/><span></span></label></td>
-		</tr>
-		<tr>
-			<td><label for="orderlimit" class="float_right" maxlength="4">Order Number Limit :</label></td>
-			<td><input type="text" class="text" name="orderlimit" id="orderlimit"></td>
-		</tr>
-		<tr>
-			<td><label for="carrier" class="float_right">Carrier :</label></td>
-			<td><select name="carrier" id="carrier">
-				[% FOREACH item IN carrier_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-				</select></td>
-		</tr>
-		<tr>
-			<td><label for="csid" class="float_right">Carrier/Service :</label></td>
-			<td><select name="csid" id="csid">
-				[% FOREACH item IN carrierservice_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-				</select></td>
-		</tr>
-		<tr>
-			<td><label for="address" class="float_right">Destination Address :</label></td>
-			<td><select name="address" id="address">
-				[% FOREACH item IN destination_address_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-				</select></td>
-		</tr>
-		<tr>
-			<td><label for="datetoship" class="float_right">Ship On :</label></td>
-			<td><input type="text" class="text" name="datetoship" id="datetoship"/></td>
-		</tr>
-		<tr>
-			<td><label for="dateneeded" class="float_right">Deliver By :</label></td>
-			<td><input type="text" class="text" name="dateneeded" id="dateneeded"/></td>
-		</tr>
-		<tr>
-			<td><label for="batchstate" class="float_right">Destination State :</label></td>
-			<td><select name="batchstate" id="batchstate">
-				[% FOREACH item IN destination_state_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-				</select></td>
-		</tr>
-		<tr>
-			<td><label for="startzip" class="float_right">Zip range :</label></td>
-			<td>
-			<input type="text" name="startzip" id="startzip" size="6" maxlength="5"/>
-			&nbsp;-&nbsp;
-			<input type="text" name="stopzip" id="stopzip" size="6" maxlength="5"/>
-			</td>
-		</tr>
-		<tr>
-			<td><label for="extcd" class="float_right">Product Description :</label></td>
-			<td><select name="extcd" id="extcd">
-				[% FOREACH item IN extcd_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-			</select></td>
-		</tr>
-		<tr>
-			<td><label for="startordernumber" class="float_right">Order Numbers :</label></td>
-			<td>
-			<input type="text" class="text" name="startordernumber" id="startordernumber"/>
-			&nbsp;-&nbsp;
-			<input type="text" class="text" name="stopordernumber" id="stopordernumber"/>
-			</td>
-		</tr>
-		<tr>
-			<td><label for="department" class="float_right">Department :</label></td>
-			<td><select name="department" id="department">
-				[% FOREACH item IN department_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-			</select></td>
-		</tr>
-		<tr>
-			<td><label for="custnum" class="float_right">Customer Number :</label></td>
-			<td><select name="custnum" id="custnum">
-				[% FOREACH item IN customernumber_list %]
-					<option value="[% item.value %]">[% item.name %]</option>
-				[% END %]
-			</select></td>
-		</tr>
-		<tr>
-			<td colspan=2">&nbsp;</td>
+			<td><div class="notice">The selected criteria results in a <strong>1</strong> order batch shipment.</div></td>
+			<td>Total <strong><span id="select-count"></span></strong> orders selected</td>
+			<td><button class="quick-ship" id="btn_batch_ship"><label></label><span>SHIP PACKAGES</span></button></td>
 		</tr>
 	</table>
-	<center><input type="submit" class="green" value="Submit"/></center>
-</form>
 
-<script>
+	<table class="css3-checkboxes">
+		<tr>
+			<th><label><input type="checkbox" id="all"/><span></span></label></th>
+			<th>Order Number</th>
+			<th>Carrier</th>
+			<th>Service</th>
+			<th>Ship On</th>
+			<th>Deliver By</th>
+			<th>Address</th>
+			<th>City</th>
+			<th>State</th>
+			<th>Zip</th>
+		</tr>
+		[% FOREACH item IN matching_order_list %]
+		<tr>
+			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" class="orders" value="[% item.coid %]" CHECKED/><span></span></label></td>
+			<td>[% item.ordernumber %]</td>
+			<td>[% item.carrier %]</td>
+			<td>[% item.service %]</td>
+			<td>[% item.datetoship %]</td>
+			<td>[% item.dateneeded %]</td>
+			<td>[% item.toAddress.address1 _ toAddress.address2%]</td>
+			<td>[% item.toAddress.city %]</td>
+			<td>[% item.toAddress.state %]</td>
+			<td>[% item.toAddress.zip %]</td>
+		</tr>
+		[% END %]
+	</table>
 
-$(document).ready(function(){
+	<script>
+		$("#select-count").html([% matching_order_list.size %]);
 
-	$("#orderlimit").mask("9999");
-	$("#datetoship").datepicker();
-	$("#dateneeded").datepicker();
-	$("#startzip").mask("99999");
-	$("#stopzip").mask("99999");
+		$('.orders').change(function(){
 
-	var requireHash = {
-			orderlimit : { minlength: 1 },
-			carrier : { minlength: 1 },
-			csid : { minlength: 1 },
-			address : { minlength: 1 },
-			datetoship : { date: true },
-			dateneeded : { date: true },
-			batchstate : { minlength: 2 },
-			startzip : { minlength: 5 },
-			stopzip : { minlength: 5 },
-			extcd : { minlength: 1 },
-			startordernumber : { minlength: 1 },
-			stopordernumber : { minlength: 1 },
-			department : { minlength: 1 },
-			custnum : { minlength: 1 },
-			};
+			var v = +($("#select-count").html());
+			if($(this).is(':checked')) {
+				$("#select-count").html(v+1);
+				} else {
+				$("#select-count").html(v-1);
+				}
+			});
 
-	$("#frm_batch_shipping").submit(function() {
-		return validateForm(requireHash);
+		$("#btn_batch_ship").click(function() {
+			$("#frm_batch_shipping").submit();
+			});
+	</script>
+	[% END %]
+
+[% ELSE %]
+
+	<h2>Batch Shipping</h2>
+
+	<div class="notice">* Charges displayed in IntelliShip may not include freight, fuel, or other miscellaneous accessorial charges</div>
+	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
+
+	<form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
+		<input type="hidden" id="do" name="do" value="batchship">
+
+		<table class="app css3-checkboxes">
+			<tr>
+				<td><label for="excludeshipped" class="float_right">Exclude Shipped :</label></td>
+				<td><label><input type="checkbox" id="excludeshipped" name="excludeshipped" value="1" CHECKED/><span></span></label></td>
+			</tr>
+			<tr>
+				<td><label for="orderlimit" class="float_right require">Order Number Limit :</label></td>
+				<td><input type="text" class="text" name="orderlimit" id="orderlimit"></td>
+			</tr>
+			<tr>
+				<td><label for="carrier" class="float_right">Carrier :</label></td>
+				<td><select name="carrier" id="carrier">
+					<option value=""></option>
+					[% FOREACH item IN carrier_list %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+					</select></td>
+			</tr>
+			<tr>
+				<td><label for="csid" class="float_right">Carrier/Service :</label></td>
+				<td><div id="divCarrierService"><select name="csid"><option></option></select></div></td>
+			</tr>
+			<tr>
+				<td><label for="address" class="float_right require">Destination Address :</label></td>
+				<td><select name="address" id="address">
+						<option></option>
+					[% FOREACH item IN destination_address_list %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+					</select></td>
+			</tr>
+			<tr>
+				<td><label for="datetoship" class="float_right">Ship On :</label></td>
+				<td><input type="text" class="text" name="datetoship" id="datetoship"/></td>
+			</tr>
+			<tr>
+				<td><label for="dateneeded" class="float_right">Deliver By :</label></td>
+				<td><input type="text" class="text" name="dateneeded" id="dateneeded"/></td>
+			</tr>
+			<tr>
+				<td><label for="batchstate" class="float_right">Destination State :</label></td>
+				<td><select name="batchstate" id="batchstate">
+					[% FOREACH item IN destination_state_list %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+					</select></td>
+			</tr>
+			<tr>
+				<td><label for="startzip" class="float_right">Zip range :</label></td>
+				<td>
+				<input type="text" name="startzip" id="startzip" size="6" maxlength="5"/>
+				&nbsp;-&nbsp;
+				<input type="text" name="stopzip" id="stopzip" size="6" maxlength="5"/>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="extcd" class="float_right">Product Description :</label></td>
+				<td><select name="extcd" id="extcd">
+					[% FOREACH item IN extcd_list %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select></td>
+			</tr>
+			<tr>
+				<td><label for="startordernumber" class="float_right">Order Numbers :</label></td>
+				<td>
+				<input type="text" class="text" name="startordernumber" id="startordernumber"/>
+				&nbsp;-&nbsp;
+				<input type="text" class="text" name="stopordernumber" id="stopordernumber"/>
+				</td>
+			</tr>
+			<tr>
+				<td><label for="department" class="float_right">Department :</label></td>
+				<td><select name="department" id="department">
+					[% FOREACH item IN department_list %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select></td>
+			</tr>
+			<tr>
+				<td><label for="custnum" class="float_right">Customer Number :</label></td>
+				<td><select name="custnum" id="custnum">
+						<option></option>
+					[% FOREACH item IN customernumber_list %]
+						<option value="[% item.value %]">[% item.name %]</option>
+					[% END %]
+				</select></td>
+			</tr>
+		</table>
+		<br/>
+		<center><input type="button" class="green" id="btn_search" value="Search"/></center>
+		<div id="myShipments" style="text-align: center;"></div>
+	</form>
+
+	<script>
+
+	$(document).ready(function(){
+
+		$("#orderlimit").mask("9999");
+		$("#datetoship").datepicker();
+		$("#dateneeded").datepicker();
+		$("#startzip").mask("99999");
+		$("#stopzip").mask("99999");
+
+		$("#carrier").change(function() {
+			var query_param = "carrier=" + $(this).val();
+			send_ajax_request('divCarrierService', 'HTML', 'batchshipping', 'get_service_list', query_param);
+			});
+
+		var requireHash = {
+				address : { minlength: 1 },
+				orderlimit : { numeric: true },
+				};
+
+		$("#btn_search").click(function() {
+			$("#myShipments").slideUp(1000);
+			$("#btn_search").prop('disabled', true);
+
+			if (validateForm(requireHash) == false) return;
+
+			$("#btn_search").val('Please wait...');
+			send_ajax_request('myShipments', 'HTML', 'batchshipping', 'search_orders', $("#frm_batch_shipping").serialize(), function() {
+					$("#btn_search").prop('disabled', false);
+					$("#btn_search").val('Search');
+					$("#myShipments").slideDown(1000);
+					});
+			});
+
+		$("#frm_batch_shipping").submit(function() {
+			return validateForm(requireHash);
+			});
+
+		$("#btn_search").prop('disabled', false);
+		$("#btn_search").val('Search');
 		});
-	});
 
-</script>
+	</script>
+[% END %]

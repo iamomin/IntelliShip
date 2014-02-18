@@ -468,12 +468,13 @@ sub get_select_list
 		my $product_desc_rs = $c->model('MyDBI::Co')->search(
 								{
 								customerid => $self->customer->customerid,
-								statusid => { '<' => 5},
-								cotypeid => 1,
+								custnum    => { '!=' => '' },
+								statusid   => { '<' => 5 },
+								cotypeid   => 1,
 								},
 								{
-								select => 'custnum',
 								distinct => 1,
+								select   => 'custnum',
 								order_by => 'custnum',
 								});
 		 while (my $Co = $product_desc_rs->next)
@@ -505,14 +506,14 @@ sub get_select_list
 		my $sql = "
 			SELECT
 				DISTINCT
-				coalesce(addressname,'') || ':' || coalesce(address1,'') || ':' || coalesce(address2,'') || ':' || coalesce(city,'') || ':' || coalesce(state,'') || ':' || coalesce (zip,'') as address,
-				coalesce(addressname,'') || ':' || coalesce(address1,'') || ':' || coalesce(address2,'') || ':' || coalesce(city,'') || ':' || coalesce(state,'') || ':' || coalesce (zip,'')
+				coalesce(addressname,'') || ' : ' || coalesce(address1,'') || ' : ' || coalesce(address2,'') || ' : ' || coalesce(city,'') || ' : ' || coalesce(state,'') || ' : ' || coalesce (zip,'') as address,
+				coalesce(addressname,'') || ' : ' || coalesce(address1,'') || ' : ' || coalesce(address2,'') || ' : ' || coalesce(city,'') || ' : ' || coalesce(state,'') || ' : ' || coalesce (zip,'')
 			FROM
 				co INNER JOIN address a ON a.addressid = co.addressid
-			WHERE
-				co.customerid = '" . $self->customer->customerid . "'
+				AND co.customerid = '" . $self->customer->customerid . "'
 				AND co.statusid < 5
 				AND co.cotypeid = 1
+				AND address1 <> ''
 			ORDER BY
 				address";
 		my $sth = $myDBI->select($sql);
@@ -701,7 +702,7 @@ sub get_select_list
 			{ value => 'USPS000000001' , name => 'USPS' },
 			{ value => 'VISIONSHIP001' , name => 'Vision' },
 			{ value => '0000000000011' , name => 'YRC' },
-			{ value => 'OTHER_NEW' , name => 'Other - New' },
+			{ value => 'OTHER_NEW'     , name => 'Other - New' },
 			];
 		}
 	elsif ($list_name eq 'DELIVERY_METHOD')

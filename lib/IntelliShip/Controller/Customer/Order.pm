@@ -575,7 +575,7 @@ sub save_package_product_details :Private
 		my $class     = $params->{'class_' . $PackageIndex} || 0;
 		my $decval    = $params->{'decval_' . $PackageIndex} || 0;
 		my $frtins    = $params->{'frtins_'.$PackageIndex} || 0;
-
+		my $dryicewt  = ceil($params->{'dryicewt'}) || 0;
 		my $PackProData = {
 				ownertypeid => $ownertypeid,
 				ownerid     => $ownerid,
@@ -592,6 +592,7 @@ sub save_package_product_details :Private
 				class       => sprintf("%.2f", $class),
 				decval      => sprintf("%.2f", $decval),
 				frtins      => sprintf("%.2f", $frtins),
+				dryicewt    => sprintf("%.2f", $dryicewt),
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
@@ -885,6 +886,10 @@ sub populate_order :Private
 	$c->stash->{edit_order} = 1 unless $populate;
 	$c->stash->{thirdpartyacctid} = $params->{thirdpartyacctid} if $params->{thirdpartyacctid};
 
+	## Shipment Information
+	$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
+	$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
+
 	## Address and Shipment Information
 	if (!$populate or $populate eq 'address' or $populate eq 'summary')
 		{
@@ -909,10 +914,6 @@ sub populate_order :Private
 	## Package Details
 	if (!$populate or $populate eq 'shipment')
 		{
-		## Shipment Information
-		$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
-		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
-
 		$c->stash->{'totalweight'} = 0;
 		$c->stash->{'totalpackages'} = 0;
 
@@ -925,16 +926,18 @@ sub populate_order :Private
 				my @co_packages = $CoObj->packages;
 				push @$packages, $_ foreach @co_packages;
 
-				$c->log->debug("Total No of Packages in COID ($coid): " . @$packages);
+				$c->log->debug("Total No of Packages in COID ($coid): " . @co_packages);
 				}
 
-			$c->log->debug("Total Packages: " . @$packages);
+			$c->log->debug("Grand Total Packages: " . @$packages);
 			}
 
 		# Step 1: Find Packages belog to Order
-		my @COspackages = $CO->packages;
+		my @CoPackages = $CO->packages;
 
-		push @$packages, $_ foreach @COspackages;
+		$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
+
+		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total No of packages  " . @$packages);
 
 		my $rownum_id = 0;

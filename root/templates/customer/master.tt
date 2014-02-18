@@ -170,8 +170,8 @@
 					<li><a href="#">Legal</a></li>
 				</ul>
 				<ul class="links">
-					<li><a href="/customer/help" id="help"><img src="/static/images/footer/help.png"/><label for="help">HELP</label></a></li>
-					<li><a href="/customer/logout" id="logout"><img src="/static/images/footer/signout.png"/><label for="logout">SIGN OUT</label></a></li>
+					<li><a href="/customer/help" id="help"><img src="/static/images/footer/help.png"/><span>HELP</span></a></li>
+					<li><a href="/customer/logout" id="logout"><img src="/static/images/footer/signout.png"/><span>SIGN OUT</span></a></li>
 				</ul>
 			</div
 		</div>

@@ -152,10 +152,10 @@
 					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="0.00"/><div class="default_text" id="shipmentvalue_div">0.00</div></td>
+					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="[% shipmentvalue ? shipmentvalue : 0.00 %]"/><div class="default_text" id="shipmentvalue_div">[% shipmentvalue ? shipmentvalue : 0.00 %]</div></td>
 				</tr>
 				<tr>
-					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt"/></td>
+					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt" value="[% dryicewt %]"/></td>
 				</tr>
 				<tr>
 					<td rowspan="3"><label for="deliverymethod" class="float_right">Delivery Method:</label></td>

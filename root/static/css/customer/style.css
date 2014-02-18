@@ -245,17 +245,17 @@ img { border: none; vertical-align: middle }
     text-decoration: underline;
 }
 
-#footer label {
-    vertical-align: super;
-    padding-left: 5px;
-    cursor: pointer;
-}
-
 #footer ul.links {
     float: right;
     margin: 20px 0;
     font-weight: bold;
     color: #9BA7AF;
+}
+
+#footer a span {
+    vertical-align: middle;
+    padding-left: 5px;
+    cursor: pointer;
 }
 
 /* Dashboard */
@@ -478,6 +478,7 @@ div.notice {
     border: 1px solid #97c1da;
     color: #264c72;
     background-color: #d0e3ef;
+    text-align: left;
 }
 
 div.error {
@@ -487,6 +488,7 @@ div.error {
     border: 1px solid #811;
     color: #911;
     background-color: #efd0d0;
+    text-align: left;
 }
 
 .active {
