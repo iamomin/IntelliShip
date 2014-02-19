@@ -50,7 +50,7 @@ sub ajax :Local
 
 	$self->populate_my_shipment_list;
 
-	$c->stash->{ajax} = 1;        
+	$c->stash->{ajax} = 1;
 	$c->stash(template => "templates/customer/my-shipments.tt");
 	}
 
@@ -105,7 +105,7 @@ sub populate_my_shipment_list :Private
 	my $myshipment_list = [];
 	for (my $row=0; $row < $sth->numrows; $row++)
 		{
-		my $row_data = $sth->fetchrow($row);                                
+		my $row_data = $sth->fetchrow($row);
 		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
 		push(@$myshipment_list, $row_data);
 		}
@@ -146,29 +146,27 @@ sub get_shipped_sql :Private
 
 	if ($params->{'date_apply'})
 		{
-		my $date_from= IntelliShip::DateUtils->get_db_format_date_time($params->{'datefrom'}) if $params->{'datefrom'};
-		my $date_to= IntelliShip::DateUtils->get_db_format_date_time($params->{'dateto'}) if $params->{'dateto'};
-		$date_shipped_sql = "AND s.dateshipped between  date_trunc('day',TIMESTAMP '$date_from') AND date_trunc('day',TIMESTAMP '$date_to') ";
+		my $date_from = IntelliShip::DateUtils->get_db_format_date_time($params->{'datefrom'}) if $params->{'datefrom'};
+		my $date_to   = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateto'}) if $params->{'dateto'};
+		$date_shipped_sql = "AND s.dateshipped BETWEEN  date_trunc('day', TIMESTAMP '$date_from') AND date_trunc('day', TIMESTAMP '$date_to') ";
 		}
 	else
 		{
 		my $view = $params->{'view_date'} || 'today';
-		my $date_current = IntelliShip::DateUtils->get_timestamp_with_time_zone;
+		my $current_timestamp_with_time_zone = IntelliShip::DateUtils->get_timestamp_with_time_zone;
 		if ($view eq 'this_week')
 			{
-			my $weekday =IntelliShip::DateUtils->get_day_of_week($date_current);
-			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$date_current') - s.dateshipped) <= (interval '$weekday days')";
+			my $weekday = IntelliShip::DateUtils->get_day_of_week($current_timestamp_with_time_zone);
+			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$weekday days')";
 			}
 		elsif ($view eq 'this_month')
 			{
-			$c->log->debug("This month ");
-			my $dd = substr($date_current, 8, 2)-1;
-			$c->log->debug($dd);
-			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$date_current') - s.dateshipped) <= (interval '$dd days')";
+			my $dd = substr($current_timestamp_with_time_zone, 8, 2) - 1;
+			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$dd days')";
 			}
-		elsif($view eq 'today' || '')
+		else
 			{
-			$date_shipped_sql = "AND s.dateshipped = date_trunc('day',TIMESTAMP '$date_current')";
+			$date_shipped_sql = "AND date_trunc('day', s.dateshipped) = date_trunc('day', TIMESTAMP '$current_timestamp_with_time_zone')";
 			}
 		}
 
@@ -208,7 +206,7 @@ sub get_shipped_sql :Private
 			$search_by_term_sql
 			AND s.datedelivered IS NULL
 	";
-
+	$c->log->debug("SHIPMENT SQL: " . $SQL);
 	return $SQL;
 	}
 
