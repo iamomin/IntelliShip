@@ -428,39 +428,46 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'PRODUCT_DESCRIPTION')
 		{
+		push(@$list, { name => '', value => ''});
+
 		my $product_desc_rs = $c->model('MyDBI::Co')->search(
 			{
 			customerid => $self->customer->customerid,
-			statusid => { '<' => 5},
+			statusid => { '<'  => 5 },
+			extcd    => { '!=' => '' },
 			cotypeid => 1,
 			},
 			{
-			select => 'extcd',
 			distinct => 1,
+			select => 'extcd',
 			order_by => 'extcd',
 			});
+
 		 while ( my $obj = $product_desc_rs->next)
 			{
-			push(@$list, { name => $obj->extcd(), value => $obj->extcd()});
+			push(@$list, { name => $obj->extcd, value => $obj->extcd});
 			}
 		}
-
 	elsif ($list_name eq 'DEPARTMENT')
 		{
+		push(@$list, { name => '', value => ''});
+
 		my $product_desc_rs = $c->model('MyDBI::Co')->search(
 			{
 			customerid => $self->customer->customerid,
-			statusid => { '<' => 5},
-			cotypeid => 1,
+			statusid   => { '<'  => 5 },
+			department => { '!=' => '' },
+			cotypeid   => 1,
 			},
 			{
-			select => 'department',
 			distinct => 1,
+			select => 'department',
 			order_by => 'department',
 			});
+
 		 while ( my $obj = $product_desc_rs->next)
 			{
-			push(@$list, { name => $obj->department(), value => $obj->department()});
+			push(@$list, { name => $obj->department, value => $obj->department});
 			}
 		}
 	elsif ($list_name eq 'CUSTOMER_NUMBER')

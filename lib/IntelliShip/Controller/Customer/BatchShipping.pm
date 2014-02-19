@@ -93,7 +93,7 @@ sub search_batch_orders :Private
 
 	my $OrderSQL = "
 		SELECT
-			DISTINCT ordernumber
+			coid
 		FROM
 			co
 			INNER JOIN address a ON a.addressid = co.addressid AND co.customerid = '$CustomerID'
@@ -250,6 +250,11 @@ sub search_batch_orders :Private
 		$OrderSQL .= " AND upper(co.extcustnum) IN (" . join(',', @$values) . ") " if $values;
 		}
 
+	$OrderSQL .=
+		"
+			ORDER BY datetoship, dateneeded
+		";
+
 	# Limit number of CO's pulled.  Note, if the CO quantity > 1, then the number of labels printed will not
 	# equal the number of CO's pulled.
 	$OrderSQL .= " LIMIT $params->{'orderlimit'} " if $params->{'orderlimit'} > 0;
@@ -264,8 +269,8 @@ sub search_batch_orders :Private
 	if ($STH->numrows)
 		{
 		my $arr = $STH->query_data;
-		#$c->log->debug("OrderNumbers: " . Dumper $arr);
-		my @COS = $c->model('MyDBI::CO')->search({ ordernumber => $arr });
+		#$c->log->debug("CO IDs: " . Dumper $arr);
+		my @COS = $c->model('MyDBI::CO')->search({ coid => $arr });
 
 		my $matching_order_list = [];
 		foreach my $CO (@COS)

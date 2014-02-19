@@ -77,7 +77,7 @@
 	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 
 	<form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
-		<input type="hidden" id="do" name="do" value="batchship">
+		<input type="hidden" id="do" name="do" value="batchship"/>
 
 		<table class="app css3-checkboxes">
 			<tr>
@@ -86,7 +86,7 @@
 			</tr>
 			<tr>
 				<td><label for="orderlimit" class="float_right require">Order Number Limit :</label></td>
-				<td><input type="text" class="text" name="orderlimit" id="orderlimit"></td>
+				<td><input type="text" class="text" name="orderlimit" id="orderlimit"/></td>
 			</tr>
 			<tr>
 				<td><label for="carrier" class="float_right">Carrier :</label></td>
