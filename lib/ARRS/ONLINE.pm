@@ -153,6 +153,8 @@
 			$CgiRef->{'numeric_dowtoship'} = UnixDate($ParsedShipDate, "%w");
 		}
 
+		my $CsoRef = $self->get_csoverride($CgiRef->{'customerid'}, $CSID); #NEW FUNCTION
+		my $ScsdRef = $self->get_servicecsdata($CSID); #NEW FUNCTION
 		while ( my ($CSID, $CSName, $CarrierID, $TimeNeededMax, $HandlerName, $ServiceID) = $sth->fetchrow_array() )
 		{
 			# Allow customers to exclude specific CS's
@@ -509,7 +511,8 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 				$CostWeightList .= "'$CostWeight'," if ( $CostWeight && $CostWeight >= 0 );
 			}
 		}
-
+		undef($CsoRef);
+		undef($ScsdRef);
 # This only applies to loginlevel 20 (Route only).  Currently no such logins exist.  Further, the shipconfirm
 # interface sorts on dateneeded (make/miss), cost, carrier/service...so it's likely unnecessary.  Kirk 2009-04-16
 #		if ( $Sort && $CgiRef->{'sortcslist'} )
@@ -550,6 +553,91 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		return $ReturnRef;
 	}
 
+	sub get_csoverride
+	{
+		warn "################# get_csoverride entry";
+		my $self = shift;
+		my ($CustomerId,$CSID) = @_;
+		my $SQLString = "
+			SELECT * from 
+			csoverride 
+			where customerid = '$CustomerId' 
+			and customerserviceid='$CSID'
+		";
+		
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+		warn "################# $SQLString " if $Debug;
+
+		$sth->execute()
+			or die "Cannot execute carrier/service sql statement";
+			
+		my %csoHash = ();
+		while ( 
+		my ($csoverrideId, 
+		$custId, 
+		$custServiceId, 
+		$dataTypeId, 
+		$dataTypeName,
+		$valueField) = $sth->fetchrow_array() )
+		{
+			my %valHash = ('csoverrideid'=>$csoverrideId, 
+			'customerid' => $custId, 
+			'customerserviceid'=>$custServiceId,
+			'datatypeid'=>$dataTypeId,
+			'datatypename'=>$dataTypeName,
+			'value'=>$valueField);
+			$csoHash{$custServiceId} = \%valHash;
+		}
+		
+		warn "################# get_csoverride exit: ". scalar keys %csoHash;
+		return \%csoHash;
+	}
+	
+	sub get_servicecsdata
+	{
+		warn "################# get_servicecsdata entry"
+		my $self = shift;
+		my ($CSID) = @_;
+		
+		my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
+		$CS->Load($CSID);
+		my $ServiceID = $CS->GetValueHashRef()->{'serviceid'};
+		my $SQLString = "SELECT * FROM servicecsdata WHERE ownerid = '$CSID' AND ownertypeid = 4 
+						 UNION
+						 SELECT * FROM servicecsdata WHERE ownerid = '$ServiceID' AND ownertypeid = 3 
+			";
+		
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+		warn "################# $SQLString " if $Debug;
+
+		$sth->execute()
+			or die "Cannot execute carrier/service sql statement";
+			
+		my %scsdHash = ();
+		while ( 
+		my ($servicecsdataid, 
+		$ownertypeid, 
+		$ownerid, 
+		$datatypeid, 
+		$datatypename,
+		$value) = $sth->fetchrow_array() )
+		{
+			my %valHash = ('servicecsdataid'=>$servicecsdataid, 
+			'ownertypeid' => $ownertypeid, 
+			'ownerid'=>$ownerid,
+			'datatypeid'=>$datatypeid,
+			'datatypename'=>$datatypename,
+			'value'=>$value);
+			$scsdHash{$ownerid} = \%valHash;
+		}
+		
+		warn "################# get_servicecsdata exit: ". scalar keys %scsdHash;
+	}
+	
 	sub SortCSLists
 	{
 		my $self = shift;
