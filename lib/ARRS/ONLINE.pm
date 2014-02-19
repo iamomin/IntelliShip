@@ -153,10 +153,11 @@
 			$CgiRef->{'numeric_dowtoship'} = UnixDate($ParsedShipDate, "%w");
 		}
 
-		my $CsoRef = $self->get_csoverride($CgiRef->{'customerid'}, $CSID); #NEW FUNCTION
-		my $ScsdRef = $self->get_servicecsdata($CSID); #NEW FUNCTION
+		
 		while ( my ($CSID, $CSName, $CarrierID, $TimeNeededMax, $HandlerName, $ServiceID) = $sth->fetchrow_array() )
-		{
+		{		
+			my $CsoRef = $self->get_csoverride($CgiRef->{'customerid'}, $CSID); #NEW FUNCTION
+			my $ScsdRef = $self->get_servicecsdata($CSID); #NEW FUNCTION
 			# Allow customers to exclude specific CS's
 			my $CSOverride = new ARRS::CSOVERRIDE($self->{'dbref'}, $self->{'contact'});
 			if ( $CSOverride->ExcludeCS($CgiRef->{'customerid'},$CSID) )
@@ -510,9 +511,11 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 
 				$CostWeightList .= "'$CostWeight'," if ( $CostWeight && $CostWeight >= 0 );
 			}
+			
+			undef($CsoRef);
+			undef($ScsdRef);
 		}
-		undef($CsoRef);
-		undef($ScsdRef);
+		
 # This only applies to loginlevel 20 (Route only).  Currently no such logins exist.  Further, the shipconfirm
 # interface sorts on dateneeded (make/miss), cost, carrier/service...so it's likely unnecessary.  Kirk 2009-04-16
 #		if ( $Sort && $CgiRef->{'sortcslist'} )
@@ -568,7 +571,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		my $sth = $self->{'dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
 
-		warn "################# $SQLString " if $Debug;
+		warn "################# $SQLString ";
 
 		$sth->execute()
 			or die "Cannot execute carrier/service sql statement";
@@ -597,9 +600,10 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 	
 	sub get_servicecsdata
 	{
-		warn "################# get_servicecsdata entry"
 		my $self = shift;
 		my ($CSID) = @_;
+		
+		warn "################# get_servicecsdata entry"
 		
 		my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
 		$CS->Load($CSID);
@@ -612,7 +616,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		my $sth = $self->{'dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
 
-		warn "################# $SQLString " if $Debug;
+		warn "################# $SQLString ";
 
 		$sth->execute()
 			or die "Cannot execute carrier/service sql statement";
