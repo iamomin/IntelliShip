@@ -63,7 +63,7 @@
 			<select name="format" id="format">
 				<option value="HTML">HTML
 				<option value="CSV">Excel
-				<option value="PDF">PDF
+				<!--<option value="PDF">PDF-->
 			</select>
 			</td>
 		</tr>
