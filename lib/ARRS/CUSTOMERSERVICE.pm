@@ -294,6 +294,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 
 	sub GetCost
 	{
+		warn "############# 6 ". time;
 		my $self = shift;
 		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date) = @_;
 
@@ -546,6 +547,8 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 
 	sub GetShipmentCosts
 	{
+		my $tt = time;
+		warn "############# 1 ". $tt;
 		my $self = shift;
 		my ($ShipmentRef) = @_;
 #WarnHashRefValues($ShipmentRef);
@@ -752,7 +755,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		}
 
 #warn "CS GetShipmentCosts returning: |$Cost|zone=$Zone|days=$TransitDays|";
-
+		warn "########### TIME TAKEN ". time - $tt;
 		return ($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays);
 	}
 
@@ -773,6 +776,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 
 	sub GetCSValue
    {
+		warn "############# 5 ". time;
       my $self = shift;
 		my ($ValueType,$AllowNull,$CustomerID) = @_;
 #warn "$ValueType GetCSValue";
@@ -1135,6 +1139,7 @@ sub GetCarrierHandler
 
 	sub GetPackageCosts
 	{
+		warn "############# 2 ". time;
 		my $self = shift;
 
 		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName) = @_;
@@ -1245,6 +1250,7 @@ sub GetCarrierHandler
 
 	sub GetSuperCost
 	{
+		warn "############# 4 ". time;
 		my $self = shift;
 		my ($Weight,$DimLength,$DimWidth,$DimHeight,$ShipmentRef,$CWT,$Quantity,$UnitType) = @_;
 #warn "GetSuperCost() Weight: $Weight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
@@ -1691,6 +1697,7 @@ sub GetCarrierHandler
 
 	sub GetAMC
 	{
+		warn "############# 7 ". time;
 		my $self = shift;
 		my ($FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry) = @_;
 		my $AMC;
@@ -2307,6 +2314,7 @@ sub GetCarrierHandler
 
 	sub GetAssValue
 	{
+		warn "############# 3 ". time;
 		my $self = shift;
 		my ($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid) = @_;
 #warn "GetAssValue name=$ass_name freight=$freight_cost";
@@ -2438,7 +2446,7 @@ sub GetCarrierHandler
 		}
 
 		chop $SQL;
-#warn $SQL;
+warn $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
         	or die "Could not prepare SQL statement";

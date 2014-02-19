@@ -24,8 +24,8 @@ sub get_carrier_service_name
 	my $CSID = shift;
 
 	my $http_request = {
-		action	=> 'GetCarrierServiceName',
-		csid	=> $CSID,
+		action	=>	'GetCarrierServiceName',
+		csid		=>	$CSID,
 	};
 
 	my $response = $self->APIRequest($http_request);
@@ -205,8 +205,9 @@ sub get_carrrier_service_rate_list
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
 	#$self->context->log->debug("API REQUEST: ". Dumper($request));
 
+	warn "========================= Start of ARRS request:  ".time;
 	my $response = $self->APIRequest($request);
-
+	warn "========================= End of ARRS request:  ".time;
 	#$self->context->log->debug("response :". Dumper($response));
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
@@ -217,6 +218,7 @@ sub get_carrrier_service_rate_list
 	my $CostList = $contact_login_level == 20 ? undef : $response->{'costlist'};
 	my @costlist_arr = split(/,/,$CostList) if ($CostList);
 
+	warn "========================= CSIDs:  ".scalar(@CSIDs);
 	my $carrier_Details = {};
 	for ( my $i = 0; $i < scalar(@CSIDs); $i ++ )
 		{

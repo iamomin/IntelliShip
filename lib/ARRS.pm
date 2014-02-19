@@ -458,14 +458,14 @@ sub GetShipmentCosts {
 	# productcount = total number of product line items (r)
 	# csid = default/incoming co csid (o)
 	# band = rate band to use for costing
-
+	warn "############# 0.1-> ". time;
 	my $CS =
 	  new ARRS::CUSTOMERSERVICE( $self->{'dbref'}, $self->{'contact'} );
-
+	warn "############# 0.2-> ". time;
 	$CS->Load( $Ref->{'csid'} );
-
+	warn "############# 0.3-> ". time;
 	my ( $Cost, $Zone, $PackageCosts ) = $CS->GetShipmentCosts($Ref);
-
+	warn "############# 0.4-> ". time;
 	return (
 		{ cost => $Cost, zone => $Zone, packagecosts => $PackageCosts }
 	);
