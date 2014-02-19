@@ -763,36 +763,15 @@ sub get_order :Private
 		my $customerid = $self->customer->customerid;
 
 		#$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
-
+		my @cos;
+=as
 		my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
 
 		my $allowed_ext_cust_nums = [];
 		push(@$allowed_ext_cust_nums, $_->{'fieldvalue'}) foreach @r_c;
-=as
-		$allowed_ext_cust_nums = 'AND upper(extcustnum) in (' . $allowed_ext_cust_nums . ')' if length $allowed_ext_cust_nums;
-		my $myDBI = $c->model('MyDBI');
-		my $SQLString = "
-			SELECT coid, statusid
-			FROM
-				co
-			WHERE
-				customerid = '$customerid' AND
-				upper(ordernumber) = upper('$ordernumber') AND
-				cotypeid IN ($cotypeid)
-				$allowed_ext_cust_nums
-			ORDER BY
-				cotypeid,
-				datecreated DESC
-			LIMIT 1";
-		my $sth = $myDBI->select($SQLString);
-		if ($sth->numrows)
-			{
-			my $data = $sth->fetchrow(0);
-			my ($coid, $statusid, $ordernumber) = ($data->{'coid'},$data->{'statusid'},$data->{''});
-			}
-=cut
 
-		my @cos = $c->model('MyDBI::Co')->search({
+
+		@cos = $c->model('MyDBI::Co')->search({
 							customerid => $customerid,
 							ordernumber => uc($ordernumber),
 							cotypeid => $cotypeid,
@@ -809,6 +788,8 @@ sub get_order :Private
 			}
 
 		$c->log->debug("total customer order found: " . @cos);
+
+=cut
 
 		my ($coid,$statusid) = (0,0);
 		if (@cos)

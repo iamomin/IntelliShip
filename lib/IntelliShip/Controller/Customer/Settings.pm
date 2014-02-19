@@ -701,8 +701,9 @@ sub get_contact_setting_list :Private
 	#my $list = [];
 	foreach my $ruleHash (@$CONTACT_RULES)
 		{
-		my $value = ($Contact and $Contact->get_contact_data_value($ruleHash->{value})) || '';
+		my $value = ($Contact and $Contact->get_only_contact_data_value($ruleHash->{value})) || '';
 
+		$value = $ruleHash->{default} if (!$value and defined $ruleHash->{default});
 		if ($ruleHash->{type} eq 'CHECKBOX')
 			{
 			$ruleHash->{checked} = $value ;
