@@ -153,7 +153,6 @@
 			$CgiRef->{'numeric_dowtoship'} = UnixDate($ParsedShipDate, "%w");
 		}
 
-		
 		while ( my ($CSID, $CSName, $CarrierID, $TimeNeededMax, $HandlerName, $ServiceID) = $sth->fetchrow_array() )
 		{		
 			my $CsoRef = $self->get_csoverride($CgiRef->{'customerid'}, $CSID); #NEW FUNCTION
@@ -603,7 +602,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		my $self = shift;
 		my ($CSID) = @_;
 		
-		warn "################# get_servicecsdata entry"
+		warn "################# get_servicecsdata entry";
 		
 		my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
 		$CS->Load($CSID);
