@@ -61,6 +61,13 @@ sub setup_one_page :Private
 	my $self = shift;
 	my $c = $self->context;
 
+	my $CO = $self->get_order;
+	if ($CO->can_autoship)
+		{
+		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
+		return $self->SHIP_ORDER;
+		}
+
 	$c->stash->{one_page} = 1;
 
 	#DYNAMIC FIELD VALIDATIONS
@@ -1252,16 +1259,6 @@ sub BuildDryIceWt :Private
 	return ($DryIceWt,$DryIceWtList);
 	}
 
-sub auto_SHIP_ORDER :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $autoprocess = $self->customer->autoprocess;
-	my $CO = $self->get_order;
-	}
-
 sub SHIP_ORDER :Private
 	{
 	my $self = shift;
@@ -1270,13 +1267,19 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("------- SHIP_ORDER -------");
 
-	$self->save_order;
+	$self->save_order unless $params->{'do'} eq 'load';
 
 	my $CO = $self->get_order;
-	if ($CO->extcarrier or !$params->{'carrier'})
+
+	$params->{'carrier'} = $CO->extcarrier if $CO->extcarrier and !$params->{'carrier'};
+
+	$c->log->debug("CO->extcarrier      : " . $CO->extcarrier);
+	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'});
+
+	if (length $CO->extcarrier == 0 or length $params->{'carrier'} == 0)
 		{
 		$c->log->warn("CAN'T SHIP WITHOUT CARRIER");
-		return;
+		return $self->display_error_details("CAN'T SHIP WITHOUT CARRIER");
 		}
 
 	my $Customer = $self->customer;

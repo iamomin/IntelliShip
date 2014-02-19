@@ -29,9 +29,9 @@ sub index :Path :Args(0) {
 
 	#$c->response->body('Matched IntelliShip::Controller::Customer::MyOrders in Customer::MyOrders.');
 	my $do_value = $params->{'do'} || '';
-	if ($do_value eq 'review')
+	if ($do_value eq 'load')
 		{
-		$self->review_order;
+		$self->load_order;
 		}
 	else
 		{
@@ -473,13 +473,11 @@ sub get_allowed_ext_cust_num_sql :Private
 	return ($arr ? "AND upper(co.extcustnum) IN (" . join(',', @$arr) . ")" : '');
 	}
 
-sub review_order :Private
+sub load_order :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
-
 	$c->stash->{parent} = 'myorders';
-	$c->req->params->{do} = undef;
 	$self->setup_one_page;
 	}
 
