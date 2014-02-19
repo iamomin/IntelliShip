@@ -155,7 +155,7 @@ sub get_not_shipped_sql :Private
 				WHEN co.isinbound = 1 THEN oa.city || ', ' || oa.state END
 			as destin,
 		co.extservice as service,
-		to_char(coalesce(co.daterouted,co.datepacked,co.datereceived,co.datecreated), 'MM/DD/YY') as date,
+		to_char(coalesce(co.datetoship, co.daterouted, co.datepacked, co.datereceived, co.datecreated), 'MM/DD/YY') as date,
 		to_char(co.dateneeded,'MM/DD/YY') as duedate,
 		to_char(co.datecreated,'MM/DD/YY') as podate,
 		co.extcarrier as carrier,
@@ -205,7 +205,7 @@ sub get_not_shipped_sql :Private
 		oa.city || ', ' || oa.state as origin,
 		da.city || ', ' || da.state as destin,
 		co.extservice as service,
-		to_char(coalesce(co.daterouted,co.datepacked,co.datereceived,co.datecreated), 'MM/DD/YY') as date,
+		to_char(coalesce(co.datetoship, co.daterouted, co.datepacked, co.datereceived, co.datecreated), 'MM/DD/YY') as date,
 		to_char(co.dateneeded,'MM/DD/YY') as duedate,
 		to_char(co.datecreated,'MM/DD/YY') as podate,
 		co.extcarrier as carrier,
@@ -452,7 +452,7 @@ sub get_co_type_sql :Private
 	my $self = shift;
 	my $Contact = $self->contact;
 
-	my $login_level = $Contact->get_contact_data_value('loginlevel');
+	my $login_level = $Contact->get_contact_data_value('loginlevel') || 0;
 	my $COType = ($login_level == 35 or $login_level == 40) ? 2 : 1;
 
 	return "AND cotypeid = " . $COType;
