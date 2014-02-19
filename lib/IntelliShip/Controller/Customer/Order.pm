@@ -707,7 +707,7 @@ sub save_new_order :Private
 		{
 		$self->clear_CO_details;
 		$params->{do} = undef;
-		$c->detach($c->action,$params);
+		$c->detach($c->action);
 		}
 	}
 
@@ -731,7 +731,7 @@ sub void_shipment :Private
 		{
 		$self->clear_CO_details;
 		$params->{do} = undef;
-		$c->detach($c->action,$params);
+		$c->detach($c->action);
 		}
 	}
 
