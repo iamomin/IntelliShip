@@ -2190,6 +2190,9 @@ sub clear_CO_details :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	$c->log->debug("___ clear_CO_details ___");
+
 	$params->{'coid'} = undef;
 	$c->stash->{CO} = undef;
 	$c->stash->{coid} = undef;
