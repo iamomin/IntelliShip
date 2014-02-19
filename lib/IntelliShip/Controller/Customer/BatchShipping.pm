@@ -120,12 +120,16 @@ sub search_batch_orders :Private
 		}
 
 	# Select on carrier
-	if ( defined($params->{'carrierid'}) and $params->{'carrierid'} ne '' and $params->{'carrierid'} ne '0' )
+	if ($params->{'carrier'})
 		{
-		my $CarrierName = &APIRequest({action=>'GetValueHashRef',module=>'CARRIER',moduleid=>$params->{'carrierid'},field=>'carriername'})->{'carriername'};
+		my $carrierDetails = $self->API->get_hashref('CARRIER', $params->{'carrier'});
+		#$c->log->debug("carrierDetails: " . Dumper $carrierDetails);
+
+		my $CarrierName = $carrierDetails->{'carriername'};
+
 		$OrderSQL .=
 		"
-			AND co.extcarrier = '^$CarrierName\$'
+			AND co.extcarrier = '$CarrierName'
 		";
 		}
 
@@ -133,11 +137,12 @@ sub search_batch_orders :Private
 	if ($params->{'csid'})
 		{
 		my ($carrier,$service) = $self->API->get_carrier_service_name($params->{'csid'});
-		$c->log->debug("Carrier: $carrier, Service: $service");
+		#$c->log->debug("Carrier: $carrier, Service: $service");
 
+		my $carrierSql = "AND co.extcarrier ~* '^$carrier\$'" unless $params->{'carrier'};
 		$OrderSQL .=
 		"
-			AND co.extcarrier ~* '^$carrier\$'
+			$carrierSql
 			AND co.extservice ~* '^$service\$'
 		";
 		}

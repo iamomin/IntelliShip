@@ -644,7 +644,7 @@ sub contactinformation :Local
 		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
-		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser or (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
+		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser || (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
