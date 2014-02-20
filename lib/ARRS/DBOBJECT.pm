@@ -319,8 +319,8 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 	sub LowLevelLoadAdvanced
 	{
 		my $self = shift;
-		warn "############# LowLevelLoadAdvanced ".$self->{'object_tablename'};
-		my $tstart = time;
+		#warn "############# LowLevelLoadAdvanced ".$self->{'object_tablename'};
+		#my $tstart = time;
 		
 		my ($UpdateToken, $LookupHashRef) = @_;
 
@@ -348,7 +348,7 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 			push(@BindVars, $UpdateToken);
 		}
 
-		warn "############# SQLString: ".$SQLString . "\n ". @BindVars;
+		#warn "############# SQLString: ".$SQLString . "\n ". @BindVars;
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
 
@@ -377,7 +377,7 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 			$ReturnValue = 0;
 		}
 
-		warn "############# Time taken by LowLevelLoadAdvanced: ". (time - $tstart);
+		#warn "############# Time taken by LowLevelLoadAdvanced: ". (time - $tstart);
 		return $ReturnValue;
 	}
 

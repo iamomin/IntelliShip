@@ -777,7 +777,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 	sub GetCSValue
    {
 		warn "############# 5 ". time;
-      my $self = shift;
+		my $self = shift;
 		my ($ValueType,$AllowNull,$CustomerID) = @_;
 #warn "$ValueType GetCSValue";
 		my $Value;
@@ -2446,7 +2446,7 @@ sub GetCarrierHandler
 		}
 
 		chop $SQL;
-warn $SQL;
+#warn $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
         	or die "Could not prepare SQL statement";
