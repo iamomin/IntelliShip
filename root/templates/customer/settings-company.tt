@@ -731,7 +731,7 @@
 	<table>
 		<tr>
 			<td><h3>Contact Count [% contact_count %]</h3></td>
-			<td style="width: 75%"></td>
+			<td style="width: 72%"></td>
 			<td><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></td>
 		</tr>
 	</table>
