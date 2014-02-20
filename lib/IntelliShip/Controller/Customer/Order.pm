@@ -960,6 +960,7 @@ sub populate_order :Private
 			$insurance += $_->decval foreach @packages;
 			}
 
+		$c->stash->{fromphone}  = $self->contact->phonebusiness;
 		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 		$c->stash->{total_packages} = @packages;
 		$c->stash->{total_weight} = sprintf("%.2f",$total_weight);
