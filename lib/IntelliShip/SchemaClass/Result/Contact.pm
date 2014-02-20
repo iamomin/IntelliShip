@@ -243,6 +243,24 @@ sub get_restricted_values
 	return $field_values;
 	}
 
+sub get_only_contact_data_value
+	{
+	my $self = shift;
+	my $data_type_name = shift;
+	my $data_type_id = shift;
+	my $WHERE = { ownertypeid => '2', datatypename => $data_type_name };
+	$WHERE->{datatypeid} = $data_type_id if $data_type_id;
+
+	my @custcondata_objs = $self->customer_contact_data($WHERE, { order_by => 'ownertypeid desc' });
+
+	my $contact_data_value;
+	if (@custcondata_objs)
+		{
+		$contact_data_value = $_->value and last foreach @custcondata_objs;
+		}
+	return $contact_data_value;
+	}
+
 sub get_contact_data_value
 	{
 	my $self = shift;

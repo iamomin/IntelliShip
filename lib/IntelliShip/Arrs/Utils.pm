@@ -180,7 +180,7 @@ sub get_co_customer_service
 	return undef if (!defined($request->{'carrier'}) or $request->{'carrier'} eq '');
 	return undef if (!defined($request->{'service'}) or $request->{'service'} eq '');
 
-	$request->{'sopid'} = $Customer->get_sopid($CustomerOrder->usealtsop, $CustomerOrder->extcustnum);
+	$request->{'sopid'} = $Customer->get_sop_id($CustomerOrder->usealtsop, $CustomerOrder->extcustnum);
 
 	return $self->get_csid($request);
 	}

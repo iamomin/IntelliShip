@@ -46,7 +46,7 @@
 					<td>&nbsp;</td><td>[% toAddress.country_description %]</td>
 				</tr>
 				</tr>
-					<td>&nbsp;</td><td>[% customer.phone %]</td>
+					<td>&nbsp;</td><td>[% fromphone %]</td>
 					<td>&nbsp;</td><td>[% tophone %]</td>
 				<tr>
 				<tr>

@@ -644,7 +644,7 @@ sub contactinformation :Local
 		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
-		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser or (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
+		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser || (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
@@ -701,8 +701,9 @@ sub get_contact_setting_list :Private
 	#my $list = [];
 	foreach my $ruleHash (@$CONTACT_RULES)
 		{
-		my $value = ($Contact and $Contact->get_contact_data_value($ruleHash->{value})) || '';
+		my $value = ($Contact and $Contact->get_only_contact_data_value($ruleHash->{value})) || '';
 
+		$value = $ruleHash->{default} if (!$value and defined $ruleHash->{default});
 		if ($ruleHash->{type} eq 'CHECKBOX')
 			{
 			$ruleHash->{checked} = $value ;

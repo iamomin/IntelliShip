@@ -89,7 +89,7 @@
 			</tr>
 			[% FOREACH item IN myorder_list %]
 			<tr>
-				<td><a class="[% item.a_class %]" href="javascript:reviewOrder('[% item.coid %]');">[% item.a_text %]</a></td>
+				<td><a class="[% item.a_class %]" href="javascript:loadOrder('[% item.coid %]');">[% item.a_text %]</a></td>
 				<td>[% item.ordernumber %]</td>
 				<td>[% item.customername %]</td>
 				<td>[% item.origin %]</td>
@@ -121,8 +121,8 @@
 	<script>
 
 	[% UNLESS ajax %]
-	function reviewOrder(coid) {
-		$("#do").val("review");
+	function loadOrder(coid) {
+		$("#do").val("load");
 		$("#coid").val(coid);
 		$('#frm_my_ordres').submit();
 		}

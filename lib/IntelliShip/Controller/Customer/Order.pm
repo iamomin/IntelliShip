@@ -61,6 +61,13 @@ sub setup_one_page :Private
 	my $self = shift;
 	my $c = $self->context;
 
+	my $CO = $self->get_order;
+	if ($CO->can_autoship)
+		{
+		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
+		return $self->SHIP_ORDER;
+		}
+
 	$c->stash->{one_page} = 1;
 
 	#DYNAMIC FIELD VALIDATIONS
@@ -88,7 +95,6 @@ sub setup_address :Private
 	my $Customer = $self->customer;
 
 	my $CO = $self->get_order;
-	#($params->{'ordernumber'},$params->{'hasautoordernumber'}) = $self->get_auto_order_number($params->{'ordernumber'});
 
 	my $do = $c->req->param('do') || '';
 	if (!$do or $do eq 'address')
@@ -190,7 +196,7 @@ sub setup_carrier_service :Private
 	$c->stash->{customer} = $Contact;
 
 	my $do = $c->req->param('do') || '';
-	if (!$do or $do eq 'summary' or $do eq 'step2')
+	if (!$do or $do =~ /(summary|review|step2)/)
 		{
 		$c->stash->{populate} = 'summary';
 		$self->populate_order;
@@ -257,6 +263,7 @@ sub save_CO_details :Private
 	my $coData = { keep => '0' };
 
 	$coData->{'isdropship'} = $params->{'isdropship'} || 0;
+	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
 	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
 	$coData->{'department'} = $params->{'fromdepartment'} if $params->{'fromdepartment'};
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
@@ -312,11 +319,22 @@ sub save_CO_details :Private
 		$coData->{'statusid'} = 5;
 		}
 
+	$coData->{'extcarrier'} = $params->{'carrier'} if $params->{'carrier'};
+
 	## Sort out 'Other' carrier nonsense
-	if ($params->{'customerserviceid'} and $params->{'customerserviceid'} =~ /^OTHER_(\w{13})/)
+	if ($params->{'customerserviceid'})
 		{
-		my $Other = $c->model('MyDBI::Other')->find({ customerid => $self->customer->customerid, otherid => $1 });
-		$coData->{'extcarrier'} = 'Other - ' . $Other->othername if $Other;
+		if ($params->{'customerserviceid'} =~ /^OTHER_(\w{13})/)
+			{
+			my $Other = $c->model('MyDBI::Other')->find({ customerid => $self->customer->customerid, otherid => $1 });
+			$coData->{'extcarrier'} = 'Other - ' . $Other->othername if $Other;
+			}
+		else
+			{
+			my ($CarrierName,$ServiceName) = $self->API->get_carrier_service_name($params->{'customerserviceid'});
+			$coData->{'extcarrier'} = $CarrierName if !$coData->{'extcarrier'} and $CarrierName;
+			$coData->{'extservice'} = $ServiceName if $ServiceName;
+			}
 		}
 
 	$coData->{'dimlength'} = $params->{'dimlength_1'} if $params->{'dimlength_1'};
@@ -575,7 +593,8 @@ sub save_package_product_details :Private
 		my $class     = $params->{'class_' . $PackageIndex} || 0;
 		my $decval    = $params->{'decval_' . $PackageIndex} || 0;
 		my $frtins    = $params->{'frtins_'.$PackageIndex} || 0;
-		my $dryicewt  = ceil($params->{'dryicewt'}) || 0;
+		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+
 		my $PackProData = {
 				ownertypeid => $ownertypeid,
 				ownerid     => $ownerid,
@@ -671,38 +690,6 @@ sub save_special_services :Private
 		}
 	}
 
-sub get_auto_order_number :Private
-	{
-	my $self = shift;
-	my $OrderNumber = shift || '';
-
-	my $c = $self->context;
-	my $myDBI = $c->model("MyDBI");
-	my $Customer = $self->customer;
-
-	$c->log->debug("get_auto_order_number IN ordernumber=$OrderNumber");
-
-	# see if a customer sequence exists for the order number
-	my $SQL = "SELECT count(*) from pg_class where relname = lower('ordernumber_" . $Customer->customerid . "_seq')";
-	$c->log->debug("get_auto_order_number SQL=$SQL");
-
-	my $HasAutoOrderNumber = $myDBI->select($SQL)->fetchrow(0)->{'count'};
-
-	if ( $HasAutoOrderNumber == 0 )
-		{
-		$OrderNumber = undef;
-		}
-	elsif ( length $OrderNumber == 0 and $HasAutoOrderNumber == 1 )
-		{
-		my $sql = "SELECT nextval('ordernumber_" . $Customer->customerid . "_seq')";
-		$OrderNumber = "QS" . $myDBI->select($SQL)->fetchrow_array;
-		}
-
-	$c->log->debug("get_auto_order_number OUT ordernumber=$OrderNumber") if $OrderNumber;
-
-	return ($OrderNumber,$HasAutoOrderNumber);
-	}
-
 sub save_new_order :Private
 	{
 	my $self = shift;
@@ -720,7 +707,7 @@ sub save_new_order :Private
 		{
 		$self->clear_CO_details;
 		$params->{do} = undef;
-		$c->detach($c->action,$params);
+		$c->detach($c->action);
 		}
 	}
 
@@ -744,7 +731,7 @@ sub void_shipment :Private
 		{
 		$self->clear_CO_details;
 		$params->{do} = undef;
-		$c->detach($c->action,$params);
+		$c->detach($c->action);
 		}
 	}
 
@@ -776,36 +763,15 @@ sub get_order :Private
 		my $customerid = $self->customer->customerid;
 
 		#$c->log->debug("get_order, cotypeid: $cotypeid, ordernumber=$ordernumber, customerid: $customerid");
-
+		my @cos;
+=as
 		my @r_c = $c->model('MyDBI::Restrictcontact')->search({contactid => $self->contact->contactid, fieldname => 'extcustnum'});
 
 		my $allowed_ext_cust_nums = [];
 		push(@$allowed_ext_cust_nums, $_->{'fieldvalue'}) foreach @r_c;
-=as
-		$allowed_ext_cust_nums = 'AND upper(extcustnum) in (' . $allowed_ext_cust_nums . ')' if length $allowed_ext_cust_nums;
-		my $myDBI = $c->model('MyDBI');
-		my $SQLString = "
-			SELECT coid, statusid
-			FROM
-				co
-			WHERE
-				customerid = '$customerid' AND
-				upper(ordernumber) = upper('$ordernumber') AND
-				cotypeid IN ($cotypeid)
-				$allowed_ext_cust_nums
-			ORDER BY
-				cotypeid,
-				datecreated DESC
-			LIMIT 1";
-		my $sth = $myDBI->select($SQLString);
-		if ($sth->numrows)
-			{
-			my $data = $sth->fetchrow(0);
-			my ($coid, $statusid, $ordernumber) = ($data->{'coid'},$data->{'statusid'},$data->{''});
-			}
-=cut
 
-		my @cos = $c->model('MyDBI::Co')->search({
+
+		@cos = $c->model('MyDBI::Co')->search({
 							customerid => $customerid,
 							ordernumber => uc($ordernumber),
 							cotypeid => $cotypeid,
@@ -823,6 +789,8 @@ sub get_order :Private
 
 		$c->log->debug("total customer order found: " . @cos);
 
+=cut
+
 		my ($coid,$statusid) = (0,0);
 		if (@cos)
 			{
@@ -834,13 +802,15 @@ sub get_order :Private
 			{
 			$c->log->debug("######## NO CO FOUND ########");
 			my $coData = {
+				ordernumber       => $self->get_auto_order_number($params->{'ordernumber'}),
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
-				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
-				customerid => $customerid,
-				contactid  => $self->contact->contactid,
-				addressid  => $self->customer->address->addressid,
-				cotypeid => $cotypeid,
-				statusid   => 1
+				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
+				customerid        => $customerid,
+				contactid         => $self->contact->contactid,
+				addressid         => $self->customer->address->addressid,
+				cotypeid          => $cotypeid,
+				freightcharges    => 0,
+				statusid          => 1
 				};
 
 			$CO = $c->model('MyDBI::Co')->new($coData);
@@ -893,6 +863,7 @@ sub populate_order :Private
 	## Address and Shipment Information
 	if (!$populate or $populate eq 'address' or $populate eq 'summary')
 		{
+		$c->stash->{combine} = $CO->combine;
 		$c->stash->{customer} = $self->customer;
 		$c->stash->{customerAddress} = $self->customer->address;
 
@@ -989,6 +960,7 @@ sub populate_order :Private
 			$insurance += $_->decval foreach @packages;
 			}
 
+		$c->stash->{fromphone}  = $self->contact->phonebusiness;
 		$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 		$c->stash->{total_packages} = @packages;
 		$c->stash->{total_weight} = sprintf("%.2f",$total_weight);
@@ -1277,13 +1249,21 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("------- SHIP_ORDER -------");
 
-	unless ($params->{'carrier'})
-		{
-		$c->log->warn("CAN'T SHIP WITHOUT CARRIER");
-		return;
-		}
+	$self->save_order unless $params->{'do'} eq 'load';
 
 	my $CO = $self->get_order;
+
+	$params->{'carrier'} = $CO->extcarrier if $CO->extcarrier and !$params->{'carrier'};
+
+	$c->log->debug("CO->extcarrier      : " . $CO->extcarrier);
+	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'});
+
+	if (length $CO->extcarrier == 0 or length $params->{'carrier'} == 0)
+		{
+		$c->log->warn("CAN'T SHIP WITHOUT CARRIER");
+		return $self->display_error_details("CAN'T SHIP WITHOUT CARRIER");
+		}
+
 	my $Customer = $self->customer;
 
 	if ($params->{'defaultcsid'} and $params->{'defaultcsidtotalcost'} > 0 and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
@@ -2192,6 +2172,9 @@ sub clear_CO_details :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	$c->log->debug("___ clear_CO_details ___");
+
 	$params->{'coid'} = undef;
 	$c->stash->{CO} = undef;
 	$c->stash->{coid} = undef;
@@ -2207,6 +2190,37 @@ sub display_error_details :Private
 
 	$c->stash(MESSAGE => $msg);
 	$c->stash(template => "templates/customer/order-error.tt");
+	}
+
+sub get_auto_order_number :Private
+	{
+	my $self = shift;
+	my $OrderNumber = shift || '';
+
+	my $c = $self->context;
+	my $MyDBI = $c->model('MyDBI');
+	my $CustomerID = $self->customer->customerid;
+	$c->log->debug("get_auto_order_number IN ordernumber = $OrderNumber");
+
+	# see if a customer sequence exists for the order number
+	my $SQL = "SELECT count(*) from pg_class where relname = lower('ordernumber_" . $CustomerID . "_seq')";
+
+	$c->log->debug("SQL: " . $SQL);
+
+	my $STH = $MyDBI->select($SQL);
+	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count(*)'};
+
+	# get order number if one is needed 
+	if ($HasAutoOrderNumber and !$OrderNumber)
+		{
+		my $sql = "SELECT nextval('ordernumber_" . $CustomerID . "_seq')";
+		my $sth = $MyDBI->select($sql);
+		$OrderNumber = "QS" . $sth->fetchrow(0)->{'nextval'};
+		}
+
+	$c->log->debug("HasAutoOrderNumber=$HasAutoOrderNumber, OUT ordernumber=$OrderNumber");
+
+	return $OrderNumber;
 	}
 
 __PACKAGE__->meta->make_immutable;

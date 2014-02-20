@@ -550,6 +550,7 @@ sub get_company_setting_list :Private
 		{
 		my $value = $customerRules{$ruleHash->{value}} || '';
 
+		$value = $ruleHash->{default} if (!$value and defined $ruleHash->{default});
 		if($ruleHash->{type} eq 'CHECKBOX')
 			{
 			push(@$list, { name => $ruleHash->{name}, value => $ruleHash->{value}, checked => $value });

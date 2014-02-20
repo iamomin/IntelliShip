@@ -31,12 +31,14 @@
 			<td>
 			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad_text"/>
 			</td>
+		<!--
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
 			</td>
 			<td class="css3-checkboxes">
-			<label><input type="checkbox" class="checkbox" id="combine" value="combine"><span><label for="combine">Combine</label></span></label>
+			<label><input type="checkbox" class="checkbox" id="combine" name="combine" value="1" [% combine ? 'CHECKED' : ''%]/><span><label for="combine">Combine</label></span></label>
 			</td>
+		-->
 		<tr>
 	</table>
 [% END %]

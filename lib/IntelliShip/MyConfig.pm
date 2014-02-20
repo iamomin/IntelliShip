@@ -156,6 +156,11 @@ get the path to sendmail
 
 =cut
 
+sub getSendmailPath
+	{
+	return $sendmail_path{getDomain()};
+	}
+
 sub application_root
 	{
 	my $self = shift;
