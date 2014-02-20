@@ -145,53 +145,173 @@ sub format_CSV
 	my $worksheet = $workbook->add_worksheet();
 	$worksheet->set_column('A:M', 20);
 
-	my $report_heading_loop = $c->stash->{report_heading_loop};
+	
+	# Add Company Logo
+	my $BrandingID = $self->get_branding_id;
+	my $image_path = IntelliShip::MyConfig->image_file_directory . "/$BrandingID/report-logo.png";
+	$c->log->debug(" image_path: " . $image_path);
 
-	# Write a formatted and unformatted string, row and column notation.
-	my ($col,$row)=(0,0);
-
-	my $format = $workbook->add_format(border  => 0, valign  => 'vcenter', align   => 'left', bold => 1);
-
-	# Report Title
-	$row++;
-	$worksheet->merge_range("A$row:M$row", "Date: " . IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-')), $format);
-
-	# Report Date
-	$row++;
-	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_name}, $format);
-
-	# Report header row format
-	$format = $workbook->add_format(); # Add a format
-	$format->set_bold();
-	$format->set_color('black');
-	$format->set_align('center');
-
-	$row++;
-	foreach my $Column (@$report_heading_loop)
+	# Increase the cell size of the merged cells to highlight the formatting.
+    #$worksheet->set_column( 0, 1, 30 );
+    #$worksheet->set_row( 1, 35 );     
+    # Create logo Backgorund
+    #my $imageBackgroundformat = $workbook->add_format(center_across => 1,size => 15,pattern => 1,align => 'vcenter');   
+    #$worksheet->write_blank( 1, 0, $imageBackgroundformat );	
+	$worksheet->insert_image(1, 0, $image_path, 16, 9) if ( -r $image_path);
+		
+	if ($params->{'report'} == 'SHIPMENT')
 		{
-		$worksheet->write($row, $col++, uc $Column->{name}, $format);
+		$self->format_SHIPMENT_xls($workbook, $worksheet);
 		}
-
-	# Report header row format
-	$format = $workbook->add_format(); # Add a format
-	$format->set_align('center');
-
-	my $report_output_row_loop = $c->stash->{report_output_row_loop};
-	foreach my $report_output_columns (@$report_output_row_loop)
+	elsif ($params->{'report'} == 'SUMMARY_SERVICE')
 		{
-		$col=0;$row++;
-		foreach my $Column (@$report_output_columns)
+		$self->format_SUMMARY_SERVICE_xls;
+		}
+	else
+		{
+		my $report_heading_loop = $c->stash->{report_heading_loop};	
+
+		# Write a formatted and unformatted string, row and column notation.
+		my ($col,$row)=(0,0);
+
+		my $format = $workbook->add_format(border  => 0, valign  => 'vcenter', align   => 'left', bold => 1);
+		
+		# Report Date
+		$worksheet->merge_range("A$row:M$row", "Date: " . IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-')) , $format);
+
+		# Report Title
+		$row++;
+		$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_title}, $format);
+
+		# Report header row format
+		$format = $workbook->add_format(); # Add a format
+		$format->set_bold();
+		$format->set_color('black');
+		$format->set_align('center');
+
+		$row++;
+		foreach my $Column (@$report_heading_loop)
 			{
-			$worksheet->write($row, $col++, $Column->{value}, $format);
+			$worksheet->write($row, $col++, uc $Column->{name}, $format);
+			}
+
+		# Report header row format
+		$format = $workbook->add_format(); # Add a format
+		$format->set_align('center');
+
+		my $report_output_row_loop = $c->stash->{report_output_row_loop};
+		foreach my $report_output_columns (@$report_output_row_loop)
+			{
+			$col=0;$row++;
+			foreach my $Column (@$report_output_columns)
+				{
+				$worksheet->write($row, $col++, $Column->{value}, $format);
+				}
 			}
 		}
-
 	unless ($workbook->close)
 		{
 		$c->log->debug("Error closing file: $!");
 		}
 
 	$c->stash->{FILE} = $REPORT_dir . '/' . $EXCEL_file;
+	}
+
+sub format_SHIPMENT_xls
+	{
+	my $self = shift;
+	my $workbook = shift;
+	my $worksheet = shift;
+	my $c = $self->context;
+	
+	# Write a formatted and unformatted string, row and column notation.
+	my ($col,$row)=(0,14);
+
+	# Add Company Address Box
+	my $company_address = $self->customer->address;
+	
+	my $addressHeaderBorderFormat = $workbook->add_format(bold => 1, align => 'left', top=>2, bottom=>1, left=>2,right=>2);
+	my $addressFirstBorderFormat = $workbook->add_format(bold => 1, align => 'left', left=>2, right=>2);
+	my $addressSecondaryBorderFormat = $workbook->add_format( align => 'left', left=>2,right=>2);
+	my $addressBottomBorderFormat = $workbook->add_format(align => 'left', bottom => 2, left=>2,right=>2);
+
+	$worksheet->merge_range("E4:G4", 'Service & Billing For:', $addressHeaderBorderFormat);
+	$worksheet->merge_range("E5:G5", $company_address->addressname, $addressFirstBorderFormat);
+	$worksheet->merge_range("E6:G6", $company_address->address1, $addressSecondaryBorderFormat);
+	$worksheet->merge_range("E7:G7", $company_address->address2, $addressSecondaryBorderFormat);
+	$worksheet->merge_range("E8:G8", $company_address->city . ', ' . $company_address->state . ' ' . $company_address->zip, $addressSecondaryBorderFormat);
+	$worksheet->merge_range("E9:G9", 'Contact:', $addressSecondaryBorderFormat);
+	$worksheet->merge_range("E10:G10", $self->customer->contact, $addressSecondaryBorderFormat);
+	$worksheet->merge_range("E11:G11", $self->customer->phone, $addressSecondaryBorderFormat);
+	$worksheet->merge_range("E12:G12", $self->customer->email, $addressBottomBorderFormat);
+	
+	# Add Report Summary Box
+	my $summaryTopBorderFormat = $workbook->add_format(bold => 1, align => 'left', top=>2, left=>2, bottom=> 6);
+	my $summaryMiddleCellFormat = $workbook->add_format(bold => 1, align => 'left', left=>2, right=>2);
+	my $summaryBottomBorderFormat = $workbook->add_format(bold => 1,align => 'left', border => 2);
+	
+	$worksheet->merge_range("I5:J5", 'Report Totals:', $summaryTopBorderFormat);
+	$worksheet->merge_range("I6:J6",'Report Date', $summaryMiddleCellFormat);
+	$worksheet->merge_range("I7:J7", 'Shipments', $summaryMiddleCellFormat);
+	$worksheet->merge_range("I8:J8", 'Pounds', $summaryMiddleCellFormat);
+	$worksheet->merge_range("I9:J9", 'Total Charges *', $summaryBottomBorderFormat);
+	
+	my $reportMessageFormat = $workbook->add_format(color => 'red', valign => 'vcenter', align => 'left', bold => 1);
+	
+	# Add charge disclaimer
+	$worksheet->merge_range("A$row:M$row", "* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges", $reportMessageFormat);
+	$row += 2;
+
+	my $current_date = IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-'));
+	my $reportTitleDateFormat = $workbook->add_format(border => 0, valign => 'vcenter', align => 'left', bold => 1);
+
+	# Report Title
+	$worksheet->merge_range("A$row:M$row", "Date: " . $current_date , $reportTitleDateFormat);
+
+	# Report Date
+	$row++;
+	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_title}, $reportTitleDateFormat);
+	
+	# Report header row format
+	my $report_heading_loop = $c->stash->{report_heading_loop};	
+	my $reportHeaderFormat = $workbook->add_format(border => 1, align => 'center', bold => 1); # Add a format
+	
+	$row++;
+	foreach my $Column (@$report_heading_loop)
+		{
+		$worksheet->write($row, $col++, uc $Column->{name}, $reportHeaderFormat);
+		}
+
+	# Report data row format
+	my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
+	
+	my $report_output_row_loop = $c->stash->{report_output_row_loop};
+	
+	foreach my $report_output_columns (@$report_output_row_loop)
+		{
+		$col=0;$row++;
+		foreach my $Column (@$report_output_columns)
+			{
+			$worksheet->write($row, $col++, $Column->{value}, $reportDataFormat);
+			}
+		}
+
+		# Totals Top box
+		# Special stypes for Top Totals Box
+		my $totalBoxValueTop = $workbook->addformat(top=> 2,bottom=>6,left=>1,right=>2,align=>'center');
+		my $totalBoxValueCommon = $workbook->addformat(top=>1,bottom=>1,left=>1,right=>2,align=>'center');
+		my $totalBoxValueBottom = $workbook->addformat(top=>2,bottom=>2, left=>1, right=>2,align=>'center');
+		my $report_summary_row_loop = pop(@$report_output_row_loop);
+		$c->log->debug("DATA : " . Dumper @$report_summary_row_loop);
+		$worksheet->write("K5", '', $totalBoxValueTop);
+		$worksheet->write("K6", $current_date, $totalBoxValueCommon);
+		
+		# Top Toatl Box
+		$worksheet->write("K7", scalar @$report_output_row_loop, $totalBoxValueCommon);
+		$worksheet->write("K8", ${$report_summary_row_loop}[1]->{value}, $totalBoxValueCommon);
+		$worksheet->write("K9", ${$report_summary_row_loop}[8]->{value} + ${$report_summary_row_loop}[9]->{value}, $totalBoxValueBottom);
+		$row += 2;			
+			
 	}
 
 sub format_PDF

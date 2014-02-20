@@ -71,39 +71,7 @@ sub generate_shipment_report
 					", Carriers: " . Dumper($params->{'carriers'}));
 
 	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
-
-	$report_heading_loop = [
-				{name => 'shipment id'},
-				{name => 'weight'},
-				{name => 'date delivered'},
-				{name => 'pod name'},
-				{name => 'dim weight'},
-				{name => 'tracking 1'},
-				{name => 'cost'},
-				{name => 'date shipped'},
-#				{name => 'commodityquantity'},
-#				{name => 'username'},
-#				{name => 'addressname'},
-#				{name => 'address1'},
-#				{name => 'addresscity'},
-#				{name => 'addressstate'},
-#				{name => 'addresszip'},
-#				{name => 'addressidorigin'},
-#				{name => 'ordernumber'},
-#				{name => 'zonenumber'},
-#				{name => 'currentdate'},
-#				{name => 'contactname'},
-#				{name => 'custnum'},
-#				{name => 'ppd.dimlength'},
-#				{name => 'ppd.dimwidth'},
-#				{name => 'ppd.dimheight'},
-#				{name => 'customerserviceid'},
-#				{name => 'custref3'},
-#				{name => 'carriername'},
-#				{name => 'servicename'},
-#				{name => 'customerid'},
-			];
-
+	
 	my $and_customerid_sql = " AND c.customerid = '" . $Customer->customerid . "'";
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
@@ -144,7 +112,41 @@ sub generate_shipment_report
 		}
 
 	my $WHERE;
-	my $report_OUTPUT_fields = "
+
+	my $report_OUTPUT_fields = "";
+	if ($params->{'format'} eq 'CSV')
+		{
+		$report_heading_loop = [
+				{name => 'shipment id'},
+				{name => 'weight'},
+				{name => 'dim weight'},
+				{name => 'dims'},
+				{name => 'carrier name'},
+				{name => 'zone'},
+				{name => 'service name'},
+				{name => 'Airbill#'},
+				{name => 'freight charge'},
+				{name => 'other charges'},
+				{name => 'total charges'},
+				{name => 'est pick up date'},
+				{name => 'commodity quantity'},
+				{name => 'shipper number'},
+				{name => 'shipper name'},
+				{name => 'shipper city'},
+				{name => 'shipper state'},
+				{name => 'deliver date'},
+				{name => 'signed for by'},				
+				{name => 'receiver company'},
+				{name => 'receiver address'},
+				{name => 'receiver city'},
+				{name => 'receiver state'},
+				{name => 'receiver zip'},
+				{name => 'receiver contact'},
+				{name => 'order number'},
+				{name => 'customer number'},				
+			];
+
+		$report_OUTPUT_fields = "
 				sh.shipmentid,
 				sh.weight,
 				sh.datedelivered,
@@ -175,7 +177,36 @@ sub generate_shipment_report
 				sh.service as servicename,
 				c.customerid
 				";
+		}
+	else
+		{
+		$report_heading_loop = [
+				{name => 'order number'},
+				{name => 'receiver address'},
+				{name => 'tracking number'},				
+				{name => 'zone'},
+				{name => 'carrier name'},
+				{name => 'service level'},
+				{name => 'zip/zone'},
+				{name => 'billing weight'},
+				{name => 'total charges'},
+				{name => 'date shipped'},
+			];
 
+		$report_OUTPUT_fields = "
+				sh.shipmentid,
+				co.ordernumber,
+				sh.tracking1,
+				a.addressname || ' ' || a.address1 || ' ' || a.city || ' ' || a.state || ' ' || a.zip as receiveraddress,				
+				sh.zonenumber,
+				substring(a.zip from 1 for 3) || '/' || a.state as zipzone,
+				sh.service as servicename,
+				sh.carrier as carriername,
+				sh.weight,				
+				sh.cost,
+				sh.dateshipped		
+				";
+		}
 	my $report_SQL_1 = '';
 	if (!grep(/^OTHER_/, @$carriers))
 		{
@@ -271,67 +302,26 @@ sub generate_shipment_report
 
 	$report_SQL .= " ORDER BY 3,2,4 ";
 
-	#$c->log->debug("REPORT SQL: \n" . $report_SQL);
+	$c->log->debug("REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
 	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
+
+	my $weight_sum = 0;
+	my $dimweight_sum = 0;
+	my $tot_chg_sum = 0;
+	my $other_chg_sum = 0;
+	my $commodity_sum = 0;
+	my $ship_count = $report_sth->numrows;
 
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
 
 		#$c->log->debug("row_data: " . Dumper $row_data);
-
-		if ( $row_data->{'customerserviceid'} )
-			{
-=as
-			my $CSRef = &APIRequest({
-					action	=> 'GetCSShippingValues',
-					csid	=> $row_data->{'customerserviceid'},
-					customerid => $row_data->{'customerid'}
-				});
-			$row_data->{'webaccount'} = $CSRef->{'webaccount'};
-=cut
-			$row_data->{'webaccount'} = 'IMRAN_ARRRS';
-			}
-
-		## Load up origin addr info
-		$row_data->{'shipper_name'} = $Address->addressname;
-		$row_data->{'shipper_city'} = $Address->city;
-		$row_data->{'shipper_state'} = $Address->state;
-
-		# The Excel module does NOT like undefined variables...need to stuff the undef'd ones with something
-		$row_data->{'weight'} = $row_data->{'weight'} || "";
-		$row_data->{'dimweight'} = $row_data->{'dimweight'} || "";
-		$row_data->{'carriername'} = $row_data->{'carriername'} || "";
-		$row_data->{'zonenumber'} = $row_data->{'zonenumber'} || "";
-		$row_data->{'servicename'} = $row_data->{'servicename'} || "";
-		$row_data->{'tracking1'} = $row_data->{'tracking1'} || "";
- 		$row_data->{'cost'} = $row_data->{'cost'} || "";
-		$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
-		$row_data->{'commodityquantity'} = $row_data->{'commodityquantity'} || 1;
-		$row_data->{'username'} = $row_data->{'username'} || "";
-		$row_data->{'webaccount'} = $row_data->{'webaccount'} || "";
-		$row_data->{'shipper_name'} = $row_data->{'shipper_name'} || "";
-		$row_data->{'shipper_city'} = $row_data->{'shipper_city'} || "";
-		$row_data->{'shipper_state'} = $row_data->{'shipper_state'} || "";
-		$row_data->{'shipper_zip'} = $row_data->{'shipper_zip'} || "";
-		$row_data->{'addressname'} = $row_data->{'addressname'} || "UNKNOWN";
-		$row_data->{'address1'} = $row_data->{'address1'} || "UNKNOWN";
-		$row_data->{'addresscity'} = $row_data->{'addresscity'} || "UNKNOWN";
-		$row_data->{'addressstate'} = $row_data->{'addressstate'} || "UNKNOWN";
-		$row_data->{'addresszip'} = $row_data->{'addresszip'} || "UNKNOWN";
-		$row_data->{'datedelivered'} = $row_data->{'datedelivered'} || "";
-		$row_data->{'podname'} = $row_data->{'podname'} || "";
-		$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
-		$row_data->{'contactname'} = $row_data->{'contactname'} || "";
-		$row_data->{'custnum'} = $row_data->{'custnum'} || "";
-
 		my ($date, $time) = split(/ /,$row_data->{'dateshipped'});
 		$row_data->{'dateshipped'} = $date;
-
-		$row_data->{'datedelivered'} = $row_data->{'datedelivered'} =~ /(.*)-\d{2}$/;
 
 		my $ShipmentChargeCost;
 		## Get Accessorial charges (non-freight) for shipment
@@ -353,30 +343,181 @@ sub generate_shipment_report
 			$row_data->{'cost'} = $ShipmentCost;
 			}
 
-		# Build dim string
-		$row_data->{'dims'} = $row_data->{'dimlength'};
-		$row_data->{'dims'} .= 'x' . $row_data->{'dimwidth'} if $row_data->{'dims'} and $row_data->{'dimwidth'};
-		$row_data->{'dims'} .= 'x' . $row_data->{'dimheight'} if $row_data->{'dims'} and $row_data->{'dimheight'};
-		$row_data->{'dims'} = '' unless $row_data->{'dims'};
+		my $report_output_column_loop = [];
+		if ($params->{'format'} eq 'CSV')
+			{
+			if ( $row_data->{'customerserviceid'} )
+				{
+=as
+				my $CSRef = &APIRequest({
+						action	=> 'GetCSShippingValues',
+						csid	=> $row_data->{'customerserviceid'},
+						customerid => $row_data->{'customerid'}
+					});
+				$row_data->{'webaccount'} = $CSRef->{'webaccount'};
+=cut
+				$row_data->{'webaccount'} = 'IMRAN_ARRRS';
+				}
 
-		my $report_output_column_loop = [
-				{ value => $row_data->{'shipmentid'} },
-				{ value => $row_data->{'weight'} },
-				{ value => $row_data->{'datedelivered'} },
-				{ value => $row_data->{'podname'} },
-				{ value => $row_data->{'dimweight'} },
-				{ value => $row_data->{'tracking1'} },
-				{ value => $row_data->{'cost'}, align => 'right' },
-				{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) },
-			];
+			## Load up origin addr info
+			$row_data->{'shipper_name'} = $Address->addressname;
+			$row_data->{'shipper_city'} = $Address->city;
+			$row_data->{'shipper_state'} = $Address->state;			
+						
+			# The Excel module does NOT like undefined variables...need to stuff the undef'd ones with something
+			$row_data->{'weight'} = $row_data->{'weight'} || "";
+			$row_data->{'dimweight'} = $row_data->{'dimweight'} || "";
+			$row_data->{'carriername'} = $row_data->{'carriername'} || "";
+			$row_data->{'zonenumber'} = $row_data->{'zonenumber'} || "";
+			$row_data->{'servicename'} = $row_data->{'servicename'} || "";
+			$row_data->{'tracking1'} = $row_data->{'tracking1'} || "";
+			$row_data->{'cost'} = $row_data->{'cost'} || "";
+			$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
+			$row_data->{'commodityquantity'} = $row_data->{'commodityquantity'} || 1;
+			$row_data->{'username'} = $row_data->{'username'} || "";
+			$row_data->{'webaccount'} = $row_data->{'webaccount'} || "";
+			$row_data->{'shipper_name'} = $row_data->{'shipper_name'} || "";
+			$row_data->{'shipper_city'} = $row_data->{'shipper_city'} || "";
+			$row_data->{'shipper_state'} = $row_data->{'shipper_state'} || "";
+			$row_data->{'shipper_zip'} = $row_data->{'shipper_zip'} || "";
+			$row_data->{'addressname'} = $row_data->{'addressname'} || "UNKNOWN";
+			$row_data->{'address1'} = $row_data->{'address1'} || "UNKNOWN";
+			$row_data->{'addresscity'} = $row_data->{'addresscity'} || "UNKNOWN";
+			$row_data->{'addressstate'} = $row_data->{'addressstate'} || "UNKNOWN";
+			$row_data->{'addresszip'} = $row_data->{'addresszip'} || "UNKNOWN";
+			$row_data->{'datedelivered'} = $row_data->{'datedelivered'} || "";
+			$row_data->{'podname'} = $row_data->{'podname'} || "";
+			$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
+			$row_data->{'contactname'} = $row_data->{'contactname'} || "";
+			$row_data->{'custnum'} = $row_data->{'custnum'} || "";
 
-		push(@$report_output_row_loop, $report_output_column_loop);
+			$row_data->{'datedelivered'} = $row_data->{'datedelivered'} =~ /(.*)-\d{2}$/;
+
+			# Build dim string
+			$row_data->{'dims'} = $row_data->{'dimlength'};
+			$row_data->{'dims'} .= 'x' . $row_data->{'dimwidth'} if $row_data->{'dims'} and $row_data->{'dimwidth'};
+			$row_data->{'dims'} .= 'x' . $row_data->{'dimheight'} if $row_data->{'dims'} and $row_data->{'dimheight'};
+			$row_data->{'dims'} = '' unless $row_data->{'dims'};
+
+			$report_output_column_loop = [
+					{ value => $row_data->{'shipmentid'} },
+					{ value => $row_data->{'weight'} },
+					{ value => $row_data->{'dimweight'} },
+					{ value => $row_data->{'dims'} },
+					{ value => $row_data->{'carriername'} },
+					{ value => $row_data->{'zonenumber'} },
+					{ value => $row_data->{'servicename'} },
+					{ value => $row_data->{'tracking1'} },
+					{ value => $row_data->{'cost'}, align => 'right' },
+					{ value => $row_data->{'othercharges'}, align => 'right' },
+					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right' },
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) },
+					{ value => $row_data->{'commodityquantity'} },
+					{ value => $row_data->{'webaccount'} },
+					{ value => $row_data->{'shipper_name'} },
+					{ value => $row_data->{'shipper_city'} },
+					{ value => $row_data->{'shipper_state'} },
+					{ value => $row_data->{'datedelivered'} },				
+					{ value => $row_data->{'podname'} },
+					{ value => $row_data->{'addressname'} },
+					{ value => $row_data->{'address1'} },
+					{ value => $row_data->{'addresscity'} },
+					{ value => $row_data->{'addressstate'} },
+					{ value => $row_data->{'addresszip'} },
+					{ value => $row_data->{'contactname'} },
+					{ value => $row_data->{'ordernumber'} },
+					{ value => $row_data->{'custnum'} },				
+				];
+			}
+		else
+			{
+			$row_data->{'weight'} = $row_data->{'weight'} || "";
+			$row_data->{'zonenumber'} = $row_data->{'zonenumber'} || "";
+			$row_data->{'servicename'} = $row_data->{'servicename'} || "";
+			$row_data->{'tracking1'} = $row_data->{'tracking1'} || "";
+			$row_data->{'cost'} = $row_data->{'cost'} || "";
+			$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
+			$row_data->{'receiveraddress'} = $row_data->{'receiveraddress'} || "UNKNOWN";
+			$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
+			$row_data->{'carriername'} = $row_data->{'carriername'} || "";
+			$row_data->{'zipzone'} = $row_data->{'zipzone'} || "";
+
+			$report_output_column_loop = [
+					{ value => $row_data->{'ordernumber'} },
+					{ value => $row_data->{'receiveraddress'} }	,
+					{ value => $row_data->{'tracking1'} },
+					{ value => $row_data->{'zonenumber'} },
+					{ value => $row_data->{'carriername'} },
+					{ value => $row_data->{'servicename'} },
+					{ value => $row_data->{'zipzone'} },
+					{ value => $row_data->{'weight'} , align => 'right' },
+					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right' },
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }																	
+				];
+			}
+			
+		push(@$report_output_row_loop, $report_output_column_loop);		
+		
+		$weight_sum += $row_data->{'weight'};
+		$dimweight_sum += $row_data->{'dimweight'};
+		$tot_chg_sum += $row_data->{'cost'};
+		$other_chg_sum += $row_data->{'othercharges'};
+		$commodity_sum += $row_data->{'commodityquantity'};
 
 		## Keep the browser from timing out.
 		# print "\n";
 		# STDOUT->autoflush(1);
 		}
+		my $report_summary_row_loop = [];
 
+		if ($params->{'format'} eq 'CSV')
+			{	
+			$report_summary_row_loop = [
+					{ value => '' },
+					{ value => $weight_sum },
+					{ value => $dimweight_sum },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => $tot_chg_sum },
+					{ value => $other_chg_sum },
+					{ value => $tot_chg_sum + $other_chg_sum },
+					{ value => '' },
+					{ value => $commodity_sum },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },				
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },				
+				];
+			}
+		else
+			{
+			$report_summary_row_loop = [
+					{ value => 'Total Shipments '. scalar @$report_output_row_loop },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => $weight_sum, align => 'right' },
+					{ value => $tot_chg_sum + $other_chg_sum, align => 'right'  },
+					{ value => '' }									
+				];
+			}
+	push(@$report_output_row_loop, $report_summary_row_loop);
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);

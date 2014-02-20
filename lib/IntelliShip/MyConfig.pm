@@ -237,6 +237,12 @@ sub report_file_directory
 	return $self->base_path . '/var/log/intelliship/reports';
 	}
 
+sub image_file_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/root/static/images';
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
