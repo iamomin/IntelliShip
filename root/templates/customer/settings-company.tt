@@ -231,29 +231,23 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="city">City:</label></td>
-						<td><input type="text" class="broad_text" name="city" id="city" value="[% customerAddress.city %]"></td>
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="state">State:</label></td>
-						<td>
-						<label>
-							<select name="state" id="state">
-							[% FOREACH item IN statelist_loop %]
-								<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
+						<td><label class="float_right">
+							<label for="city">City</label>,
+							<label for="state">State</label>,
+							<label for="zip">Zip</label>:
+							</label>
 						</td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="zip">Zipcode:</label></td>
-						<td><input type="text" class="broad_text" name="zip" id="zip" value="[% customerAddress.zip %]"></td>
-
-						<td></td>
-						<td></td>
+						<td>
+							<input type="text" name="city" id="city" style="width: 100px; value="[% customerAddress.city %]"/>
+							<label>
+								<select name="state" id="state" style="width: 50px;>
+								[% FOREACH item IN statelist_loop %]
+									<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.name %]</option>
+								[% END %]
+								</select>
+							</label>
+							<input type="text" name="zip" id="zip" style="width: 55px; value="[% customerAddress.zip %]"/>
+						</td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="country">Country:</label></td>
@@ -692,6 +686,7 @@
 	$("#frm_setup_customer").submit(function () {
 		var requireHash = {
 			customername : { minlength: 1, description: "Please specify customer name" },
+			username     : { minlength: 1, description: "Please specify username" },
 			address1     : { minlength: 1, description: "Please specify address" },
 			city         : { minlength: 1, description: "Please specify city" },
 			state        : { minlength: 1, description: "Please specify state" },
@@ -733,7 +728,13 @@
 	[% IF CONTACT_LIST %]
 
 	[% UNLESS ajax %]<div id="divContactList">[% END %]
-	<h3>Contact Count [% contact_count %]</h3>
+	<table>
+		<tr>
+			<td><h3>Contact Count [% contact_count %]</h3></td>
+			<td style="width: 75%"></td>
+			<td><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></td>
+		</tr>
+	</table>
 	<div id="myShipments">
 	<table>
 		<tr>
@@ -758,8 +759,6 @@
 			<tr><td colspan="6">No contacts found</td></tr>
 		[% END %]
 	</table>
-
-	<center><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></center>
 	[% UNLESS ajax %]
 	</div>
 

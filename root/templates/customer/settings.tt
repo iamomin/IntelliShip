@@ -605,45 +605,35 @@ $(document).ready(function(){
 		<tr>
 			<td><label class="float_right" for="username">User Name:</label></td>
 			<td>
-			[% IF ENABLE_EDIT %]
-				<input type="text" name="username" id="username" value="[% contactInfo.username %]" class="broad_text" onchange="validateContactUsername();">
-			[% ELSE %]
+			[% IF READONLY %]
 				[% contactInfo.username %]
+			[% ELSE  %]
+				<input type="text" name="username" id="username" value="[% contactInfo.username %]" class="broad_text" onchange="validateContactUsername();">
 			[% END %]
 			</td>
-			
 			<td><label class="float_right" for="firstname">First Name:</label></td>
 			<td id="firstnamedisplay">
-			[% IF ENABLE_EDIT %]
 				<input type="text" name="firstname" id="firstname" value="[% contactInfo.firstname %]" class="broad_text">
-			[% ELSE %]
-				[% contactInfo.firstname %]
-			[% END %]
 			</td>
 		</tr>
 		<tr>
 			<td><label class="float_right" for="password">Password:</label></td>
 			<td>
-			[% IF ENABLE_EDIT %]
-				<input type="text" name="password" id="password" value="[% password %]" class="broad_text">
-			[% ELSE %]
+			[% IF READONLY %]
 				[% password %]
+			[% ELSE %]
+				<input type="text" name="password" id="password" value="[% password %]" class="broad_text">
 			[% END %]
 			</td>
-			
 			<td><label class="float_right" for="lastname">Last Name:</label></td>
 			<td id="lastnamedisplay">
-			[% IF ENABLE_EDIT %]
 				<input type="text" name="lastname" id="lastname" value="[% contactInfo.lastname %]" class="broad_text">
-			[% ELSE %]
-				[% contactInfo.lastname %]
-			[% END %]
 			</td>
 		</tr>
 		<tr>
 			<td><label class="float_right" for="department">Department:</label></td>
 			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]" onchange='validateDepartment("department", $("#customerid").val())'></td>
-			
+
 			<td><label class="float_right" for="contact_address1">Shipping Address1:</label></td>
 			<td><input type="text" name="contact_address1" id="contact_address1" value="[% contactAddress.address1 %]" class="broad_text"></td>
 
@@ -651,7 +641,7 @@ $(document).ready(function(){
 		<tr>
 			<td><label class="float_right" for="phonebusiness">Business Phone:</label></td>
 			<td><input type="text" name="phonebusiness" id="phonebusiness" value="[% contactInfo.phonebusiness %]" class="broad_text"></td>
-			
+
 			<td><label class="float_right" for="contact_address2">Shipping Address2:</label></td>
 			<td><input type="text" name="contact_address2" id="contact_address2" value="[% contactAddress.address2 %]" class="broad_text"></td>
 		</tr>
@@ -702,12 +692,12 @@ $(document).ready(function(){
 		<tr>
 			<td><label class="float_right" for="ownerid">OwnerID:</label></td>
 			<td>[% ownerid %]</td>
-			
+
 			<td><label class="float_right" for="location">Location:</label></td>
 			<td>[% location %]</td>
 		</tr>
 		<tr>
-		
+
 			<td><label class="float_right" for="origdate">Orig Date:</label></td>
 			<td>[% origdate %]</td>
 
@@ -715,7 +705,7 @@ $(document).ready(function(){
 			<td>[% sourcedate %]</td>
 		</tr>
 		<tr>
-		
+
 			<td></td>
 			<td></td>
 			<td><label class="float_right" for="disabledate">Disable Date:</label></td>
@@ -805,11 +795,14 @@ $(document).ready(function(){
 
 	<script>
 	function validateContactUsername(){
+			if ($("#username").val().length == 0) return;
+
 			var customerid = $("#customerid").val();
-			var contactid = $("#contactid").val();
-			var username = $("#username").val();
+			var contactid  = $("#contactid").val();
+			var username   = $("#username").val();
+
 			var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
-			
+
 			if (username == undefined || username.length == 0) return;
 			send_ajax_request('', 'JSON', 'settings/company', 'validate_contact_username', query, function() {
 			if (JSON_data.COUNT > 0) {
@@ -820,7 +813,7 @@ $(document).ready(function(){
 				return ;
 			});
 		}
-	 
+
 	function updateContact()
 		{
 		if(validateContactDetials())
@@ -837,6 +830,7 @@ $(document).ready(function(){
 		var requireHash = {
 			phonebusiness    : { phone: true, description: "Please specify business contact" },
 			phonemobile      : { phone: true, description: "Please specify mobile contact" },
+			username         : { minlength: 1, description: "Please specify username 1" },
 			contact_address1 : { minlength: 2, description: "Please specify address 1" },
 			contact_city     : { minlength: 2, description: "Please specify city" },
 			contact_state    : { minlength: 2, description: "Please specify state" },

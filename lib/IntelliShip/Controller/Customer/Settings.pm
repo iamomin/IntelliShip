@@ -641,10 +641,11 @@ sub contactinformation :Local
 		$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');
-		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
+		$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
-		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser || (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
+		$c->stash->{READONLY} = 1 unless $self->contact->is_superuser;
+
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
