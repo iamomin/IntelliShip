@@ -477,7 +477,9 @@ sub load_order :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 	$c->stash->{parent} = 'myorders';
+	$params->{do} = undef;
 	$self->setup_one_page;
 	}
 

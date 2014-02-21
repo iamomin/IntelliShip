@@ -154,8 +154,8 @@ sub get_customer_contact
 
 		my $Contact = $contactArr[0];
 
-		$c->log->debug("Customer ID: " . $Customer->customerid);
-		$c->log->debug("Contact ID: " . $Contact->contactid);
+		#$c->log->debug("Customer ID : " . $Customer->customerid);
+		#$c->log->debug("Contact ID  : " . $Contact->contactid);
 
 		return ($Customer, $Contact);
 		}
