@@ -6,7 +6,7 @@
 
 	<table class="center DoNotPrint">
 		<tr>
-			<td><input type="button" class="blue" value="PRINT" onclick="window.print();"/></td>
+			<td><input type="button" class="blue" value="PRINT" onclick="Print();"/></td>
 		</tr>
 	</table>
 
@@ -15,17 +15,18 @@
 <script>
 function Print()
 	{
-	var printWin = window.open('', '', 'left=0,top=0,width=400,height=500,status=0');
-	var printWin = $("#label").html();
-	printWin.document.write(printWin);
+	var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+	var lbl = $("#label").html();
+	lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + "</body></html>";	
+	printWin.document.write(lbl);
 	printWin.focus();
 	printWin.print();
 	printWin.close();
 	}
 
 $(document).ready(function(){
-	//print();
-	[% IF totalquantity > 0 %]window.print(false);[% END %]
+	Print();
+	//[% IF totalquantity > 0 %]window.print(false);[% END %]
 	});
 
 </script>
