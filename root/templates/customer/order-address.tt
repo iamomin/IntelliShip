@@ -160,7 +160,7 @@
 					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt" value="[% dryicewt %]"/></td>
 				</tr>
 				<tr>
-					<td rowspan="3"><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
 					<td class="css3-radios">
 						<div id="third-party-details"></div>
 						<ul>
@@ -178,7 +178,7 @@
 
 				[% IF SHOW_PONUMBER %]
 				<tr>
-					<td><label for="ponumber" class="float_right">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
+					<td><label for="ponumber" class="float_right require">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
 				</tr>
 				[% END %]
 				[% IF SHOW_EXTID %]
