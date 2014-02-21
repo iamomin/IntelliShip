@@ -2142,17 +2142,19 @@ sub set_required_fields :Private
 				{
 				push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
 				push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+
+				push(@$requiredList, { name => 'ponumber', details => "{ minlength: 2 }"}) if $Customer->reqponum;
+				push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqordernumber');
+				push(@$requiredList, { name => 'extid', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqextid');
+				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref2');
+				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref3');
 				}
 
 			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $Customer->reqcustnum;
-			push(@$requiredList, { name => 'ponumber', details => "{ minlength: 2 }"}) if $Customer->reqponum;
-			push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqordernumber');
-			push(@$requiredList, { name => 'extid', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqextid');
-			push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref2');
-			push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref3');
 			push(@$requiredList, { name => 'fromdepartment', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqdepartment');
 			}
 		}
+
 	if (!$page or $page eq 'shipment')
 		{
 		unless ($Customer->login_level == 25 or $c->stash->{one_page})
@@ -2200,12 +2202,11 @@ sub get_auto_order_number :Private
 	my $c = $self->context;
 	my $MyDBI = $c->model('MyDBI');
 	my $CustomerID = $self->customer->customerid;
-	$c->log->debug("get_auto_order_number IN ordernumber = $OrderNumber");
 
 	# see if a customer sequence exists for the order number
 	my $SQL = "SELECT count(*) from pg_class where relname = lower('ordernumber_" . $CustomerID . "_seq')";
 
-	$c->log->debug("SQL: " . $SQL);
+	#$c->log->debug("SQL: " . $SQL);
 
 	my $STH = $MyDBI->select($SQL);
 	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count(*)'};
@@ -2218,7 +2219,7 @@ sub get_auto_order_number :Private
 		$OrderNumber = "QS" . $sth->fetchrow(0)->{'nextval'};
 		}
 
-	$c->log->debug("HasAutoOrderNumber=$HasAutoOrderNumber, OUT ordernumber=$OrderNumber");
+	#$c->log->debug("HasAutoOrderNumber=$HasAutoOrderNumber, OUT ordernumber=$OrderNumber");
 
 	return $OrderNumber;
 	}

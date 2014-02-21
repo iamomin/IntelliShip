@@ -552,7 +552,9 @@ sub is_valid_date
 		$dateIs = $date;
 		}
 
-	my ($dyy, $dmm, $ddd) = split(/-/, $dateIs);
+	my ($dyy, $dmm, $ddd);
+	($dyy, $dmm, $ddd) = split(/-/, $dateIs) if $dateIs =~ /-/;
+	($dmm, $ddd, $dyy) = split(/-/, $dateIs) if $dateIs =~ /\//;
 
 	return check_date($dyy, $dmm, $ddd);
 	}

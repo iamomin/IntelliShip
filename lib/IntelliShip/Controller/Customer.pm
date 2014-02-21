@@ -2,7 +2,7 @@ package IntelliShip::Controller::Customer;
 use Moose;
 use IO::File;
 use Data::Dumper;
-use Math::BaseCalc;
+#use Math::BaseCalc;
 use IntelliShip::DateUtils;
 use IntelliShip::Arrs::API;
 use namespace::autoclean;
@@ -197,6 +197,8 @@ sub get_token_id :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $myDBI = $c->model('MyDBI')->new;
+	return $myDBI->get_token_id;
+=head
 	my $sth = $myDBI->select("SELECT to_char(timestamp 'now', 'YYYYMMDDHH24MISS')||lpad(CAST(nextval('master_seq') AS text),6,'0') AS rawtoken");
 
 	my $RawToken = $sth->fetchrow(0)->{'rawtoken'} if $sth->numrows;
@@ -210,6 +212,7 @@ sub get_token_id :Private
 	#$c->log->debug("get_token_id, Token ID: " . $SeqID);
 
 	return $SeqID;
+=cut
 	}
 
 sub get_branding_id

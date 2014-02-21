@@ -1,6 +1,7 @@
 package IntelliShip::Model::MyDBI;
 
 use strict;
+use Math::BaseCalc;
 use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(
@@ -83,6 +84,17 @@ sub fetchrow
 		}
 
 	return $return_hash;
+	}
+
+sub get_token_id
+	{
+	my $self = shift;
+	my $sth = $self->select("SELECT to_char(timestamp 'now', 'YYYYMMDDHH24MISS')||lpad(CAST(nextval('master_seq') AS text),6,'0') AS rawtoken");
+	my $RawToken = $sth->fetchrow(0)->{'rawtoken'} if $sth->numrows;
+	## Convert our 20 digit token to a 13 digit token
+	my $BaseCalc = new Math::BaseCalc(digits => [0..9,'A'..'H','J'..'N','P'..'Z']);
+	my $SeqID = $BaseCalc->to_base($RawToken);
+	return $SeqID;
 	}
 
 =head1 NAME

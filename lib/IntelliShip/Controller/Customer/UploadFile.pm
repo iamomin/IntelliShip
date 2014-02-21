@@ -3,6 +3,7 @@ use Moose;
 use IO::File;
 use Data::Dumper;
 use IntelliShip::DateUtils;
+#use IntelliShip::Import::Orders;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
@@ -140,7 +141,14 @@ sub upload :Local
 		$c->detach("setup",$params);
 		return;
 		}
-
+=cut
+	my $ImportHandler = IntelliShip::Import::Orders->new;
+	$ImportHandler->context($self->context);
+	$ImportHandler->contact($self->contact);
+	$ImportHandler->customer($self->customer);
+	$ImportHandler->import_file($TMP_file);
+	$ImportHandler->import;
+=cut
 	$c->log->debug("... File imported successfully");
 	$c->stash->{MESSAGE} = "File Imported Successfully";
 
