@@ -1303,7 +1303,7 @@ sub SHIP_ORDER :Private
 		my ($CustomerServiceID) = $params->{'customerserviceid'} =~ m/OTHER_(.*)/;
 		if ($CustomerServiceID eq 'NEW')
 			{
-			my $Other = $c->model("MyDBI::Other")->new();
+			my $Other = $c->model("MyDBI::Other")->new({});
 			$Other->insert({
 				'othername' => $params->{'other'},
 				'customerid' => $CustomerID,
