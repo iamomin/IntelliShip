@@ -18,6 +18,7 @@ has 'customer'    => ( is => 'rw' );
 has 'contact'     => ( is => 'rw' );
 has 'myDBI_obj'   => ( is => 'rw' );
 has 'context'     => ( is => 'rw' );
+has 'API'         => ( is => 'rw' );
 
 my $config;
 
@@ -39,7 +40,8 @@ sub parse_row
 	{
 	my $self = shift;
 	my $row_data = shift;
-
+	return split /\t/, $row_data;
+=as
 	my $CSV = Text::CSV->new();
 
 	unless ($CSV->parse($row_data))
@@ -50,13 +52,12 @@ sub parse_row
 		}
 
 	return $CSV->fields();
+=cut
 	}
 
 sub import
 	{
 	my $self = shift;
-
-
 	my @files;
 	my $import_file = $self->import_file;
 
@@ -66,18 +67,21 @@ sub import
 
 	if ($import_file)
 		{
-		push(@files, <$import_path/$import_file>);
+		push(@files, $import_file);
 		}
 	else
 		{
 		push(@files, <$import_path/*>);
 		}
 
+	print STDERR "\n... Total Files: " . @files;
+
 	#################################
 	### Check for Files to Import
 	#################################
 	foreach my $file (@files)
 		{
+		print STDERR "\n... Fetch file: " . $file;
 		next if (! -f $file or ! -r $file );
 
 		print STDERR "\n... ImportOrders for : " . $file;
@@ -86,13 +90,13 @@ sub import
 
 		my $import_base_file = fileparse($file);
 
-		unless (move($file,"$imported_path/$import_base_file"))
-			{
-			print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
-			}
+		#unless (move($file,"$imported_path/$import_base_file"))
+		#	{
+		#	print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+		#	}
 
 		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
-		system("$config->{BASE_PATH}/html/unknowncust_order_email.pl");
+		#system("$config->{BASE_PATH}/html/unknowncust_order_email.pl");
 		}
 	}
 
@@ -123,9 +127,11 @@ sub ImportOrders
 
 	print STDERR "\n... Read File: " . $import_file;
 
+	my $new_import_file = $self->format_file($import_file);
+
 	my $FILE = new IO::File;
 
-	unless (open($FILE, $import_file))
+	unless (open($FILE, $new_import_file))
 		{
 		print STDERR "\n... Error: " . $!;
 		return;
@@ -229,6 +235,8 @@ sub ImportOrders
 		) = $self->parse_row($Line);
 
 		my $export_flag = 0;
+
+		print STDERR "\n... CO information gathered";
 
 		IntelliShip::Utils->trim_hash_ref_values($CustRef);
 
@@ -735,6 +743,7 @@ sub ImportOrders
 			my $CO = $self->context->model('MyDBI::CO')->new($C);
 			$CO->coid($self->myDBI->get_token_id);
 			$CO->insert;
+			print STDERR "\n... NEW CO INSERTED:  " . $CO->coid;
 
 			my $COID = $CO->coid;
 
@@ -756,6 +765,7 @@ sub ImportOrders
 			my $PPD = $self->context->model('MyDBI::Packprodata')->new($PackageRef);
 			$PPD->coid($self->myDBI->get_token_id);
 			$PPD->insert;
+			print STDERR "\n... NEW PPD INSERTED, packprodataid:  " . $PPD->packprodataid;
 
 			# set assessorials
 			if ( defined($CustRef->{'saturdayflag'}) and $CustRef->{'saturdayflag'} == 1 )
@@ -796,6 +806,7 @@ sub ImportOrders
 					open(OUT, ">" . $config->{BASE_PATH} . "/var/processing/$Error_File") or warn "unable to open error file";
 					}
 				print OUT "$Line\n\n";
+				close (OUT);
 				}
 			}
 
@@ -803,9 +814,9 @@ sub ImportOrders
 
 	if ( $UnknownCustCount > 0 )
 		{
-		close (OUT);
-		move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
-		or &TraceBack("Could not move $Error_File: $!");
+		print STDERR"\n  ###UnknownCustCount ".$UnknownCustCount;
+		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
+		#or &TraceBack("Could not move $Error_File: $!");
 		}
 
 	return ($ImportFailureRef,$OrderTypeRef);
@@ -881,63 +892,62 @@ sub SaveAssessorial
 	#{
 	#	$AssData->Delete();
 	#}
-
+	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
+	print STDERR "\n... NEW AssData INSERTED, assdataid:  " . $AssData->assdataid;
 	}
 
 sub AuthenticateContact
 	{
 	my $self = shift;
-	my ($Username) = @_;
+	my $Username = shift;
 
+	print STDERR "\n... AuthenticateContact, USERNAME: " . $Username;
 	my ($ContactID, $CustomerID);
 
 	my $myDBI = $self->myDBI;
-
+	my $SQL;
 	# New contact user
 	if ($Username =~ /\//)
 		{
 		my ($Domain, $Contact) = $Username =~ m/^(.*)\/(.*)$/;
 
-		my $SQLC = "
+		$SQL = "
 			SELECT
 				c.contactid,
 				cu.customerid
 			FROM
-				customer cu,
-				contact c
+				customer cu
+				INNER JOIN contact c ON cu.customerid = c.customerid
 			WHERE
-				cu.customerid = c.customerid
-				AND cu.username = '$Domain'
+				cu.username = '$Domain'
 				AND c.username = '$Contact'
 				AND c.datedeactivated is null
 		";
-
-		my $STHC = $myDBI->select($SQLC);
-		my $DATA = $STHC->fetchrow(0);
-		($ContactID,$CustomerID) = ($DATA->{contactid},$DATA->{customerid});
 		}
 	else
 		{
 		# Standard/Backwards compatible user
-		my $SQL = "
+		$SQL = "
 			SELECT
 				c.contactid,
 				cu.customerid
 			FROM
-				customer cu,
-				contact c
+				customer cu
+				INNER JOIN contact c ON cu.customerid = c.customerid
 			WHERE
-				cu.customerid = c.customerid
-				AND c.username = '$Username'
+				c.username = '$Username'
 				AND cu.username = '$Username'
 				AND c.datedeactivated is null
 		";
-
-		my $STH = $myDBI->select($SQL);
-		my $DATA = $STH->fetchrow(0);
-		($ContactID,$CustomerID) = ($DATA->{contactid},$DATA->{customerid});
 		}
+	#print STDERR "\n... SQL: " . $SQL;
+	my $STHC = $myDBI->select($SQL);
+
+	return ($ContactID,$CustomerID) unless  $STHC->numrows;
+
+	my $DATA = $STHC->fetchrow(0);
+	($ContactID,$CustomerID) = ($DATA->{contactid},$DATA->{customerid});
 
 	return ($ContactID,$CustomerID);
 	}
@@ -976,6 +986,295 @@ sub VerifyDate
 	my $self = shift;
 	my $date = shift;
 	return $date if IntelliShip::DateUtils->is_valid_date($date);
+	}
+
+sub format_file
+	{
+	my $self = shift;
+	 my $file = shift;
+
+	use Scalar::Util qw(looks_like_number);
+	use POSIX qw(strftime);
+	use Time::Piece;
+
+	my $inpdir = '/opt/engage/CSV2TXT/inputdir';
+	my $outdir = '/tmp';
+	opendir(D, "$inpdir") || die "Can't opendir $inpdir: $!\n";
+	my @list = readdir(D);
+	closedir(D);
+
+	my $inputfilename;
+
+		$inputfilename = basename( $file );
+		$inputfilename =~ s/.csv//;
+
+		my $csv = Text::CSV->new ({
+			binary    => 1,
+			auto_diag => 1,
+			sep_char  => ','    # not really needed as this is the default
+		});
+ 
+	open(my $data, '<:encoding(utf8)', "$inpdir/$file") or die "Could not open '$file' $!\n";
+	open PRODFILE, "+>$outdir/ProductImport-$inputfilename.txt" or die $!;
+	open ORDRFILE, "+>$outdir/OrderImport-$inputfilename.txt" or die $!;
+	my $i = 0;
+	while (my $fields = $csv->getline( $data )) {
+			if($i gt 0)
+			{
+			if ($fields->[10] eq ''){
+				if($fields->[19] ne ''){
+					#call sub
+					$self->printImports($fields);
+					#my ($retValue1, $retValue2) = printImports($fields);
+					#print PRODFILE $retValue1;
+					#print ORDRFILE $retValue2;
+				}
+			}elsif($fields->[10] ne ''){
+				#if($fields->[18] ne ''){
+					#call sub
+					$self->printImports($fields);
+					#my ($retValue1, $retValue2) = printImports($fields);
+                                        #print PRODFILE $retValue1;
+                                        #print ORDRFILE $retValue2;
+				#}
+			}
+
+			
+			}
+			$i++;
+		}
+		if (not $csv->eof) {
+			$csv->error_diag();
+		}
+		close $data;
+		close PRODFILE;
+		close ORDRFILE;
+		print "\nGenerated ProductImport file $outdir/ProductImport-$inputfilename.txt  for  $inpdir/$file\n";
+		print "Generated OrderImport file $outdir/OrderImport-$inputfilename.txt  for  $inpdir/$file\n";
+	}
+
+sub printImports
+	{
+	my $self = shift;
+	my $fields = shift;
+
+			my $return1 = '';
+			my $return2 = '';
+			#Product Information Printing	
+			my $EquipName = '';
+			my @EquipmentArray;
+			my $EquipString = '';
+			my @EquipArray2;
+			my $EquipQtyName = '';
+			my @EquipQtyArray;
+			my $EquipQtyString = '';
+			my @EquipQtyArray2;
+			my $Return = '';
+			my $Comment = '';
+			my $ShipToCharge = '';
+			my $CusRef2 = '';
+			my $CusRef3 = '';
+
+			if ($fields->[10] eq ''){
+				$Return = $fields->[17];
+				$Comment = $fields->[18];
+				$EquipName = $fields->[19];
+				$EquipQtyName = $fields->[20];
+			}else{
+                                $Return = $fields->[16];
+                                $Comment = $fields->[17];
+				$EquipName = $fields->[18];
+				$EquipQtyName = $fields->[19];
+			}
+
+
+			if($EquipName eq '' || $EquipQtyName eq ''){
+				$EquipName = '';
+				$EquipQtyName = '';
+				#$return1 = "sprint/user\t$fields->[0]\t\t\t\t\t\t\t\n";
+				#print PRODFILE "$return1";
+			}
+			elsif($EquipName ne '' && $EquipQtyName ne '')
+			{
+			$EquipName =~ s/\n\n/\n/g;
+			$EquipName =~ s/[\r\n]+/,/g;
+			@EquipmentArray = split(',', $EquipName);
+
+			foreach  (@EquipmentArray){
+				$EquipString = $_;
+				$EquipString =~ s/^\s+//;
+				$EquipString =~ s/\s+$//;
+				$EquipString =~ s/\r\n/,/g;
+				chomp($EquipString);
+				$EquipString =~ s/\s+$//;
+				push(@EquipArray2, $EquipString);
+			}
+
+			$EquipQtyName =~ s/\n\n/\n/g;
+			$EquipQtyName =~ s/[\r\n]+/,/g;
+        		@EquipQtyArray = split(',', $EquipQtyName);
+
+			foreach (@EquipQtyArray){
+			        $EquipQtyString = $_;
+        			$EquipQtyString =~ s/^\s+//;
+		        	$EquipQtyString =~ s/\s+$//;
+	        		$EquipQtyString =~ s/\r\n/,/g;
+			        chomp($EquipQtyString);
+
+        			$EquipQtyString =~ s/\s+$//;
+			        push(@EquipQtyArray2, $EquipQtyString);
+			}
+
+			for (my $k = 0; $k < @EquipArray2; $k++) {
+				$EquipArray2[$k] =~  s/\s+$//;
+	        		$return1 = "sprint/user\t$fields->[0]\t$EquipQtyArray2[$k]\t\t\t\t$EquipArray2[$k]\t\t$EquipArray2[$k]\n";
+				print PRODFILE "$return1";
+			}
+
+ 			}
+
+		
+			#Order information printing
+
+			my $ProjectNumber = '';
+			my $ProjectName = '';
+			my $endUserName = '';
+			my $Address1 = '';
+			my $Address2 = '';
+			my $City = '';
+			my $State = '';
+			my $Zip = '';
+			my $EquipmentConf = '';
+			my $constant = 'sprint/user';
+			my $MailStop = '';
+			my $endUserPhone = '';
+			my $CustomerWantDate = '';
+			my $CustomerWantNumber = '';
+			my $duedate = '';
+			#my $ShipFromName = '';
+		
+			$ProjectNumber = $fields->[0];
+			$ProjectName = $fields->[1];
+			$endUserName = $fields->[2];
+			$endUserName =~ s/\s+$//g;
+			$Address1 = $fields->[8];
+			$Address2 = $fields->[9];
+			
+			if ( $fields->[10] eq '' ){
+				$City = $fields->[11];
+                                $State = $fields->[12];
+                                $Zip = $fields->[13];
+				$Zip = sprintf("%05d", $Zip);
+                                $EquipmentConf = $fields->[21];
+				#$EquipmentConf = substr($EquipmentConf, 0, 100);
+                                $MailStop = $fields->[6];
+                                $endUserPhone = $fields->[3];
+                                $CustomerWantDate = $fields->[15];
+			} else{
+				$City = $fields->[10];
+				$State = $fields->[11];
+				$Zip = $fields->[12];
+				#$Zip = sprintf("%05d", $Zip);
+				my ($ZipNew,$txt) = split(/\-/,$Zip);
+				$Zip = $ZipNew;
+				$EquipmentConf = $fields->[20];
+				#$EquipmentConf = substr($EquipmentConf, 0, 100);
+				$MailStop = $fields->[6];
+				$endUserPhone = $fields->[3];
+				$CustomerWantDate = $fields->[14];
+			}
+			
+			if ( $endUserName eq ''){
+				#print "$endUserName";
+				#my $temp = "$ProjectName";
+				#$temp =~ s/Shipment to //g;
+				#$endUserName = "$temp";
+				$endUserName = "OCCUPANT";
+				#$ShipFromName = "OCCUPANT";
+			}else{
+			}
+			
+			if ( $Return eq 'Y' || $Return eq 'Yes' || $Return eq '1'){
+				$Return = $Return;
+			}elsif( $Return eq 'N' || $Return eq 'No' || $Return eq '0'){
+				$Return = $Return;
+			}elsif($Return eq ''){
+				$Return = "";
+			}else{
+			}
+
+			if ( $Comment ne ''){
+                                $Comment = "$Comment";
+                        }else{
+				$Comment = '';
+                        }
+
+
+			if ( $CustomerWantDate eq "OVERNIGHT" || $CustomerWantDate eq "Overnight" || $CustomerWantDate eq "OverNight"){
+				$CustomerWantNumber = 1;		
+			}elsif( $CustomerWantDate eq "TWO" || $CustomerWantDate eq "SECOND" ){
+				$CustomerWantNumber = 2;
+			}elsif( $CustomerWantDate eq "THREE" || $CustomerWantDate eq "THIRD" ){
+                                $CustomerWantNumber = 3;
+                        }elsif( $CustomerWantDate eq "GROUND" || $CustomerWantDate eq "Ground" ){
+                                $CustomerWantNumber = 5;
+			}elsif( looks_like_number($CustomerWantDate) ){
+                                $CustomerWantNumber = $CustomerWantDate;
+                        }elsif( $CustomerWantDate =~/^((((0[13578])|([13578])|(1[02]))[\/](([1-9])|([0-2][0-9])|(3[01])))|(((0[469])|([469])|(11))[\/](([1-9])|([0-2][0-9])|(30)))|((2|02)[\/](([1-9])|([0-2][0-9]))))[\/]\d{4}$|^\d{4}$/){
+                                $CustomerWantNumber = '';
+				#$duedate = $CustomerWantDate;
+	                        my @ddate =split('/' , $CustomerWantDate);
+        	                 $ddate[0]=~ s/^[0\s]+//;
+                  	         $ddate[1]=~ s/^[0\s]+//;
+                                 $ddate[2]=~ s/^[0\s]+//;
+				my $ddate = "$ddate[2]/$ddate[0]/$ddate[1]";
+				#print "$ddate\n";
+
+	                        my $todaydate = strftime "%m/%d/%Y", localtime;
+        	                my @datenow =split('/' , $todaydate);
+                	         $datenow[0]=~ s/^[0\s]+//;
+                        	 $datenow[1]=~ s/^[0\s]+//;
+	                         $datenow[2]=~ s/^[0\s]+//;
+				my $presentdate = "$datenow[2]/$datenow[0]/$datenow[1]";
+                	        #print "$presentdate\n";
+
+				my $otherdate = Time::Piece->strptime($ddate, "%Y/%m/%d");
+				my $now = Time::Piece->strptime($presentdate, "%Y/%m/%d");
+
+					
+				my $diff = $now - $otherdate;
+					if( $diff gt 0){
+						#print "$diff\n";
+						$duedate = '';
+					}elsif( $diff lt 0 || $diff eq 0){
+						#print "$diff\n";
+						$duedate = $CustomerWantDate;
+					}else{
+					}
+                        }else{
+				$CustomerWantNumber = '';
+			}
+			
+			if($EquipmentConf ne ''){
+			$EquipmentConf  =~ s/[\r\n]+/,/g;
+			$EquipmentConf  =~ s/,//g;
+			}else{
+			}
+
+			if($EquipmentConf eq ''){
+				$return2 = "$ProjectNumber\t\t$endUserName\t$Address1\t$Address2\t$City\t$State\t$Zip\t\t\t\t\t\t\t\t\t\t\t$duedate\t$constant\t$MailStop\t$ProjectName\t\t$endUserName\t$endUserPhone\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t$CustomerWantNumber\t\t\t\t\t$Comment\t$ShipToCharge\t$Return\t$CusRef2\t$CusRef3\n";
+    	                        print ORDRFILE "$return2";
+			}
+			else{
+			my @EquipmentConfArray = split(',',$EquipmentConf);
+			
+			for (my $m = 0; $m<@EquipmentConfArray; $m++) {
+				my $temporary_var = $EquipmentConfArray[$m];
+				$return2 = "$ProjectNumber\t\t$endUserName\t$Address1\t$Address2\t$City\t$State\t$Zip\t\t\t\t\t$temporary_var\t\t\t\t\t\t$duedate\t$constant\t$MailStop\t$ProjectName\t\t$endUserName\t$endUserPhone\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t$CustomerWantNumber\t\t\t\t\t$Comment\t$ShipToCharge\t$Return\t$CusRef2\t$CusRef3\n";
+				#print "$return2";
+				print ORDRFILE "$return2";
+			}
+			}
 	}
 
 __PACKAGE__->meta()->make_immutable();

@@ -3,8 +3,9 @@ use Moose;
 use IO::File;
 use Data::Dumper;
 use IntelliShip::DateUtils;
-#use IntelliShip::Import::Orders;
 use namespace::autoclean;
+
+#require IntelliShip::Import::Orders;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
@@ -116,7 +117,9 @@ sub upload :Local
 
 	my $TARGET_file = $self->get_directory . "/\Q$FILE_name\E";
 	$TARGET_file .= '.' . IntelliShip::DateUtils->timestamp if stat $TARGET_file;
-
+	
+	$c->log->debug("##### Target file $TARGET_file");
+	$c->log->debug("##### Target file $TARGET_file");
 	$c->log->debug("cp $TMP_file $TARGET_file");
 
 	if (system "cp $TMP_file $TARGET_file")
@@ -143,6 +146,7 @@ sub upload :Local
 		}
 =cut
 	my $ImportHandler = IntelliShip::Import::Orders->new;
+	$ImportHandler->API($self->API);
 	$ImportHandler->context($self->context);
 	$ImportHandler->contact($self->contact);
 	$ImportHandler->customer($self->customer);
