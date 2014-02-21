@@ -52,7 +52,7 @@ sub process_request
 
 	if ($shipmentData->{'addresscountry'} eq 'US' or $shipmentData->{'addresscountry'} eq 'CA')
 		{
-		$ContactPhone = $ContactPhone =~ /^(\d{10})/;
+		$ContactPhone = $1 if $ContactPhone =~ /^(\d{10})/;
 		}
 
 	# Allow for LTR type packages (0 weight)
@@ -318,8 +318,8 @@ sub process_request
 	# Check return string for errors;
 	if ($ShipmentReturn =~ /"2,"\w+?"/)
 		{
-		my ($ErrorCode) = $ShipmentReturn =~ /"2,"(\w+?)"/;
-		my ($ErrorMessage) = $ShipmentReturn =~ /"3,"(.*?)"/;
+		my $ErrorCode = $1 if $ShipmentReturn =~ /"2,"(\w+?)"/;
+		my $ErrorMessage = $1 if $ShipmentReturn =~ /"3,"(.*?)"/;
 
 		$shipmentData->{'errorstring'} = "Error - " . $ErrorCode . ": " . $ErrorMessage;
 
@@ -355,8 +355,8 @@ sub process_request
 		}
 
 	# Build the shipment object to pass back to service
-	my $TrackingNumber = $ShipmentReturn =~ /"29,"(\w+?)"/;
-	my $PrinterString = $ShipmentReturn =~ /188,"(.*\nP1\nN\n)"/s;
+	my $TrackingNumber = $1 if $ShipmentReturn =~ /"29,"(\w+?)"/;
+	my $PrinterString = $1 if $ShipmentReturn =~ /188,"(.*\nP1\nN\n)"/s;
 
 	$self->log("PrinterString: " . $PrinterString);
 
@@ -385,7 +385,7 @@ sub process_request
 	$shipmentData->{'printerstring'} = $PrinterString;
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	$self->log('### shipmentData ###: ' . Dumper $shipmentData);
+	#$self->log('### shipmentData ###: ' . Dumper $shipmentData);
 
 	my $Shipment = $self->insert_shipment($shipmentData);
 
