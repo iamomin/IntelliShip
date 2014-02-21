@@ -143,20 +143,12 @@ sub format_CSV
 
 	# Add a worksheet
 	my $worksheet = $workbook->add_worksheet();
-	$worksheet->set_column('A:M', 20);
-
 	
 	# Add Company Logo
 	my $BrandingID = $self->get_branding_id;
 	my $image_path = IntelliShip::MyConfig->image_file_directory . "/$BrandingID/report-logo.png";
 	$c->log->debug(" image_path: " . $image_path);
 
-	# Increase the cell size of the merged cells to highlight the formatting.
-    #$worksheet->set_column( 0, 1, 30 );
-    #$worksheet->set_row( 1, 35 );     
-    # Create logo Backgorund
-    #my $imageBackgroundformat = $workbook->add_format(center_across => 1,size => 15,pattern => 1,align => 'vcenter');   
-    #$worksheet->write_blank( 1, 0, $imageBackgroundformat );	
 	$worksheet->insert_image(1, 0, $image_path, 16, 9) if ( -r $image_path);
 		
 	if ($params->{'report'} == 'SHIPMENT')
@@ -223,6 +215,36 @@ sub format_SHIPMENT_xls
 	my $workbook = shift;
 	my $worksheet = shift;
 	my $c = $self->context;
+
+	# Let's set the column widths specified values...
+	$worksheet->set_column(0, 0, 17);				# Column 1 -ShipmentId		
+	$worksheet->set_column(1, 1, 10);				# Column 2 -Wt
+	$worksheet->set_column(2, 2, 15);				# Column 3 -DimWt
+	$worksheet->set_column(3, 3, 11);				# Column 4 -Dims
+	$worksheet->set_column(4, 4, 30);				# Column 5 -Carrier
+	$worksheet->set_column(5, 5, 10);				# Column 6 -Zone
+	$worksheet->set_column(6, 6, 27);				# Column 7 -Srvc
+	$worksheet->set_column(7, 7, 27);				# Column 8 -Airbill#
+	$worksheet->set_column(8, 8, 20);				# Column 9 -Freight Charge
+	$worksheet->set_column(9, 9, 20);				# Column 10 -Other Charges
+	$worksheet->set_column(10,10, 20);				# Column 11 -Other Charges
+	$worksheet->set_column(11,11, 23);				# Column 12 -Total Charges
+	$worksheet->set_column(12,12, 25);				# Column 13
+	$worksheet->set_column(13,13, 20);				# Column 14
+	$worksheet->set_column(14,14, 20);				# Column 15
+	$worksheet->set_column(15,15, 20);				# Column 16
+	$worksheet->set_column(16,16, 20);				# Column 17
+	$worksheet->set_column(17,17, 18);				# Column 18
+	$worksheet->set_column(18,18, 17);				# Column 19
+	$worksheet->set_column(19,19, 25);				# Column 20
+	$worksheet->set_column(20,20, 25);				# Column 21
+	$worksheet->set_column(21,21, 20);				# Column 22
+	$worksheet->set_column(22,22, 22);				# Column 23
+	$worksheet->set_column(23,23, 20);				# Column 24
+	$worksheet->set_column(24,24, 30);				# Column 25
+	$worksheet->set_column(25,25, 20);				# Column 26
+	$worksheet->set_column(26,26, 20);				# Column 27
+	$worksheet->set_column(27,27, 20);				# Column 28	
 	
 	# Write a formatted and unformatted string, row and column notation.
 	my ($col,$row)=(0,14);
@@ -284,15 +306,48 @@ sub format_SHIPMENT_xls
 
 	# Report data row format
 	my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
+	my $LinkFormat = $workbook->add_format( align => 'center', border => 1, underline => 1, color => 'blue' );
+	$LinkFormat->set_num_format(0x01);		
 	
 	my $report_output_row_loop = $c->stash->{report_output_row_loop};
 	
 	foreach my $report_output_columns (@$report_output_row_loop)
 		{
+		my $carrier_name	= '';
+		my $tracking_number = '';
+		my $tracking_url	= '';
 		$col=0;$row++;
 		foreach my $Column (@$report_output_columns)
 			{
-			$worksheet->write($row, $col++, $Column->{value}, $reportDataFormat);
+			if($col == 7)
+				{
+				$carrier_name  = ${ $report_output_columns }[4]->{value} || '';
+				if ($carrier_name)
+					{
+						$tracking_number = $Column->{value};
+						if ( $carrier_name eq 'Airborne Express' || $carrier_name eq 'DHL' )
+						{
+							$tracking_url = "http://track.dhl-usa.com/TrackByNbr.asp?ShipmentNumber=$tracking_number&nav=TrackBynumber"
+						}
+						elsif ( $carrier_name eq 'FedEx' )
+						{
+							$tracking_url = "HTTP://www.fedex.com/cgi-bin/tracking?action=track&language=english&cntry_code=us&initial=x&tracknumbers=$tracking_number";
+						}
+						elsif ( $carrier_name eq 'UPS' )
+						{
+							$tracking_url = "HTTP://wwwapps.ups.com/etracking/tracking.cgi?tracknums_displayed=5&TypeOfInquiryNumber=T&HTMLVersion=4.0&InquiryNumber1=$tracking_number&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&track=Track";
+						}
+						else
+						{
+							$tracking_url = '';
+						}
+					}
+				$worksheet->write_url($row, $col++, $tracking_url, $tracking_number,$LinkFormat);
+				}
+			else
+				{
+				$worksheet->write($row, $col++, $Column->{value}, $reportDataFormat);			
+				}
 			}
 		}
 

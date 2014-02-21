@@ -185,7 +185,6 @@ sub generate_shipment_report
 				{name => 'receiver address'},
 				{name => 'tracking number'},				
 				{name => 'zone'},
-				{name => 'carrier name'},
 				{name => 'service level'},
 				{name => 'zip/zone'},
 				{name => 'billing weight'},
@@ -201,7 +200,6 @@ sub generate_shipment_report
 				sh.zonenumber,
 				substring(a.zip from 1 for 3) || '/' || a.state as zipzone,
 				sh.service as servicename,
-				sh.carrier as carriername,
 				sh.weight,				
 				sh.cost,
 				sh.dateshipped		
@@ -439,7 +437,6 @@ sub generate_shipment_report
 			$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
 			$row_data->{'receiveraddress'} = $row_data->{'receiveraddress'} || "UNKNOWN";
 			$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
-			$row_data->{'carriername'} = $row_data->{'carriername'} || "";
 			$row_data->{'zipzone'} = $row_data->{'zipzone'} || "";
 
 			$report_output_column_loop = [
@@ -447,7 +444,6 @@ sub generate_shipment_report
 					{ value => $row_data->{'receiveraddress'} }	,
 					{ value => $row_data->{'tracking1'} },
 					{ value => $row_data->{'zonenumber'} },
-					{ value => $row_data->{'carriername'} },
 					{ value => $row_data->{'servicename'} },
 					{ value => $row_data->{'zipzone'} },
 					{ value => $row_data->{'weight'} , align => 'right' },
@@ -506,7 +502,6 @@ sub generate_shipment_report
 			{
 			$report_summary_row_loop = [
 					{ value => 'Total Shipments '. scalar @$report_output_row_loop },
-					{ value => '' },
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
