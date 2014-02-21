@@ -151,13 +151,14 @@ sub format_CSV
 
 	$worksheet->insert_image(1, 0, $image_path, 16, 9) if ( -r $image_path);
 		
-	if ($params->{'report'} == 'SHIPMENT')
+	if ($params->{'report'} eq 'SHIPMENT')
 		{
 		$self->format_SHIPMENT_xls($workbook, $worksheet);
 		}
-	elsif ($params->{'report'} == 'SUMMARY_SERVICE')
+	elsif ($params->{'report'} eq 'SUMMARY_SERVICE')
 		{
-		$self->format_SUMMARY_SERVICE_xls;
+		#$self->format_SUMMARY_SERVICE_xls($workbook, $worksheet);
+		$self->format_SHIPMENT_xls($workbook, $worksheet);
 		}
 	else
 		{
@@ -220,7 +221,7 @@ sub format_SHIPMENT_xls
 	$worksheet->set_column(0, 0, 17);				# Column 1 -ShipmentId		
 	$worksheet->set_column(1, 1, 10);				# Column 2 -Wt
 	$worksheet->set_column(2, 2, 15);				# Column 3 -DimWt
-	$worksheet->set_column(3, 3, 11);				# Column 4 -Dims
+	$worksheet->set_column(3, 3, 20);				# Column 4 -Dims
 	$worksheet->set_column(4, 4, 30);				# Column 5 -Carrier
 	$worksheet->set_column(5, 5, 10);				# Column 6 -Zone
 	$worksheet->set_column(6, 6, 27);				# Column 7 -Srvc

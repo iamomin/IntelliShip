@@ -932,6 +932,28 @@ sub get_freight_charges
 	return $freight_charge;
 	}
 
+sub total_weight
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_weight = 0;
+	foreach (@packages)
+		{
+		my $weight = ($_->dimweight > $_->weight ? $_->dimweight : $_->weight);
+		$total_weight += ($_->quantity > 1 ? $_->quantity * $weight : $weight);
+		}
+	return $total_weight;
+	}
+
+sub total_charge
+	{
+	my $self = shift;
+	my @charges = $self->shipment_charges;
+	my $charge_sum = 0;
+	$charge_sum += $_->chargeamount foreach @charges;
+	return $charge_sum;
+	}
+
 sub get_charges
 	{
 	my $self = shift;

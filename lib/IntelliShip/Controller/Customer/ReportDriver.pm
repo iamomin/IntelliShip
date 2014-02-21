@@ -559,9 +559,9 @@ sub generate_summary_service_report
 	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
 
 	$report_heading_loop = [
-				{name => 'shipment id'},
 				{name => 'carrier'},
 				{name => 'service'},
+				{name => 'shipments'},
 				{name => 'total charge'},
 				{name => 'total weight'},
 			];
@@ -587,20 +587,14 @@ sub generate_summary_service_report
 	my $report_SQL = "
 		SELECT
 			sh.shipmentid,
-			SUM(sc.chargeamount) AS total_chargeamount,
-			SUM(ppd.weight) AS total_weight
+			sh.carrier,
+			sh.service
 		FROM
 			shipment sh
 			INNER JOIN co ON co.coid = sh.coid
-			INNER JOIN shipmentcharge sc ON sc.shipmentid = sh.shipmentid
-			INNER JOIN packprodata ppd ON ppd.ownerid = sh.shipmentid
-				AND ppd.ownertypeid = 2000
-				AND ppd.datatypeid = 1000
 		$WHERE
-		GROUP BY
-			sh.shipmentid
 		ORDER BY
-			3,2,1
+			2,1
 	";
 
 	$c->log->debug("SUMMARY SERVICE REPORT SQL: \n" . $report_SQL);
@@ -609,22 +603,88 @@ sub generate_summary_service_report
 
 	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
 
+	my $summaryDetails = {};
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
-
+			
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $row_data->{shipmentid} });
 
-		my $report_output_column_loop = [
-				{ value => $row_data->{'shipmentid'} },
-				{ value => $Shipment->carrier },
-				{ value => $Shipment->service },
-				{ value => $row_data->{'total_chargeamount'}, align => 'right' },
-				{ value => $row_data->{'total_weight'}, align => 'right' },
-			];
-
-		push(@$report_output_row_loop, $report_output_column_loop);
+		$summaryDetails->{$row_data->{'carrier'}} = {} unless $summaryDetails->{$row_data->{'carrier'}};
+		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}} = {} unless $summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}};
+		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}}->{'TTL_WEIGHT'} += $Shipment->total_weight;
+		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}}->{'TTL_CHARGE'} += $Shipment->total_charge;
+		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}}->{'TTL_COUNT'} += 1;
 		}
+
+	$c->log->debug("%$summaryDetails: " . Dumper $summaryDetails);
+	
+	my $grand_total_shipment = 0;
+	my $grand_total_charge = 0;
+	my $grand_total_weight = 0;
+	foreach my $carrier (keys %$summaryDetails)
+		{
+		my $total_shipment = 0;
+		my $total_charge = 0;
+		my $total_weight = 0;
+		push(@$report_output_row_loop, [
+					{ value => $carrier },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+				]);
+		
+		my $serviceHash = $summaryDetails->{$carrier};
+		foreach my $service (keys %$serviceHash)
+			{
+			my $dataHash = $serviceHash->{$service};
+			my $report_output_column_loop = [
+					{ value => '' },
+					{ value => $service },
+					{ value => $dataHash->{'TTL_COUNT'} },
+					{ value => $dataHash->{'TTL_CHARGE'}, align => 'right' },
+					{ value => $dataHash->{'TTL_WEIGHT'}, align => 'right' },
+
+				];
+			$total_shipment	+= $dataHash->{'TTL_COUNT'};
+			$total_charge	+= $dataHash->{'TTL_CHARGE'}; 
+			$total_weight	+= $dataHash->{'TTL_WEIGHT'};
+
+			$grand_total_shipment	+= $total_shipment;
+			$grand_total_charge		+= $total_charge;
+			$grand_total_weight		+= $total_weight;
+
+			push(@$report_output_row_loop, $report_output_column_loop);
+			}
+		
+		# Add Total Row
+		push(@$report_output_row_loop, [
+					{ value => $carrier. ' Total' },
+					{ value => '' },
+					{ value => $total_shipment },
+					{ value => $total_charge , align => 'right' },
+					{ value => $total_weight , align => 'right' },
+				]);
+		}
+
+	# Add Blank Row
+	push(@$report_output_row_loop, [
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+				]);
+
+	# Add Grand Total Row
+	push(@$report_output_row_loop, [
+					{ value => 'Grand Total' },
+					{ value => '' },
+					{ value => $grand_total_shipment },
+					{ value => $grand_total_charge	, align => 'right' },
+					{ value => $grand_total_weight	, align => 'right' },
+				]);
 
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
@@ -767,9 +827,10 @@ sub get_co_status_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return '' if (ref $params->{'costatus'} eq 'ARRAY' and grep(/all/, @{$params->{'costatus'}})) or  $params->{'costatus'} eq 'all';
+	my $and_status_id_sql = ' AND sh.statusid IN (10,100) ';
 
-	my $and_status_id_sql = ''; #" AND sh.statusid IN (10,100) "
+	return $and_status_id_sql if (ref $params->{'costatus'} eq 'ARRAY' and grep(/all/, @{$params->{'costatus'}})) or  $params->{'costatus'} eq 'all';
+
 	if (ref $params->{'costatus'} eq 'ARRAY')
 		{
 		$and_status_id_sql = " AND sh.statusid IN ('" . join("','", @{$params->{'costatus'}}) . "') ";
