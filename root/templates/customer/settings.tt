@@ -603,12 +603,12 @@ $(document).ready(function(){
 		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
 		<table class="center_app">
 		<tr>
-			<td><label class="float_right" for="username">User Name:</label></td>
+			<td><label class="float_right" for="contact_username">User Name:</label></td>
 			<td>
 			[% IF READONLY %]
 				[% contactInfo.username %]
 			[% ELSE  %]
-				<input type="text" name="username" id="username" value="[% contactInfo.username %]" class="broad_text" onchange="validateContactUsername();">
+				<input type="text" name="contact_username" id="contact_username" value="[% contactInfo.username %]" class="broad_text" onchange="validateContactUsername();">
 			[% END %]
 			</td>
 			<td><label class="float_right" for="firstname">First Name:</label></td>
@@ -795,11 +795,10 @@ $(document).ready(function(){
 
 	<script>
 	function validateContactUsername(){
-			if ($("#username").val().length == 0) return;
-
+			if ($("#contact_username").val.length == 0) return;
 			var customerid = $("#customerid").val();
 			var contactid  = $("#contactid").val();
-			var username   = $("#username").val();
+			var username   = $("#contact_username").val();
 
 			var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
 
@@ -807,7 +806,7 @@ $(document).ready(function(){
 			send_ajax_request('', 'JSON', 'settings/company', 'validate_contact_username', query, function() {
 			if (JSON_data.COUNT > 0) {
 				showError("User name exist. Please specify different user name");
-				$("#username").val("");
+				$("#contact_username").val("");
 			}
 			else
 				return ;
@@ -830,7 +829,7 @@ $(document).ready(function(){
 		var requireHash = {
 			phonebusiness    : { phone: true, description: "Please specify business contact" },
 			phonemobile      : { phone: true, description: "Please specify mobile contact" },
-			username         : { minlength: 1, description: "Please specify username 1" },
+			contact_username : { minlength: 1, description: "Please specify username " },
 			contact_address1 : { minlength: 2, description: "Please specify address 1" },
 			contact_city     : { minlength: 2, description: "Please specify city" },
 			contact_state    : { minlength: 2, description: "Please specify state" },

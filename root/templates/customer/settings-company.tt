@@ -175,10 +175,10 @@
 					<tr>
 						<td><label class="float_right" for="username">User Name:</label></td>
 						<td>
-							[% IF ENABLE_EDIT %]
-								<input type="text" name="username" id="username" value="[% username %]" class="broad_text" onchange="validateCustomerUsername();">
-							[% ELSE %]
+							[% IF READONLY %]
 								[% username %]
+							[% ELSE %]
+								<input type="text" name="username" id="username" value="[% username %]" class="broad_text" onchange="validateCustomerUsername();">
 							[% END %]
 						</td>
 						<td><label class="float_right" for="auxaddress2">Form Address 2:</label></td>
@@ -187,10 +187,10 @@
 					<tr>
 						<td><label class="float_right" for="password">Password:</label></td>
 						<td>
-							[%IF ENABLE_EDIT %]
-								<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
-							[%ELSE%]
+							[%IF READONLY %]
 								[%password%]
+							[%ELSE%]
+								<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
 							[%END%]
 						</td>
 						<td><label class="float_right" for="auxcity">Form City:</label></td>
@@ -666,6 +666,7 @@
 	<script>
 	
 		function validateCustomerUsername(){
+			if($("#username").val.length == 0) return ;
 			var customerid = $("#customerid").val();
 			var username = $("#username").val();
 			var query  = '&customerid=' + customerid + '&username=' + username;
@@ -731,7 +732,7 @@
 	<table>
 		<tr>
 			<td><h3>Contact Count [% contact_count %]</h3></td>
-			<td style="width: 72%"></td>
+			<td style="width: 75%"></td>
 			<td><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></td>
 		</tr>
 	</table>

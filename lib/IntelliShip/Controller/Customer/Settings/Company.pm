@@ -159,7 +159,7 @@ sub setup :Local
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 
 	my $Contact = $self->contact;
-	$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser;
+	$c->stash->{READONLY} =1 unless $self->contact->is_superuser;
 
 	$c->stash->{SETUP_CUSTOMER}          = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;

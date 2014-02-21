@@ -547,7 +547,7 @@ sub contactinformation :Local
 
 		$Address->update($addressData);
 
-		$Contact->username($params->{'username'}) if $params->{'username'};
+		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
 		$Contact->password($params->{'password'}) if $params->{'password'};
 
 		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
