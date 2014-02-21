@@ -24,8 +24,8 @@ function Print()
 	}
 
 $(document).ready(function(){
-	print();
-	//[% IF totalquantity > 0 %]window.print(false);[% END %]
+	//print();
+	[% IF totalquantity > 0 %]window.print(false);[% END %]
 	});
 
 </script>
