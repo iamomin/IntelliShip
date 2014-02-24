@@ -337,8 +337,7 @@
 	$('#freightinsurance').change(distribute_insurance_among_products);
 
 [% UNLESS one_page %]
-	[% FOREACH item IN requiredfield_list %]
-		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
 
 	$("#frm_shipment").submit(function() {
@@ -352,7 +351,6 @@
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();
 		[% END %]
-
 		/*
 		calculate_total_weight();
 		calculate_total_packages();

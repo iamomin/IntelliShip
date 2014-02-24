@@ -286,9 +286,11 @@ function markRequiredFields(requireFields)
 
 			if ( property == "email" || property == "phone" || property == "date" || property == "numeric"){
 				$('#'+control).prop("required", value);
+				if (value != false) $('label[for="'+control+'"]').addClass('require');
 				}
 				else{
 					$('#'+control).prop("required", true);
+					$('label[for="'+control+'"]').addClass('require');
 				}
 			});
 		});

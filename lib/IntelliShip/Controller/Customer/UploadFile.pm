@@ -5,7 +5,7 @@ use Data::Dumper;
 use IntelliShip::DateUtils;
 use namespace::autoclean;
 
-#require IntelliShip::Import::Orders;
+require IntelliShip::Import::Orders;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
@@ -117,7 +117,7 @@ sub upload :Local
 
 	my $TARGET_file = $self->get_directory . "/\Q$FILE_name\E";
 	$TARGET_file .= '.' . IntelliShip::DateUtils->timestamp if stat $TARGET_file;
-	
+
 	$c->log->debug("##### Target file $TARGET_file");
 	$c->log->debug("##### Target file $TARGET_file");
 	$c->log->debug("cp $TMP_file $TARGET_file");
@@ -128,7 +128,7 @@ sub upload :Local
 		$c->stash->{MESSAGE} = "File Copy Error: " . $!;
 		$c->detach("setup",$params);
 		}
-
+=cut
 	if (system "/opt/engage/intelliship/html/uploadorders.sh $token_id")
 		{
 		$c->stash->{MESSAGE} = "Upload Order Error: " . $!;
@@ -152,9 +152,19 @@ sub upload :Local
 	$ImportHandler->customer($self->customer);
 	$ImportHandler->import_file($TMP_file);
 	$ImportHandler->import;
-=cut
-	$c->log->debug("... File imported successfully");
-	$c->stash->{MESSAGE} = "File Imported Successfully";
+
+	my $msg;
+	if ($ImportHandler->has_errors)
+		{
+		$msg = $ImportHandler->errors->[0];
+		}
+	else
+		{
+		$msg = "File imported successfully";
+		}
+
+	$c->log->debug("... " . $msg);
+	$c->stash->{MESSAGE} = $msg;
 
 	$c->detach("setup",$params);
 	}

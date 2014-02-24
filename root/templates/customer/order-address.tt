@@ -126,15 +126,15 @@
 				<tr>
 					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
-								[% IF one_page %]
+				[% IF one_page %]
 				<tr>
 					<td><label for="tocustomernumber" class="float_right">Customer#:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
-								[% ELSE %]
-								<tr>
+				[% ELSE %]
+				<tr>
 					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
-								[% END %]
+				[% END %]
 				<tr>
 					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
@@ -270,15 +270,13 @@ $("#dateneeded").change(function() {
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
 [% UNLESS one_page %]
-[% FOREACH item IN requiredfield_list %]
-requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
 
 function reviewOrder() {
 	$("#do").val('review');
 	$("#frm_address").submit();
 	}
-
-[% END %]
 
 $("#frm_address").submit(function() {
 	return validateForm(requiredFieldHash);
@@ -290,9 +288,7 @@ $(document).ready(function(){
 	setToolTip();
 	[% END %]
 
-		if(requiredFieldHash){
-			markRequiredFields(requiredFieldHash);
-		}
+	if (requiredFieldHash) markRequiredFields(requiredFieldHash);
 	});
 [% END %]
 </script>
