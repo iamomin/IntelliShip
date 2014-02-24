@@ -143,14 +143,14 @@ sub format_CSV
 
 	# Add a worksheet
 	my $worksheet = $workbook->add_worksheet();
-	
+
 	# Add Company Logo
 	my $BrandingID = $self->get_branding_id;
 	my $image_path = IntelliShip::MyConfig->image_file_directory . "/$BrandingID/report-logo.png";
 	$c->log->debug(" image_path: " . $image_path);
 
 	$worksheet->insert_image(1, 0, $image_path, 16, 9) if ( -r $image_path);
-		
+
 	if ($params->{'report'} eq 'SHIPMENT')
 		{
 		$self->format_SHIPMENT_xls($workbook, $worksheet);
@@ -162,13 +162,13 @@ sub format_CSV
 		}
 	else
 		{
-		my $report_heading_loop = $c->stash->{report_heading_loop};	
+		my $report_heading_loop = $c->stash->{report_heading_loop};
 
 		# Write a formatted and unformatted string, row and column notation.
 		my ($col,$row)=(0,0);
 
 		my $format = $workbook->add_format(border  => 0, valign  => 'vcenter', align   => 'left', bold => 1);
-		
+
 		# Report Date
 		$worksheet->merge_range("A$row:M$row", "Date: " . IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-')) , $format);
 
@@ -218,7 +218,7 @@ sub format_SHIPMENT_xls
 	my $c = $self->context;
 
 	# Let's set the column widths specified values...
-	$worksheet->set_column(0, 0, 17);				# Column 1 -ShipmentId		
+	$worksheet->set_column(0, 0, 17);				# Column 1 -ShipmentId
 	$worksheet->set_column(1, 1, 10);				# Column 2 -Wt
 	$worksheet->set_column(2, 2, 15);				# Column 3 -DimWt
 	$worksheet->set_column(3, 3, 20);				# Column 4 -Dims
@@ -245,14 +245,14 @@ sub format_SHIPMENT_xls
 	$worksheet->set_column(24,24, 30);				# Column 25
 	$worksheet->set_column(25,25, 20);				# Column 26
 	$worksheet->set_column(26,26, 20);				# Column 27
-	$worksheet->set_column(27,27, 20);				# Column 28	
-	
+	$worksheet->set_column(27,27, 20);				# Column 28
+
 	# Write a formatted and unformatted string, row and column notation.
 	my ($col,$row)=(0,14);
 
 	# Add Company Address Box
 	my $company_address = $self->customer->address;
-	
+
 	my $addressHeaderBorderFormat = $workbook->add_format(bold => 1, align => 'left', top=>2, bottom=>1, left=>2,right=>2);
 	my $addressFirstBorderFormat = $workbook->add_format(bold => 1, align => 'left', left=>2, right=>2);
 	my $addressSecondaryBorderFormat = $workbook->add_format( align => 'left', left=>2,right=>2);
@@ -267,20 +267,20 @@ sub format_SHIPMENT_xls
 	$worksheet->merge_range("E10:G10", $self->customer->contact, $addressSecondaryBorderFormat);
 	$worksheet->merge_range("E11:G11", $self->customer->phone, $addressSecondaryBorderFormat);
 	$worksheet->merge_range("E12:G12", $self->customer->email, $addressBottomBorderFormat);
-	
+
 	# Add Report Summary Box
 	my $summaryTopBorderFormat = $workbook->add_format(bold => 1, align => 'left', top=>2, left=>2, bottom=> 6);
 	my $summaryMiddleCellFormat = $workbook->add_format(bold => 1, align => 'left', left=>2, right=>2);
 	my $summaryBottomBorderFormat = $workbook->add_format(bold => 1,align => 'left', border => 2);
-	
+
 	$worksheet->merge_range("I5:J5", 'Report Totals:', $summaryTopBorderFormat);
 	$worksheet->merge_range("I6:J6",'Report Date', $summaryMiddleCellFormat);
 	$worksheet->merge_range("I7:J7", 'Shipments', $summaryMiddleCellFormat);
 	$worksheet->merge_range("I8:J8", 'Pounds', $summaryMiddleCellFormat);
 	$worksheet->merge_range("I9:J9", 'Total Charges *', $summaryBottomBorderFormat);
-	
+
 	my $reportMessageFormat = $workbook->add_format(color => 'red', valign => 'vcenter', align => 'left', bold => 1);
-	
+
 	# Add charge disclaimer
 	$worksheet->merge_range("A$row:M$row", "* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges", $reportMessageFormat);
 	$row += 2;
@@ -294,11 +294,11 @@ sub format_SHIPMENT_xls
 	# Report Date
 	$row++;
 	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_title}, $reportTitleDateFormat);
-	
+
 	# Report header row format
-	my $report_heading_loop = $c->stash->{report_heading_loop};	
+	my $report_heading_loop = $c->stash->{report_heading_loop};
 	my $reportHeaderFormat = $workbook->add_format(border => 1, align => 'center', bold => 1); # Add a format
-	
+
 	$row++;
 	foreach my $Column (@$report_heading_loop)
 		{
@@ -308,10 +308,10 @@ sub format_SHIPMENT_xls
 	# Report data row format
 	my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
 	my $LinkFormat = $workbook->add_format( align => 'center', border => 1, underline => 1, color => 'blue' );
-	$LinkFormat->set_num_format(0x01);		
-	
+	$LinkFormat->set_num_format(0x01);
+
 	my $report_output_row_loop = $c->stash->{report_output_row_loop};
-	
+
 	foreach my $report_output_columns (@$report_output_row_loop)
 		{
 		my $carrier_name	= '';
@@ -347,7 +347,7 @@ sub format_SHIPMENT_xls
 				}
 			else
 				{
-				$worksheet->write($row, $col++, $Column->{value}, $reportDataFormat);			
+				$worksheet->write($row, $col++, $Column->{value}, $reportDataFormat);
 				}
 			}
 		}
@@ -361,13 +361,13 @@ sub format_SHIPMENT_xls
 		$c->log->debug("DATA : " . Dumper @$report_summary_row_loop);
 		$worksheet->write("K5", '', $totalBoxValueTop);
 		$worksheet->write("K6", $current_date, $totalBoxValueCommon);
-		
+
 		# Top Toatl Box
 		$worksheet->write("K7", scalar @$report_output_row_loop, $totalBoxValueCommon);
 		$worksheet->write("K8", ${$report_summary_row_loop}[1]->{value}, $totalBoxValueCommon);
 		$worksheet->write("K9", ${$report_summary_row_loop}[8]->{value} + ${$report_summary_row_loop}[9]->{value}, $totalBoxValueBottom);
-		$row += 2;			
-			
+		$row += 2;
+
 	}
 
 sub format_PDF
@@ -403,7 +403,7 @@ sub email_report
 
 	if ($params->{'format'} eq 'HTML')
 		{
-		$Email->body($c->forward($c->view('Email'), "render", [ $c->stash->{template} ]));
+		$Email->body($c->forward($c->view('Ajax'), "render", [ $c->stash->{template} ]));
 		}
 	elsif ($params->{'format'} =~ /(CSV|PDF)/i)
 		{

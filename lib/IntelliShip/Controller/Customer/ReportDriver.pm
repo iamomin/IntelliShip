@@ -71,7 +71,7 @@ sub generate_shipment_report
 					", Carriers: " . Dumper($params->{'carriers'}));
 
 	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
-	
+
 	my $and_customerid_sql = " AND c.customerid = '" . $Customer->customerid . "'";
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
@@ -135,7 +135,7 @@ sub generate_shipment_report
 				{name => 'shipper city'},
 				{name => 'shipper state'},
 				{name => 'deliver date'},
-				{name => 'signed for by'},				
+				{name => 'signed for by'},
 				{name => 'receiver company'},
 				{name => 'receiver address'},
 				{name => 'receiver city'},
@@ -143,7 +143,7 @@ sub generate_shipment_report
 				{name => 'receiver zip'},
 				{name => 'receiver contact'},
 				{name => 'order number'},
-				{name => 'customer number'},				
+				{name => 'customer number'},
 			];
 
 		$report_OUTPUT_fields = "
@@ -183,7 +183,7 @@ sub generate_shipment_report
 		$report_heading_loop = [
 				{name => 'order number'},
 				{name => 'receiver address'},
-				{name => 'tracking number'},				
+				{name => 'tracking number'},
 				{name => 'zone'},
 				{name => 'service level'},
 				{name => 'zip/zone'},
@@ -196,13 +196,13 @@ sub generate_shipment_report
 				sh.shipmentid,
 				co.ordernumber,
 				sh.tracking1,
-				a.addressname || ' ' || a.address1 || ' ' || a.city || ' ' || a.state || ' ' || a.zip as receiveraddress,				
+				a.addressname || ' ' || a.address1 || ' ' || a.city || ' ' || a.state || ' ' || a.zip as receiveraddress,
 				sh.zonenumber,
 				substring(a.zip from 1 for 3) || '/' || a.state as zipzone,
 				sh.service as servicename,
-				sh.weight,				
+				sh.weight,
 				sh.cost,
-				sh.dateshipped		
+				sh.dateshipped
 				";
 		}
 	my $report_SQL_1 = '';
@@ -360,8 +360,8 @@ sub generate_shipment_report
 			## Load up origin addr info
 			$row_data->{'shipper_name'} = $Address->addressname;
 			$row_data->{'shipper_city'} = $Address->city;
-			$row_data->{'shipper_state'} = $Address->state;			
-						
+			$row_data->{'shipper_state'} = $Address->state;
+
 			# The Excel module does NOT like undefined variables...need to stuff the undef'd ones with something
 			$row_data->{'weight'} = $row_data->{'weight'} || "";
 			$row_data->{'dimweight'} = $row_data->{'dimweight'} || "";
@@ -415,7 +415,7 @@ sub generate_shipment_report
 					{ value => $row_data->{'shipper_name'} },
 					{ value => $row_data->{'shipper_city'} },
 					{ value => $row_data->{'shipper_state'} },
-					{ value => $row_data->{'datedelivered'} },				
+					{ value => $row_data->{'datedelivered'} },
 					{ value => $row_data->{'podname'} },
 					{ value => $row_data->{'addressname'} },
 					{ value => $row_data->{'address1'} },
@@ -424,7 +424,7 @@ sub generate_shipment_report
 					{ value => $row_data->{'addresszip'} },
 					{ value => $row_data->{'contactname'} },
 					{ value => $row_data->{'ordernumber'} },
-					{ value => $row_data->{'custnum'} },				
+					{ value => $row_data->{'custnum'} },
 				];
 			}
 		else
@@ -448,12 +448,12 @@ sub generate_shipment_report
 					{ value => $row_data->{'zipzone'} },
 					{ value => $row_data->{'weight'} , align => 'right' },
 					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right' },
-					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }																	
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }
 				];
 			}
-			
-		push(@$report_output_row_loop, $report_output_column_loop);		
-		
+
+		push(@$report_output_row_loop, $report_output_column_loop);
+
 		$weight_sum += $row_data->{'weight'};
 		$dimweight_sum += $row_data->{'dimweight'};
 		$tot_chg_sum += $row_data->{'cost'};
@@ -467,7 +467,7 @@ sub generate_shipment_report
 		my $report_summary_row_loop = [];
 
 		if ($params->{'format'} eq 'CSV')
-			{	
+			{
 			$report_summary_row_loop = [
 					{ value => '' },
 					{ value => $weight_sum },
@@ -486,7 +486,6 @@ sub generate_shipment_report
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
-					{ value => '' },				
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
@@ -495,7 +494,8 @@ sub generate_shipment_report
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
-					{ value => '' },				
+					{ value => '' },
+					{ value => '' },
 				];
 			}
 		else
@@ -509,7 +509,7 @@ sub generate_shipment_report
 					{ value => '' },
 					{ value => $weight_sum, align => 'right' },
 					{ value => $tot_chg_sum + $other_chg_sum, align => 'right'  },
-					{ value => '' }									
+					{ value => '' }
 				];
 			}
 	push(@$report_output_row_loop, $report_summary_row_loop);
@@ -607,7 +607,7 @@ sub generate_summary_service_report
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
-			
+
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $row_data->{shipmentid} });
 
 		$summaryDetails->{$row_data->{'carrier'}} = {} unless $summaryDetails->{$row_data->{'carrier'}};
@@ -618,7 +618,7 @@ sub generate_summary_service_report
 		}
 
 	$c->log->debug("%$summaryDetails: " . Dumper $summaryDetails);
-	
+
 	my $grand_total_shipment = 0;
 	my $grand_total_charge = 0;
 	my $grand_total_weight = 0;
@@ -634,7 +634,7 @@ sub generate_summary_service_report
 					{ value => '' },
 					{ value => '' },
 				]);
-		
+
 		my $serviceHash = $summaryDetails->{$carrier};
 		foreach my $service (keys %$serviceHash)
 			{
@@ -648,7 +648,7 @@ sub generate_summary_service_report
 
 				];
 			$total_shipment	+= $dataHash->{'TTL_COUNT'};
-			$total_charge	+= $dataHash->{'TTL_CHARGE'}; 
+			$total_charge	+= $dataHash->{'TTL_CHARGE'};
 			$total_weight	+= $dataHash->{'TTL_WEIGHT'};
 
 			$grand_total_shipment	+= $total_shipment;
@@ -657,7 +657,7 @@ sub generate_summary_service_report
 
 			push(@$report_output_row_loop, $report_output_column_loop);
 			}
-		
+
 		# Add Total Row
 		push(@$report_output_row_loop, [
 					{ value => $carrier. ' Total' },

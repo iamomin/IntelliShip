@@ -788,7 +788,7 @@ __PACKAGE__->has_many(
 );
 
 __PACKAGE__->belongs_to(
-	CO => 
+	CO =>
 		'IntelliShip::SchemaClass::Result::Co',
 		'coid'
 	);
@@ -823,13 +823,13 @@ __PACKAGE__->many_to_many("coids", "shipmentcoassocs", "coid");
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SIqsoxucVnH7m+CvW/xJxg
 
 __PACKAGE__->belongs_to(
-	origin_address => 
+	origin_address =>
 	"IntelliShip::SchemaClass::Result::Address",
 	"addressidorigin"
 	);
 
 __PACKAGE__->belongs_to(
-	destination_address => 
+	destination_address =>
 	"IntelliShip::SchemaClass::Result::Address",
 	"addressiddestin"
 	);

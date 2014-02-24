@@ -162,15 +162,15 @@
 						<td><label class="float_right" for="customerid">Company ID:</label></td>
                         <td>[% customerid %]</td>
 
-						<td><label class="float_right" for="auxaddressname">Form Name:</label></td>
-						<td><input type="text" name="auxaddressname" id="auxaddressname" value="[%customerAuxFormAddress.addressname%]"  class="broad_text" maxlength="50"></td>
+						<td><label class="float_right" for="phone">Phone:</label></td>
+						<td><input type="text" class="broad_text" name="phone" id="phone" value="[% phone %]"></td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="customername">Company Name:</label></td>
 						<td><input type="text" name="customername" id="customername" value="[%customername%]"  class="broad_text"></td>
 
-						<td><label class="float_right" for="auxaddress1">Form Address 1:</label></td>
-						<td><input type="text" class="broad_text" name="auxaddress1" id="auxaddress1" value="[% customerAuxFormAddress.address1 %]"></td>
+						<td><label class="float_right" for="email">Email:</label></td>
+						<td><input type="text" class="broad_text" name="email" id="email" value="[% email %]"/></td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="username">User Name:</label></td>
@@ -181,8 +181,8 @@
 								<input type="text" name="username" id="username" value="[% username %]" class="broad_text" onchange="validateCustomerUsername();">
 							[% END %]
 						</td>
-						<td><label class="float_right" for="auxaddress2">Form Address 2:</label></td>
-						<td><input type="text" class="broad_text" name="auxaddress2" id="auxaddress2" value="[% customerAuxFormAddress.address2 %]"></td>
+						<td><label class="float_right" for="fax">Fax:</label></td>
+						<td><input type="text" class="broad_text" name="fax" id="fax" value="[% fax %]"/></td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="password">Password:</label></td>
@@ -193,42 +193,26 @@
 								<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
 							[%END%]
 						</td>
-						<td><label class="float_right" for="auxcity">Form City:</label></td>
-						<td><input type="text" class="broad_text" name="auxcity" id="auxcity" value="[% customerAuxFormAddress.city %]"></td>
+						<td><label class="float_right" for="ssnein">EIN:</label></td>
+						<td><input type="text" class="broad_text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="halocustomerid">HALO Company ID:</td>
 						<td><input type="text" name="halocustomerid" id="halocustomerid" value="[%halocustomerid%]"  class="broad_text"></td>
-						<td><label class="float_right" for="auxstate">Form State:</label></td>
-						<td>
-						<label>
-							<select name="auxstate" id="auxstate">
-							[% FOREACH item IN statelist_loop %]
-								<option value="[% item.value %]" [% IF item.value == customerAuxFormAddress.state %] selected [% END %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
-						</td>
+						<td><label class="float_right" for="auxaddressname">Form Name:</label></td>
+						<td><input type="text" name="auxaddressname" id="auxaddressname" value="[%customerAuxFormAddress.addressname%]"  class="broad_text" maxlength="50"></td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="address1">Address 1:</label></td>
 						<td><input type="text" class="broad_text" name="address1" id="address1" value="[% customerAddress.address1 %]"></td>
-						<td><label class="float_right" for="auxzip">Form Zipcode:</label></td>
-						<td><input type="text" class="broad_text" name="auxzip" id="auxzip" value="[% customerAuxFormAddress.zip %]"></td>
+						<td><label class="float_right" for="auxaddress1">Form Address 1:</label></td>
+						<td><input type="text" class="broad_text" name="auxaddress1" id="auxaddress1" value="[% customerAuxFormAddress.address1 %]"></td>
 					</tr>
 					<tr>
-						<td></td>
+						<td><label class="float_right" for="address2">Address 2:</label></td>
 						<td><input type="text" class="broad_text" name="address2" id="address2" value="[% customerAddress.address2 %]"></td>
-						<td><label class="float_right" for="auxcountry">Form Country:</label></td>
-						<td>
-						<label>
-							<select name="auxcountry" id="auxcountry">
-							[% FOREACH item IN countrylist_loop %]
-								<option value="[% item.value %]" [% (item.value == customerAuxFormAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
-						</td>
+						<td><label class="float_right" for="auxaddress2">Form Address 2:</label></td>
+						<td><input type="text" class="broad_text" name="auxaddress2" id="auxaddress2" value="[% customerAuxFormAddress.address2 %]"></td>
 					</tr>
 					<tr>
 						<td><label class="float_right">
@@ -238,16 +222,33 @@
 							</label>
 						</td>
 						<td>
-							<input type="text" name="city" id="city" style="width: 100px; value="[% customerAddress.city %]"/>
+							<input type="text" name="city" id="city" style="width: 100px;" value="[% customerAddress.city %]"/>
 							<label>
 								<select name="state" id="state" style="width: 50px;>
 								[% FOREACH item IN statelist_loop %]
-									<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.name %]</option>
+									<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
 								[% END %]
 								</select>
 							</label>
-							<input type="text" name="zip" id="zip" style="width: 55px; value="[% customerAddress.zip %]"/>
+							<input type="text" name="zip" id="zip" style="width: 55px;" value="[% customerAddress.zip %]"/>
 						</td>
+						<td><label class="float_right">
+							<label for="auxcity">Form City</label>,
+							<label for="auxstate">State</label>,
+							<label for="auxzip">Zip</label>:
+							</label>
+						</td>
+						<td>
+						<input type="text" name="auxcity" id="auxcity" style="width: 100px;" value="[% customerAuxFormAddress.city %]" />
+						<label>
+							<select name="auxstate" id="auxstate" style="width: 50px;>
+							[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == customerAuxFormAddress.state %] SELECTED [% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+							[% END %]
+							</select>
+						</label>
+						<input type="text" name="auxzip" id="auxzip"  style="width: 55px;" value="[% customerAuxFormAddress.zip %]">
+						<td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="country">Country:</label></td>
@@ -260,42 +261,20 @@
 							</select>
 						</label>
 						</td>
-
-						<td></td>
-						<td></td>
+						<td><label class="float_right" for="auxcountry">Form Country:</label></td>
+						<td>
+						<label>
+							<select name="auxcountry" id="auxcountry">
+							[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]" [% (item.value == customerAuxFormAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
 					</tr>
 					<tr>
 						<td><label class="float_right" for="contact">Contact:</label></td>
 						<td><input type="text" class="broad_text" name="contact" id="contact" value="[% contact %]"></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					</tr>
-						<td><label class="float_right" for="phone">Phone:</label></td>
-						<td><input type="text" class="broad_text" name="phone" id="phone" value="[% phone %]"></td>
-
-						<td></td>
-						<td></td>
-					<tr>
-					<tr>
-						<td><label class="float_right" for="email">Email:</label></td>
-						<td><input type="text" class="broad_text" name="email" id="email" value="[% email %]"/></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="fax">Fax:</label></td>
-						<td><input type="text" class="broad_text" name="fax" id="fax" value="[% fax %]"/></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="ssnein">EIN:</label></td>
-						<td><input type="text" class="broad_text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
-
 						<td></td>
 						<td></td>
 					</tr>
