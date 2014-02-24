@@ -874,7 +874,6 @@ sub populate_order :Private
 		## Ship To Section
 		$c->stash->{tocontact} = $CO->contactname;
 		$c->stash->{tophone} = $CO->contactphone;
-		#$c->stash->{tocustomernumber} = $CO->ordernumber;
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
 		$c->stash->{toAddress} = $CO->to_address;
@@ -1257,6 +1256,8 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("CO->extcarrier      : " . $CO->extcarrier);
 	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'});
+	$c->log->debug("CO->extservice      : " . $CO->extservice);
+	$c->log->debug("params->{'service'} : " . $params->{'service'});
 
 	if (length $CO->extcarrier == 0 or length $params->{'carrier'} == 0)
 		{

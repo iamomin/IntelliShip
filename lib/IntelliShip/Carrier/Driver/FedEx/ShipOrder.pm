@@ -120,6 +120,8 @@ sub process_request
 
 	my $ShipDate = IntelliShip::DateUtils->format_to_yyyymmdd($shipmentData->{'datetoship'});
 
+	$shipmentData->{'webname'} = $shipmentData->{'service'} if !$shipmentData->{'webname'} and $shipmentData->{'service'};
+
 	my %ShipData = (
 		# Generic
 		4		=>	$shipmentData->{'customername'}, 		#Sender company
