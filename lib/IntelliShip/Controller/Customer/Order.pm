@@ -1910,9 +1910,11 @@ sub BuildShipmentInfo
 	$ShipmentData->{'billingpostalcode'} = $params->{'billingpostalcode'};
 	$ShipmentData->{'tracking1'} = $params->{'tracking1'};
 	$ShipmentData->{'defaultcsid'} = $params->{'defaultcsid'};
-	$ShipmentData->{'carrier'} = $params->{'carrier'};
-	$ShipmentData->{'service'} = $params->{'service'};
-	$ShipmentData->{'quantity'} = $params->{'quantity'};
+
+	$ShipmentData->{'carrier'} = ($params->{'carrier'} ? $params->{'carrier'} : $CO->extcarrier);
+	$ShipmentData->{'service'} = ($params->{'service'} ? $params->{'service'} : $CO->extservice);
+
+	$ShipmentData->{'quantity'} = ($params->{'quantity'} ? $params->{'quantity'} : $CO->total_weight);
 	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
 	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
 	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
