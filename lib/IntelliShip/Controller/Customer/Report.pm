@@ -216,37 +216,37 @@ sub format_SHIPMENT_xls
 	my $workbook = shift;
 	my $worksheet = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	# Let's set the column widths specified values...
-	$worksheet->set_column(0, 0, 17);				# Column 1 -ShipmentId
-	$worksheet->set_column(1, 1, 10);				# Column 2 -Wt
-	$worksheet->set_column(2, 2, 15);				# Column 3 -DimWt
-	$worksheet->set_column(3, 3, 20);				# Column 4 -Dims
-	$worksheet->set_column(4, 4, 30);				# Column 5 -Carrier
-	$worksheet->set_column(5, 5, 10);				# Column 6 -Zone
-	$worksheet->set_column(6, 6, 27);				# Column 7 -Srvc
-	$worksheet->set_column(7, 7, 27);				# Column 8 -Airbill#
-	$worksheet->set_column(8, 8, 20);				# Column 9 -Freight Charge
+	$worksheet->set_column(0, 0, 17);				# Column 1 -Wt		
+	$worksheet->set_column(1, 1, 15);				# Column 2 -DimWt
+	$worksheet->set_column(2, 2, 20);				# Column 3 -Dims
+	$worksheet->set_column(3, 3, 22);				# Column 4 -Carrier
+	$worksheet->set_column(4, 4, 17);				# Column 5 -Zone
+	$worksheet->set_column(5, 5, 27);				# Column 6 -Srvc
+	$worksheet->set_column(6, 6, 27);				# Column 7 -Airbill #
+	$worksheet->set_column(7, 7, 20);				# Column 8 -Freight Charge
+	$worksheet->set_column(8, 8, 20);				# Column 9 -Other Charge
 	$worksheet->set_column(9, 9, 20);				# Column 10 -Other Charges
-	$worksheet->set_column(10,10, 20);				# Column 11 -Other Charges
-	$worksheet->set_column(11,11, 23);				# Column 12 -Total Charges
-	$worksheet->set_column(12,12, 25);				# Column 13
+	$worksheet->set_column(10,10, 23);				# Column 11 -Total Charges
+	$worksheet->set_column(11,11, 25);				# Column 12 -
+	$worksheet->set_column(12,12, 20);				# Column 13
 	$worksheet->set_column(13,13, 20);				# Column 14
 	$worksheet->set_column(14,14, 20);				# Column 15
 	$worksheet->set_column(15,15, 20);				# Column 16
-	$worksheet->set_column(16,16, 20);				# Column 17
-	$worksheet->set_column(17,17, 18);				# Column 18
-	$worksheet->set_column(18,18, 17);				# Column 19
+	$worksheet->set_column(16,16, 18);				# Column 17
+	$worksheet->set_column(17,17, 17);				# Column 18
+	$worksheet->set_column(18,18, 25);				# Column 19
 	$worksheet->set_column(19,19, 25);				# Column 20
-	$worksheet->set_column(20,20, 25);				# Column 21
-	$worksheet->set_column(21,21, 20);				# Column 22
-	$worksheet->set_column(22,22, 22);				# Column 23
-	$worksheet->set_column(23,23, 20);				# Column 24
-	$worksheet->set_column(24,24, 30);				# Column 25
+	$worksheet->set_column(20,20, 20);				# Column 21
+	$worksheet->set_column(21,21, 22);				# Column 22
+	$worksheet->set_column(22,22, 20);				# Column 23
+	$worksheet->set_column(23,23, 30);				# Column 24
+	$worksheet->set_column(24,24, 20);				# Column 25
 	$worksheet->set_column(25,25, 20);				# Column 26
 	$worksheet->set_column(26,26, 20);				# Column 27
-	$worksheet->set_column(27,27, 20);				# Column 28
-
+	
 	# Write a formatted and unformatted string, row and column notation.
 	my ($col,$row)=(0,14);
 
@@ -288,10 +288,10 @@ sub format_SHIPMENT_xls
 	my $current_date = IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date('-'));
 	my $reportTitleDateFormat = $workbook->add_format(border => 0, valign => 'vcenter', align => 'left', bold => 1);
 
-	# Report Title
-	$worksheet->merge_range("A$row:M$row", "Date: " . $current_date , $reportTitleDateFormat);
-
 	# Report Date
+	$worksheet->merge_range("A$row:M$row", "Date: " . $params->{'startdate'} . ' - ' . $params->{'enddate'} , $reportTitleDateFormat);
+
+	# Report Title
 	$row++;
 	$worksheet->merge_range("A$row:M$row", "Report Name: " . $c->stash->{report_title}, $reportTitleDateFormat);
 
@@ -306,7 +306,6 @@ sub format_SHIPMENT_xls
 		}
 
 	# Report data row format
-	my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
 	my $LinkFormat = $workbook->add_format( align => 'center', border => 1, underline => 1, color => 'blue' );
 	$LinkFormat->set_num_format(0x01);
 
@@ -320,9 +319,9 @@ sub format_SHIPMENT_xls
 		$col=0;$row++;
 		foreach my $Column (@$report_output_columns)
 			{
-			if($col == 7)
+			if($col == 6)
 				{
-				$carrier_name  = ${ $report_output_columns }[4]->{value} || '';
+				$carrier_name  = ${ $report_output_columns }[3]->{value} || '';
 				if ($carrier_name)
 					{
 						$tracking_number = $Column->{value};
@@ -347,6 +346,15 @@ sub format_SHIPMENT_xls
 				}
 			else
 				{
+				my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
+				if (defined $Column->{currency})
+					{
+					$reportDataFormat->set_num_format('$0.00');					
+					}
+				if (defined $Column->{align})
+					{
+					$reportDataFormat->set_align('right');
+					}
 				$worksheet->write($row, $col++, $Column->{value}, $reportDataFormat);
 				}
 			}
@@ -356,18 +364,30 @@ sub format_SHIPMENT_xls
 		# Special stypes for Top Totals Box
 		my $totalBoxValueTop = $workbook->addformat(top=> 2,bottom=>6,left=>1,right=>2,align=>'center');
 		my $totalBoxValueCommon = $workbook->addformat(top=>1,bottom=>1,left=>1,right=>2,align=>'center');
-		my $totalBoxValueBottom = $workbook->addformat(top=>2,bottom=>2, left=>1, right=>2,align=>'center');
+		my $totalBoxValueBottom = $workbook->addformat(top=>2,bottom=>2, left=>1, right=>2,align=>'center', num_format => '$0.00');
 		my $report_summary_row_loop = pop(@$report_output_row_loop);
 		$c->log->debug("DATA : " . Dumper @$report_summary_row_loop);
 		$worksheet->write("K5", '', $totalBoxValueTop);
 		$worksheet->write("K6", $current_date, $totalBoxValueCommon);
-
-		# Top Toatl Box
-		$worksheet->write("K7", scalar @$report_output_row_loop, $totalBoxValueCommon);
-		$worksheet->write("K8", ${$report_summary_row_loop}[1]->{value}, $totalBoxValueCommon);
-		$worksheet->write("K9", ${$report_summary_row_loop}[8]->{value} + ${$report_summary_row_loop}[9]->{value}, $totalBoxValueBottom);
+		my $total_shipments = 0;
+		my $total_weight = 0;
+		my $total_charge = 0;
+		if ($params->{'report'} eq 'SHIPMENT')
+			{
+			$total_shipments = scalar @$report_output_row_loop;
+			$total_weight	= ${$report_summary_row_loop}[0]->{value};
+			$total_charge	= ${$report_summary_row_loop}[7]->{value} + ${$report_summary_row_loop}[8]->{value};
+			}
+		elsif ($params->{'report'} eq 'SUMMARY_SERVICE')
+			{
+			$total_shipments = ${$report_summary_row_loop}[2]->{value};
+			$total_weight	= ${$report_summary_row_loop}[4]->{value};
+			$total_charge	= ${$report_summary_row_loop}[3]->{value};
+			}
+		$worksheet->write("K7", $total_shipments, $totalBoxValueCommon);
+		$worksheet->write("K8", $total_weight,    $totalBoxValueCommon);
+		$worksheet->write("K9", $total_charge ,   $totalBoxValueBottom);
 		$row += 2;
-
 	}
 
 sub format_PDF

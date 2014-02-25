@@ -117,7 +117,6 @@ sub generate_shipment_report
 	if ($params->{'format'} eq 'CSV')
 		{
 		$report_heading_loop = [
-				{name => 'shipment id'},
 				{name => 'weight'},
 				{name => 'dim weight'},
 				{name => 'dims'},
@@ -354,7 +353,7 @@ sub generate_shipment_report
 					});
 				$row_data->{'webaccount'} = $CSRef->{'webaccount'};
 =cut
-				$row_data->{'webaccount'} = 'IMRAN_ARRRS';
+				$row_data->{'webaccount'} = '';
 				}
 
 			## Load up origin addr info
@@ -398,7 +397,6 @@ sub generate_shipment_report
 			$row_data->{'dims'} = '' unless $row_data->{'dims'};
 
 			$report_output_column_loop = [
-					{ value => $row_data->{'shipmentid'} },
 					{ value => $row_data->{'weight'} },
 					{ value => $row_data->{'dimweight'} },
 					{ value => $row_data->{'dims'} },
@@ -406,9 +404,9 @@ sub generate_shipment_report
 					{ value => $row_data->{'zonenumber'} },
 					{ value => $row_data->{'servicename'} },
 					{ value => $row_data->{'tracking1'} },
-					{ value => $row_data->{'cost'}, align => 'right' },
-					{ value => $row_data->{'othercharges'}, align => 'right' },
-					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right' },
+					{ value => $row_data->{'cost'}, align => 'right', currency => '$' },
+					{ value => $row_data->{'othercharges'}, align => 'right', currency => '$' },
+					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right', currency => '$' },
 					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) },
 					{ value => $row_data->{'commodityquantity'} },
 					{ value => $row_data->{'webaccount'} },
@@ -446,9 +444,9 @@ sub generate_shipment_report
 					{ value => $row_data->{'zonenumber'} },
 					{ value => $row_data->{'servicename'} },
 					{ value => $row_data->{'zipzone'} },
-					{ value => $row_data->{'weight'} , align => 'right' },
-					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right' },
-					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }
+					{ value => $row_data->{'weight'} , align => 'right'},
+					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right', currency => '$' },
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }																	
 				];
 			}
 
@@ -469,17 +467,16 @@ sub generate_shipment_report
 		if ($params->{'format'} eq 'CSV')
 			{
 			$report_summary_row_loop = [
-					{ value => '' },
-					{ value => $weight_sum },
-					{ value => $dimweight_sum },
-					{ value => '' },
+					{ value => $weight_sum},
+					{ value => $dimweight_sum},
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
-					{ value => $tot_chg_sum },
-					{ value => $other_chg_sum },
-					{ value => $tot_chg_sum + $other_chg_sum },
+					{ value => '' },
+					{ value => $tot_chg_sum, align => 'right', currency => '$' },
+					{ value => $other_chg_sum, align => 'right', currency => '$' },
+					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' },
 					{ value => '' },
 					{ value => $commodity_sum },
 					{ value => '' },
@@ -507,8 +504,8 @@ sub generate_shipment_report
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
-					{ value => $weight_sum, align => 'right' },
-					{ value => $tot_chg_sum + $other_chg_sum, align => 'right'  },
+					{ value => $weight_sum },
+					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' },
 					{ value => '' }
 				];
 			}
@@ -643,17 +640,13 @@ sub generate_summary_service_report
 					{ value => '' },
 					{ value => $service },
 					{ value => $dataHash->{'TTL_COUNT'} },
-					{ value => $dataHash->{'TTL_CHARGE'}, align => 'right' },
-					{ value => $dataHash->{'TTL_WEIGHT'}, align => 'right' },
+					{ value => $dataHash->{'TTL_CHARGE'}, align => 'right', currency => '$' },
+					{ value => $dataHash->{'TTL_WEIGHT'}, align => 'right', currency => '$' },
 
 				];
 			$total_shipment	+= $dataHash->{'TTL_COUNT'};
 			$total_charge	+= $dataHash->{'TTL_CHARGE'};
 			$total_weight	+= $dataHash->{'TTL_WEIGHT'};
-
-			$grand_total_shipment	+= $total_shipment;
-			$grand_total_charge		+= $total_charge;
-			$grand_total_weight		+= $total_weight;
 
 			push(@$report_output_row_loop, $report_output_column_loop);
 			}
@@ -663,27 +656,31 @@ sub generate_summary_service_report
 					{ value => $carrier. ' Total' },
 					{ value => '' },
 					{ value => $total_shipment },
-					{ value => $total_charge , align => 'right' },
-					{ value => $total_weight , align => 'right' },
+					{ value => $total_charge , align => 'right', currency => '$' },
+					{ value => $total_weight , align => 'right', currency => '$' },
 				]);
-		}
+		# Update Grand Total
+		$grand_total_shipment	+= $total_shipment;
+		$grand_total_charge		+= $total_charge;
+		$grand_total_weight		+= $total_weight;
 
-	# Add Blank Row
-	push(@$report_output_row_loop, [
+		# Add Blank Row
+		push(@$report_output_row_loop, [
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
 				]);
+		}	
 
 	# Add Grand Total Row
 	push(@$report_output_row_loop, [
 					{ value => 'Grand Total' },
 					{ value => '' },
 					{ value => $grand_total_shipment },
-					{ value => $grand_total_charge	, align => 'right' },
-					{ value => $grand_total_weight	, align => 'right' },
+					{ value => $grand_total_charge	, align => 'right', currency => '$' },
+					{ value => $grand_total_weight	, align => 'right', currency => '$' },
 				]);
 
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
