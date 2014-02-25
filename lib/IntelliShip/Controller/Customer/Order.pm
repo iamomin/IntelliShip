@@ -2125,11 +2125,11 @@ sub set_required_fields :Private
 
 	return if $c->stash->{requiredfield_list};
 
-	my @custcondata_arr = $Customer->custcondata({ownertypeid => '1'});
-	my %customerRules = map { $_->datatypename => $_->value } @custcondata_arr;
-
 	my $requiredList = [];
 
+	my @custcondata_arr = $Customer->custcondata({ownertypeid => '1'});
+	my %customerRules = map { $_->datatypename => $_->value } @custcondata_arr;
+	#$c->log->debug("Customer->ID: " . $Customer->customerid . ", customerRules: " . Dumper %customerRules);
 	if (!$page or $page eq 'address')
 		{
 		$requiredList = [

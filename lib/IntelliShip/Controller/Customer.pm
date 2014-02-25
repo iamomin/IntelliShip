@@ -132,21 +132,26 @@ sub get_customer_contact
 	#$c->log->debug("Customer user: " . $customerUser);
 	#$c->log->debug("Contact  user: " . $contactUser);
 
-	my @customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
+	my @customerArr;
+	if ($self->token)
+		{
+		push @customerArr, $self->token->customer;
+		}
+	else
+		{
+		@customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
+		}
+
 	return unless @customerArr;
 
 	foreach my $Customer (@customerArr)
 		{
-		my $contact_search = { username => $contactUser };
-		if ($self->token)
-			{
-			$contact_search->{customerid} = $self->token->customerid ;
-			}
-		else
-			{
-			$contact_search->{password} = $password;
-			$contact_search->{customerid} = $Customer->customerid;
-			}
+		my $contact_search = {
+				username => $contactUser,
+				customerid => $Customer->customerid
+				};
+
+		$contact_search->{password} = $password unless $self->token;
 
 		my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 
