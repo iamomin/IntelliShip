@@ -2125,38 +2125,41 @@ sub set_required_fields :Private
 
 	return if $c->stash->{requiredfield_list};
 
+	my @custcondata_arr = $Customer->custcondata({ownertypeid => '1'});
+	my %customerRules = map { $_->datatypename => $_->value } @custcondata_arr;
+
 	my $requiredList = [];
 
 	if (!$page or $page eq 'address')
 		{
 		$requiredList = [
-			{ name => 'fromemail', details => "{ email: false }"},
-			{ name => 'toname', details => "{ minlength: 2 }"},
+			{ name => 'fromemail',  details => "{ email: false }"},
+			{ name => 'toname',     details => "{ minlength: 2 }"},
 			{ name => 'toaddress1', details => "{ minlength: 2 }"},
-			{ name => 'tocity', details => " { minlength: 2 }"},
-			{ name => 'tostate', details => "{ minlength: 2 }"},
-			{ name => 'tozip', details => "{ minlength: 5 }"},
-			{ name => 'tocountry', details => "{ minlength: 2 }"},
-			{ name => 'tophone', details => "{ phone: false }"},
-			{ name => 'toemail', details => "{ email: false }"},
+			{ name => 'tocity',     details => " { minlength: 2 }"},
+			{ name => 'tostate',    details => "{ minlength: 2 }"},
+			{ name => 'tozip',      details => "{ minlength: 5 }"},
+			{ name => 'tocountry',  details => "{ minlength: 2 }"},
+			{ name => 'tophone',    details => "{ phone: false }"},
+			{ name => 'toemail',    details => "{ email: false }"},
 		];
 
 		unless ($Customer->login_level == 25)
 			{
 			if ($c->stash->{one_page})
 				{
-				push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
-				push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+				push(@$requiredList, { name => 'datetoship', details => "{ date: true }"})    if $customerRules{'reqdatetoship'} and $Customer->allowpostdating;
+				push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"})    if $customerRules{'reqdateneeded'};
 
-				push(@$requiredList, { name => 'ponumber', details => "{ minlength: 2 }"}) if $Customer->reqponum;
-				push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqordernumber');
-				push(@$requiredList, { name => 'extid', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqextid');
-				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref2');
-				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref3');
+				push(@$requiredList, { name => 'ponumber',    details => "{ minlength: 2 }"}) if $customerRules{'reqponum'};
+				push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqordernumber'};
+				push(@$requiredList, { name => 'extid',    details => "{ minlength: 2 }"})    if $customerRules{'reqextid'};
+				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref2'};
+				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref3'};
 				}
 
-			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $Customer->reqcustnum;
-			push(@$requiredList, { name => 'fromdepartment', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqdepartment');
+			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqcustnum'};
+			push(@$requiredList, { name => 'fromdepartment',   details => "{ minlength: 2 }"}) if $customerRules{'reqdepartment'};
 			}
 		}
 
@@ -2164,9 +2167,10 @@ sub set_required_fields :Private
 		{
 		unless ($Customer->login_level == 25 or $c->stash->{one_page})
 			{
-			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
-			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $customerRules{'reqdatetoship'} and $Customer->allowpostdating;
+			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $customerRules{'reqdateneeded'};
 			}
+
 		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validate_package_details }"})
 		}
 
