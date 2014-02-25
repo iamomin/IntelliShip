@@ -171,7 +171,7 @@ my $FILTER_CRITERIA_HASH = {
 sub get_filter_value_from_key
 	{
 	my ($self,$key) = @_;
-	my ($alias,$key) = split(/\./, $key) if $key =~ /\./g;
+	(my $alias,$key) = split(/\./, $key) if $key =~ /\./g;
 	return $FILTER_CRITERIA_HASH->{$key};
 	}
 

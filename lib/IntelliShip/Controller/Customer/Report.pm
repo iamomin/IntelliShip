@@ -54,6 +54,10 @@ sub run :Local
 		$c->detach("setup",$params);
 		return;
 		}
+	if ($params->{'carriers'} and ref $params->{'carriers'} eq 'ARRAY' and grep(/all/, @{$params->{'carriers'}}))
+		{
+		$params->{'carriers'} = 'all';
+		}
 
 	my $ReportDriver = IntelliShip::Controller::Customer::ReportDriver->new;
 	$ReportDriver->context($self->context);

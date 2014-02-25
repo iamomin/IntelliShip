@@ -504,12 +504,14 @@ sub generate_shipment_report
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
-					{ value => $weight_sum },
+					{ value => $weight_sum, align => 'right' },
 					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' },
 					{ value => '' }
 				];
 			}
 	push(@$report_output_row_loop, $report_summary_row_loop);
+
+	$WHERE .= " AND carrier = 'All' " if $params->{'carriers'} eq 'all';
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
@@ -641,7 +643,7 @@ sub generate_summary_service_report
 					{ value => $service },
 					{ value => $dataHash->{'TTL_COUNT'} },
 					{ value => $dataHash->{'TTL_CHARGE'}, align => 'right', currency => '$' },
-					{ value => $dataHash->{'TTL_WEIGHT'}, align => 'right', currency => '$' },
+					{ value => $dataHash->{'TTL_WEIGHT'}, align => 'right' },
 
 				];
 			$total_shipment	+= $dataHash->{'TTL_COUNT'};
@@ -656,8 +658,8 @@ sub generate_summary_service_report
 					{ value => $carrier. ' Total' },
 					{ value => '' },
 					{ value => $total_shipment },
-					{ value => $total_charge , align => 'right', currency => '$' },
-					{ value => $total_weight , align => 'right', currency => '$' },
+					{ value => $total_charge, align => 'right', currency => '$' },
+					{ value => $total_weight, align => 'right' },
 				]);
 		# Update Grand Total
 		$grand_total_shipment	+= $total_shipment;
@@ -679,10 +681,11 @@ sub generate_summary_service_report
 					{ value => 'Grand Total' },
 					{ value => '' },
 					{ value => $grand_total_shipment },
-					{ value => $grand_total_charge	, align => 'right', currency => '$' },
-					{ value => $grand_total_weight	, align => 'right', currency => '$' },
+					{ value => $grand_total_charge, align => 'right', currency => '$' },
+					{ value => $grand_total_weight, align => 'right' },
 				]);
-
+	
+	$WHERE .= " AND carrier = 'All' " if $params->{'carriers'} eq 'all';
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
@@ -712,12 +715,14 @@ sub get_filter_details
 	#	{
 	#	#
 	#	}
-
+	$filter_criteria =~ s/\s*WHERE\s*//i;
 	my $filter_criteria_hash_arr = [];
 	my @filter_criteria_arr = split(' AND ' , $filter_criteria);
 
 	foreach my $criteria (@filter_criteria_arr)
 		{
+		$criteria =~ s/^\s+//;
+		$criteria =~ s/\s+$//;
 		my ($key,$value);
 
 		if ($criteria =~ m/\ >=\ /)
@@ -804,7 +809,10 @@ sub get_carrier_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return '' if (ref $params->{'carriers'} eq 'ARRAY' and grep(/all/, @{$params->{'carriers'}})) or  $params->{'carriers'} eq 'all';
+	if ($params->{'carriers'} eq 'all')
+		{
+		return ''; 
+		}
 
 	my $and_carrier_sql;
 	if (ref $params->{'carriers'} eq 'ARRAY')
