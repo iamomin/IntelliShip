@@ -46,11 +46,58 @@ sub ajax :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("SETTINGS SIHPMENT AJAX");
+	$c->log->debug("SIHPMENT AJAX");
 
-	$self->populate_my_shipment_list;
+	if ($params->{'type'} eq 'HTML')
+		{
+		$self->get_HTML;
+		}
+	elsif ($params->{'type'} eq 'JSON')
+		{
+		$self->get_JSON_DATA;
+		}
+	}
 
-	$c->stash->{ajax} = 1;
+sub get_JSON_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $dataHash;
+
+	my $action = $params->{'action'} || '';
+	if ($action eq 'void_shipment')
+		{
+		$dataHash = $self->process_void_shipment;
+		}
+	elsif ($action eq 'track')
+		{
+		#$operation_sql = "AND s.tracking1 = '$row_data'";
+		}
+	elsif ($action eq 'reprint')
+		{
+		}
+
+	$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	$c->response->body($json_DATA);
+	}
+
+sub get_HTML :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $action = $params->{'action'} || '';
+	if ($action eq 'refresh')
+		{
+		$self->populate_my_shipment_list;
+		}
+
+	$c->stash($params);
 	$c->stash(template => "templates/customer/my-shipments.tt");
 	}
 
@@ -68,36 +115,15 @@ sub populate_my_shipment_list :Private
 	my $params = $c->req->params;
 	my $SQL;
 
-	my $row_data = $params->{'row_date'};
-	$c->log->debug("Tracking Id: " . $row_data);
-
-	my $row_name = $params->{'row_name'};
-	$c->log->debug("Operation: " . $row_name);
-
-	my $shipment_id = $params->{'shipment_id'};
-	$c->log->debug("shipment id: " . $shipment_id);
-
-	if($params->{'row_name'} eq 'track')
-		{
-		#$operation_sql = "AND s.tracking1 = '$row_data'";
-		}
-	elsif($params->{'row_name'} eq 'reprint')
-		{
-		}
-	elsif($params->{'row_name'} eq 'void')
-		{
-		$self->VOID_SHIPMENT;
-		}
-
 	my $do_value = $params->{'do'} || '';
 	if ($do_value eq 'batchoptions')
-		{
-		#$self->batch_options;
-		}
+	{
+	#$self->batch_options;
+	}
 	else
-		{
-		$SQL = $self->get_shipped_sql;
-		}
+	{
+	$SQL = $self->get_shipped_sql;
+	}
 
 	my $myDBI = $c->model("MyDBI");
 	my $sth = $myDBI->select($SQL);
@@ -136,7 +162,7 @@ sub get_shipped_sql :Private
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
 
-	my ($date_shipped_sql,$search_by_term_sql,$operation_sql);
+	my ($date_shipped_sql,$search_by_term_sql);
 
 	if (my $filter_value = $params->{'filter'})
 		{
@@ -159,7 +185,7 @@ sub get_shipped_sql :Private
 			my $weekday = IntelliShip::DateUtils->get_day_of_week($current_timestamp_with_time_zone);
 			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$weekday days')";
 			}
-		elsif ($view eq 'this_month')
+		elsif ($view eq 'this_month'|| 1)
 			{
 			my $dd = substr($current_timestamp_with_time_zone, 8, 2) - 1;
 			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$dd days')";
@@ -189,7 +215,11 @@ sub get_shipped_sql :Private
 			s.cost,
 			s.carrier,
 			s.mode,
-			4 as condition,
+			CASE
+			WHEN s.statusid = 7THEN 6
+			ELSE 4
+			END
+			as condition,
 			da.addressname as shiptoname,
 			oa.addressname as shipfromname,
 			to_char(s.datedelivered,'MM/DD/YY') as datedelivered
@@ -202,11 +232,12 @@ sub get_shipped_sql :Private
 			s.dateshipped IS NOT NULL
 			$and_shipment_in_sql
 			$date_shipped_sql
-			$operation_sql
 			$search_by_term_sql
 			AND s.datedelivered IS NULL
+		ORDER BY
+			dateshipped DESC, customername ASC
 	";
-	$c->log->debug("SHIPMENT SQL: " . $SQL);
+	#$c->log->debug("SHIPMENT SQL: " . $SQL);
 	return $SQL;
 	}
 
@@ -217,16 +248,39 @@ sub get_shipmentid_in_sql :Private
 	return ($params->{'shipmentids'} ? "AND s.shipmentid IN ('" . join("','", split(',', $params->{'shipmentids'})) . "') " : "") ;
 	}
 
-sub VOID_SHIPMENT :Private
+sub process_void_shipment
 	{
 	my $self = shift;
 	my $c = $self->context;
-	my $params = $self->context->req->params;
+	my $params = $c->req->params;
+
+	my $shipmentids =  (ref $params->{'shipmentids'} eq 'ARRAY' ? $params->{'shipmentids'} : [$params->{'shipmentids'}]);
+	$shipmentids =  [split /\,/, $params->{'shipmentids'}] if $params->{'shipmentids'} =~ /\,/;
+
+	return {} unless @$shipmentids;
+
+	$c->log->debug("PROCESS_VOID_SHIPMENT, total shipments to be voided " . Dumper $shipmentids);
+
+	my $voided_shipments = [];
+	foreach my $shipment_id (@$shipmentids)
+		{
+		push(@$voided_shipments, $shipment_id) if $self->VOID_SHIPMENT($shipment_id);
+		}
+
+	return { voided => $voided_shipments , is_success => (@$shipmentids == @$voided_shipments) };
+	}
+
+sub VOID_SHIPMENT :Private
+	{
+	my $self = shift;
+	my $shipment_id = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
 
-	my $shipment_id = $params->{'shipment_id'};
-	$c->log->debug("shipment id in Void shipment: " . $shipment_id);
+	$c->log->debug("VOID_SHIPMENT, ID: " . $shipment_id);
 
 	# Set shipment to void status, for later processing
 	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipment_id});
@@ -254,16 +308,16 @@ sub VOID_SHIPMENT :Private
 		}
 
 	# Delete any associated orders
-	$c->log->debug("Flusg SHIPMENT CO ASSOC");
+	$c->log->debug("Flush SHIPMENT CO ASSOC");
 	$Shipment->shipmentcoassocs->delete;
 
 	# Get serviceid
-	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'}); ## customerserviceid is not currently set in params
-	$c->log->debug("CustomerService " . $CustomerService);
+	#my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'}); ## customerserviceid is not currently set in params
+	#$c->log->debug("CustomerService " .Dumper($CustomerService));
 
 	# Load carrier handler
-	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
-	$c->log->debug("SERVICE: " . Dumper $Service);
+	#my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+	#$c->log->debug("SERVICE: " . Dumper $Service);
 
 	# Check if the shipment had a pickuprequest sent.  If it did, cancel it.
 
@@ -286,8 +340,8 @@ sub VOID_SHIPMENT :Private
 	$Handler->context($self->context);
 	$Handler->customer($self->customer);
 	$Handler->carrier($Shipment->carrier);
-	$Handler->customerservice($CustomerService);
-	$Handler->service($Service);
+	#$Handler->customerservice($CustomerService);
+	#$Handler->service($Service);
 	$Handler->CO($CO);
 	$Handler->SHIPMENT($Shipment);
 
@@ -301,6 +355,7 @@ sub VOID_SHIPMENT :Private
 		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
 		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
 		#return $self->display_error_details($Response->message);
+		return undef;
 		}
 
 	$c->log->debug("VOID SHIPMENT PROCESSED SUCCESSFULLY");
@@ -324,12 +379,14 @@ sub VOID_SHIPMENT :Private
 	$noteData->{'note'} = 'Voided By ' . $ContactName;
 	$noteData->{'contactid'} = $Contact->contactid;
 	$noteData->{'notestypeid'} = 900;
-	$noteData->{'datehappened'} = IntelliShip::DateUtils->timestamp();
+	$noteData->{'datehappened'} = IntelliShip::DateUtils->get_timestamp_with_time_zone();
 
 	$c->log->debug("noteData" . Dumper $noteData);
 
 	my $Note = $c->model('MyDBI::Note')->new($noteData);
 	$Note->insert;
+
+	return 1;
 	}
 
 sub SendShipmentVoidEmail

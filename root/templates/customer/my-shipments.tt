@@ -62,10 +62,10 @@
 	<table class="batch-option css3-radios">
 		<tr>
 			<th>BATCH OPTIONS:</th>
-			<td><label><input type="radio" id="track" name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
+			<td><label><input type="radio" id="track"   name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
 			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
-			<td><label><input type="radio" id="void" name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
-			<td><label><input type="button" value="SUBMIT"></td>
+			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
+			<td><label><input type="button" id="btn_submit" value="SUBMIT"></td>
 			<td width="510px"> Batch tracking limited to 25 shipments</td>
 		</tr>
 	</table>
@@ -91,7 +91,7 @@
 			</tr>
 			[% FOREACH item IN myshipment_list %]
 			<tr>
-				<td><label><input type="checkbox" id="[% item.shipmentid %]" name="[% item.shipmentid %]" value="[% item.shipmentid %]" class="items"/><span></span></label></td>
+				<td><label><input type="checkbox" id="[% item.shipmentid %] " name="shipmentid" value="[% item.shipmentid %]" class="items"/><span></span></label></td>
 				<td><a class="[% item.a_class %]" href="javascript:void(0);"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
@@ -102,7 +102,9 @@
 				<td>[% item.duedate %]</td>
 				<td>[% item.carrier %]</td>
 				<td>[% item.mode %]</td>
-				<td class="center"><a href="#" class="track" name="track">TRACK</a>&nbsp;&nbsp;<a href="#" class="reprint" name = "reprint">REPRINT</a>&nbsp;&nbsp;<a href="#" class="void" name="void">VOID</a></td>
+				<td class="center">
+					<a href="javascript:void(0);" onclick="javascript:void(0);" class="track" name="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:void(0);" onclick="javascript:void(0);" class="reprint" name="reprint">REPRINT</a>&nbsp;&nbsp;<a class="void" name="void" href="javascript:void(0);" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
+				</td>
 			</tr>
 			[% END %]
 			[% IF myshipment_list_count == 0 %]
@@ -132,19 +134,39 @@
 
 	[% UNLESS ajax %]
 	$(document).on("click","a[name='track']", function (e) {
-		var query_param = "&row_date=" + $(this).closest('tr').children('td:eq(2)').text() + "&row_name=" + "track";
+		var query_param = "&tracking_id=" + $(this).closest('tr').children('td:eq(2)').text() + "&shipment_action=" + "track";
 		send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
 		});
 
 	$(document).on("click","a[name='reprint']", function (e) {
-		var query_param = "&row_date=" + $(this).closest('tr').children('td:eq(2)').text() + "&row_name=" + "reprint";
+		var query_param = "&tracking_id=" + $(this).closest('tr').children('td:eq(2)').text() + "&shipment_action=" + "reprint";
 		send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
 		});
 
-	$(document).on("click","a[name='void']", function (e) {
-		var query_param = "&row_date=" + $(this).closest('tr').children('td:eq(2)').text() + "&row_name=" + "void" + "&shipment_id=" + $(this).closest('tr').children('td:eq(0)').children('label').children('input').attr('id');
-		send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
-		});
+	function voidShipment(ShipmentArr)
+		{
+		if (ShipmentArr == "") return;
+
+		var query_param = "shipmentids=" + ShipmentArr;
+
+		send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
+			if ( JSON_data.is_success ) {
+				showMessage("Shipment voided successfully...", "Void Shipment");
+				var vDate = $("#view_date").val();
+				var query_param = "view_date=" + vDate;
+				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+				}
+			else if( JSON_data.voided.length > 0 ) {
+				showMessage("Shipments partially voided...", "Void Shipment");
+				var vDate = $("#view_date").val();
+				var query_param = "&view_date=" + vDate;
+				send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+				}
+			else {
+				showMessage("Shipment void operation failed...", "Void Shipment");
+				}
+			});
+		}
 
 	$(document).ready(function() {
 
@@ -154,37 +176,6 @@
 			}
 
 		$("#myshipment_count").text('[% myshipment_list_count %]');
-/*
-		master = function() {
-				if ($( '#checkall:checkbox' ).is(":checked"))
-					$('input:checkbox').prop('checked',true);
-				else
-					$('input:checkbox').prop('checked',false);
-			}
-			slave = function() {
-				var allSelected = true;
-				$( '.slave[type="checkbox"]' ).prop(function() {
-					if ($( this ).is(":not(:checked)")){
-						allSelected = false;
-						//return;
-					}
-				});
-				if (!allSelected) {
-					//$( '#checkall:checkbox' ).removeAttr('checked');
-					alert("REMOVE: \nFrom " + $( '#checkall:checkbox' ).prop('checked') );
-					$( '#checkall:checkbox' ).prop('checked',false);
-					alert("to " + $( '#checkall:checkbox' ).prop('checked') );
-
-				} else {
-					alert("ADD: \nFrom " + $( '#checkall:checkbox' ).prop('checked') );
-					$( '#checkall:checkbox' ).prop('checked',true);
-					alert("to " + $( '#checkall:checkbox' ).prop('checked') );
-				}
-			}
-*/
-		//$("input[type=checkbox]").click(function () {
-		//	$("#count").html($("input[type=checkbox]:checked").length || '0');
-		//	});
 
 		$("#records_per_page").change(function() {
 			$("#shipmentids").prop('disabled','disabled');
@@ -213,6 +204,22 @@
 		$("#date_apply").click(function() {
 			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
 			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+			});
+
+		$("#btn_submit").click(function() {
+			var action = $("input:radio[name=batch_action]:checked").val();
+
+			if (action == 'void') {
+				var arrShipment = [];
+				$("input:checkbox[name=shipmentid]:checked").each(function() {
+					arrShipment.push($(this).val());
+					});
+				voidShipment(arrShipment);
+				}
+			if (action == 'track') {
+				}
+			if (action == 'reprint') {
+				}
 			});
 
 		$('#filter').keypress(function(event){

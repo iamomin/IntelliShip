@@ -122,7 +122,7 @@ sub setup_address :Private
 	#DYNAMIC INPUT FIELDS VISIBILITY
 	unless ($Customer->login_level == 25)
 		{
-		$c->stash->{SHOW_PONUMBER} = $Customer->reqponum;
+		$c->stash->{SHOW_PONUMBER} = $Customer->get_contact_data_value('reqponum');
 		$c->stash->{SHOW_EXTID}    = $Customer->get_contact_data_value('reqextid');
 		$c->stash->{SHOW_CUSTREF2} = $Customer->get_contact_data_value('reqcustref2');
 		$c->stash->{SHOW_CUSTREF3} = $Customer->get_contact_data_value('reqcustref3');

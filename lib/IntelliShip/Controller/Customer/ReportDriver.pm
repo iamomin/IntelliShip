@@ -446,7 +446,7 @@ sub generate_shipment_report
 					{ value => $row_data->{'zipzone'} },
 					{ value => $row_data->{'weight'} , align => 'right'},
 					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right', currency => '$' },
-					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }																	
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }
 				];
 			}
 
@@ -674,7 +674,7 @@ sub generate_summary_service_report
 					{ value => '' },
 					{ value => '' },
 				]);
-		}	
+		}
 
 	# Add Grand Total Row
 	push(@$report_output_row_loop, [
@@ -684,7 +684,7 @@ sub generate_summary_service_report
 					{ value => $grand_total_charge, align => 'right', currency => '$' },
 					{ value => $grand_total_weight, align => 'right' },
 				]);
-	
+
 	$WHERE .= " AND carrier = 'All' " if $params->{'carriers'} eq 'all';
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
@@ -811,7 +811,7 @@ sub get_carrier_sql
 
 	if ($params->{'carriers'} eq 'all')
 		{
-		return ''; 
+		return '';
 		}
 
 	my $and_carrier_sql;

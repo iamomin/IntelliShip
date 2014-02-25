@@ -223,7 +223,7 @@ sub format_SHIPMENT_xls
 	my $params = $c->req->params;
 
 	# Let's set the column widths specified values...
-	$worksheet->set_column(0, 0, 17);				# Column 1 -Wt		
+	$worksheet->set_column(0, 0, 17);				# Column 1 -Wt
 	$worksheet->set_column(1, 1, 15);				# Column 2 -DimWt
 	$worksheet->set_column(2, 2, 20);				# Column 3 -Dims
 	$worksheet->set_column(3, 3, 22);				# Column 4 -Carrier
@@ -250,7 +250,7 @@ sub format_SHIPMENT_xls
 	$worksheet->set_column(24,24, 20);				# Column 25
 	$worksheet->set_column(25,25, 20);				# Column 26
 	$worksheet->set_column(26,26, 20);				# Column 27
-	
+
 	# Write a formatted and unformatted string, row and column notation.
 	my ($col,$row)=(0,14);
 
@@ -353,7 +353,7 @@ sub format_SHIPMENT_xls
 				my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
 				if (defined $Column->{currency})
 					{
-					$reportDataFormat->set_num_format('$0.00');					
+					$reportDataFormat->set_num_format('$0.00');
 					}
 				if (defined $Column->{align})
 					{

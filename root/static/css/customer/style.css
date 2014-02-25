@@ -698,6 +698,13 @@ label.void {font-size: 13px; font-weight: bold; white-space: nowrap; color: #A25
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8DD297), color-stop(100%,#398525)); /* webkit */
 }
 
+#myShipments a.black {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #9B9B9B; /* old browsers */
+    background: -moz-linear-gradient(top, #ccc 0%, #000 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ccc), color-stop(100%,#000)); /* webkit */
+}
+
 #myShipments a.blue {
     display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
     background: #0F9BF2; /* old browsers */

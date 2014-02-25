@@ -48,7 +48,7 @@ sub process_request
 	# Pass shipment string to fedex, and get the return value
 	my $VoidReturn;
 
-	if ( $Shipment->service !~ /International/ )
+	if ( $Shipment->service and $Shipment->service !~ /International/ )
 		{
 		$self->log("Process Local request");
 		$VoidReturn = $self->ProcessLocalRequest($VoidString);
@@ -57,6 +57,15 @@ sub process_request
 		{
 		$VoidReturn = $self->ProcessRemoteRequest($Shipment->service,'voidorder')
 		}
+
+	$self->log("VOID RETURN: " . $VoidReturn);
+
+	unless ($VoidReturn)
+		{
+		$self->add_error("No response received from FedEx");
+		return;
+		}
+
 	# Check return string for errors;
 	# (except 4028/not found errors - FedEx doesn't have it, we can void it)
 	if ( $VoidReturn =~ /"2,"(\w+?)"/ && $1 ne '4028' )
@@ -64,9 +73,12 @@ sub process_request
 		$self->log("Error block");
 		my ($ErrorCode) = $VoidReturn =~ /"2,"(\w+?)"/;
 		my ($ErrorMessage) = $VoidReturn =~ /"3,"(.*?)"/;
-		$Shipment->statusid('5');
 
-		warn "Error - $ErrorCode: $ErrorMessage";
+		$Shipment->statusid('5');
+		$Shipment->update;
+
+		$self->log("Error - $ErrorCode: $ErrorMessage");
+		$self->add_error("Error - $ErrorCode: $ErrorMessage");
 		}
 	else
 		{
@@ -91,38 +103,34 @@ sub ProcessLocalRequest
 	my $Host = '216.198.214.5';
 	my $Port = "2000";
 
-	my $telnet = Net::Telnet->new(
+	my ($NetTelnet, $Pre, $Match);
+
+	eval {
+	$NetTelnet = Net::Telnet->new(
 					Host => $Host,
 					Port => $Port,
-					#Dump_Log => "$config->{BASE_PATH}/var/log/fedex_local_dump.log",
-					#Input_Log => "$config->{BASE_PATH}/var/log/fedex_local_input.log",
 					Timeout => 10
 					);
 
-	#$telnet->print($Request);
-	#my ($Pre,$Match) = $telnet->waitfor(Match => '/99,""/');
-	$telnet->print($Request);
-	my ($Pre,$Match) = $telnet->waitfor(Match => '/99,""/');
+	$NetTelnet->print($Request);
+
+	($Pre,$Match) = $NetTelnet->waitfor(Match => '/99,""/');
 	#my $Match = $telnet->getline;
 	#my $Label = $telnet->getline;
 	#$telnet->print('ls');
 	#my ($output) = $telnet->waitfor('/\$ $/i');
 	#warn "OUTPUT: " . $output;
+	};
 
-	#my @remotelabels = $telnet->cmd('type C:\FedEx\Fedex_LabelBuffer');
+	$self->log($@) if $@;
 
-	#warn @remotelabels[0];
-	#$telnet->dump_log();
-	#$telnet->input_log();
-	#warn "ProcessLoaclRequest: $Pre";
-	#warn "MATCH=$Match";
-	#warn "LABEL-$Label";
 	return $Pre.$Match."\n";
 	}
+
 sub ProcessRemoteRequest
 	{
-		my $self = shift;
-		my ($ShipmentRef,$Action) = @_;
+	my $self = shift;
+	my ($ShipmentRef,$Action) = @_;
 	}
 
 __PACKAGE__->meta()->make_immutable();
