@@ -1395,6 +1395,8 @@ sub SHIP_ORDER :Private
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
 	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
 
+	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $self->customer, $CO) unless $params->{'customerserviceid'};
+
 	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
 	$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
 

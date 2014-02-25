@@ -673,30 +673,30 @@ sub has_extid_data
 sub get_sop_id
 	{
 	my $self = shift;
-
-	my $usealtsop = $self->get_contact_data_value('usealtsop');
-	my $custnum = $self->get_contact_data_value('extcustnum');
+	my $usealtsop = shift;
+	my $extcustnum = shift;
 
 	# Allow for alternate sopid's (customerid in customerservice - we can't change the field at this point)
-	my $customerid = $self->get_contact_data_value('sopid');
-	$customerid = $self->customerid unless $customerid;
+	my $sop_id = $self->get_contact_data_value('sopid');
+	$sop_id = $self->customerid unless $sop_id;
 
 	# Check if the customer is capable of alt sops, and if this is a 3rd party shipment.  If so, check for new sopid.
-	my $using_altsop = 0;
-	my $altsopid = '';
+	my ($using_altsop,$alt_sop_id) = (0,'');
+
+	$usealtsop = $self->get_contact_data_value('usealtsop') unless $usealtsop;
 	if ($usealtsop)
 		{
-		my $AltSOP = $self->contact->model('MyDBI::Altsop')->new({});
-		my $alt_sopid = $AltSOP->get_alt_sopid($self->customerid,'extcustnum',$custnum);
+		$extcustnum = $self->get_contact_data_value('extcustnum') unless $extcustnum;
+		my $AltSOP  = $self->contact->model('MyDBI::Altsop')->new({});
 
-		if ($alt_sopid)
+		if (my $alt_sop_id = $AltSOP->get_alt_sopid($self->customerid,'extcustnum',$extcustnum))
 			{
-			$customerid = $alt_sopid;
+			$sop_id = $alt_sop_id;
 			$using_altsop = 1;
 			}
 		}
 
-	return ($customerid,$using_altsop,$altsopid);
+	return $sop_id;
 	}
 
 sub third_party_account
