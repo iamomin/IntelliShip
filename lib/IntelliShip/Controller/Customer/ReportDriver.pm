@@ -201,7 +201,8 @@ sub generate_shipment_report
 				sh.service as servicename,
 				sh.weight,
 				sh.cost,
-				sh.dateshipped
+				sh.dateshipped,
+				sh.carrier as carriername
 				";
 		}
 	my $report_SQL_1 = '';
@@ -209,7 +210,6 @@ sub generate_shipment_report
 		{
 		$WHERE =
 				$and_customerid_sql .
-				$and_carrier_sql .
 				$and_start_date_sql .
 				$and_stop_date_sql .
 				$and_status_id_sql .
@@ -217,7 +217,8 @@ sub generate_shipment_report
 				$and_datatypeid_sql .
 				$and_username_sql .
 				$and_co_type_id_sql .
-				$and_allowed_extcustnum_sql;
+				$and_allowed_extcustnum_sql .
+				$and_carrier_sql;
 
 		$WHERE =~ s/^\ *AND//;
 		$WHERE = " WHERE " . $WHERE if $WHERE;
@@ -310,11 +311,14 @@ sub generate_shipment_report
 	my $tot_chg_sum = 0;
 	my $other_chg_sum = 0;
 	my $commodity_sum = 0;
+	my $distinctCarriers = {};
 	my $ship_count = $report_sth->numrows;
 
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
+
+		$distinctCarriers->{$row_data->{'carriername'}} = 1;
 
 		#$c->log->debug("row_data: " . Dumper $row_data);
 		my ($date, $time) = split(/ /,$row_data->{'dateshipped'});
@@ -510,8 +514,9 @@ sub generate_shipment_report
 				];
 			}
 	push(@$report_output_row_loop, $report_summary_row_loop);
-
-	$WHERE .= " AND carrier = 'All' " if $params->{'carriers'} eq 'all';
+	#$distinctCarriers->{All} = 1 unless $ship_count;
+	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
+	$c->log->debug("WHERE: " . $WHERE);
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
@@ -577,8 +582,8 @@ sub generate_summary_service_report
 			$and_customerid_sql .
 			$and_start_date_sql .
 			$and_stop_date_sql .
-			$and_carrier_sql .
-			$and_status_id_sql;
+			$and_status_id_sql .
+			$and_carrier_sql;
 
 	$WHERE =~ s/^\ *AND//;
 	$WHERE = " WHERE " . $WHERE if $WHERE;
@@ -586,7 +591,7 @@ sub generate_summary_service_report
 	my $report_SQL = "
 		SELECT
 			sh.shipmentid,
-			sh.carrier,
+			sh.carrier as carriername,
 			sh.service
 		FROM
 			shipment sh
@@ -603,17 +608,18 @@ sub generate_summary_service_report
 	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
 
 	my $summaryDetails = {};
+	my $distinctCarriers = {};
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
-
+		$distinctCarriers->{$row_data->{'carriername'}} = 1;
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $row_data->{shipmentid} });
 
-		$summaryDetails->{$row_data->{'carrier'}} = {} unless $summaryDetails->{$row_data->{'carrier'}};
-		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}} = {} unless $summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}};
-		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}}->{'TTL_WEIGHT'} += $Shipment->total_weight;
-		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}}->{'TTL_CHARGE'} += $Shipment->total_charge;
-		$summaryDetails->{$row_data->{'carrier'}}->{$row_data->{'service'}}->{'TTL_COUNT'} += 1;
+		$summaryDetails->{$row_data->{'carriername'}} = {} unless $summaryDetails->{$row_data->{'carriername'}};
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}} = {} unless $summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}};
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_WEIGHT'} += $Shipment->total_weight;
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_CHARGE'} += $Shipment->total_charge;
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_COUNT'} += 1;
 		}
 
 	$c->log->debug("%$summaryDetails: " . Dumper $summaryDetails);
@@ -685,7 +691,8 @@ sub generate_summary_service_report
 					{ value => $grand_total_weight, align => 'right' },
 				]);
 
-	$WHERE .= " AND carrier = 'All' " if $params->{'carriers'} eq 'all';
+	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
+	$c->log->debug("WHERE: " . $WHERE);
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
