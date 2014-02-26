@@ -13,6 +13,22 @@ BEGIN {
 	has 'contact' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
 
+	has 'arrs_api_context' => ( is => 'rw' );
+
+	}
+
+sub API
+	{
+	my $self = shift;
+
+	unless ($self->arrs_api_context)
+		{
+		my $APIRequest = IntelliShip::Arrs::API->new;
+		$APIRequest->context($self->context);
+		$self->arrs_api_context($APIRequest);
+		}
+
+	return $self->arrs_api_context;
 	}
 
 sub make_report
@@ -300,7 +316,7 @@ sub generate_shipment_report
 
 	$report_SQL .= " ORDER BY 3,2,4 ";
 
-	$c->log->debug("REPORT SQL: \n" . $report_SQL);
+	#$c->log->debug("SHIPMENT REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
@@ -349,15 +365,9 @@ sub generate_shipment_report
 			{
 			if ( $row_data->{'customerserviceid'} )
 				{
-=as
-				my $CSRef = &APIRequest({
-						action	=> 'GetCSShippingValues',
-						csid	=> $row_data->{'customerserviceid'},
-						customerid => $row_data->{'customerid'}
-					});
+				my $CSRef = $self->API->get_CS_shipping_values($row_data->{'customerserviceid'},$row_data->{'customerid'});
 				$row_data->{'webaccount'} = $CSRef->{'webaccount'};
-=cut
-				$row_data->{'webaccount'} = '';
+				$c->log->debug("get_CS_shipping_values: " . Dumper $CSRef);
 				}
 
 			## Load up origin addr info
@@ -514,9 +524,9 @@ sub generate_shipment_report
 				];
 			}
 	push(@$report_output_row_loop, $report_summary_row_loop);
-	#$distinctCarriers->{All} = 1 unless $ship_count;
+
 	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
-	$c->log->debug("WHERE: " . $WHERE);
+
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);
@@ -601,11 +611,9 @@ sub generate_summary_service_report
 			2,1
 	";
 
-	$c->log->debug("SUMMARY SERVICE REPORT SQL: \n" . $report_SQL);
+	#$c->log->debug("SUMMARY SERVICE REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
-
-	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
 
 	my $summaryDetails = {};
 	my $distinctCarriers = {};
@@ -622,7 +630,7 @@ sub generate_summary_service_report
 		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_COUNT'} += 1;
 		}
 
-	$c->log->debug("%$summaryDetails: " . Dumper $summaryDetails);
+	#$c->log->debug("%$summaryDetails: " . Dumper $summaryDetails);
 
 	my $grand_total_shipment = 0;
 	my $grand_total_charge = 0;
@@ -692,7 +700,7 @@ sub generate_summary_service_report
 				]);
 
 	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
-	$c->log->debug("WHERE: " . $WHERE);
+
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
 	return ($report_heading_loop , $report_output_row_loop , $filter_criteria_loop);

@@ -60,6 +60,7 @@ sub run :Local
 		}
 
 	my $ReportDriver = IntelliShip::Controller::Customer::ReportDriver->new;
+	$ReportDriver->API($self->API);
 	$ReportDriver->context($self->context);
 	$ReportDriver->contact($self->contact);
 	$ReportDriver->customer($self->customer);

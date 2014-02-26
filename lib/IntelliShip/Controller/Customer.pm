@@ -20,6 +20,20 @@ BEGIN {
 
 	}
 
+sub API
+	{
+	my $self = shift;
+
+	unless ($self->arrs_api_context)
+		{
+		my $APIRequest = IntelliShip::Arrs::API->new;
+		$APIRequest->context($self->context);
+		$self->arrs_api_context($APIRequest);
+		}
+
+	return $self->arrs_api_context;
+	}
+
 =head1 NAME
 
 IntelliShip::Controller::Customer - Catalyst Controller
@@ -319,20 +333,6 @@ sub get_address_dropdown_list
 
 	$c->log->debug('list is' . Dumper($list));
 	return $list;
-	}
-
-sub API
-	{
-	my $self = shift;
-
-	unless ($self->arrs_api_context)
-		{
-		my $APIRequest = IntelliShip::Arrs::API->new;
-		$APIRequest->context($self->context);
-		$self->arrs_api_context($APIRequest);
-		}
-
-	return $self->arrs_api_context;
 	}
 
 sub get_select_list

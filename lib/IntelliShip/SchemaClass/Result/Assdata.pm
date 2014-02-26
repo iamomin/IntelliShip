@@ -93,6 +93,17 @@ __PACKAGE__->add_columns(
   { data_type => "real", is_nullable => 1 },
 );
 
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</assdataid>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("assdataid");
 
 # Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nTSrE347mchCrofJiIr0NA
