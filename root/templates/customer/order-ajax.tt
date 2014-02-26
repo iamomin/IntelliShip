@@ -286,11 +286,7 @@
 			<td>
 				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
 				<div style="display: none;" id="SC-[% item.customerserviceid %]">
-					<table class="app"  style="text-align: center;">
-					<tr><th>CARRIER</th><th>SERVICE LEVEL</th><th>TRANSIT DAYS</th><th>EST. DELIVERY</th></tr>
-					<tr><td>[% item.carrier %]</td><td>[% item.service %]</td><td>[% item.days %]</td><td>[% item.shipment_charge %]</td></tr>
-					</table>
-					<table class="app">
+					<table class="app" style="font-size: 10px;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
 						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b>[% scd.text %]</b></td><td style="text-align: right;"><b>[% scd.value %]</b></td>[% END %]</tr>
 					[% END %]
@@ -334,29 +330,13 @@
 			$("#carrier").val(carrier);
 			}
 
-		function displayShipmentChargeDetails(ID)
-			{
-			var dlg = $("#" + ID).dialog({
-				modal: true,
-				width: '500px',
-				autoOpen: false,
-				draggable: false,
-				resizable: false,
-				title: "Estimated Shipment Charges",
-				buttons: {
-					Close: function() { $( this ).dialog( "close" ); }
-					}
-				});
-			dlg.dialog("open");
-			}
-
 		var shipmentChargeDlg = $("#SC-DLG").dialog({
-				width: '500px',
+				width: '300px',
 				autoOpen: false,
 				draggable: false,
 				resizable: false,
 				title: "Estimated Shipment Charges",
-				open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog || ui).hide(); },
+				open: function(event, ui) { $(this).parent().children().children("a.ui-dialog-titlebar-close").remove(); },
 				closeText: ""
 				});
 
