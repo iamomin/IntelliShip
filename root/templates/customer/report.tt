@@ -24,21 +24,21 @@
 
 	<form id="frm_report" method="post" action="/customer/report/run">
 	<input type="hidden" id="report" name="report" value="[% report %]" />
-	<table class="center_app" style="width: 600px;">
+	<table class="center-app" style="width: 600px;">
 		<tr> 
 			<td colspan=2>&nbsp;</td>
 		</tr>
 
 		<tr>
-			<td ><label for="startdate" class="float_right">Start Date:</label></td>
+			<td ><label for="startdate" class="float-right">Start Date:</label></td>
 			<td ><input type="text" name="startdate" id="startdate" value="[% startdate %]"/></td>
 		</tr>
 		<tr>
-			<td><label for="enddate" class="float_right">End Date:</label></td>
+			<td><label for="enddate" class="float-right">End Date:</label></td>
 			<td><input type="text" name="enddate" id="enddate" value="[% enddate %]"/></td>
 		</tr>
 		<tr class="css3-checkboxes">
-			<td><label class="float_right">Carrier:</label></td>
+			<td><label class="float-right">Carrier:</label></td>
 			<td style="min-width: 380px"><table><tr><td>
 				<label><input type="checkbox" id="all_carriers" name="carriers" value="all" checked/><span><label for="all_carriers"><strong>All</strong></label></span></label>
 				</td></tr></table>
@@ -48,7 +48,7 @@
 
 		[% IF report == 'MANIFEST' || report == 'SUMMARY_SERVICE' %]
 		<tr class="css3-checkboxes">
-			<td><label class="float_right">Status:</label></td>
+			<td><label class="float-right">Status:</label></td>
 			<td style="min-width: 380px"><table><tr><td>
 				<label><input type="checkbox" id="all_costatus" name="costatus" value="all" checked/><span><label for="all_costatus"><strong>All</strong></label></span></label>
 				</td></tr></table>
@@ -58,7 +58,7 @@
 		[% END %]
 
 		<tr>
-			<td><label for="format" class="float_right">Report Format:</label></td>
+			<td><label for="format" class="float-right">Report Format:</label></td>
 			<td>
 			<select name="format" id="format">
 				<option value="HTML">HTML
@@ -68,8 +68,8 @@
 			</td>
 		</tr>
 		<tr>
-			<td><label for="toemail" class="float_right">Email Address:</label></td>
-			<td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
+			<td><label for="toemail" class="float-right">Email Address:</label></td>
+			<td><input type="text" class="broad-text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 		</tr>
 		<tr> 
 			<td>&nbsp;</td>
@@ -160,7 +160,7 @@
 		<div class="notice">[% MESSAGE %]</div>
 	[% END %]
 
-	<table class="float_right DoNotPrint">
+	<table class="float-right DoNotPrint">
 		<tr>
 			<td>
 			[% IF report_output_row_loop %]

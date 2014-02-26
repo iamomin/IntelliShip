@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-*{
+* {
     margin:0;
     padding:0;
 }
@@ -12,7 +12,7 @@ html {
     -ms-text-size-adjust: 100%; /* www.456bereastreet.com/archive/201012/controlling_text_size_in_safari_for_ios_without_disabling_user_zoom/ */
 }
 
-body{
+body {
     font: 12px Verdana, Arial, sans-serif, Helvetica;
     color: #4B4B4B;
 }
@@ -149,42 +149,6 @@ img { border: none; vertical-align: middle }
     background-color: #98A7AF;
 }
 
-/*
-#menu input[type=text] {
-    margin: 0;
-    padding:0;
-    height: 22px;
-    color: #98A7AF;
-    border: 1px solid #98A7AF;
-}
-
-#menu input[type=submit] {
-    background: url("/static/images/search.png") no-repeat center center;
-    width: 24px;
-    height:24px;
-    border: none;
-    color: transparent;
-    font-size: 0;
-    cursor: pointer;
-    background-color: #98A7AF;
-    position:absolute;
-}
-
-#menu select {
-    padding: 2px;
-    margin: 0;
-    width: 120px;
-    background: #FFF;
-    color: #98A7AF;
-    border: 1px solid #98A7AF;
-}
-
-#search-bar {
-    float: right;
-    display: inline;
-    margin-right: 24px;
-}
-*/
 /* Page */
 
 #page {
@@ -198,7 +162,7 @@ img { border: none; vertical-align: middle }
 #post {
     margin: 0 auto;
     width: auto;
-   }
+}
 
 #post select {
     border: 1px solid #98A7AF;
@@ -455,30 +419,22 @@ td.threecolumns {
     padding: 0px;
 }
 
-table.center_app {
+table.center-app {
     width: 100%;
     padding: 10px;
     margin: 10px auto;
-    background: #e9e9e9;
+    background: #F5F5F5;
     text-align: left;
-    border: solid 1px #ccc;
+    border: solid 1px #CCC;
 }
-
-table.report {width: 100%; margin: 10px 0; border-spacing: 1px}
-table.report td, th {padding: 0 3px; text-align: center}
-table.report tr:nth-child(odd) {color: #000; background: #FFF}
-table.report tr:nth-child(even) {color: #000; background: #E0E0E0}
-table.report tr:hover {background:#99CCFF !important}
-table.report th a {text-decoration: none;color: #FFF}
-table.report th a:hover {text-decoration: underline;color: #97c1da}
 
 div.notice {
     position: relative;
     margin: 10px 0px;
     padding: 15px;
-    border: 1px solid #97c1da;
-    color: #264c72;
-    background-color: #d0e3ef;
+    border: 1px solid #97C1DA;
+    color: #264C72;
+    background-color: #D0E3EF;
     text-align: left;
 }
 
@@ -516,36 +472,28 @@ div.error {
     cursor: pointer;
 }
 
-.bold_text {
+.bold-text {
     font-weight: bold;
 }
 
-.text_align_right {
+.text-align-right {
     text-align: right;
 }
 
-.default_text {
-    font-weight: bold;
-}
-
-.solid_line {
+.solid-line {
+    top: 10px;
     height: 8px;
     width: 100%;
+    z-index: -1;
     border: none;
     margin: 0px 0px;
     background-color: #1875BA;
     position: absolute;
-    top: 10px;
-    z-index: -1;
 }
 
 #list ul { position: relative; margin: 10px 20px; list-style: none; list-style-type: square; }
 #list li { padding: 5px; }
-/*
-#myOrders table  {width: 100%; margin: 10px 0; font-size: 11px; border-spacing: 0px; text-align: center}
-#myOrders table th {padding: 5px; color: #FFF; background-color: #9BA7AF}
-#myOrders table td {padding: 5px; color: #9BA7AF; background: #F5F5F5; border-bottom: 1px solid #9BA7AF}
-*/
+
 #myOrders table  {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
 #myOrders table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
 #myOrders table tr:nth-child(even) {color: #000; background: #E4E5E7 }
@@ -727,7 +675,7 @@ ul.sortable {
 
 input {
     padding: 1px 3px;
-    border: solid 1px #afafaf;
+    border: solid 1px #AFAFAF;
     vertical-align: inherit;
 }
 
@@ -735,7 +683,7 @@ input.text {
     width: 160px;
 }
 
-input.broad_text {
+input.broad-text {
     width: 210px;
 }
 
@@ -752,9 +700,9 @@ input.button {
     font-size: 13px;
     font-weight: bold;
     color: #333;
-    background-color: #eaeaea;
+    background-color: #EAEAEA;
     white-space: nowrap;
-    border: 1px solid #ddd;
+    border: 1px solid #DDD;
     vertical-align: middle;
     min-width: 100px;
     cursor: pointer;
@@ -890,8 +838,8 @@ input.package {
     font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
-    background: #fbf9ee;
-    border: 1px solid #fcefa1;
+    background: #FBF9EE;
+    border: 1px solid #FCEFA1;
     vertical-align: middle;
     cursor: pointer;
 }
@@ -932,8 +880,8 @@ input.orange  {
 #carrier-service-list.ui-tabs-nav { margin: 0; padding: 0; }
 #carrier-service-list.ui-widget-header { background-color: #FFF; border: none; }
 
-.float_right {float: right;}
-.float_left {float: left;}
+.float-right {float: right;}
+.float-left {float: left;}
 
 /* jQuery autocomplete scrollable results */
 .ui-autocomplete {

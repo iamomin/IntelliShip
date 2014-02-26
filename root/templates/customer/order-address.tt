@@ -10,7 +10,7 @@
 	<tr>
 	<td colspan="3">
 		<div style="position: relative;">
-			<hr class="solid_line"/>
+			<hr class="solid-line"/>
 			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/images/navigation-down.png">
 		</div>
 	</td>
@@ -29,7 +29,7 @@
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad_text"/>
+			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/>
 			</td>
 		<!--
 			<td>
@@ -52,32 +52,32 @@
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
-					<td><label class="float_right">Company:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.customername %]'/></td>
+					<td><label class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.customername %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Address 1:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address1 %]'/></td>
+					<td><label class="float-right">Address 1:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address1 %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Address 2:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address2 %]'/></td>
+					<td><label class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address2 %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
+					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
+					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
 					</td>
 				</tr>
 				<tr>
-					<td><label class="float_right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromcontact %]'/></td>
+					<td><label class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromcontact %]'/></td>
 				</tr>
 				</tr>
-					<td><label class="float_right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromphone %]'/></td>
+					<td><label class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromphone %]'/></td>
 				<tr>
 				</tr>
-					<td><label for="fromdepartment" class="float_right">Department:</label></td><td><input type="text" class="broad_text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
+					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
 				<tr>
 				<tr>
-					<td><label for="fromemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
+					<td><label for="fromemail" class="float-right">Email:</label></td><td><input type="text" class="broad-text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
 			</table>
 			</td>
@@ -85,17 +85,17 @@
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
-					<td><label for="toname" class="float_right require">Company: </label></td><td><input type="text" class="broad_text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
+					<td><label for="toname" class="float-right require">Company: </label></td><td><input type="text" class="broad-text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress1" class="float_right require">Address 1:</label></td><td><input type="text" class="broad_text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
+					<td><label for="toaddress1" class="float-right require">Address 1:</label></td><td><input type="text" class="broad-text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="toaddress2" class="float_right">Address 2:</label></td><td><input type="text" class="broad_text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
+					<td><label for="toaddress2" class="float-right">Address 2:</label></td><td><input type="text" class="broad-text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
 				</tr>
 				<tr>
 					<td>
-						<label class="float_right require"><label for="tocity">City</label>, <label for="tostate">State</label>, <label for="tozip">Zip</label>:</label>
+						<label class="float-right require"><label for="tocity">City</label>, <label for="tostate">State</label>, <label for="tozip">Zip</label>:</label>
 					</td>
 					<td>
 					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
@@ -110,7 +110,7 @@
 					</td>
 				</tr>
 				<tr>
-					<td><label for="tocountry" class="float_right require">Country:</label></td><td>
+					<td><label for="tocountry" class="float-right require">Country:</label></td><td>
 					<label>
 					<select name="tocountry" id="tocountry" style="width: 220px;">
 						[% FOREACH item IN countrylist_loop %]
@@ -121,22 +121,22 @@
 					</td>
 				</tr>
 				<tr>
-					<td><label for="tocontact" class="float_right">Contact:</label></td><td><input type="text" class="broad_text" name="tocontact" id="tocontact" value="[% tocontact %]"/></td>
+					<td><label for="tocontact" class="float-right">Contact:</label></td><td><input type="text" class="broad-text" name="tocontact" id="tocontact" value="[% tocontact %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="tophone" class="float_right">Phone:</label></td><td><input type="text" class="broad_text" name="tophone" id="tophone" value="[% tophone %]"></td>
+					<td><label for="tophone" class="float-right">Phone:</label></td><td><input type="text" class="broad-text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
 				[% IF one_page %]
 				<tr>
-					<td><label for="tocustomernumber" class="float_right">Customer#:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
+					<td><label for="tocustomernumber" class="float-right">Customer#:</label></td><td><input type="text" class="broad-text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
 				[% ELSE %]
 				<tr>
-					<td><label for="tocustomernumber" class="float_right">Customer Number:</label></td><td><input type="text" class="broad_text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
+					<td><label for="tocustomernumber" class="float-right">Customer Number:</label></td><td><input type="text" class="broad-text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
 				[% END %]
 				<tr>
-					<td><label for="toemail" class="float_right">Email:</label></td><td><input type="text" class="broad_text" name="toemail" id="toemail" value="[% toemail %]"/></td>
+					<td><label for="toemail" class="float-right">Email:</label></td><td><input type="text" class="broad-text" name="toemail" id="toemail" value="[% toemail %]"/></td>
 				</tr>
 			</table>
 			</td>
@@ -145,22 +145,22 @@
 			<table class="app">
 				<caption>SHIPMENT INFORMATION</caption>
 				<tr>
-					<td><label for="datetoship" class="float_right bold_text">Ship On:</label></td><td><input type="text" style="margin-right: 3px;" size="10" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+					<td><label for="datetoship" class="float-right bold-text">Ship On:</label></td><td><input type="text" style="margin-right: 3px;" size="10" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float_right">Deliver By:</label></td><td><input type="text" style="margin-right: 3px;" size="10" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+					<td><label for="dateneeded" class="float-right">Deliver By:</label></td><td><input type="text" style="margin-right: 3px;" size="10" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="description" class="float_right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
+					<td><label for="description" class="float-right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="shipmentvalue" class="float_right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="[% shipmentvalue ? shipmentvalue : 0.00 %]"/><div class="default_text" id="shipmentvalue_div">[% shipmentvalue ? shipmentvalue : 0.00 %]</div></td>
+					<td><label for="shipmentvalue" class="float-right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="[% shipmentvalue ? shipmentvalue : 0.00 %]"/><div class="bold-text" id="shipmentvalue_div">[% shipmentvalue ? shipmentvalue : 0.00 %]</div></td>
 				</tr>
 				<tr>
-					<td><label for="dryicewt" class="float_right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt" value="[% dryicewt %]"/></td>
+					<td><label for="dryicewt" class="float-right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt" value="[% dryicewt %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="deliverymethod" class="float_right">Delivery Method:</label></td>
+					<td><label for="deliverymethod" class="float-right">Delivery Method:</label></td>
 					<td class="css3-radios">
 						<div id="third-party-details"></div>
 						<ul>
@@ -178,33 +178,33 @@
 
 				[% IF SHOW_PONUMBER %]
 				<tr>
-					<td><label for="ponumber" class="float_right require">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
+					<td><label for="ponumber" class="float-right require">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
 				</tr>
 				[% END %]
 				[% IF SHOW_EXTID %]
 				<tr>
-					<td><label for="extid" class="float_right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"/></td>
+					<td><label for="extid" class="float-right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"/></td>
 				</tr>
 				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF SHOW_CUSTREF2 %]
 				<tr>
-					<td><label for="custref2" class="float_right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"/></td>
+					<td><label for="custref2" class="float-right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"/></td>
 				</tr>
 				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF SHOW_CUSTREF3 %]
 				<tr>
-					<td><label for="custref3" class="float_right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
+					<td><label for="custref3" class="float-right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
 				</tr>
 				[% ELSE %]
 				<tr style="height: 33px"><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF AMDELIVERY %]
 				<tr>
-					<td><label for="amdelivery" class="float_right">AM Delivery:</label></td>
+					<td><label for="amdelivery" class="float-right">AM Delivery:</label></td>
 					<td class="css3-checkboxes"><label><input type='checkbox' name='amdeliverycheck' value='1'/></label></td>
 				</tr>
 				[% END %]
@@ -218,7 +218,7 @@
 [% UNLESS one_page %]
 	<br/>
 
-	<div class="green-forward float_right">&nbsp;&nbsp;<input type="submit" id="quick_ship" value="NEXT STEP"/></div>
+	<div class="green-forward float-right">&nbsp;&nbsp;<input type="submit" id="quick_ship" value="NEXT STEP"/></div>
 
 </form>
 

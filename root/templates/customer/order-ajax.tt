@@ -112,9 +112,9 @@
 		<table>
 		<tr>
 			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" title="[% coid %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
-			<td style="width: 04%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float_right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
+			<td style="width: 04%"><input type="text" [% IF ROW_PRDT_DETAIL_CLASS %]  [% END %] class="total_pkg_detail float-right" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity %]"/></td>
 			<td style="width: 04%"><input type="text" class="sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% sku %]"/></td>
-			<td style="width: 11%"><input type="text" class="broad_text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
+			<td style="width: 11%"><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
 			<td style="width: 10%"><select name="unittype_[% ROW_COUNT %]" id="unittype_[% ROW_COUNT %]">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %]SELECTED[% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td style="width: 07%"><input type="text" class="total_pkg_detail" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>
 			<td style="width: 07%"><input type="text" class="total_pkg_detail" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/></td>
@@ -131,7 +131,7 @@
 	</li>
 	[% ELSE %]
 		<tr>
-			<td><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" style="width: 50px;" value="[% quantity ? quantity : 1 %]"/></td>
+			<td><input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" style="width: 50px;" value="[% quantity ? quantity : 1 %]"/></td>
 			<td><input  type="text" style="width: 150px;" name="description_1" id="description_1" value="[% description %]"/></td>
 			<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittype %]SELECTED[% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;" value="[% weight %]"/></td>
@@ -152,20 +152,20 @@
 	<table>
 	[% IF thirdpartyaccts_loop %]
 	<tr>
-		<td><label for="tpaccid" class="float_right">Existing Company List:</label></td><td><select name="tpaccid" id="tpaccid" onchange="setTpDetails(this.value);"><option value="">--- Add New ---</option>[% FOREACH item IN thirdpartyaccts_loop %]<option value="[% item.thirdpartyacctid %]">[% item.tpcompanyname %]</option>[% END %]</select></td>
+		<td><label for="tpaccid" class="float-right">Existing Company List:</label></td><td><select name="tpaccid" id="tpaccid" onchange="setTpDetails(this.value);"><option value="">--- Add New ---</option>[% FOREACH item IN thirdpartyaccts_loop %]<option value="[% item.thirdpartyacctid %]">[% item.tpcompanyname %]</option>[% END %]</select></td>
 	</tr>
 	[% END %]
 	<tr>
-		<td><label for="tpcompanyname" class="float_right">Billing Company:</label></td><td><input type="text" class="broad_text" name="tpcompanyname" id="tpcompanyname" value="[% tpcompanyname %]"/></td>
+		<td><label for="tpcompanyname" class="float-right">Billing Company:</label></td><td><input type="text" class="broad-text" name="tpcompanyname" id="tpcompanyname" value="[% tpcompanyname %]"/></td>
 	</tr>
 	<tr>
-		<td><label for="tpaddress1" class="float_right">Billing Address 1:</label></td><td><input type="text" class="broad_text" name="tpaddress1" id="tpaddress1" value="[% tpaddress1 %]"/></td>
+		<td><label for="tpaddress1" class="float-right">Billing Address 1:</label></td><td><input type="text" class="broad-text" name="tpaddress1" id="tpaddress1" value="[% tpaddress1 %]"/></td>
 	</tr>
 	<tr>
-		<td><label for="tpaddress2" class="float_right">Billing Address 2:</label></td><td><input type="text" class="broad_text" name="tpaddress2" id="tpaddress2" value="[% tpaddress2 %]"/></td>
+		<td><label for="tpaddress2" class="float-right">Billing Address 2:</label></td><td><input type="text" class="broad-text" name="tpaddress2" id="tpaddress2" value="[% tpaddress2 %]"/></td>
 	</tr>
 	<tr>
-		<td><label class="float_right">Billing <label for="tpcity">City</label>,<label for="tpstate">State</label>,<label for="tpzip">Zip</label>:</label></td>
+		<td><label class="float-right">Billing <label for="tpcity">City</label>,<label for="tpstate">State</label>,<label for="tpzip">Zip</label>:</label></td>
 		<td>
 		<input type="text" name="tpcity" id="tpcity" value="[% tpcity %]" size="6"/>
 		<select name="tpstate" id="tpstate">
@@ -177,7 +177,7 @@
 		</td>
 	</tr>
 	<tr>
-		<td><label for="tpcountry" class="float_right">Billing Country:</label></td>
+		<td><label for="tpcountry" class="float-right">Billing Country:</label></td>
 		<td>
 			<select name="tpcountry" id="tpcountry">
 				[% FOREACH item IN countrylist_loop %]
@@ -187,7 +187,7 @@
 		</td>
 	</tr>
 	<tr>
-		<td><label for="tpacctnumber" class="float_right"><U>Account #:<U></label></td><td><input type="text" class="broad_text" name="tpacctnumber" id="tpacctnumber" value="[% tpacctnumber %]"/></td>
+		<td><label for="tpacctnumber" class="float-right"><U>Account #:<U></label></td><td><input type="text" class="broad-text" name="tpacctnumber" id="tpacctnumber" value="[% tpacctnumber %]"/></td>
 	</tr>
 	</table>
 	</form>
