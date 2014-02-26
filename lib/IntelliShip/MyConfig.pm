@@ -239,7 +239,7 @@ sub application_root
 my $ARRS_CONFIG = {
 	BASE_PATH      => application_root(),
 	DB_NAME        => 'arrs',
-	DB_HOST        => getArrsDatabaseHost();,
+	DB_HOST        => getArrsDatabaseHost(),
 	DB_USER        => 'webuser',
 	DB_PASSWORD    => 'Byt#Yu2e',
 	BASE_DOMAIN    => 'engagetechnology.com',
