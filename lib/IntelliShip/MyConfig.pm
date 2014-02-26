@@ -172,7 +172,7 @@ sub application_root
 		}
 	else
 		{
-		$application_root = '/home/ALOHA11/IntelliShip';
+		$application_root = '/opt/engage/intelliship2';
 		}
 
 	return $application_root;
@@ -181,7 +181,7 @@ sub application_root
 my $ARRS_CONFIG = {
 	BASE_PATH      => application_root(),
 	DB_NAME        => 'arrs',
-	DB_HOST        => 'darrs.engagetechnology.com',
+	DB_HOST        => 'localhost',
 	DB_USER        => 'webuser',
 	DB_PASSWORD    => 'Byt#Yu2e',
 	BASE_DOMAIN    => 'engagetechnology.com',
