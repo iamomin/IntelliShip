@@ -286,7 +286,7 @@
 			<td>
 				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
 				<div style="display: none;" id="SC-[% item.customerserviceid %]">
-					<table class="app" style="font-size: 10px;">
+					<table class="app" style="font-size: 11px;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
 						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b>[% scd.text %]</b></td><td style="text-align: right;"><b>[% scd.value %]</b></td>[% END %]</tr>
 					[% END %]
@@ -323,6 +323,7 @@
 
 	<div id="SC-DLG"></div>
 
+	<style>.no-close .ui-dialog-titlebar-close { display: none;}</style>
 	<script>
 
 		function setCarrier(carrier)
@@ -331,13 +332,12 @@
 			}
 
 		var shipmentChargeDlg = $("#SC-DLG").dialog({
-				width: '300px',
-				autoOpen: false,
-				draggable: false,
-				resizable: false,
-				title: "Estimated Shipment Charges",
-				open: function(event, ui) { $(this).parent().children().children("a.ui-dialog-titlebar-close").remove(); },
-				closeText: ""
+				dialogClass: "no-close",
+				width      : '300px',
+				autoOpen   : false,
+				draggable  : false,
+				resizable  : false,
+				title      : "Estimated Shipment Charges"
 				});
 
 		$(".sc-hover").mouseover(function() {
