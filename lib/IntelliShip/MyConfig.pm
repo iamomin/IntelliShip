@@ -29,10 +29,18 @@ my %hosts = (
 	'ATX00WEB01.LOCALDOMAIN' => &DEVELOPMENT,
 	);
 
+# aos_intelliship DB hosts
 my %db_hosts = (
 	&PRODUCTION  => 'localhost',
 	&DEVELOPMENT => 'localhost',
 	&TEST        => 'dintelliship.engagetechnology.com',
+	);
+
+# arrs DB hosts
+my %arrs_db_hosts = (
+	&PRODUCTION  => 'localhost',
+	&DEVELOPMENT => 'localhost',
+	&TEST        => 'darrs.engagetechnology.com',
 	);
 
 # sendmail
@@ -174,6 +182,30 @@ sub getDatabaseHost
 	return $db_host;
 	}
 
+=head2 getArrsDatabaseHost
+
+depending on the server, will return DEVELOPMENT, PRODUCTION or TEST.
+
+	my $mode = IntelliShip::MyConfig->getArrsDatabaseHost;
+
+=cut
+
+sub getArrsDatabaseHost
+	{
+	## check to see if hostname exists in %db_hosts hash
+	my $domain = getDatabaseDomain() || '';
+
+	my $db_host;
+	unless ($db_host = $arrs_db_hosts{$domain})
+		{
+		$db_host = 'localhost';
+		}
+
+	#print STDERR "\nArrs DataBase Host: " . $db_host;
+
+	return $db_host;
+	}
+
 =head2 getSendmailPath
 
 get the path to sendmail
@@ -207,7 +239,7 @@ sub application_root
 my $ARRS_CONFIG = {
 	BASE_PATH      => application_root(),
 	DB_NAME        => 'arrs',
-	DB_HOST        => 'localhost',
+	DB_HOST        => getArrsDatabaseHost();,
 	DB_USER        => 'webuser',
 	DB_PASSWORD    => 'Byt#Yu2e',
 	BASE_DOMAIN    => 'engagetechnology.com',
