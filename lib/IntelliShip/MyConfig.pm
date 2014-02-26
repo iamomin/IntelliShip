@@ -172,7 +172,7 @@ sub application_root
 		}
 	else
 		{
-		$application_root = '/opt/engage/intelliship2';
+		$application_root = '/opt/engage/intelliship2/IntelliShip';
 		}
 
 	return $application_root;
