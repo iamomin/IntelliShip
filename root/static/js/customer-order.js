@@ -675,11 +675,11 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
-function populate_ship_to_address(addressid)
+function populate_ship_to_address(referenceid)
 	{
-	var query_param = '&addressid='+addressid;
+	var query_param = '&referenceid='+referenceid;
 
-	if (addressid.length > 0) {
+	if (referenceid.length > 0) {
 		resetCSList();
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
 			if (JSON_data.address1) {
@@ -689,6 +689,10 @@ function populate_ship_to_address(addressid)
 				$("#tostate").val(JSON_data.state);
 				$("#tozip").val(JSON_data.zip);
 				$("#tocountry").val(JSON_data.country);
+				$("#tocontact").val(JSON_data.contactname);
+				$("#tophone").val(JSON_data.contactphone);
+				$("#tocustomernumber").val(JSON_data.extcustnum);
+				$("#toemail").val(JSON_data.deliverynotification);
 				}
 			});
 		}

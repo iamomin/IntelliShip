@@ -383,7 +383,7 @@ sub get_select_list
 		SELECT
 			DISTINCT ON (addressname)
 			addressname,
-			address.addressid
+			co.coid as referenceid
 		FROM
 			co
 			INNER JOIN
@@ -403,7 +403,7 @@ sub get_select_list
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			push(@$list, { name => $data->{addressname}, value => $data->{addressid} });
+			push(@$list, { name => $data->{addressname}, value => $data->{referenceid} });
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')
