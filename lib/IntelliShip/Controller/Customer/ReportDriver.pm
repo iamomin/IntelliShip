@@ -320,7 +320,7 @@ sub generate_shipment_report
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
-	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
+	#$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
 
 	my $weight_sum = 0;
 	my $dimweight_sum = 0;
@@ -367,7 +367,7 @@ sub generate_shipment_report
 				{
 				my $CSRef = $self->API->get_CS_shipping_values($row_data->{'customerserviceid'},$row_data->{'customerid'});
 				$row_data->{'webaccount'} = $CSRef->{'webaccount'};
-				$c->log->debug("get_CS_shipping_values: " . Dumper $CSRef);
+				#$c->log->debug("get_CS_shipping_values: " . Dumper $CSRef);
 				}
 
 			## Load up origin addr info

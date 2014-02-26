@@ -89,8 +89,8 @@ sub get_CS_shipping_values
 
 	my $http_request = {
 		action => 'GetCSShippingValues',
-		customerserviceid => $CSID,
 		customerid => $CustomerID,
+		csid => $CSID,
 		};
 
 	return $self->APIRequest($http_request);

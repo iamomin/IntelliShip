@@ -141,7 +141,7 @@ sub format_CSV
 
 	my $EXCEL_file = $params->{'report'} . '_' . IntelliShip::DateUtils->timestamp . '.xls';
 
-	$c->log->debug("REPORT EXCEL FILE: " . $REPORT_dir . '/' . $EXCEL_file);
+	#$c->log->debug("REPORT EXCEL FILE: " . $REPORT_dir . '/' . $EXCEL_file);
 
 	# Create a new Excel workbook
 	my $workbook = Spreadsheet::WriteExcel->new($REPORT_dir . '/' . $EXCEL_file);
@@ -152,7 +152,6 @@ sub format_CSV
 	# Add Company Logo
 	my $BrandingID = $self->get_branding_id;
 	my $image_path = IntelliShip::MyConfig->image_file_directory . "/$BrandingID/report-logo.png";
-	$c->log->debug(" image_path: " . $image_path);
 
 	$worksheet->insert_image(1, 0, $image_path, 16, 9) if ( -r $image_path);
 
@@ -371,7 +370,7 @@ sub format_SHIPMENT_xls
 		my $totalBoxValueCommon = $workbook->addformat(top=>1,bottom=>1,left=>1,right=>2,align=>'center');
 		my $totalBoxValueBottom = $workbook->addformat(top=>2,bottom=>2, left=>1, right=>2,align=>'center', num_format => '$0.00');
 		my $report_summary_row_loop = pop(@$report_output_row_loop);
-		$c->log->debug("DATA : " . Dumper @$report_summary_row_loop);
+
 		$worksheet->write("K5", '', $totalBoxValueTop);
 		$worksheet->write("K6", $current_date, $totalBoxValueCommon);
 		my $total_shipments = 0;
