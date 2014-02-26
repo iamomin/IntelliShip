@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<packprodata>
 
@@ -397,8 +401,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lD6eS3kpg8AlJhdVZBffcg
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XoRbxCrlWjGh5Yjw7Ol0sQ
 
 __PACKAGE__->has_many(
 	packprochilds =>

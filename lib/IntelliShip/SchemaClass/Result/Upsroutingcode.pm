@@ -1,12 +1,12 @@
 use utf8;
-package IntelliShip::SchemaClass::Result::Shipmentstatus;
+package IntelliShip::SchemaClass::Result::Upsroutingcode;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-IntelliShip::SchemaClass::Result::Shipmentstatus
+IntelliShip::SchemaClass::Result::Upsroutingcode
 
 =cut
 
@@ -34,49 +34,54 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
-=head1 TABLE: C<shipmentstatus>
+=head1 TABLE: C<upsroutingcode>
 
 =cut
 
-__PACKAGE__->table("shipmentstatus");
+__PACKAGE__->table("upsroutingcode");
 
 =head1 ACCESSORS
 
-=head2 statusid
+=head2 countrycode
 
-  data_type: 'integer'
-  is_nullable: 0
+  data_type: 'char'
+  is_nullable: 1
+  size: 2
 
-=head2 shipmentstatusname
+=head2 postalcodelow
 
   data_type: 'varchar'
   is_nullable: 1
-  size: 250
+  size: 7
+
+=head2 postalcodehigh
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 7
+
+=head2 urc
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 12
 
 =cut
 
 __PACKAGE__->add_columns(
-  "statusid",
-  { data_type => "integer", is_nullable => 0 },
-  "shipmentstatusname",
-  { data_type => "varchar", is_nullable => 1, size => 250 },
+  "countrycode",
+  { data_type => "char", is_nullable => 1, size => 2 },
+  "postalcodelow",
+  { data_type => "varchar", is_nullable => 1, size => 7 },
+  "postalcodehigh",
+  { data_type => "varchar", is_nullable => 1, size => 7 },
+  "urc",
+  { data_type => "varchar", is_nullable => 1, size => 12 },
 );
-
-=head1 PRIMARY KEY
-
-=over 4
-
-=item * L</statusid>
-
-=back
-
-=cut
-
-__PACKAGE__->set_primary_key("statusid");
 
 
 # Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SyX0hn/wY/khxHrzgDC1sA
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:f8m9yM0aKFXZ3eaLS6iFbg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

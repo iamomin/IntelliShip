@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<customer>
 
@@ -395,12 +399,6 @@ __PACKAGE__->table("customer");
   is_nullable: 1
   size: 13
 
-=head2 oaaddressid
-
-  data_type: 'varchar'
-  is_nullable: 1
-  size: 13
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -536,8 +534,6 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 100 },
   "auxformaddressid",
   { data_type => "char", is_nullable => 1, size => 13 },
-  "oaaddressid",
-  { data_type => "varchar", is_nullable => 1, size => 13 },
 );
 
 =head1 PRIMARY KEY
@@ -577,8 +573,15 @@ Related object: L<IntelliShip::SchemaClass::Result::Producttype>
 
 =cut
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1yH/WM6bTe43n+aMkRzvCA
+__PACKAGE__->has_many(
+  "producttypes",
+  "IntelliShip::SchemaClass::Result::Producttype",
+  { "foreign.customerid" => "self.customerid" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:R96fxv0S07o6j30zOYDqiA
 
 __PACKAGE__->belongs_to(
 	address =>
@@ -595,12 +598,6 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->has_many(
 	contacts =>
 		'IntelliShip::SchemaClass::Result::Contact',
-		'customerid'
-	);
-
-__PACKAGE__->has_many(
-	producttypes =>
-		'IntelliShip::SchemaClass::Result::Producttype',
 		'customerid'
 	);
 

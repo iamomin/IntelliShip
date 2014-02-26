@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<address>
 
@@ -136,8 +140,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("addressid");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uN5QXmhnfe3ygqqj8Hld/Q
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:mmPKMagdp4/QLTablq3j1A
 
 __PACKAGE__->belongs_to(
 	country_details => 

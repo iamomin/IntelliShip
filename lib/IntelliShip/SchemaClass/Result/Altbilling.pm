@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<altbilling>
 
@@ -104,8 +108,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("altbillingid");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ovVC7La1hQt8wynJ+JKnCw
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EkA7gMdrrJfNVIgLBRxzKw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

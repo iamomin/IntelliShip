@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<unittype>
 
@@ -66,6 +70,31 @@ __PACKAGE__->table("unittype");
   is_nullable: 1
   size: 50
 
+=head2 dimlength
+
+  data_type: 'double precision'
+  is_nullable: 1
+
+=head2 dimwidth
+
+  data_type: 'double precision'
+  is_nullable: 1
+
+=head2 dimheight
+
+  data_type: 'double precision'
+  is_nullable: 1
+
+=head2 shortlist
+
+  data_type: 'double precision'
+  is_nullable: 1
+
+=head2 shortlistsortorder
+
+  data_type: 'double precision'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -79,6 +108,16 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "conwayunittype",
   { data_type => "varchar", is_nullable => 1, size => 50 },
+  "dimlength",
+  { data_type => "double precision", is_nullable => 1 },
+  "dimwidth",
+  { data_type => "double precision", is_nullable => 1 },
+  "dimheight",
+  { data_type => "double precision", is_nullable => 1 },
+  "shortlist",
+  { data_type => "double precision", is_nullable => 1 },
+  "shortlistsortorder",
+  { data_type => "double precision", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -126,8 +165,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/1S1OlR6d9Y8FR5Ys6iODw
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JRg4fNw9s9o8nzrHZE2hGA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

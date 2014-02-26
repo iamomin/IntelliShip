@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<contact>
 
@@ -143,7 +147,7 @@ __PACKAGE__->add_columns(
   "contactid",
   { data_type => "char", is_nullable => 0, size => 13 },
   "customerid",
-  { data_type => "char", is_nullable => 0, size => 13 },
+  { data_type => "char", is_nullable => 1, size => 13 },
   "username",
   { data_type => "varchar", is_nullable => 1, size => 20 },
   "password",
@@ -188,8 +192,8 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("contactid");
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:goqKXBZlzSALbGBy6A4Scw
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:veT1q79kj87TCOubkM8TKg
 
 __PACKAGE__->belongs_to(
 	customer =>
