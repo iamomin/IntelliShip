@@ -152,11 +152,9 @@ sub process_request
 
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	my $Shipment = $self->insert_shipment($shipmentData);
+	$self->insert_shipment($shipmentData);
 
-	#$Shipment->{'printerstring'} = $PrinterString;
-
-	return $Shipment;
+	$self->response->printerstring($PrinterString);
 	}
 
 sub convert_string

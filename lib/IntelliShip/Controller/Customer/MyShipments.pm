@@ -162,7 +162,7 @@ sub get_shipped_sql :Private
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
 
-	my ($date_shipped_sql,$search_by_term_sql);
+	my ($date_shipped_sql,$search_by_term_sql) = ('','');
 
 	if (my $filter_value = $params->{'filter'})
 		{
@@ -311,14 +311,6 @@ sub VOID_SHIPMENT :Private
 	$c->log->debug("Flush SHIPMENT CO ASSOC");
 	$Shipment->shipmentcoassocs->delete;
 
-	# Get serviceid
-	#my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'}); ## customerserviceid is not currently set in params
-	#$c->log->debug("CustomerService " .Dumper($CustomerService));
-
-	# Load carrier handler
-	#my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
-	#$c->log->debug("SERVICE: " . Dumper $Service);
-
 	# Check if the shipment had a pickuprequest sent.  If it did, cancel it.
 
 	# set a couple of values to pass to the pickup cancel request if they were passed in
@@ -340,8 +332,6 @@ sub VOID_SHIPMENT :Private
 	$Handler->context($self->context);
 	$Handler->customer($self->customer);
 	$Handler->carrier($Shipment->carrier);
-	#$Handler->customerservice($CustomerService);
-	#$Handler->service($Service);
 	$Handler->CO($CO);
 	$Handler->SHIPMENT($Shipment);
 

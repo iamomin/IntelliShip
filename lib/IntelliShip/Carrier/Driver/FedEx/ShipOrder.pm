@@ -387,11 +387,9 @@ sub process_request
 
 	#$self->log('### shipmentData ###: ' . Dumper $shipmentData);
 
-	my $Shipment = $self->insert_shipment($shipmentData);
+	$self->insert_shipment($shipmentData);
 
-	#$Shipment->{'printerstring'} = $PrinterString;
-
-	return $Shipment;
+	$self->response->printerstring($PrinterString);
 	}
 
 sub ProcessLocalRequest

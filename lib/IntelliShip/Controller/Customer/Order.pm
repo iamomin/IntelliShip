@@ -1470,12 +1470,15 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
 
-	my $Shipment = $Response->data;
+	my $Shipment = $Response->shipment;
 	unless ($Shipment)
 		{
 		$c->log->debug("ERROR: No response received. " . $Response->message);
 		return $self->display_error_details($Response->message);
 		}
+
+	my $PrinterString = $Response->printerstring;
+	$c->log->debug("PrinterString:\n" . $PrinterString);
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 

@@ -16,6 +16,7 @@ BEGIN {
 	has 'data' => ( is => 'rw' );
 	has 'customerservice' => ( is => 'rw' );
 	has 'service' => ( is => 'rw' );
+	has 'response' => ( is => 'rw' );
 	}
 
 sub model
@@ -211,7 +212,7 @@ sub insert_shipment
 
 	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
 
-	return $Shipment;
+	$self->response->shipment($Shipment);
 	}
 
 sub log
