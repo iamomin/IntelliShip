@@ -154,7 +154,7 @@ sub process_request
 
 	$self->insert_shipment($shipmentData);
 
-	$self->response->printerstring($PrinterString);
+	$self->response->printer_string($PrinterString);
 	}
 
 sub convert_string

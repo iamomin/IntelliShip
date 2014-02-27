@@ -67,42 +67,40 @@ sub void_shipment
 sub TagPrinterString
 	{
 	my $self = shift;
-	#my ($string,$ordernumber) = @_;
-	#my $tagged_string = '';
-    #
-	#my @string_lines = split("\n",$string);
-    #
-	## Check for order stream, and add it to main stream, if it exists
-	#my $CO = new CO($self->{'dbref'}, $self->{'customer'});
-	#my ($ID) = $CO->GetCurrentCOID($ordernumber,$self->{'customer'}->GetValueHashRef()->{'customerid'});
-	#$CO->Load($ID);
-    #
-	#my $Stream = $CO->GetValueHashRef()->{'stream'};
-	#if ( defined($Stream) && $Stream ne '' )
-	#{
-	#	push(@string_lines,split(/\~/,$Stream));
-	#}
-    #
-	#$tagged_string .= ".\n";
-	#foreach my $line (@string_lines)
-	#{
-	#	# Need to reverse print direction of local labels
-	#	if ( $line eq 'ZT' )
-	#	{
-	#		$line = 'ZB';
-	#	}
-    #
-	#	if ( $line =~ /Svcs/ || $line =~ /TRCK/ || $line =~ /CLS/ )
-	#	{
-	#		next;
-	#	}	
-	#	$tagged_string .= "$line\n";
-	#}
-    #
-	#$tagged_string .= "R0,0\n";
-	#$tagged_string .= ".\n\n";
-    #
-	#return $tagged_string;
+	my $string = shift;
+	my $ordernumber = shift;
+
+	# Check for order stream, and add it to main stream, if it exists
+	my $CO = $self->CO;
+
+	my @string_lines = split("\n",$string);
+
+	my $Stream = $CO->stream;
+	if ($Stream)
+		{
+		push(@string_lines,split(/\~/,$Stream));
+		}
+
+	my $tagged_string = ".\n";
+	foreach my $line (@string_lines)
+		{
+		# Need to reverse print direction of local labels
+		if ( $line eq 'ZT' )
+			{
+			$line = 'ZB';
+			}
+		if ( $line =~ /Svcs/ || $line =~ /TRCK/ || $line =~ /CLS/ )
+			{
+			next;
+			}
+
+		$tagged_string .= "$line\n";
+		}
+
+	$tagged_string .= "R0,0\n";
+	$tagged_string .= ".\n\n";
+
+	return $tagged_string;
 	}
 
 sub insert_shipment

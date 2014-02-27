@@ -32,14 +32,14 @@ my %hosts = (
 # aos_intelliship DB hosts
 my %db_hosts = (
 	&PRODUCTION  => 'localhost',
-	&DEVELOPMENT => 'localhost',
+	&DEVELOPMENT => 'dintelliship.engagetechnology.com',
 	&TEST        => 'dintelliship.engagetechnology.com',
 	);
 
 # arrs DB hosts
 my %arrs_db_hosts = (
 	&PRODUCTION  => 'localhost',
-	&DEVELOPMENT => 'localhost',
+	&DEVELOPMENT => 'darrs.engagetechnology.com',
 	&TEST        => 'darrs.engagetechnology.com',
 	);
 
