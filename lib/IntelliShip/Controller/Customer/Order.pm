@@ -1769,6 +1769,11 @@ sub ProcessPrinterStream
 	if ($CustomerLabelType =~ /^jpg$/i )
 		{
 		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+		my $out_file = $Shipment->shipmentid . '.jpg';
+		my $copyImgCommand = "cp /opt/engage/intelliship/html/print/label/$out_file " . IntelliShip::MyConfig->image_file_directory . "/label/";
+		$c->log->debug("copyImgCommand: " . $copyImgCommand);
+		system($copyImgCommand);
+		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
 	elsif ($CustomerLabelType =~ /^zpl$/i)
 		{

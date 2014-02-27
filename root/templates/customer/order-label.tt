@@ -2,7 +2,8 @@
 
 <form id="frm_label" name="frm_label" action="/customer/dashboard">
 
-	<div id="label" class="Print">[% LABEL %]</div>
+	[% IF LABEL %]<div id="label" class="Print">[% LABEL %]</div>[% END %]
+	[% IF LABEL_IMG %]<img src="[% LABEL_IMG %]">[% END %]
 
 	<table class="center DoNotPrint">
 		<tr>
