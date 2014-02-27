@@ -1630,16 +1630,17 @@ sub SHIP_ORDER :Private
 		#############################################
 		# GENERATE LABEL TO PRINT
 		#############################################
-		$self->generate_label($Shipment,$Service);
+		$self->generate_label($Shipment, $Service, $PrinterString);
 		$c->stash(template => "templates/customer/order-label.tt");
 		}
 	}
 
-sub generate_label
+sub generate_label :Private
 	{
 	my $self = shift;
 	my $Shipment = shift;
 	my $Service = shift;
+	my $PrinterString = shift;
 
 	my $c = $self->context;
 	my $params = $c->req->params;
@@ -1674,6 +1675,8 @@ sub generate_label
 		{
 		$c->stash->{dimweight} = undef;
 		}
+
+	$c->stash->{label_type} = $self->customer->label_type;
 
 	$c->stash->{enteredweight} = $CO->total_weight;
 	$c->stash->{ponumber} = $Shipment->ponumber;
@@ -1713,14 +1716,100 @@ sub generate_label
 		{
 		$refnumber .= " - " . $CO->{'ponumber'};
 		}
+
 	$c->stash->{refnumber} = $refnumber;
 
-	#$CgiRef = $self->ProcessPrinterStream($CgiRef);
+	$self->ProcessPrinterStream($Shipment, $PrinterString);
 
 	my $template = $params->{'carrier'} || 'default';
 	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 	$c->stash(MEDIA_PRINT => 1);
 	$c->stash($params);
+	}
+
+sub ProcessPrinterStream
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $PrinterString = shift;
+
+	my $c = $self->context;
+	my $Contact = $self->contact;
+
+	# Label stub
+	if ( my $StubTemplate = $Contact->get_contact_data_value('labelstub') )
+		{
+		#$CgiRef->{'truncd_custnum'} = TruncString($CgiRef->{'custnum'},16);
+		#$CgiRef->{'truncd_addressname'} = TruncString($CgiRef->{'addressname'},16);
+		#$PrinterString = $self->InsertLabelStubStream($PrinterString,$StubTemplate,$CgiRef);
+		}
+
+	#if ( $CgiRef->{'dhl_intl_labels'} )
+	#	{
+	#	$PrinterString .= $CgiRef->{'dhl_intl_labels'};
+	#	}
+
+	# UCC 128 label handling
+	if ($Contact->get_contact_data_value('checkucc128'))
+		{
+		#my $UCC128 = new UCC128($self->{'dbref'}->{'aos'}, $self->{'customer'});
+		#if ( my $UCC128ID = $UCC128->GetUCC128ID($CgiRef->{'addressname'},$CgiRef->{'department'},$CgiRef->{'custnum'},$CgiRef->{'externalpk'}) )
+		#	{
+		#	$UCC128->Load($UCC128ID);
+		#	$PrinterString .= $UCC128->BuildUCC128Label($CgiRef);
+		#	}
+		}
+
+	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
+
+	# Label stub
+	my $CustomerLabelType = $c->stash->{label_type};
+
+	if ($CustomerLabelType =~ /^jpg$/i )
+		{
+		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+		}
+	elsif ($CustomerLabelType =~ /^zpl$/i)
+		{
+		require IntelliShip::EPL2TOZPL2;
+		my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
+		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
+		}
+
+	$c->log->debug("CustomerLabelType: " . $CustomerLabelType);
+	$c->log->debug("PrinterString    : " . $PrinterString);
+
+	## Set Printer String Loop
+	my @printstring_loop = split(/\n/,$PrinterString);
+
+	 foreach (@printstring_loop)
+		{
+		$_ =~ s/"/\\"/sg;
+		$_ =~ s/'//g;
+		}
+
+	$c->stash->{printstring_loop} = \@printstring_loop;
+	}
+
+sub SaveStringToFile
+	{
+	my $self = shift;
+	my $FileName = shift;
+	my $FileString = shift;
+
+	return unless $FileName;
+	return unless $FileString;
+
+	$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
+
+	my $FILE = new IO::File;
+	unless (open ($FILE,">$FileName"))
+		{
+		warn "\nLabel String Save Error: " . $!;
+		return;
+		}
+	print $FILE $FileString;
+	close $FILE;
 	}
 
 # Push all shipment charges onto a simple delimited string, for passing back so that all
@@ -2223,7 +2312,7 @@ sub get_auto_order_number :Private
 	my $STH = $MyDBI->select($SQL);
 	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count(*)'};
 
-	# get order number if one is needed 
+	# get order number if one is needed
 	if ($HasAutoOrderNumber and !$OrderNumber)
 		{
 		my $sql = "SELECT nextval('ordernumber_" . $CustomerID . "_seq')";

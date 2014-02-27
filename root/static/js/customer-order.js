@@ -1,11 +1,5 @@
 var requiredFieldHash = {};
 
-function print_label()
-	{
-	window.print();
-	//Submit();
-	}
-
 function check_due_date()
 	{
 	var ShipDate = $('#datetoship').val();

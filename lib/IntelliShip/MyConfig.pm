@@ -301,6 +301,12 @@ sub image_file_directory
 	return $self->application_root . '/root/static/images';
 	}
 
+sub label_file_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/var/log/print/label';
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;

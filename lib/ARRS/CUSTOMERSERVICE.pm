@@ -1,49 +1,27 @@
-#!/usr/bin/perl -w
+package ARRS::CUSTOMERSERVICE;
 
-#==========================================================
-#   Project:	ARRS
-#
-#   Filename:	CUSTOMERSERVICE.pm
-#
-#   Date:		04/25/2002
-#
-#   Purpose:	Carrier Handling
-#
-#   Company:	Engage TMS
-#
-#   Author(s):	Kirk Aksdal
-#					Leigh Bohannon
-#
-#==========================================================
+use strict;
 
-{
-	package ARRS::CUSTOMERSERVICE;
+use ARRS::DBOBJECT;
+@ARRS::CUSTOMERSERVICE::ISA = ("ARRS::DBOBJECT");
 
-	use strict;
+use ARRS::AIRPORTTRANSIT;
+use ARRS::COMMON;
+use ARRS::CSOVERRIDE;
+use ARRS::RATETYPE;
+use ARRS::SERVICE;
+use ARRS::ZIPMILEAGE;
+use ARRS::ZONE;
+use ARRS::ZONETYPE;
+use POSIX qw(ceil);
+use Date::Manip qw(Date_GetPrev DateCalc);
+use IntelliShip::MyConfig;
 
-	use ARRS::DBOBJECT;
-	@ARRS::CUSTOMERSERVICE::ISA = ("ARRS::DBOBJECT");
+my $Benchmark = 0;
+my $BenchCSID = 'MAERSKDUGAN01';
+my $config = IntelliShip::MyConfig->get_ARRS_configuration;
 
-	#Add directories to the end via
-	my $dir = '/opt/engage/arrs/lib/ARRS';
-	push @INC, $dir;
-	use ARRS::AIRPORTTRANSIT;
-	use ARRS::COMMON;
-	use ARRS::CSOVERRIDE;
-	use ARRS::RATETYPE;
-	use ARRS::SERVICE;
-	use ARRS::ZIPMILEAGE;
-	use ARRS::ZONE;
-	use ARRS::ZONETYPE;
-	use POSIX qw(ceil);
-	use Date::Manip qw(Date_GetPrev DateCalc);
-	use IntelliShip::MyConfig;
-
-	my $Benchmark = 0;
-	my $BenchCSID = 'MAERSKDUGAN01';
-	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
-
-	sub new
+sub new
 	{
 		my $proto = shift;
 		my $class = ref($proto) || $proto;
@@ -58,7 +36,7 @@
 		return $self;
 	}
 
-	sub GetZoneNumber
+sub GetZoneNumber
 	{
 		my $self = shift;
 		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry) = @_;
@@ -73,10 +51,10 @@
 			return undef;
 		}
 
-# THIS IS A KLUDGE...INT'L SHIPPING IS BROKEN WITHOUT IT ATM.  FIX IT!
-# Basicaly, prices come up ok from shiporder to shipconfirm, but shipconfirm
-# to screen handler loses the From Country.
-if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
+		# THIS IS A KLUDGE...INT'L SHIPPING IS BROKEN WITHOUT IT ATM.  FIX IT!
+		# Basicaly, prices come up ok from shiporder to shipconfirm, but shipconfirm
+		# to screen handler loses the From Country.
+		if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 
 		my $ZoneNumber = '';
 		my $zonetypeid = $self->GetValueHashRef()->{'zonetypeid'};
@@ -244,8 +222,8 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 						z.destend >= '$ToZip'
 					";
 				}
-#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
-#warn $SQLString;
+	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+	#warn $SQLString;
 				my $sth = $self->{'object_dbref'}->prepare($SQLString)
 					or die "Could not prepare SQL statement";
 
@@ -262,17 +240,17 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			{
 				my $AirportTransit = new ARRS::AIRPORTTRANSIT($self->{'object_dbref'}, $self->{'object_contact'});
 
-      		unless
-      		(
-         		$ZoneNumber =
-            		$AirportTransit->GetAirportToAirportTransitTime(
-               		$FromZip,
-               		$ToZip,
-               		'0000000000004',
-               		'bax',
-               		0
-            		)
-      		)
+			unless
+			(
+				$ZoneNumber =
+					$AirportTransit->GetAirportToAirportTransitTime(
+					$FromZip,
+					$ToZip,
+					'0000000000004',
+					'bax',
+					0
+					)
+			)
 				{
 					undef($ZoneNumber);
 				}
@@ -287,12 +265,12 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		{
 			undef($ZoneNumber);
 		}
-#warn $ZoneNumber if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
-#warn "zonenumber=$ZoneNumber";
+	#warn $ZoneNumber if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
+	#warn "\nzonenumber=$ZoneNumber";
 		return ($ZoneNumber,$TransitTime);
 	}
 
-	sub GetCost
+sub GetCost
 	{
 		my $self = shift;
 		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date) = @_;
@@ -303,7 +281,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		{
 			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry);
 		}
-#warn "GetCost: $Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band, zone=$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date";
+	#warn "\nGetCost: $Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band, zone=$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date";
 
 		if (!defined($ZoneNumber))
 		{
@@ -381,9 +359,9 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 				if
 				(
 					$CSOverride->LowLevelLoadAdvanced(undef,{
-						customerid        => $CustomerID,
+						customerid		=> $CustomerID,
 						customerserviceid => $self->GetValueHashRef()->{'customerserviceid'},
-						datatypename      => 'cwttier',
+						datatypename	=> 'cwttier',
 					})
 				)
 				{
@@ -419,8 +397,8 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 				stopdate DESC
 			LIMIT 1
 		";
-#warn $SQLString;
-#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+	#warn $SQLString;
+	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
 
@@ -428,7 +406,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			or die "Cannot execute sql statement";
 
 		my ($CostRef) = $sth->fetchrow_hashref();
-#WarnHashRefValues($CostRef);
+	#WarnHashRefValues($CostRef);
 		my $Cost;
 
 		# CS has per lb rate + a flat cost (surcharge)
@@ -450,7 +428,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		elsif ( defined($CostRef->{'arcostperunit'}) )
 		{
 			$Cost = $CostRef->{'arcostperunit'} * $Quantity;
-#warn "cost=$Cost per=$CostRef->{'arcostperunit'} qty=$Quantity";
+	#warn "\ncost=$Cost per=$CostRef->{'arcostperunit'} qty=$Quantity";
 		}
 		# CS has a mileage based cost
 		elsif ( defined($CostRef->{'arcostpermile'}) )
@@ -458,11 +436,11 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			my $ZipMileage = new ARRS::ZIPMILEAGE($self->{'object_dbref'}, $self->{'object_contact'});
 
 			my $ZipToZipMileage = $ZipMileage->GetMileage($FromZip,$ToZip);
-#warn "cs mileage/cost: mileage: $ZipToZipMileage  arcostpermile: $CostRef->{'arcostpermile'}";
+	#warn "\ncs mileage/cost: mileage: $ZipToZipMileage  arcostpermile: $CostRef->{'arcostpermile'}";
 
 			$Cost = $CostRef->{'arcostpermile'} * $ZipToZipMileage;
 			$ZoneNumber = $ZipToZipMileage;
-#warn "Cost: $Cost  ZoneNumber: $ZoneNumber";
+	#warn "\nCost: $Cost  ZoneNumber: $ZoneNumber";
 		}
 		else
 		{
@@ -474,7 +452,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			# Check for rate percentage modifications and mins
 			$Type = DefaultTo($Type,'ar');
 
-#warn "$self->{'field_customerserviceid'}|$Type|$Band" if $self->GetValueHashRef()->{'customerserviceid'} eq 'PGLFEDEX00004';
+	#warn "\n$self->{'field_customerserviceid'}|$Type|$Band" if $self->GetValueHashRef()->{'customerserviceid'} eq 'PGLFEDEX00004';
 			# It is possible to pass in a band of 0, which is valid, but not true.
 			# It should not try and get a default at that point.
 			# A 0 band is meant to imply base rates.  It should trick the system into not doing
@@ -491,12 +469,12 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 				}
 			}
 
-#warn "$self->{'field_customerserviceid'}|$Type|$Band" if $self->GetValueHashRef()->{'customerserviceid'} eq 'MHEFEDEXES000';
+	#warn "\n$self->{'field_customerserviceid'}|$Type|$Band" if $self->GetValueHashRef()->{'customerserviceid'} eq 'MHEFEDEXES000';
 			# If we're passed a 0 band, we do indeed not want to go here
 			if ( $Band )
 			{
 				my ($DiscountPercent,$Min) = $self->GetRateData($Type,$Band,$Weight,$ZoneNumber,$CustomerID,$date,$CWT,$FromCountry,$ToCountry);
-#warn "$self->{'field_customerserviceid'}|$Type|$Band|$Cost|$DiscountPercent|$Min|$CWT" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+	#warn "\n$self->{'field_customerserviceid'}|$Type|$Band|$Cost|$DiscountPercent|$Min|$CWT" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 				# If this isn't an AOS shipment, and the CS has a non-AOS penalty, then subract the penalty
 				# from the percent.
@@ -514,10 +492,10 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 				{
 					$Cost = $Min;
 				}
-#warn "$self->{'field_customerserviceid'}|$Type|$Band|$Cost|$DiscountPercent|$Min|$CWT" if $self->GetValueHashRef()->{'customerserviceid'} eq 'PGLFEDEX00001';
-#warn "$self->{'field_customerserviceid'}|$Type|$Band|$Cost|$DiscountPercent|$Min|$CWT";
+	#warn "\n$self->{'field_customerserviceid'}|$Type|$Band|$Cost|$DiscountPercent|$Min|$CWT" if $self->GetValueHashRef()->{'customerserviceid'} eq 'PGLFEDEX00001';
+	#warn "\n$self->{'field_customerserviceid'}|$Type|$Band|$Cost|$DiscountPercent|$Min|$CWT";
 			}
-#warn "ADD MIN IF $CostRef->{'arcostmin'}";
+	#warn "\nADD MIN IF $CostRef->{'arcostmin'}";
 			# Figure out normal (old) style minimums
 			if ( defined($CostRef->{'arcostmin'}) && $CostRef->{'arcostmin'} > 0 && $CostRef->{'arcostmin'} > $Cost )
 			{
@@ -525,11 +503,11 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			}
 
 			$Cost = sprintf("%02.2f", $Cost);
-#warn "ADDED MIN $Cost"
+	#warn "\nADDED MIN $Cost"
 		}
 
 		# Get Truckload max weight and see if the price needs to be bumped up for multiple trucks
-      my $TLMaxWeight = $self->GetCSValue('maxtruckweight');
+	my $TLMaxWeight = $self->GetCSValue('maxtruckweight');
 
 		if ( defined($Cost) && defined($Weight) && $TLMaxWeight > 0 )
 		{
@@ -539,19 +517,19 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			$Cost = $Cost * $TruckCount;
 		}
 
-#warn "GetCost returning: $Cost";
+	#warn "\nGetCost returning: $Cost";
 
 		return ($Cost, $ZoneNumber);
 	}
 
-	sub GetShipmentCosts
+sub GetShipmentCosts
 	{
 		my $self = shift;
 		my ($ShipmentRef) = @_;
-#WarnHashRefValues($ShipmentRef);
+		#WarnHashRefValues($ShipmentRef);
 		# Check if this CS/Service is inactive...if it is, return *immediately*
 		return(undef,undef,undef) if $self->GetCSValue('inactive');
-#warn "GetShipmentCosts";
+		#warn "\nGetShipmentCosts";
 		my $AggregateWeight = 0;
 		my $Cost;
 		my $CostWeight;
@@ -569,12 +547,12 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		my @DataTypes = $self->BuildArrayFromJSString($ShipmentRef->{'datatypeidlist'});
 
 		my @DimWeights = ();
-#warn $ShipmentRef->{'useaggweight'} if exists($ShipmentRef->{'useaggweight'});
+		#warn $ShipmentRef->{'useaggweight'} if exists($ShipmentRef->{'useaggweight'});
 		my $UseAggregateWeight = exists($ShipmentRef->{'useaggweight'}) ? $ShipmentRef->{'useaggweight'} : $self->GetCSValue('aggregateweightcost');
-#warn "pulled from CS (useaggweight): $UseAggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
-#		my $FSCRate = $self->GetCSValue('fscrate');
+		#warn "\npulled from CS (useaggweight): $UseAggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+		#my $FSCRate = $self->GetCSValue('fscrate');
 		#(undef,undef,undef,undef,undef,my $FSCRate) = $self->GetAssData('ar','fscrate');
-#      my ($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid) = @_;
+		#my ($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid) = @_;
 
 		(my $FSCRate) = $self->GetAssValue('ar','fscrate',undef,undef,undef,undef,undef,$ShipmentRef->{'customerid'});
 		$FSCRate = $FSCRate ? $FSCRate : 0;
@@ -583,7 +561,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		my $TotalQuantity = 0;
 		my $UnitType;
 		my $DataType;
-#warn "productcount = $ShipmentRef->{'productcount'} FSC = $FSCRate";
+		#warn "\nproductcount = $ShipmentRef->{'productcount'} FSC = $FSCRate";
 		# Iterate through product list
 		if ( defined($ShipmentRef->{'productcount'}) && $ShipmentRef->{'productcount'} ne '' )
 		{
@@ -608,7 +586,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 				$UnitType = $UnitTypes[$i];
 			}
 			$UnitType = scalar(keys(%$ut_ref)) == 1 ? $UnitType : undef;
-#warn "CS UnitType=$UnitType" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn "\nCS UnitType=$UnitType" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 			my $MaxQuantity = $self->GetCSValue('maxquantity');
 			my $MinQuantity = $self->GetCSValue('minquantity');
@@ -642,19 +620,19 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 				if ( $MinPackageWeight && $Weight < $MinPackageWeight ) { return(undef,undef,undef) }
 			}
 
-#warn "CS AggWeight (before flip check)" . $AggregateWeight if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn "\nCS AggWeight (before flip check)" . $AggregateWeight if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 			# Set flag to use aggregate weight in calcs or not - this new nonsense deals with hybrid type cases, that flip from non-agg
 			# to agg (like small pack that're non-agg until they hit CWT status)
 			if ( $UseAggregateWeight > 1 )
 			{
-#warn "in if useaggweight > 1..." if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+				#warn "\nin if useaggweight > 1..." if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 				# If agg weight < min agg weight, go back to non-agg calcs
 				my $MinAggWeight = $self->GetCSValue('minaggweight');
 
-#warn "MinAggWeight = $MinAggWeight  AggWeight = $AggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+				#warn "\nMinAggWeight = $MinAggWeight  AggWeight = $AggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 				if ( !$MinAggWeight || $AggregateWeight < $MinAggWeight || $TotalQuantity == 1 )
 				{
-#warn "Unset AggWeightFlag... go back to regular calc!!!" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+				#warn "\nUnset AggWeightFlag... go back to regular calc!!!" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 					$UseAggregateWeight = 0
 				}
@@ -667,16 +645,16 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 					undef($CWT) if $self->GetValueHashRef()->{'customerserviceid'} eq 'APCFEDEXGRND1';
 				}
 			}
-#warn "$self->{'field_customerserviceid'}|$UseAggregateWeight|$CWT" if $CWT;
-#warn "$self->{'field_customerserviceid'}|$UseAggregateWeight|" if !$CWT;
+			#warn "\n$self->{'field_customerserviceid'}|$UseAggregateWeight|$CWT" if $CWT;
+			#warn "\n$self->{'field_customerserviceid'}|$UseAggregateWeight|" if !$CWT;
 			# Get costs for non agg situations
 			if ( !$UseAggregateWeight )
 			{
-#warn "CS useaggregate=$UseAggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn "\nCS useaggregate=$UseAggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 				($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays) = $self->GetPackageCosts(\@Weights,\@Quantities,\@DimLengths,\@DimWidths,\@DimHeights,\@DataTypes,$ShipmentRef);
 
-#warn "CS GetPackageCosts returned cost=$Cost";
+			#warn "\nCS GetPackageCosts returned cost=$Cost";
 
 			}
 		}
@@ -690,16 +668,16 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			}
 
 			($Cost,$Zone,$CostWeight,$TransitDays) = $self->GetSuperCost($AggregateWeight,undef,undef,undef,$ShipmentRef,$CWT,$TotalQuantity,$UnitType);
-#warn "HERE: $Cost,$Zone,$CostWeight,$TransitDays";
-#warn "CS UseAggregateWeight: " . $UseAggregateWeight . " " . $Cost if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
-#warn $Cost if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn "\nHERE: $Cost,$Zone,$CostWeight,$TransitDays";
+			#warn "\nCS UseAggregateWeight: " . $UseAggregateWeight . " " . $Cost if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn $Cost if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 			# Set aggregate weight to '1' if it's 0, to deal with 0 weight packages
 			$AggregateWeight = $AggregateWeight > 0 ? $AggregateWeight : 1;
 
 			if ( defined($Cost) && $Cost ne '' && $Cost >= 0 )
 			{
-#warn $Cost if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn $Cost if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 				for ( my $i = 0; $i < $ShipmentRef->{'productcount'}; $i ++ )
 				{
 					# Skip products
@@ -751,12 +729,12 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			$Cost = sprintf("%02.2f",($Cost + ($Cost * $FSCRate)));
 		}
 
-#warn "CS GetShipmentCosts returning: |$Cost|zone=$Zone|days=$TransitDays|";
+		#warn "\nCS GetShipmentCosts returning: |$Cost|zone=$Zone|days=$TransitDays|";
 
 		return ($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays);
 	}
 
-	sub BuildArrayFromJSString
+sub BuildArrayFromJSString
 	{
 		my $self = shift;
 		my ($String) = @_;
@@ -771,11 +749,11 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		return @Array;
 	}
 
-	sub GetCSValue
-   {
-      my $self = shift;
+sub GetCSValue
+	{
+		my $self = shift;
 		my ($ValueType,$AllowNull,$CustomerID) = @_;
-#warn "$ValueType GetCSValue";
+		#warn "\n$ValueType GetCSValue";
 		my $Value;
 
 		my $CSID = $self->{'field_customerserviceid'};
@@ -808,10 +786,10 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 			";
 
 			my $STH = $self->{'object_dbref'}->prepare($SQL)
-         	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-      	$STH->execute()
-         	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
 			($Value) = $STH->fetchrow_array();
 
@@ -845,9 +823,9 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		}
 
 		return $Value;
-   }
+	}
 
-	sub GetCSShippingValues
+sub GetCSShippingValues
 	{
 		my $self = shift;
 		my ($Ref) = @_;
@@ -930,11 +908,11 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		#(undef,undef,undef,undef,undef,$ShipmentValueRef->{'fscrate'}) = $self->GetAssData('ar','fscrate',$Ref->{'dateshipped'});
 		($ShipmentValueRef->{'fscrate'}) = $self->GetAssValue('ar','fscrate',undef,undef,undef,undef,undef,$Ref->{'customerid'});
 		$ShipmentValueRef->{'fscrate'} = $ShipmentValueRef->{'fscrate'} ? $ShipmentValueRef->{'fscrate'} : 0;
-	#WarnHashRefValues($ShipmentValueRef) if $CSID eq 'TOTALTRANSPO1';
+		#WarnHashRefValues($ShipmentValueRef) if $CSID eq 'TOTALTRANSPO1';
 		return $ShipmentValueRef;
 	}
 
-	sub GetCSJSArrays
+sub GetCSJSArrays
 	{
 		my $self = shift;
 		my ($Ref) = @_;
@@ -973,7 +951,7 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		return $ShipmentValueRef;
 	}
 
-	sub GetDimWeight
+sub GetDimWeight
 	{
 		my $self = shift;
 		my ($DimLength,$DimWidth,$DimHeight) = @_;
@@ -982,19 +960,19 @@ if ( !defined($FromCountry) || $FromCountry eq '' ) { $FromCountry = 'US' }
 		my $DimFactor = $self->GetCSValue('dimfactor');
 		my $ServiceID = $self->GetValueHashRef()->{'serviceid'};
 
-warn "GetDimWeight dimfactor=$DimFactor ServiceID=$ServiceID";
+		#warn "\nGetDimWeight dimfactor=$DimFactor ServiceID=$ServiceID";
 		my $Handler = $self->GetCarrierHandler();
 
 		unless ( ($DimWeight) = $Handler->GetDimWeight($DimLength,$DimWidth,$DimHeight,$DimFactor,$ServiceID) )
 			{
 			undef($DimWeight);
 			}
-warn "dimweight returning |$DimWeight|";
+		#warn "\ndimweight returning |$DimWeight|";
 
 		return $DimWeight;
 	}
 
-	sub DimCheck
+sub DimCheck
 	{
 		my $self = shift;
 		my ($DimLength,$DimWidth,$DimHeight) = @_;
@@ -1013,11 +991,11 @@ sub GetCarrierHandler
 
 	my $HandlerName = $Service->GetValueHashRef()->{'webhandlername'} || '';
 	my $Handler;
-#	warn "GetCarrierHandler handlername=$HandlerName at sevice level webhandlername";
+	#warn "\nGetCarrierHandler handlername=$HandlerName at sevice level webhandlername";
 	#if ( defined($HandlerName) && $HandlerName ne '' && -r "$config->{BASE_PATH}/lib/ARRS/$HandlerName" )
 	if (length $HandlerName)
 		{
-		warn "passed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
+		#warn "\npassed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
 		$HandlerName =~ s/\.pl//;
 		$HandlerName = "ARRS::$HandlerName";
 
@@ -1026,13 +1004,13 @@ sub GetCarrierHandler
 
 		if ($@)
 			{
-			warn "[Error] GetCarrierHandler eval Exception: $@";
+			warn "\n[Error] GetCarrierHandler eval Exception: $@";
 			# other exception handling goes here...
 			}
 
 		$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
 
-		warn "done with eval";
+		#warn "\ndone with eval";
 		}
 	else
 		{
@@ -1043,7 +1021,7 @@ sub GetCarrierHandler
 	return $Handler;
 	}
 
-	sub GetCarrierScac
+sub GetCarrierScac
 	{
 		my $self = shift;
 
@@ -1058,30 +1036,30 @@ sub GetCarrierHandler
 		return $scac;
 	}
 
-	sub GetCarrierServiceName
+sub GetCarrierServiceName
 	{
 		my $self = shift;
 		my ($CustomerServiceID) = @_;
 
 		my $SQL = "
 			SELECT
-        		c.carriername,
-        		s.servicename
-        	FROM
-        		customerservice cs,
-        		service s,
-        		carrier c
-        	WHERE
+				c.carriername,
+				s.servicename
+			FROM
+				customerservice cs,
+				service s,
+				carrier c
+			WHERE
 				cs.serviceid = s.serviceid
 				AND s.carrierid = c.carrierid
 				AND cs.customerserviceid = ?
 		";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-      	or die "Could not prepare SQL statement";
+		or die "Could not prepare SQL statement";
 
 		$STH->execute($CustomerServiceID)
-      	or die "Cannot execute SQL statement";
+		or die "Cannot execute SQL statement";
 
 		my ($CarrierName,$ServiceName) = $STH->fetchrow_array();
 
@@ -1090,7 +1068,7 @@ sub GetCarrierHandler
 		return ($CarrierName,$ServiceName);
 	}
 
-	sub GetAggregateWeight
+sub GetAggregateWeight
 	{
 		my $self = shift;
 		my ($Weights,$DimWeights,$Quantities,$DataTypes,$Count,$QuantityXWeight) = @_;
@@ -1133,7 +1111,7 @@ sub GetCarrierHandler
 		return $AggregateWeight;
 	}
 
-	sub GetPackageCosts
+sub GetPackageCosts
 	{
 		my $self = shift;
 
@@ -1150,12 +1128,12 @@ sub GetCarrierHandler
 		my $PackageCosts = '';
 		my $TransitDays = 0;
 
-#		my $FSCRate = $self->GetCSValue('fscrate');
-#		(undef,undef,undef,undef,undef,my $FSCRate) = $self->GetAssData('ar','fscrate');
+		#my $FSCRate = $self->GetCSValue('fscrate');
+		#(undef,undef,undef,undef,undef,my $FSCRate) = $self->GetAssData('ar','fscrate');
 		(my $FSCRate) = $self->GetAssValue('ar','fscrate',undef,undef,undef,undef,undef,$ShipmentRef->{'customerid'});
 
 		$FSCRate = $FSCRate ? $FSCRate : 0;
-#warn "FSCRATE=$FSCRate" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
+		#warn "\nFSCRATE=$FSCRate" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
 
 		my $CostWeight = 0;
 
@@ -1170,7 +1148,7 @@ sub GetCarrierHandler
 			my $PackageCost;
 			my $PackageWeight;
 			my $PackageCostWeight = 0;
-#warn "GetPackageCosts() each weight: $Weights[$i]" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn "\nGetPackageCosts() each weight: $Weights[$i]" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 			if ( $ShipmentRef->{'quantityxweight'} )
 			{
@@ -1189,8 +1167,8 @@ sub GetCarrierHandler
 			}
 
 			($PackageCost,$Zone,$PackageCostWeight,$TransitDays) = $self->GetSuperCost($PackageWeight,$DimLengths[$i],$DimWidths[$i],$DimHeights[$i],$ShipmentRef);
-#warn "HERE PACKAGE: $PackageCost,$Zone,$PackageCostWeight,$TransitDays";
-#warn "PackageCost=$PackageCost TransitDays=$TransitDays" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+			#warn "\nHERE PACKAGE: $PackageCost,$Zone,$PackageCostWeight,$TransitDays";
+			#warn "\nPackageCost=$PackageCost TransitDays=$TransitDays" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 			# If we get a package cost & zone back that're both undef...the shipment can't use this service.
 			if ( !$PackageCost && !$Zone )
@@ -1216,7 +1194,7 @@ sub GetCarrierHandler
 				{
 					$PackageCost = sprintf("%02.2f",$PackageCost);
 					my $PackageFSCCost = sprintf("%02.2f",$PackageCost * $FSCRate);
-#warn "GOTIT: |$PackageCost|$PackageFSCCost|";
+					#warn "\nGOTIT: |$PackageCost|$PackageFSCCost|";
 
 					$PackageCosts .= $PackageCost . "-" . $PackageFSCCost . "::";
 				}
@@ -1239,16 +1217,16 @@ sub GetCarrierHandler
 		{
 			$Cost = sprintf("%02.2f",$Cost);
 		}
-#warn "GetPackageCosts returning transit=$TransitDays";
+		#warn "\nGetPackageCosts returning transit=$TransitDays";
 		return($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays);
 	}
 
-	sub GetSuperCost
+sub GetSuperCost
 	{
 		my $self = shift;
 		my ($Weight,$DimLength,$DimWidth,$DimHeight,$ShipmentRef,$CWT,$Quantity,$UnitType) = @_;
-#warn "GetSuperCost() Weight: $Weight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
-#WarnHashRefValues($ShipmentRef);
+		#warn "\nGetSuperCost() Weight: $Weight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
+		#WarnHashRefValues($ShipmentRef);
 		my $Zone;
 		my $Cost = 0;
 		my $TransitDays = 0;
@@ -1260,7 +1238,7 @@ sub GetCarrierHandler
 		# If we don't have a ratetype, kick back just the CostWeight
 		if ( !$self->GetValueHashRef()->{'ratetypeid'} )
 		{
-#warn "RETURN 0: no ratetypeid" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
+		#warn "\nRETURN 0: no ratetypeid" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 			return(undef,undef,$CostWeight);
 		}
 
@@ -1272,21 +1250,21 @@ sub GetCarrierHandler
 			( $self->GetCSValue('maxweightabs') && $Weight > $self->GetCSValue('maxweightabs') )
 		)
 		{
-#warn "RETURN 1: weight";
+		#warn "\nRETURN 1: weight";
 			return(undef,undef,$CostWeight);
 		}
 
 		# If weight is greater than cs max, return 0 (assume above the max, service is available on a 'quote' basis)
 		if ( $self->GetCSValue('maxweight') && $Weight > $self->GetCSValue('maxweight') )
 		{
-#warn "RETURN 2: maxweight";
+		#warn "\nRETURN 2: maxweight";
 			return(0,0,$CostWeight);
 		}
 
 		# If dimcheck fails (basically, dims bigger than we've got pricing for - more-or-less), return undef
 		if ( !$self->DimCheck($DimLength,$DimWidth,$DimHeight) )
 		{
-#warn "RETURN 3: dims";
+		#warn "\nRETURN 3: dims";
 			return(undef,undef,undef);
 		}
 
@@ -1298,7 +1276,7 @@ sub GetCarrierHandler
 		{
 			$RateTypeID = $DimRateTypeID;
 		}
-#warn "GetSuperCost ratetypeid: $RateTypeID" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
+		#warn "\nGetSuperCost ratetypeid: $RateTypeID" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
 		# Check for cs/dimbased ratetypeid
 		unless ( $RateTypeID )
@@ -1313,7 +1291,7 @@ sub GetCarrierHandler
 				return(0,undef,$CostWeight);
 			}
 		}
-#warn "CostWeight: $CostWeight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
+		#warn "\nCostWeight: $CostWeight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		my $RateType = new ARRS::RATETYPE($self->{'object_dbref'}, $self->{'object_contact'});
 
 		my $RateHandlerName;
@@ -1323,17 +1301,17 @@ sub GetCarrierHandler
 			$RateHandlerName = $RateType->GetValueHashRef()->{'handler'};
 			$Lookuptype = $RateType->GetValueHashRef()->{'lookuptype'};
 		}
-#warn "GetSuperCost handler/lookuptype: $RateHandlerName  $Lookuptype";
+		#warn "\nGetSuperCost handler/lookuptype: $RateHandlerName  $Lookuptype";
 
 		if ( !defined($RateHandlerName) || $RateHandlerName eq '' )
 		{
-#warn "no ratehandler: weight=$Weight";
+			#warn "\nno ratehandler: weight=$Weight";
 			if ( !defined($Weight) || $Weight eq '' ) { return(undef,undef,$CostWeight); }
 
 			# Assume everything going through 'GetShipmentCosts' is coming through AOS.  Currently, this is true.
 			# Possibly at some point, we may want AOS to pass the flag on its own.
 			my $automated = 1;
-#warn "GO IN HERE: $Cost";
+			#warn "\nGO IN HERE: $Cost";
 
 			($Cost) = $self->GetCost(
 				$CostWeight,
@@ -1357,12 +1335,12 @@ sub GetCarrierHandler
 				$ShipmentRef->{'dateshipped'},
 			);
 
-#warn "GO OUT OF HERE: $Cost";
+		#warn "\nGO OUT OF HERE: $Cost";
 
 		}
 		else
 		{
-#warn "IN ELSE";
+		#warn "\nIN ELSE";
 			# Return 0 cost for zips that are interline for the carrier, that require quote only for interline
 			my $Service = new ARRS::SERVICE($self->{'object_dbref'}, $self->{'object_contact'});
 			$Service->Load($self->GetValueHashRef()->{'serviceid'});
@@ -1379,12 +1357,12 @@ sub GetCarrierHandler
 						AND zipbegin <= ?
 						AND zipend >= ?
 				")
-        			or die "Could not prepare SQL statement";
+					or die "Could not prepare SQL statement";
 
-     			$STH->execute($Service->GetValueHashRef()->{'carrierid'},$zip,$zip)
-        			or die "Cannot execute sql statement";
+				$STH->execute($Service->GetValueHashRef()->{'carrierid'},$zip,$zip)
+					or die "Cannot execute sql statement";
 
-     			my ($QuoteOnly) = $STH->fetchrow_array();
+				my ($QuoteOnly) = $STH->fetchrow_array();
 
 				$STH->finish();
 
@@ -1423,24 +1401,24 @@ sub GetCarrierHandler
 					$ShipmentRef->{'fromcountry'},
 					$ShipmentRef->{'tocountry'}
 				);
-#warn "$Zone|" . $self->GetValueHashRef()->{'customerserviceid'};
+				#warn "\n$Zone|" . $self->GetValueHashRef()->{'customerserviceid'};
 				if ( !$Zone )
 				{
-#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
+				#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
 					return(undef,undef,$CostWeight);
 				}
 			}
-#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
+			#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
 
 			eval "require Tariff::$RateHandlerName";
 			my $RateHandler = eval 'new Tariff::' . $RateHandlerName . '($ShipmentRef->{"dbref_' . lc($RateHandlerName) . '"},$RateTypeID)';
-#WarnHashRefValues($ShipmentRef);
+			#WarnHashRefValues($ShipmentRef);
 
 			my ($MarkupAmt,$MarkupPercent) = $self->GetCustomerMarkup($ShipmentRef);
 			my $DiscountPercent = $self->GetDiscountPercent($ShipmentRef);
 			my $ScacCode = $self->GetCarrierScac();
-#warn "RateHandlerName=$RateHandlerName";
-#warn "Carrier Scac=$ScacCode";
+			#warn "\nRateHandlerName=$RateHandlerName";
+			#warn "\nCarrier Scac=$ScacCode";
 			($Cost,$TransitDays) = $RateHandler->GetCost(
 				$CostWeight,
 				$DiscountPercent,
@@ -1528,14 +1506,14 @@ sub GetCarrierHandler
 
 			$Cost = sprintf("%02.2f",$Cost);
 		}
-#warn "GetSuperCost: |$Cost|$Zone|$CostWeight|$TransitDays|";
+		#warn "\nGetSuperCost: |$Cost|$Zone|$CostWeight|$TransitDays|";
 
 		return ($Cost,$Zone,$CostWeight,$TransitDays);
 	}
 
-	sub GetClassValue
-   {
-      my $self = shift;
+sub GetClassValue
+	{
+	my $self = shift;
 		my ($CDColumn,$ClassLow,$ClassHigh) = @_;
 
 		my $CSID = $self->GetValueHashRef()->{'customerserviceid'};
@@ -1556,24 +1534,24 @@ sub GetCarrierHandler
 					)
 				)
 		";
-#warn $SQL;
+	#warn $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($ClassValue) = $STH->fetchrow_array();
+		my ($ClassValue) = $STH->fetchrow_array();
 
 		$STH->finish();
 
-      return $ClassValue;
-   }
+	return $ClassValue;
+	}
 
-	sub GetCustomerDiscount
-   {
-      my $self = shift;
+sub GetCustomerDiscount
+	{
+	my $self = shift;
 
 		my ($customerid) = @_;
 		my $serviceid = $self->GetValueHashRef()->{'serviceid'};
@@ -1582,23 +1560,23 @@ sub GetCarrierHandler
 		my $SQL = "
 			SELECT apdiscount from ratedata where ownertypeid=1 and ownerid = '$customerid' and apdiscount is not null
 		";
-#warn $SQL;
+	#warn $SQL;
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($Percent) = $STH->fetchrow_array();
+		my ($Percent) = $STH->fetchrow_array();
 
 		$STH->finish();
-#warn "DISCOUNT: $Percent";
-      return $Percent;
-   }
+	#warn "\nDISCOUNT: $Percent";
+	return $Percent;
+	}
 
-	sub GetCustomerMarkup
-   {
-      my $self = shift;
+sub GetCustomerMarkup
+	{
+	my $self = shift;
 
 		my ($ref) = @_;
 		my $serviceid = $self->GetValueHashRef()->{'serviceid'};
@@ -1607,24 +1585,24 @@ sub GetCarrierHandler
 		my $SQL = "
 			SELECT freightmarkupamt,freightmarkuppercent from ratedata where ownertypeid=1 and ownerid = ? and (freightmarkupamt is not null or freightmarkuppercent is not null)
 		";
-#warn $SQL;
+		#warn $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute($ref->{'customerid'})
-        	or die "Cannot execute sql statement";
+		$STH->execute($ref->{'customerid'})
+			or die "Cannot execute sql statement";
 
-     	my ($markupamt,$markuppercent) = $STH->fetchrow_array();
+		my ($markupamt,$markuppercent) = $STH->fetchrow_array();
 
 		$STH->finish();
 
-      return ($markupamt,$markuppercent);
-   }
+	return ($markupamt,$markuppercent);
+	}
 
-	sub GetAssMarkup
-   {
-      my $self = shift;
+sub GetAssMarkup
+	{
+	my $self = shift;
 
 		my ($customerid) = @_;
 		my $serviceid = $self->GetValueHashRef()->{'serviceid'};
@@ -1633,27 +1611,27 @@ sub GetCarrierHandler
 		my $SQL = "
 			SELECT assmarkupamt,assmarkuppercent from assdata where ownertypeid=1 and ownerid = ? and (assmarkupamt is not null or assmarkuppercent is not null)
 		";
-#warn $SQL;
-#warn $customerid;
+		#warn $SQL;
+		#warn $customerid;
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute($customerid)
-        	or die "Cannot execute sql statement";
+		$STH->execute($customerid)
+			or die "Cannot execute sql statement";
 
-     	my ($markupamt,$markuppercent) = $STH->fetchrow_array();
+		my ($markupamt,$markuppercent) = $STH->fetchrow_array();
 
 		$STH->finish();
 
-      return ($markupamt,$markuppercent);
-   }
+	return ($markupamt,$markuppercent);
+	}
 
-	sub GetDiscountPercent
+sub GetDiscountPercent
 	{
 		my $self = shift;
 		my ($ShipmentRef) = @_;
 		my $DiscountPercent;
-#warn "GetDiscountPercent";
+		#warn "\nGetDiscountPercent";
 		if
 		(
 			$self->GetCSValue('hasgeodiscountpercent') &&
@@ -1685,11 +1663,11 @@ sub GetCarrierHandler
 		{
 			$DiscountPercent = $self->GetCSValue('discountpercent');
 		}
-#warn "Return DiscountPercent = $DiscountPercent";
+		#warn "\nReturn DiscountPercent = $DiscountPercent";
 		return $DiscountPercent;
 	}
 
-	sub GetAMC
+sub GetAMC
 	{
 		my $self = shift;
 		my ($FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry) = @_;
@@ -1718,7 +1696,7 @@ sub GetCarrierHandler
 		return $AMC;
 	}
 
-	sub GetGeoFreightCharges
+sub GetGeoFreightCharges
 	{
 		my $self = shift;
 		my ($FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry) = @_;
@@ -1745,9 +1723,9 @@ sub GetCarrierHandler
 		return $GeoFreightCharges;
 	}
 
-	sub GetGeoRateValue
-   {
-      my $self = shift;
+sub GetGeoRateValue
+	{
+	my $self = shift;
 		my ($GRTypeID,$GRColumn,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry) = @_;
 
 		my $CSID = $self->GetValueHashRef()->{'customerserviceid'};
@@ -1840,21 +1818,21 @@ sub GetCarrierHandler
 					)
 				)
 		";
-#warn $SQL;
+		#warn $SQL;
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($GRValue) = $STH->fetchrow_array();
+		my ($GRValue) = $STH->fetchrow_array();
 
 		$STH->finish();
 
-      return $GRValue;
-   }
+	return $GRValue;
+	}
 
-	sub GetDimRateTypeID
+sub GetDimRateTypeID
 	{
 		my $self = shift;
 		my ($DimLength,$DimWidth,$DimHeight,$Weight) = @_;
@@ -2023,7 +2001,7 @@ sub GetCarrierHandler
 		return 0;
 	}
 
-	sub GetRateData
+sub GetRateData
 	{
 		my $self = shift;
 		my ($type,$band,$weight,$zone,$customerid,$date,$cwt,$from_country,$to_country) = @_;
@@ -2046,7 +2024,7 @@ sub GetCarrierHandler
 
 		my $common_discount_select = "SELECT ${type}discount FROM ratedata WHERE ownerid =";
 		my $common_min_select = "SELECT ${type}min FROM ratedata WHERE ownerid =";
-#		my $common_where = "AND band = '$band' AND unitsstart <= '$weight' AND unitsstop >= '$weight' AND customerid";
+		#my $common_where = "AND band = '$band' AND unitsstart <= '$weight' AND unitsstop >= '$weight' AND customerid";
 		my $common_where = "AND band = '$band' AND unitsstart <= '$weight' AND unitsstop >= '$weight'";
 		my $order_by = "ORDER BY startdate DESC, stopdate DESC";
 
@@ -2096,22 +2074,22 @@ sub GetCarrierHandler
 		";
 		local $^W=1;
 
-#warn $SQL;
+		#warn $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($discount_percent,$min) = $STH->fetchrow_array();
+		my ($discount_percent,$min) = $STH->fetchrow_array();
 
 		$STH->finish();
-#warn "$discount_percent,$min";
+		#warn "\n$discount_percent,$min";
 		return ($discount_percent,$min);
 	}
 
-	sub GetBand
+sub GetBand
 	{
 		my $self = shift;
 		my ($type,$date) = @_;
@@ -2135,21 +2113,21 @@ sub GetCarrierHandler
 				)
 		";
 
-#warn $SQL if $CSID eq 'MHEFEDEXES000';
+		#warn $SQL if $CSID eq 'MHEFEDEXES000';
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($band) = $STH->fetchrow_array();
+		my ($band) = $STH->fetchrow_array();
 
 		$STH->finish();
 
 		return ($band,$dollar_amount);
 	}
 
-	sub GetBandDollars
+sub GetBandDollars
 	{
 		my $self = shift;
 		my ($date) = @_;
@@ -2177,12 +2155,12 @@ sub GetCarrierHandler
 		";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my $rs_ref = $STH->fetchrow_hashref();
+		my $rs_ref = $STH->fetchrow_hashref();
 
 		$STH->finish();
 
@@ -2203,7 +2181,7 @@ sub GetCarrierHandler
 		}
 	}
 
-	sub GetBandDates
+sub GetBandDates
 	{
 		my $self = shift;
 		my ($date,$start_date,$bs_week,$max_weeks) = @_;
@@ -2240,7 +2218,7 @@ sub GetCarrierHandler
 		return ($current_week,$band_start_date,$band_stop_date);
 	}
 
-	sub GetInvFreightCharges
+sub GetInvFreightCharges
 	{
 		my $self = shift;
 		my ($sop_id,$carrier_id,$start_date,$stop_date,$avg_weeks) = @_;
@@ -2259,12 +2237,12 @@ sub GetCarrierHandler
 		";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($freight_charges) = $STH->fetchrow_array();
+		my ($freight_charges) = $STH->fetchrow_array();
 
 		$STH->finish();
 
@@ -2272,7 +2250,7 @@ sub GetCarrierHandler
 		return ($freight_charges/$avg_weeks);
 	}
 
-	sub ZoneIsExcluded
+sub ZoneIsExcluded
 	{
 		my $self = shift;
 		my ($zip,$state) = @_;
@@ -2293,24 +2271,24 @@ sub GetCarrierHandler
 		";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
+		$STH->execute()
+			or die "Cannot execute sql statement";
 
-     	my ($zoneexclusionid) = $STH->fetchrow_array();
+		my ($zoneexclusionid) = $STH->fetchrow_array();
 
 		$STH->finish();
 
 		return ($zoneexclusionid);
 	}
 
-	sub GetAssValue
+sub GetAssValue
 	{
 		my $self = shift;
 		my ($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid) = @_;
-#warn "GetAssValue name=$ass_name freight=$freight_cost";
-#warn "GetAssValue name=$ass_name freight=$freight_cost customerid=$customerid" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
+	#warn "\nGetAssValue name=$ass_name freight=$freight_cost";
+	#warn "\nGetAssValue name=$ass_name freight=$freight_cost customerid=$customerid" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
 
 		my ($markupamt,$markuppercent) = $self->GetAssMarkup($customerid);
 
@@ -2318,28 +2296,28 @@ sub GetCarrierHandler
 			$self->GetAssData($type,$ass_name,$date_shipped,$ownertypeid,$markupamt,$markuppercent);
 
 		# override "cost" with csoveride value if one exists
-      my $CSOverride = new ARRS::CSOVERRIDE($self->{'object_dbref'}, $self->{'object_contact'});
-      if
-      (
-         $CSOverride->LowLevelLoadAdvanced(undef,{
-            customerid        => $customerid,
-            customerserviceid => $self->{'field_customerserviceid'},
-            datatypename      => $ass_name
-         })
-      )
-      {
+	my $CSOverride = new ARRS::CSOVERRIDE($self->{'object_dbref'}, $self->{'object_contact'});
+	if
+	(
+		$CSOverride->LowLevelLoadAdvanced(undef,{
+			customerid		=> $customerid,
+			customerserviceid => $self->{'field_customerserviceid'},
+			datatypename	=> $ass_name
+		})
+	)
+	{
 			if ( $ass_name eq 'fscrate' )
 			{
-         	$costpercent = $CSOverride->GetValueHashRef()->{'value'};
+			$costpercent = $CSOverride->GetValueHashRef()->{'value'};
 			}
 			else
 			{
-         	$cost = $CSOverride->GetValueHashRef()->{'value'};
+			$cost = $CSOverride->GetValueHashRef()->{'value'};
 			}
-#warn "LOADED FROM CSOVERRIDE: $costpercent" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
-      }
+	#warn "\nLOADED FROM CSOVERRIDE: $costpercent" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
+	}
 
-#warn "GetAssValue name=$ass_name cost=$cost costpercent=$costpercent";
+	#warn "\nGetAssValue name=$ass_name cost=$cost costpercent=$costpercent";
 
 		my $ass_cost = $cost if $cost;
 		$ass_cost += $costperwt * $weight if $costperwt;
@@ -2356,14 +2334,14 @@ sub GetCarrierHandler
 		{
 			if ( defined($ass_cost) && $ass_cost ne '0' && $ass_cost ne '' && defined($markupamt) && $markupamt > 0 )
 			{
-				#warn "Add flat markup";
+				#warn "\nAdd flat markup";
 				$ass_cost += $markupamt;
 			}
 
 			# Add markup percent
 			if ( defined($ass_cost) && $ass_cost ne '0' && $ass_cost ne '' && defined($markuppercent) && $markuppercent > 0 )
 			{
-				#warn "Add percent markup";
+				#warn "\nAdd percent markup";
 				my $markup = $ass_cost * $markuppercent;
 				$ass_cost += $markup;
 			}
@@ -2371,24 +2349,24 @@ sub GetCarrierHandler
 
 		$ass_cost = ($ass_cost && $costmin && $costmin > $ass_cost) ? $costmin : $ass_cost;
 		$ass_cost = ($ass_cost && $costmax && $ass_cost > $costmax) ? $costmax : $ass_cost;
-#warn "after min/max: $ass_cost";
+		#warn "\nafter min/max: $ass_cost";
 
 		$ass_cost = sprintf("%02.2f", $ass_cost) if $ass_cost;
 
-#warn "GetAssValue returning cost=$ass_cost ass=$ass_name";
-#warn "GetAssValue returning cost=$ass_cost ass=$ass_name" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
+		#warn "\nGetAssValue returning cost=$ass_cost ass=$ass_name";
+		#warn "\nGetAssValue returning cost=$ass_cost ass=$ass_name" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
 		$ass_cost = $ass_name eq 'fscrate' ? $costpercent : $ass_cost;
 		return ($ass_cost);
 	}
 
-	sub GetAssData
+sub GetAssData
 	{
 		my $self = shift;
 		my ($type,$ass_name,$date,$specd_ot_id) = @_;
 
 		my $CSID = $self->{'field_customerserviceid'};
 		my $ServiceID = $self->{'field_serviceid'};
-#warn "$type,$ass_name,$date,$specd_ot_id,$CSID,$ServiceID" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
+		#warn "\n$type,$ass_name,$date,$specd_ot_id,$CSID,$ServiceID" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
 
 		my @ownertypeids = $specd_ot_id ? ($specd_ot_id) : qw(4 3);
 
@@ -2438,22 +2416,22 @@ sub GetCarrierHandler
 		}
 
 		chop $SQL;
-#warn $SQL;
+		#warn $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute()
-        	or die "Cannot execute sql statement";
-     	my ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent) = $STH->fetchrow_array();
+		$STH->execute()
+			or die "Cannot execute sql statement";
+		my ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent) = $STH->fetchrow_array();
 
 		$STH->finish();
-#warn "GetAssData returning... assname=$ass_name min=$costmin,percent=$costpercent";
+	#warn "\nGetAssData returning... assname=$ass_name min=$costmin,percent=$costpercent";
 
 		return ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent);
 	}
 
-	sub GetCSAssessorialList
+sub GetCSAssessorialList
 	{
 		my $self = shift;
 
@@ -2472,8 +2450,8 @@ sub GetCarrierHandler
 		")
 			or die "Cannot execute sql statement";
 
-     	$STH->execute($CSID,$ServiceID)
-        	or die "Cannot execute sql statement";
+		$STH->execute($CSID,$ServiceID)
+			or die "Cannot execute sql statement";
 
 		my @assessorials = ();
 
@@ -2487,7 +2465,7 @@ sub GetCarrierHandler
 		return @assessorials;
 	}
 
-	sub GetAssCode
+sub GetAssCode
 	{
 		my $self = shift;
 		my ($csid,$ass_name) = @_;
@@ -2507,18 +2485,20 @@ sub GetCarrierHandler
 		";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
-        	or die "Could not prepare SQL statement";
+			or die "Could not prepare SQL statement";
 
-     	$STH->execute($CSID,$ServiceID,$ass_name)
-        	or die "Cannot execute sql statement";
-#warn $SQL;
-#warn "$CSID,$ServiceID,$ass_name";
+		$STH->execute($CSID,$ServiceID,$ass_name)
+			or die "Cannot execute sql statement";
+		#warn "\n".$SQL;
+		#warn "\n$CSID,$ServiceID,$ass_name";
 
-     	my ($asscode,$ownertypeid) = $STH->fetchrow_array();
-#warn "ARRS CS->GetAssCode() returns asscode=$asscode";
+		my ($asscode,$ownertypeid) = $STH->fetchrow_array();
+		#warn "ARRS CS->GetAssCode() returns asscode=$asscode";
 		$STH->finish();
 
 		return ($asscode);
 	}
-}
+
 1;
+
+__END__

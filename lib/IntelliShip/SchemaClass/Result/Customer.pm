@@ -710,6 +710,12 @@ sub third_party_account
 		}
 	}
 
+sub label_type
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('labeltype');
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
