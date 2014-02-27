@@ -13,6 +13,16 @@
 </form>
 
 <script>
+function PrintLabel()
+	{
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	var a = fso.CreateTextFile("[% labelport %]:", true);
+	[% FOREACH item IN printerstring_loop %]
+		a.Writeline("[% item.line %]");
+	[% END %]
+	a.Close();
+	}
+
 function Print()
 	{
 	var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');

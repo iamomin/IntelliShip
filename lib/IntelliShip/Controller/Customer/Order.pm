@@ -1,5 +1,6 @@
 package IntelliShip::Controller::Customer::Order;
 use Moose;
+use IO::File;
 use Data::Dumper;
 use POSIX qw(ceil);
 use IntelliShip::Utils;
@@ -1800,7 +1801,9 @@ sub SaveStringToFile
 	return unless $FileName;
 	return unless $FileString;
 
-	$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
+	#$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
+	$FileName = '/opt/engage/intelliship/html/print/label/' . $FileName;
+	$self->context->log->debug("EPL File: " . $FileName);
 
 	my $FILE = new IO::File;
 	unless (open ($FILE,">$FileName"))
