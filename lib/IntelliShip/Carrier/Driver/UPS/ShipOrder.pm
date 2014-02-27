@@ -16,6 +16,7 @@ sub process_request
 	my $Customer = $CO->customer;
 	my $shipmentData = $self->data;
 
+	my $PrinterString;
 	if ($shipmentData->{'addresscountry'} eq 'USA')
 		{
 		$shipmentData->{'addresscountry'} = 'US';
