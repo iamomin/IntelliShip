@@ -111,7 +111,7 @@ sub get_xml_request
 	#$self->log("### Service Type" .$shipmentData->{serviceType} );
 
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
-	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'} * 16;
+	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
 	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
 	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
 	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
