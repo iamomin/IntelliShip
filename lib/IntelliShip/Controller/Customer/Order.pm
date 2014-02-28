@@ -1797,16 +1797,17 @@ sub ProcessPrinterStream
 		## Set Printer String Loop
 		my @PSLINES = split(/\n/,$PrinterString);
 
-		my $printstring_loop = [];
+		my $printerstring_loop = [];
 		foreach my $line (@PSLINES)
 			{
 			$line =~ s/"/\\"/sg;
 			$line =~ s/'//g;
-			push @$printstring_loop, $line;
+			push @$printerstring_loop, $line;
 			}
 
-		$c->log->debug("printstring_loop: " . Dumper $printstring_loop);
-		$c->stash->{printstring_loop} = $printstring_loop;
+		$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
+		$c->stash->{printerstring_loop} = $printerstring_loop;
+		$c->stash->{label_port} = 'LPT1';
 		}
 	}
 

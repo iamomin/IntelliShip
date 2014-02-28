@@ -20,9 +20,9 @@
 function PrintLabel()
 	{
 	var fso = new ActiveXObject("Scripting.FileSystemObject");
-	var a = fso.CreateTextFile("[% labelport %]:", true);
-	[% FOREACH item IN printerstring_loop %]
-		a.Writeline("[% item.line %]");
+	var a = fso.CreateTextFile("[% label_port %]:", true);
+	[% FOREACH line IN printerstring_loop %]
+		a.Writeline("[% line %]");
 	[% END %]
 	a.Close();
 	}
