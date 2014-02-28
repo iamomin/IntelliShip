@@ -1256,9 +1256,9 @@ sub SHIP_ORDER :Private
 	$params->{'carrier'} = $CO->extcarrier if $CO->extcarrier and !$params->{'carrier'};
 
 	$c->log->debug("CO->extcarrier      : " . $CO->extcarrier);
-	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'});
+	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'}) if $params->{'carrier'};
 	$c->log->debug("CO->extservice      : " . $CO->extservice);
-	$c->log->debug("params->{'service'} : " . $params->{'service'});
+	$c->log->debug("params->{'service'} : " . $params->{'service'}) if $params->{'service'};
 
 	if (length $CO->extcarrier == 0 or length $params->{'carrier'} == 0)
 		{
@@ -1479,13 +1479,13 @@ sub SHIP_ORDER :Private
 		}
 
 	my $PrinterString = $Response->printer_string;
-	$c->log->debug("PrinterString:\n" . $PrinterString);
+	#$c->log->debug("PrinterString: " . $PrinterString);
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
 	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
 	#$params = {%$params, %{$Shipment->{'_column_data'}}};
-	$c->log->debug(Dumper $Shipment->{'_column_data'});
+	#$c->log->debug("Shipment->{'_column_data'}: " . Dumper $Shipment->{'_column_data'});
 
 	$params->{'pickuprequest'} = $params->{'storepickuprequest'};
 
