@@ -790,6 +790,12 @@ sub set_datecreated
 	}
 
 __PACKAGE__->belongs_to(
+	contact =>
+	"IntelliShip::SchemaClass::Result::Contact",
+	"contactid"
+	);
+
+__PACKAGE__->belongs_to(
 	to_address => 
 	"IntelliShip::SchemaClass::Result::Address",
 	"addressid"

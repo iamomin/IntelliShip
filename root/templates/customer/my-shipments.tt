@@ -197,13 +197,13 @@
 				$("#dateto").datepicker('setDate', '+0d');
 				}
 			var query_param = "&view_date=" + vDate;
-			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 			$("#count").html("0");
 			});
 
 		$("#date_apply").click(function() {
 			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
-			send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 			});
 
 		$("#btn_submit").click(function() {

@@ -30,17 +30,17 @@ my %hosts = (
 	);
 
 # aos_intelliship DB hosts
-my %db_hosts = (
+my %aos_db_hosts = (
 	&PRODUCTION  => 'localhost',
 	&DEVELOPMENT => 'localhost',
-	&TEST        => 'cintelliship.engagetechnology.com',
+	&TEST        => '192.168.9.226',
 	);
 
 # arrs DB hosts
 my %arrs_db_hosts = (
 	&PRODUCTION  => 'localhost',
 	&DEVELOPMENT => 'localhost',
-	&TEST        => 'carrs.engagetechnology.com',
+	&TEST        => '192.168.9.226',
 	);
 
 # sendmail
@@ -168,11 +168,11 @@ depending on the server, will return DEVELOPMENT, PRODUCTION or TEST.
 
 sub getDatabaseHost
 	{
-	## check to see if hostname exists in %db_hosts hash
+	## check to see if hostname exists in %aos_db_hosts hash
 	my $domain = getDatabaseDomain() || '';
 
 	my $db_host;
-	unless ($db_host = $db_hosts{$domain})
+	unless ($db_host = $aos_db_hosts{$domain})
 		{
 		$db_host = 'localhost';
 		}

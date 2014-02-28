@@ -117,13 +117,13 @@ sub populate_my_shipment_list :Private
 
 	my $do_value = $params->{'do'} || '';
 	if ($do_value eq 'batchoptions')
-	{
-	#$self->batch_options;
-	}
+		{
+		#$self->batch_options;
+		}
 	else
-	{
-	$SQL = $self->get_shipped_sql;
-	}
+		{
+		$SQL = $self->get_shipped_sql;
+		}
 
 	my $myDBI = $c->model("MyDBI");
 	my $sth = $myDBI->select($SQL);
@@ -135,13 +135,16 @@ sub populate_my_shipment_list :Private
 		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
 		push(@$myshipment_list, $row_data);
 		}
-
+=as
 	my $my_shipments_batches = $self->process_pagination($myshipment_list);
+	$c->stash->{myshipment_batches} = $my_shipments_batches;
+
 	my $first_batch = $my_shipments_batches->[0];
 	$myshipment_list = [splice @$myshipment_list, 0, scalar @$first_batch] if $first_batch;
+=cut
+
 	$c->stash->{myshipment_list} = $myshipment_list;
 	$c->stash->{myshipment_list_count} = @$myshipment_list;
-	$c->stash->{myshipment_batches} = $my_shipments_batches;
 
 	my $todays_date = IntelliShip::DateUtils->current_date;
 	$c->log->debug("Todays date " . $todays_date);
@@ -185,7 +188,7 @@ sub get_shipped_sql :Private
 			my $weekday = IntelliShip::DateUtils->get_day_of_week($current_timestamp_with_time_zone);
 			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$weekday days')";
 			}
-		elsif ($view eq 'this_month'|| 1)
+		elsif ($view eq 'this_month')
 			{
 			my $dd = substr($current_timestamp_with_time_zone, 8, 2) - 1;
 			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$dd days')";

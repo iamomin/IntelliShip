@@ -1757,7 +1757,7 @@ sub ProcessPrinterStream
 		#if ( my $UCC128ID = $UCC128->GetUCC128ID($CgiRef->{'addressname'},$CgiRef->{'department'},$CgiRef->{'custnum'},$CgiRef->{'externalpk'}) )
 		#	{
 		#	$UCC128->Load($UCC128ID);
-		#	$PrinterString .= $UCC128->BuildUCC128Label($CgiRef);
+		#	$PrinterString .= $self->BuildUCC128Label;
 		#	}
 		}
 
@@ -1891,6 +1891,79 @@ sub BuildShipmentChargePassThru
 	$ShipmentChargePassThru =~ s/[a-z]+:://g;
 
 	return $ShipmentChargePassThru;
+	}
+
+sub BuildUCC128Label
+	{
+	my $self = shift;
+
+	my $Shipment;
+	# Build carrier routing stuff
+	my $Zip = $Shipment->{'addresszip'};
+	if ( $Zip =~ /(\d{5})-\d{4}/ ) { $Zip = $1 }
+	$Shipment->{'carrierroutingbc'} = '420' . $Zip;
+	$Shipment->{'carrierroutinghr'} = '(420) ' . $Zip;
+
+	# Build sscc stuff
+	my $SSCAIN = '00';
+
+	my $Sequence = $self->{'dbref'}->seqnumber($self->{'sequencename'});
+
+	my $Contact = new CONTACT($self->{'dbref'}, $self->{'customer'});
+	$Contact->Load($Shipment->{'contactid'});
+	my $EANUCCPrefix = $Contact->GetContactValue('eanuccprefix');
+
+	while ( length($Sequence . $EANUCCPrefix) < 17 ) { $Sequence = '0' . $Sequence }
+
+	my ($SeqFirst,$SeqLast16) = $Sequence =~ /(\d)(\d+)/;
+
+	my $BaseNumber = $SeqFirst . $EANUCCPrefix . $SeqLast16;
+	my @BaseNumbers = split(//,$BaseNumber);
+	pop(@BaseNumbers);
+	my $BaseOdd;
+	my $BaseEven;
+
+	while (@BaseNumbers)
+		{
+		$BaseOdd += shift(@BaseNumbers);
+		$BaseEven += shift(@BaseNumbers);
+		}
+
+	my $CheckDigit = 10 - ((($BaseOdd * 3) + $BaseEven) % 10);
+
+	$Shipment->{'ssccbc'} = $SSCAIN . $SeqFirst . $EANUCCPrefix . $SeqLast16 . $CheckDigit;
+	$Shipment->{'sscchr'} = "($SSCAIN) $SeqFirst $EANUCCPrefix $SeqLast16 $CheckDigit";
+
+	# Save sscc back to shipment
+	$Shipment->ssccnumber('',$Shipment->{'ssccbc'});
+	$Shipment->update;
+
+	my $UCC128Label;
+=as
+	# Build up UCC128 label stream
+	chop(my $CONF_DIRECTORY = "$config->{BASE_PATH}/conf/");
+	my $TEMPLATE_DIR = $CONF_DIRECTORY;
+	use DISPLAY;
+	my $DISPLAY = new DISPLAY($TEMPLATE_DIR);
+
+	my $RawString = $DISPLAY->TranslateTemplate($self->{'ucc128template'}, $Shipment);
+
+	$RawString =~ s/"/\\"/sg;
+	$RawString =~ s/'//g;
+
+	# Generate proper number of copies
+	for ( my $i = 1; $i <= $self->{'ucc128copies'}; $i ++ )
+		{
+		my @StringLines = split("\n",$RawString);
+
+		# Tag lines for web use
+		foreach my $Line (@StringLines)
+			{
+			$UCC128Label .= "$Line\n";
+			}
+		}
+=cut
+	return $UCC128Label;
 	}
 
 sub GetPackageRatios
