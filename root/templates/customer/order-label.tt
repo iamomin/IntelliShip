@@ -2,8 +2,11 @@
 
 <form id="frm_label" name="frm_label" action="/customer/dashboard">
 
-	[% IF LABEL %]<div id="label" class="Print">[% LABEL %]</div>[% END %]
-	[% IF LABEL_IMG %]<img src="[% LABEL_IMG %]">[% END %]
+	[% IF LABEL_IMG %]
+		<center><img src="[% LABEL_IMG %]"></center>
+	[% ELSE %]
+		<div id="label" class="Print">[% LABEL %]</div>
+	[% END %]
 
 	<table class="center DoNotPrint">
 		<tr>
@@ -36,7 +39,8 @@ function Print()
 	}
 
 $(document).ready(function(){
-	Print();
+	[% IF printerstring_loop %]PrintLabel();[% END %]
+	//Print();
 	//[% IF totalquantity > 0 %]window.print(false);[% END %]
 	});
 
