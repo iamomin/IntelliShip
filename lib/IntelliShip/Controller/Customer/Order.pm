@@ -1770,7 +1770,7 @@ sub ProcessPrinterStream
 		{
 		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
 		my $out_file = $Shipment->shipmentid . '.jpg';
-		my $copyImgCommand = "cp /opt/engage/intelliship/html/print/label/$out_file " . IntelliShip::MyConfig->image_file_directory . "/label/";
+		my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
 		$c->log->debug("copyImgCommand: " . $copyImgCommand);
 		system($copyImgCommand);
 		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
@@ -1782,8 +1782,8 @@ sub ProcessPrinterStream
 		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
 		}
 
-	$c->log->debug("CustomerLabelType: " . $CustomerLabelType);
-	$c->log->debug("PrinterString    : " . $PrinterString);
+	#$c->log->debug("CustomerLabelType: " . $CustomerLabelType);
+	#$c->log->debug("PrinterString    : " . $PrinterString);
 
 	## Set Printer String Loop
 	my @printstring_loop = split(/\n/,$PrinterString);
@@ -1806,8 +1806,7 @@ sub SaveStringToFile
 	return unless $FileName;
 	return unless $FileString;
 
-	#$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
-	$FileName = '/opt/engage/intelliship/html/print/label/' . $FileName;
+	$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
 	$self->context->log->debug("EPL File: " . $FileName);
 
 	my $FILE = new IO::File;

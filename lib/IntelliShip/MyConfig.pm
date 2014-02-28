@@ -304,7 +304,13 @@ sub image_file_directory
 sub label_file_directory
 	{
 	my $self = shift;
-	return $self->application_root . '/var/log/print/label';
+	return '/opt/engage/intelliship/html/print/label';
+	}
+
+sub label_image_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/root/label';
 	}
 
 __PACKAGE__->meta()->make_immutable();

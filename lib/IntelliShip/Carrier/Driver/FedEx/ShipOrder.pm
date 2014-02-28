@@ -307,7 +307,7 @@ sub process_request
 
 	# Pass shipment string to fedex, and get the return value
 
-	$self->log('... ShipmentString: ' . $ShipmentString);
+	#$self->log('... ShipmentString: ' . $ShipmentString);
 	my $ShipmentReturn;
 
 	eval {
@@ -358,7 +358,7 @@ sub process_request
 	my $TrackingNumber = $1 if $ShipmentReturn =~ /"29,"(\w+?)"/;
 	my $PrinterString = $1 if $ShipmentReturn =~ /188,"(.*\nP1\nN\n)"/s;
 
-	$self->log("PrinterString: " . $PrinterString);
+	#$self->log("PrinterString: " . $PrinterString);
 
 	if ( !$PrinterString )
 		{
@@ -397,7 +397,7 @@ sub ProcessLocalRequest
 	my $self = shift;
 	my $Request = shift;
 
-	$self->log('... ProcessLocalRequest, REQUEST: ' . $Request);
+	#$self->log('... ProcessLocalRequest, REQUEST: ' . $Request);
 
 	#$Request = '0,"020"1,"GlobalIntl#1"4,"Shipper Name"5,"Shipper Address #1"6,"Shipper Address #2"7,"Paris"8,"PA"9,"19406"11,"Recipient Company Name"12,"Recipient Contact Name"13,"660 American Ave"14,"3rd Floor"15,"North York"17,"20122"18,"6107680246"21,"15"23,"1"25,"Reference Notes"50,"IT"72,"FOB"74,"IT"77,"8"78,"19.950000"79,"commodity description"80,"US"81,"harmonized code"82,"1"113,"Y"117,"US"183,"6107680246"187,"299"414,"ea"498,"203618"1090,"USD"1273,"01"1274,"01"1282,"T"1349,"S"1958,"Box"1030,"19.950000"99,""';
 
