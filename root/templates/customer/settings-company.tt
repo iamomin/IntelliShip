@@ -769,7 +769,7 @@
 	</table>
 	[% IF contact_batches %]</div>[% END %]
 
-	[% IF SHOW_PAGINASTION %]
+	[% IF SHOW_PAGINATION %]
 
 	<script>
 	function editContact(contactid) {
