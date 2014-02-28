@@ -19,8 +19,9 @@ BEGIN {
 	}
 
 my $carriers = {
+	'UPS' => &CARRIER_UPS,
+	'USPS' => &CARRIER_USPS,
 	'FEDEX' => &CARRIER_FEDEX,
-	'UPS' => 'UPS',
 	};
 
 sub model
