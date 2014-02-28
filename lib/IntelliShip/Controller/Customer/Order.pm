@@ -1677,7 +1677,9 @@ sub generate_label :Private
 		$c->stash->{dimweight} = undef;
 		}
 
-	$c->stash->{label_type} = $self->customer->label_type;
+	my $label_type = $self->contact->label_type;
+	$label_type = $self->customer->label_type unless $label_type;
+	$c->stash->{label_type} = $label_type || 'EPL';
 
 	$c->stash->{enteredweight} = $CO->total_weight;
 	$c->stash->{ponumber} = $Shipment->ponumber;
