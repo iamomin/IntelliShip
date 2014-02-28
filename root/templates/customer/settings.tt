@@ -789,7 +789,7 @@ $(document).ready(function(){
 		<center>
 			<input type="button" class="green" id="update_contact" value="[% IF contactInfo.contactid %] Update [% ELSE %] Add [% END %] Contact" onclick="updateContact();"/>
 			&nbsp;&nbsp;
-			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %] "cancelUpdate();" [% ELSE %] javascript:history.back(); [% END %]/>
+			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %] "getCustomerContacts();" [% ELSE %] javascript:history.back(); [% END %]/>
 		</center>
 	</form>
 
@@ -844,12 +844,6 @@ $(document).ready(function(){
 			} else {
 			return false;
 			}
-		}
-
-	function cancelUpdate()
-		{
-		var params = '&do=cancel&customerid='+$("#customerid").val();
-		send_ajax_request('company-contacts', 'HTML', 'settings/company', params, '');
 		}
 
 	$(document).ready(function(){

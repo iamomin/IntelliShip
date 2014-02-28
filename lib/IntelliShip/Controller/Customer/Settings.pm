@@ -475,6 +475,10 @@ sub process_pagination
 		{
 		$sql = "SELECT customerid FROM customer ORDER BY customername";
 		}
+	elsif ($type eq 'contactmanagement')
+		{
+		$sql = "SELECT contactid FROM contact WHERE customerid = '" . $c->stash->{customerid} ."' ORDER BY username";
+		}
 
 	my $sth = $c->model('MyDBI')->select($sql);
 
@@ -660,11 +664,23 @@ sub get_customer_contacts :Private
 	my $params = $c->req->params;
 
 	$customerid = $params->{'customerid'} if !$customerid and $params->{'customerid'};
-
+	$c->stash->{customerid} = $customerid;
 	$c->log->debug("CUSTOMER CONTACT MANAGEMENT");
 
-	my $WHERE = { customerid => $customerid };
-	$c->log->debug("customerid " . $customerid);
+	my $contact_batches;
+	my $WHERE = {};
+	if ($params->{'contact_ids'})
+		{
+		$WHERE = { contactid => [split(',', $params->{'contact_ids'})] };
+		}
+	else
+		{
+		$contact_batches = $self->process_pagination('contactmanagement');
+		$WHERE->{contactid} = $contact_batches->[0] if $contact_batches;
+		}
+	$c->stash->{SHOW_PAGINATION} = 1 unless $params->{'contact_ids'};
+	
+	#$c->log->debug("WHERE: " . Dumper $WHERE);
 
 	my @contacts = $self->context->model('MyDBI::Contact')->search($WHERE, {
 	select => [
@@ -682,6 +698,9 @@ sub get_customer_contacts :Private
 	$c->stash->{contactlist} = \@contacts;
 	$c->stash->{contact_count} = scalar @contacts;
 	$c->log->debug("contact_count " . $c->stash->{contact_count});
+
+	$c->stash->{contact_batches} = $contact_batches;
+	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
 
 	$c->stash->{CONTACT_LIST} = 1;
 	$c->stash->{CONTACT_MANAGEMENT} = 1;

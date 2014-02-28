@@ -48,7 +48,7 @@
 	[% UNLESS ajax %]<div id="divCustomerList">[% END %]
 
 	<div style="clear: both;">&nbsp;</div>
-	<table class="float-right"><tr><td><b>Customer Count: [% customer_count %]</b></tr></td></table>
+	<table class="float-right"><tr><td><b>Customer Count: [% customer_count %]</b></td></tr></table>
 
 	<div id="myShipments">
 	<table>
@@ -96,7 +96,7 @@
 						return;
 						}
 					$('#preload').show();
-					$.getJSON( "/customer/settings/company/ajax", request, function( data, status, xhr ) {
+					$.getJSON( "/customer/settings/company/ajax?type=JSON&action=search_customer", request, function( data, status, xhr ) {
 						cachedCustomers[ term ] = data;
 						response( data );
 						$('#preload').hide();
@@ -106,6 +106,7 @@
 
 		$("#customer_edit").click(function() {
 			if (validateForm({ customername : { minlength: 1, description: "Please specify valid User Name" } })) {
+				$("#customerid").val("");
 				$("#frm_company_management").submit();
 				}
 			});
@@ -122,8 +123,8 @@
 			});
 
 		$("#customers").change(function() {
-			var query_param = "&customername=1&page=" + $(this).val();
-			send_ajax_request('divCustomerList', 'HTML', 'settings/company', '', query_param);
+			var query_param = "&customer_ids=" + $(this).val();
+			send_ajax_request('divCustomerList', 'HTML', 'settings/company', 'get_customers', query_param);
 			});
 
 		$("#frm_company_management").submit(function() {
@@ -154,7 +155,7 @@
 			   <li><a href="#company-profile">Profile</a></li>
 			   <li><a href="#company-rules">Rules</a></li>
                <li><a href="#company-settings">Default Settings</a></li>
-			   <li><a href="#company-contacts">Contacts</a></li>
+			   <li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
 			</ul>
             <div id="company-profile">
 				<table class="center-app">
@@ -634,9 +635,7 @@
 					</tr>
 				</table>
 			</div>
-			<div id="company-contacts">
-				[% CONTACT_INFORMATION %]
-			</div>
+			<div id="company-contacts"></div>
 		</div>
 
 		<center><input type="submit" class="green" id="update_customer" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
@@ -686,6 +685,18 @@
 	$(document).ready(function(){
 		$("#update_customer").attr("disabled", false);
 		});
+		
+	$("#company-contacts-tab").click(function() {
+		if($("#company-contacts").html().length == 0){
+			getCustomerContacts();
+			}
+		});
+
+	function getCustomerContacts()
+		{
+		var params = 'customerid='+$("#customerid").val();
+		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
+		}
 	</script>
 
 	[% END %]
@@ -708,14 +719,31 @@
 	[% IF CONTACT_LIST %]
 
 	[% UNLESS ajax %]<div id="divContactList">[% END %]
-	<table>
-		<tr>
-			<td><h3>Contact Count [% contact_count %]</h3></td>
-			<td style="width: 75%"></td>
+		[% IF SHOW_PAGINATION %]
+		<table class="float-right"><tr>			
 			<td><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></td>
-		</tr>
-	</table>
-	<div id="myShipments">
+			<td><label class="float-right" for="records_per_page">Records Per Page:</td>
+			<td>
+				<select name="records_per_page" id="records_per_page" onchange="recordsPerPage();">
+				[% FOREACH item IN recordsperpage_list %]
+					<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+				[% END %]
+				</select>
+			</td>
+			<td>
+				<select name="contact_page" id="contact_page" onchange="contactPage();">
+				[% FOREACH ids IN contact_batches %]
+					<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+				[% END %]
+				</select>
+			</td>
+
+		</tr></table>
+		[% END %]
+
+	[% IF contact_batches %]<div id="myShipments">[% END %]
+	<div style="clear: both;">&nbsp;</div>
+	<div class="float-right"><b>Contact Count: [% contact_count %]</b></div>
 	<table>
 		<tr>
 			<th>&nbsp;</th>
@@ -739,11 +767,11 @@
 			<tr><td colspan="6">No contacts found</td></tr>
 		[% END %]
 	</table>
-	[% UNLESS ajax %]
-	</div>
+	[% IF contact_batches %]</div>[% END %]
+
+	[% IF SHOW_PAGINASTION %]
 
 	<script>
-
 	function editContact(contactid) {
 		var customerid = $("#customerid").val();
 		var params = '&do=&SHOW_RULES=1&customerid=' + customerid + '&contactid=' + contactid;
@@ -757,6 +785,40 @@
 		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', params, '');
 		}
 
+	function recordsPerPage() {
+		var customerid = $("#customerid").val();
+		var query_param = "customerid=" + customerid + "&records_per_page=" + $("#records_per_page").val();
+		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', query_param);
+		}
+
+	function contactPage() {
+		var query_param = "contact_ids=" + $("#contact_page").val();
+		$("#myShipments").html('');
+		send_ajax_request('myShipments', 'HTML', 'settings/company', 'get_customer_contacts', query_param);
+		}
+/*
+	function searchContact(){
+		autocomplete({
+			minLength: 2,
+			source: function ( request, response ) {
+					alert("00000000000000000");
+					var term = request.term;
+					if ( term in cachedContactnames ) {
+						response( cachedContactnames[ term ] );
+						return;
+						}
+					$('#preload').show();
+					var customerid = $("#customerid").val();
+					alert(customerid);
+					$.getJSON( "/customer/settings/company/ajax?action=search_contact&customerid=" + customerid, request, function( data, status, xhr ) {
+						cachedContactnames[ term ] = data;
+						response( data );
+						$('#preload').hide();
+						});
+					}
+			});
+		}
+*/
 	</script>
 	[% END %]
 	[% END %]
