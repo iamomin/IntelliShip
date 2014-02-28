@@ -1399,10 +1399,10 @@ sub SHIP_ORDER :Private
 	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $self->customer, $CO) unless $params->{'customerserviceid'};
 
 	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
-	$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
+	#$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
 
 	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$self->customer->customerid);
-	$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
+	#$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
 
 	if ($ShippingData->{'decvalinsrate'})
 		{
@@ -1421,10 +1421,10 @@ sub SHIP_ORDER :Private
 		$CustomerService->{'meternumber'} = $ShippingData->{'meternumber'};
 		}
 
-	$c->log->debug("WEBACCOUNT: " . $CustomerService->{'webaccount'} . ", BILLINGACCOUNT: " . $CustomerService->{'webaccount'} . ", TPACCTNUMBER: " . $ShipmentData->{'tpacctnumber'});
+	#$c->log->debug("WEBACCOUNT: " . $CustomerService->{'webaccount'} . ", BILLINGACCOUNT: " . $CustomerService->{'webaccount'} . ", TPACCTNUMBER: " . $ShipmentData->{'tpacctnumber'});
 
 	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
-	$c->log->debug("SERVICE: " . Dumper $Service);
+	#$c->log->debug("SERVICE: " . Dumper $Service);
 
 	unless ($Service)
 		{
@@ -1766,35 +1766,48 @@ sub ProcessPrinterStream
 	# Label stub
 	my $CustomerLabelType = $c->stash->{label_type};
 
+	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
 	if ($CustomerLabelType =~ /^jpg$/i)
 		{
+		## Generate JPEG label image
 		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+		##
+
 		my $out_file = $Shipment->shipmentid . '.jpg';
 		my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
 		$c->log->debug("copyImgCommand: " . $copyImgCommand);
+
+		## Copy to Apache context path
 		system($copyImgCommand);
+		##
+
 		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
-	elsif ($CustomerLabelType =~ /^zpl$/i)
+	else
 		{
-		require IntelliShip::EPL2TOZPL2;
-		my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
-		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
+		if ($CustomerLabelType =~ /^zpl$/i)
+			{
+			require IntelliShip::EPL2TOZPL2;
+			my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
+			$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
+			}
+
+		#$c->log->debug("PrinterString    : " . $PrinterString);
+
+		## Set Printer String Loop
+		my @PSLINES = split(/\n/,$PrinterString);
+
+		my $printstring_loop = [];
+		foreach my $line (@PSLINES)
+			{
+			$line =~ s/"/\\"/sg;
+			$line =~ s/'//g;
+			push @$printstring_loop, $line;
+			}
+
+		$c->log->debug("printstring_loop: " . Dumper $printstring_loop);
+		$c->stash->{printstring_loop} = $printstring_loop;
 		}
-
-	#$c->log->debug("CustomerLabelType: " . $CustomerLabelType);
-	#$c->log->debug("PrinterString    : " . $PrinterString);
-
-	## Set Printer String Loop
-	my @printstring_loop = split(/\n/,$PrinterString);
-
-	 foreach (@printstring_loop)
-		{
-		$_ =~ s/"/\\"/sg;
-		$_ =~ s/'//g;
-		}
-
-	$c->stash->{printstring_loop} = \@printstring_loop;
 	}
 
 sub SaveStringToFile

@@ -204,7 +204,7 @@ sub get_carrrier_service_rate_list
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
 
-	$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
+	#$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
 	############################################
 	my $response = $self->APIRequest($request);
 	############################################
