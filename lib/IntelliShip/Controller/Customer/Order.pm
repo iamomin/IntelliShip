@@ -1766,7 +1766,7 @@ sub ProcessPrinterStream
 	# Label stub
 	my $CustomerLabelType = $c->stash->{label_type};
 
-	if ($CustomerLabelType =~ /^jpg$/i )
+	if ($CustomerLabelType =~ /^jpg$/i)
 		{
 		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
 		my $out_file = $Shipment->shipmentid . '.jpg';
