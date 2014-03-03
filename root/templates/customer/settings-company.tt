@@ -688,6 +688,7 @@
 		
 	$("#company-contacts-tab").click(function() {
 		if($("#company-contacts").html().length == 0){
+			$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
 			getCustomerContacts();
 			}
 		});
