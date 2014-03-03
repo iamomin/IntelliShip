@@ -481,32 +481,32 @@ sub generate_shipment_report
 		if ($params->{'format'} eq 'CSV')
 			{
 			$report_summary_row_loop = [
-					{ value => $weight_sum},
-					{ value => $dimweight_sum},
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => $tot_chg_sum, align => 'right', currency => '$' },
-					{ value => $other_chg_sum, align => 'right', currency => '$' },
-					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' },
-					{ value => '' },
-					{ value => $commodity_sum },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
-					{ value => '' },
+					{ value => $weight_sum, grandtotal => '1' },
+					{ value => $dimweight_sum, grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => $tot_chg_sum, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => $other_chg_sum, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => $commodity_sum , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
 				];
 			}
 		else
@@ -641,7 +641,7 @@ sub generate_summary_service_report
 		my $total_charge = 0;
 		my $total_weight = 0;
 		push(@$report_output_row_loop, [
-					{ value => $carrier },
+					{ value => $carrier, carriername => '1' },
 					{ value => '' },
 					{ value => '' },
 					{ value => '' },
@@ -669,11 +669,11 @@ sub generate_summary_service_report
 
 		# Add Total Row
 		push(@$report_output_row_loop, [
-					{ value => $carrier. ' Total' },
-					{ value => '' },
-					{ value => $total_shipment },
-					{ value => $total_charge, align => 'right', currency => '$' },
-					{ value => $total_weight, align => 'right' },
+					{ value => $carrier. ' Total', carriertotal => '1' },
+					{ value => '', carriertotal => '1' },
+					{ value => $total_shipment, carriertotal => '1' },
+					{ value => $total_charge, align => 'right', currency => '$', carriertotal => '1' },
+					{ value => $total_weight, align => 'right', carriertotal => '1' },
 				]);
 		# Update Grand Total
 		$grand_total_shipment	+= $total_shipment;
@@ -692,11 +692,11 @@ sub generate_summary_service_report
 
 	# Add Grand Total Row
 	push(@$report_output_row_loop, [
-					{ value => 'Grand Total' },
-					{ value => '' },
-					{ value => $grand_total_shipment },
-					{ value => $grand_total_charge, align => 'right', currency => '$' },
-					{ value => $grand_total_weight, align => 'right' },
+					{ value => 'Grand Total', grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => $grand_total_shipment , grandtotal => '1'},
+					{ value => $grand_total_charge, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => $grand_total_weight, align => 'right' , grandtotal => '1'},
 				]);
 
 	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';

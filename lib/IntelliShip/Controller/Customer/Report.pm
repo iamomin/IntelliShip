@@ -248,9 +248,8 @@ sub format_SHIPMENT_xls
 	$worksheet->set_column(22,22, 20);				# Column 23
 	$worksheet->set_column(23,23, 30);				# Column 24
 	$worksheet->set_column(24,24, 20);				# Column 25
-	$worksheet->set_column(25,25, 20);				# Column 26
-	$worksheet->set_column(26,26, 20);				# Column 27
-
+	$worksheet->set_column(25,25, 25);				# Column 26
+	
 	# Write a formatted and unformatted string, row and column notation.
 	my ($col,$row)=(0,14);
 
@@ -301,16 +300,17 @@ sub format_SHIPMENT_xls
 
 	# Report header row format
 	my $report_heading_loop = $c->stash->{report_heading_loop};
-	my $reportHeaderFormat = $workbook->add_format(border => 1, align => 'center', bold => 1); # Add a format
+	my $reportHeaderFormat = $workbook->add_format(pattern => 1, color => 'white', fg_color => 54, align => 'center', font => 'Arial', size => 11, bold => 1); # Add a format
 
 	$row++;
 	foreach my $Column (@$report_heading_loop)
 		{
 		$worksheet->write($row, $col++, uc $Column->{name}, $reportHeaderFormat);
 		}
-
+		
+	my $reportCarrierNameFormat = $workbook->add_format(pattern => 1, color => 'black', fg_color => 31, align	=> 'center', bold => 1);
 	# Report data row format
-	my $LinkFormat = $workbook->add_format( align => 'center', border => 1, underline => 1, color => 'blue' );
+	my $LinkFormat = $workbook->add_format( align => 'center', underline => 1, color => 'blue' );
 	$LinkFormat->set_num_format(0x01);
 
 	my $report_output_row_loop = $c->stash->{report_output_row_loop};
@@ -321,9 +321,16 @@ sub format_SHIPMENT_xls
 		my $tracking_number = '';
 		my $tracking_url	= '';
 		$col=0;$row++;
+		if ( defined ${ $report_output_columns }[0]->{carriername})
+			{
+			# Carrier header
+			$worksheet->write($row, 0, ${ $report_output_columns }[0]->{value}, $reportCarrierNameFormat);
+			$worksheet->write($row, 1, '', $reportCarrierNameFormat);
+			next;
+			}
 		foreach my $Column (@$report_output_columns)
 			{
-			if($col == 6)
+			if($col == 6 && !(defined $Column->{grandtotal}))
 				{
 				$carrier_name  = ${ $report_output_columns }[3]->{value} || '';
 				if ($carrier_name)
@@ -346,11 +353,24 @@ sub format_SHIPMENT_xls
 							$tracking_url = '';
 						}
 					}
-				$worksheet->write_url($row, $col++, $tracking_url, $tracking_number,$LinkFormat);
+				$worksheet->write_url($row, $col++, $tracking_url, $tracking_number,$LinkFormat );
 				}
 			else
 				{
-				my $reportDataFormat = $workbook->add_format(align => 'center', border => 1); # Add a format
+				my $reportDataFormat;
+				if( defined $Column->{grandtotal})
+					{
+					$reportDataFormat = $workbook->add_format(pattern => 1, color => 'white', fg_color => 54, align	=> 'center', font => 'Arial', size => 11, bold => 1);
+					}
+				elsif( defined $Column->{carriertotal})
+					{
+					$reportDataFormat = $workbook->add_format(pattern => 1, color => 'black', fg_color => 31, align	=> 'center', bold => 1);
+					}
+				else
+					{
+					$reportDataFormat = $workbook->add_format(align => 'center');
+					}
+					
 				if (defined $Column->{currency})
 					{
 					$reportDataFormat->set_num_format('$0.00');
