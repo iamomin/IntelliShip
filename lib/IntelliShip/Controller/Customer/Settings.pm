@@ -554,8 +554,8 @@ sub contactinformation :Local
 		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
 		$Contact->password($params->{'password'}) if $params->{'password'};
 
-		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
-		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
+		$Contact->firstname($params->{'firstname'});
+		$Contact->lastname($params->{'lastname'});
 		$Contact->email($params->{'email'});
 		$Contact->fax($params->{'fax'});
 		$Contact->department($params->{'department'});
@@ -649,12 +649,39 @@ sub contactinformation :Local
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{READONLY} = 1 unless $self->contact->is_superuser;
-
+		$self->set_required_fields($self->contact);
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
 	}
 
+sub set_required_fields :Private
+	{
+	my $self = shift;
+	my $Contact = $self->contact;
+	my $c = $self->context;
+
+	
+	my $requiredList = [];
+
+	unless ($Contact->is_superuser)
+		{
+		$requiredList = [
+			{ name => 'phonebusiness',  details => "{ phone: true }"},
+			{ name => 'phonemobile',     details => "{ phone: true }"},
+			{ name => 'contact_address1', details => "{ minlength: 2 }"},
+			{ name => 'contact_city',     details => " { minlength: 2 }"},
+			{ name => 'contact_state',    details => "{ minlength: 2 }"},
+			{ name => 'contact_zip',      details => "{ minlength: 5 }"},
+			{ name => 'contact_country',  details => "{ minlength: 1 }"},
+		];
+	}
+	push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"});
+	push(@$requiredList, { name => 'password', details => "{ minlength: 6 }"});
+	$c->log->debug("requiredfield_list: " . Dumper $requiredList);
+	$c->stash->{requiredfield_list} = $requiredList;
+	}
+	
 sub get_customer_contacts :Private
 	{
 	my $self = shift;

@@ -673,6 +673,9 @@
 			};
 
 		if (validateForm(requireHash)) {
+			alert("in validat form");
+			$("#company-contacts-tab").tabs({ disabled: true });
+			$("#company-settings" ).tabs({ disabled: true });
 			$('#company-contacts').html('');
 			$("#update_customer").val("Please Wait...");
 			$("#update_customer").attr("disabled", true);
@@ -688,7 +691,6 @@
 		
 	$("#company-contacts-tab").click(function() {
 		if($("#company-contacts").html().length == 0){
-			$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
 			getCustomerContacts();
 			}
 		});

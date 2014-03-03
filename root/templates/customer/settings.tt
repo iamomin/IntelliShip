@@ -125,8 +125,9 @@ $(document).ready(function(){
 		</form>
 	[% END %]
 
-	[% UNLESS ajax %]<div id="divSkuList">[% END %]
-	<h3>Product Sku Count [% productsku_count %]</h3>
+	[% UNLESS ajax %]<div id="myShipments">[% END %]
+	<div style="clear: both;">&nbsp;</div>
+	<div class="float-right"><b>Product Sku Count: [% productsku_count %]</b></div>
 
 	<table class="report">
 		<tr>
@@ -145,7 +146,7 @@ $(document).ready(function(){
 		</tr>
 		[% FOREACH item IN productskulist %]
 			<tr>
-				<td><a href="javascript:editProductSku('[% item.productskuid %]');">edit</a></td>
+				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
 				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
@@ -813,6 +814,10 @@ $(document).ready(function(){
 			});
 		}
 
+	var requiredFieldHash = [];
+	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
 	function updateContact()
 		{
 		if(validateContactDetials())
@@ -820,24 +825,15 @@ $(document).ready(function(){
 			if($("#ajax").val())
 				send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '&'+$('#frm_setup_contact').serialize(), '');
 			else
+				{
 				$("#frm_setup_contact").submit();
+				}
 			}
 		}
 
 	function validateContactDetials()
 		{
-		var requireHash = {
-			phonebusiness    : { phone: true, description: "Please specify business contact" },
-			phonemobile      : { phone: true, description: "Please specify mobile contact" },
-			contact_username : { minlength: 1, description: "Please specify username " },
-			contact_address1 : { minlength: 2, description: "Please specify address 1" },
-			contact_city     : { minlength: 2, description: "Please specify city" },
-			contact_state    : { minlength: 2, description: "Please specify state" },
-			contact_zip      : { minlength: 5, description: "Please specify zip code" },
-			contact_country  : { minlength: 1, description: "Please specify country" },
-			};
-
-		if (validateForm(requireHash)) {
+		if (validateForm(requiredFieldHash)) {
 			$("#update_contact").val("Please Wait...");
 			$("#update_contact").attr("disabled", true);
 			return true;
@@ -848,6 +844,7 @@ $(document).ready(function(){
 
 	$(document).ready(function(){
 		$("#update_contact").attr("disabled", false);
+		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
 		});
 	</script>
 	[% #---------------------------------------------------------- %]
