@@ -168,6 +168,7 @@
 			});
 		}
 
+        var clickCount = 0;
 	$(document).ready(function() {
 
 		if ($("#view_date").val() == 'today') {
@@ -182,7 +183,36 @@
 			$('#frm_my_shipments').submit();
 			});
 
-		$("#view_date").change(function() {
+
+                
+                $('#view_date').click(function () {        
+                    clickCount++;
+                    if (clickCount == 2) {
+                        $(this).change();
+                        clickCount = 0;
+                    }         
+                }).change (function () {
+                    var vDate = $("#view_date").val();
+                    if(vDate == 'today') {
+                            $("#datefrom").datepicker('setDate', '+0d');
+                            $("#dateto").datepicker('setDate', '+0d');
+                            }
+                    if(vDate == 'this_week') {
+                            $("#datefrom").datepicker('setDate', '-1w');
+                            $("#dateto").datepicker('setDate', '+0d');
+                            }
+                    if(vDate == 'this_month') {
+                            $("#datefrom").datepicker('setDate', '-1m');
+                            $("#dateto").datepicker('setDate', '+0d');
+                            }
+                    var query_param = "&view_date=" + vDate;
+                    send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+                    $("#count").html("0");
+                    clickCount = -1;
+                });     
+
+
+		/*$("#view_date").change(function() {
 			var vDate = $("#view_date").val();
 			if(vDate == 'today') {
 				$("#datefrom").datepicker('setDate', '+0d');
@@ -199,7 +229,7 @@
 			var query_param = "&view_date=" + vDate;
 			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 			$("#count").html("0");
-			});
+			});*/
 
 		$("#date_apply").click(function() {
 			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
