@@ -1497,20 +1497,11 @@ sub SHIP_ORDER :Private
 
 	# Process good shipment
 
-	# If the customer has an email address, check to see if the shipment address is different # from the co address (and send an email, if it is)
-	my $ToEmail = $Customer->losspreventemail;
-	my $CustomerName = $Customer->customername;
-
-	if ($ToEmail)
+	# If the customer has an email address, check to see if the shipment address is different
+	# from the co address (and send an email, if it is)
+	if ($Customer->losspreventemail)
 		{
-		$self->IsShipmentModified(
-				$ToEmail,
-				$CustomerName,
-				$params->{'ordernumber'},
-				$params->{'active_username'},
-				$params->{'cotypeid'},
-				$ShipmentData
-			);
+		$self->CheckIfShipmentModified($ShipmentData);
 		}
 
 	# If the csid was changed from the defaultcsid log the activity in the notes table
@@ -2234,24 +2225,23 @@ sub BuildShipmentInfo
 	return $ShipmentData;
 	}
 
-sub IsShipmentModified
+sub CheckIfShipmentModified
 	{
 	my $self = shift;
-	my ($COTypeID,$ShipmentData) = @_;
+	my $ShipmentData = shift;
 
 	# Load CO so we we can check against what was actually shipped.
 	my $CO = $self->get_order;
-	my $coid = '';
 
 	my $OriginalAddress = $CO->to_address;
 
-	if ($OriginalAddress->addressname ne $ShipmentData->{'addressname'} or
-		$OriginalAddress->address1 ne $ShipmentData->{'address1'} or
-		$OriginalAddress->address2 ne $ShipmentData->{'address2'} or
-		$OriginalAddress->city ne $ShipmentData->{'addresscity'} or
-		$OriginalAddress->state ne $ShipmentData->{'addressstate'} or
-		$OriginalAddress->zip ne $ShipmentData->{'addresszip'} or
-		$OriginalAddress->country ne $ShipmentData->{'addresscountry'})
+	if (   $OriginalAddress->addressname ne $ShipmentData->{'addressname'} 
+		or $OriginalAddress->address1 ne $ShipmentData->{'address1'}
+		or $OriginalAddress->address2 ne $ShipmentData->{'address2'}
+		or $OriginalAddress->city ne $ShipmentData->{'addresscity'}
+		or $OriginalAddress->state ne $ShipmentData->{'addressstate'}
+		or $OriginalAddress->zip ne $ShipmentData->{'addresszip'}
+		or $OriginalAddress->country ne $ShipmentData->{'addresscountry'})
 		{
 		$self->SendShipmentModifiedEmail($OriginalAddress,$ShipmentData);
 		}
