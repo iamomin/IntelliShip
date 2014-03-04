@@ -66,8 +66,6 @@ A670,1205,0,1,1,1,N,"$DATA->{'routingversion'}"
 b30,390,M,m2,"$DATA->{'servicecode'},$DATA->{'isocountry'},$DATA->{'maxicode_zip5'},$DATA->{'maxicode_zip4'},[)>0196$DATA->{'maxicode_tracking1'}UPSN$DATA->{'webaccount'}$DATA->{'julianpickup'}$DATA->{'currentpiece'}/$DATA->{'totalquantity'}$DATA->{'maxi_weight'}N$DATA->{'maxicity'}$DATA->{'iso2state'}"
 END
 
-	print "\n... EPL : " . $EPL;
-
 	return $EPL;
 	}
 
