@@ -984,7 +984,6 @@ sub delete_all_package_details
 sub can_autoship
 	{
 	my $self = shift;
-	return unless $self->customer->autoprocess;
 	return ($self->extcarrier ne '' and $self->extservice ne '' and $self->total_weight > 0);
 	}
 

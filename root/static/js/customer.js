@@ -16,7 +16,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 	waiting_COUNT++;
 	$('#preload').show();
 
-	var data_string = "ajax=1";
+	var data_string = "ajax=1&eventtimestamp=" + jQuery.now();
 	if (type_value) data_string += '&type='+ (type_value ? type_value : 'HTML');
 	if (action_value) data_string += '&action='+ action_value;
 

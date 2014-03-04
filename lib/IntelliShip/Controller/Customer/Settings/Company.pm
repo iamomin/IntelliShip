@@ -538,11 +538,11 @@ sub get_customer
 	my $params = $c->req->params;
 
 	my $WHERE = {};
-	if (length $params->{'customerid'})
+	if ($params->{'customerid'})
 		{
 		$WHERE->{customerid} = $params->{'customerid'};
 		}
-	elsif (length $params->{'customername'})
+	elsif ($params->{'customername'})
 		{
 		$WHERE->{customername} = $params->{'customername'};
 		}

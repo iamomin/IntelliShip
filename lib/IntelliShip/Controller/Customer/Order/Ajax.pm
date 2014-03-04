@@ -430,6 +430,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->save_third_party_info;
 		}
+	elsif ($c->req->param('action') eq 'mark_shipment_as_printed')
+		{
+		$dataHash = $self->mark_shipment_as_printed;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -570,6 +574,21 @@ sub save_third_party_info
 	{
 	my $self = shift;
 	$self->save_third_party_details;
+	return { UPDATED => 1};
+	}
+
+sub mark_shipment_as_printed
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $CO = $self->get_order;
+
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}, coid => $params->{coid} });
+	$Shipment->statusid('100'); ## Printed
+	$Shipment->update;
+
 	return { UPDATED => 1};
 	}
 

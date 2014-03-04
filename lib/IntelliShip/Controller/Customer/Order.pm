@@ -63,7 +63,7 @@ sub setup_one_page :Private
 	my $c = $self->context;
 
 	my $CO = $self->get_order;
-	if ($CO->can_autoship)
+	if ($CO->can_autoship and $self->customer->get_contact_data_value('autoprocess'))
 		{
 		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
 		return $self->SHIP_ORDER;
@@ -1374,6 +1374,12 @@ sub SHIP_ORDER :Private
 				{
 				#$params = $self->GetCurrentPackage;
 				}
+
+			################################################
+			$params->{'enteredweight'} = $CO->total_weight;
+			$params->{'dimweight'} = $CO->total_dimweight;
+			$params->{'quantity'} = $CO->total_quantity;
+			################################################
 			}
 		elsif ($ServiceTypeID == 3000) ## Process LTL shipments
 			{
@@ -1656,6 +1662,7 @@ sub generate_label :Private
 		# }
 
 	$c->stash($params);
+	$c->stash($Shipment->{_column_data});
 	$c->stash->{fromAddress} = $Shipment->origin_address;
 	$c->stash->{toAddress} = $Shipment->destination_address;
 	$c->stash->{shipdate} = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
@@ -2022,6 +2029,8 @@ sub BuildShipmentInfo
 	my $myDBI = $c->model('MyDBI');
 
 	my $ShipmentData = { 'shipmentid' => $params->{'new_shipmentid'} };
+
+	$ShipmentData->{$_} = $params->{$_} foreach keys %$params;
 
 	my $FromAddress = $Customer->address;
 	$ShipmentData->{'customername'}         = $FromAddress->addressname;
