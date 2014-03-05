@@ -72,8 +72,8 @@ $(document).ready(function(){
 	PrintEplLabel();
 	[% ELSE %]
 	//Wait while the image loads
-	while(!document.getElementById("lblimg").complete){
-		setTimeout(function(){}, 1000);
+	setTimeout()
+	while(!document.getElementById("lblimg").complete){		
 	}
 	PrintImageLabel();
 	[% END %]
