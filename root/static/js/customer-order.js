@@ -692,10 +692,10 @@ function populate_ship_to_address(referenceid)
 		}
 	}
 
-function MarkShipmentAsPrinted()
+function MarkShipmentAsPrinted(callback_function)
 	{
 	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + $("#shipmentid").val();
-	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param);
+	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, callback_function);
 	}
 
 function CSSelectFunctions()

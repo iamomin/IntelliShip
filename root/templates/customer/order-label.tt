@@ -41,7 +41,9 @@ function PrintLabel()
 		return false;
 		}
 
-	MarkShipmentAsPrinted();
+	MarkShipmentAsPrinted(function() {
+		window.location.href=window.location.href;
+		});
 	}
 
 function Print()
