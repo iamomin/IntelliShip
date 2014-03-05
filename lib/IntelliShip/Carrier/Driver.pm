@@ -9,15 +9,17 @@ BEGIN {
 
 	extends 'IntelliShip::Errors';
 
-	has 'CO' => ( is => 'rw' );
-	has 'SHIPMENT' => ( is => 'rw' );
-	has 'context' => ( is => 'rw' );
-	has 'customer' => ( is => 'rw' );
-	has 'DB_ref' => ( is => 'rw' );
-	has 'data' => ( is => 'rw' );
+	has 'CO'              => ( is => 'rw' );
+	has 'SHIPMENT'        => ( is => 'rw' );
+	has 'context'         => ( is => 'rw' );
+	has 'customer'        => ( is => 'rw' );
+	has 'DB_ref'          => ( is => 'rw' );
+	has 'data'            => ( is => 'rw' );
 	has 'customerservice' => ( is => 'rw' );
-	has 'service' => ( is => 'rw' );
-	has 'response' => ( is => 'rw' );
+	has 'service'         => ( is => 'rw' );
+	has 'response'        => ( is => 'rw' );
+
+	$Data::Dumper::Sortkeys = 1;
 	}
 
 sub model
@@ -73,6 +75,8 @@ sub get_EPL
 	my $carrier = $self->CO->extcarrier;
 	return unless $carrier;
 	my $method = 'get_' . uc($carrier) . '_EPL';
+
+	$self->log("... $method: " . Dumper $DATA);
 
 	my $EPL = '';
 	#eval {
@@ -233,7 +237,11 @@ sub insert_shipment
 
 	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
 
+	$shipmentData->{'shipmentid'} = $Shipment->shipmentid;
+
 	$self->response->shipment($Shipment);
+
+	return $Shipment;
 	}
 
 sub log

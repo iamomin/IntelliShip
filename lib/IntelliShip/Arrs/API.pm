@@ -308,6 +308,21 @@ sub get_carrier_ID
 	return $SRef->{'carrierid'};
 	}
 
+# Bolt alt sop account number after the customer name
+# The alt sop account number is assumed to be always attached to the CS
+sub get_alt_SOP_consignee_name
+	{
+	my $self = shift;
+	my ($CustomerID, $CSID, $ConsigneeName) = @_;
+
+	if (my $AltSOPAcctNum = $self->get_CS_value($CSID, 'thirdpartyacct', $CustomerID))
+		{
+		$ConsigneeName .= " ($AltSOPAcctNum)";
+		}
+
+	return $ConsigneeName;
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;

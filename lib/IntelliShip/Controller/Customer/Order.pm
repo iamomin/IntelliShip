@@ -1690,35 +1690,24 @@ sub generate_label :Private
 		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
 		}
 
-	######### TODO IMPLEMENT PARENT ORDER NUMBER AS REFNUMBER #########
-	# if ( defined($CgiRef->{'originalcoid'}) and $CgiRef->{'originalcoid'} ne '' )
-		# {
-		# my $ParentCO = new CO($self->{'dbref'}->{'aos'},$self->{'customer'});
-		# $ParentCO->Load($CgiRef->{'originalcoid'});
-		# $CgiRef->{'refnumber'} = $ParentCO->GetValueHashRef()->{'ordernumber'};
-		# }
-	# else
-		# {
-		# $CgiRef->{'refnumber'} = $CgiRef->{'ordernumber'};
-		# }
-
-	# if ( defined($CgiRef->{'ponumber'}) and $CgiRef->{'ponumber'} ne '' )
-		# {
-		# $CgiRef->{'refnumber'} .= " - $CgiRef->{'ponumber'}";
-		# }
-	# elsif ( defined($CgiRef->{'custnum'}) and $CgiRef->{'custnum'} ne '' )
-		# {
-		# $CgiRef->{'refnumber'} .= " - $CgiRef->{'custnum'}";
-		# }
-	######################################################################
-
-	my $refnumber = $CO->ordernumber;
-	if ( defined($CO->{'ponumber'}) and $CO->ponumber ne '' )
+	if ($params->{'originalcoid'})
 		{
-		$refnumber .= " - " . $CO->{'ponumber'};
+		my $ParentCO = $c->model('MyDBI::CO')->find({ coid => $params->{'originalcoid'} });
+		$params->{'refnumber'} = $ParentCO->ordernumber if $ParentCO;
+		}
+	else
+		{
+		$params->{'refnumber'} = $params->{'ordernumber'} || $CO->ordernumber;
 		}
 
-	$c->stash->{refnumber} = $refnumber;
+	if ($params->{'ponumber'})
+		{
+		$params->{'refnumber'} .= " - $params->{'ponumber'}";
+		}
+	elsif ($params->{'custnum'})
+		{
+		$params->{'refnumber'} .= " - $params->{'custnum'}";
+		}
 
 	$self->ProcessPrinterStream($Shipment, $PrinterString);
 
@@ -2024,6 +2013,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{$_} = $params->{$_} foreach keys %$params;
 
 	my $FromAddress = $Customer->address;
+	$ShipmentData->{'shipasname'}           = $FromAddress->addressname;
 	$ShipmentData->{'customername'}         = $FromAddress->addressname;
 	$ShipmentData->{'branchaddress1'}       = $FromAddress->address1;
 	$ShipmentData->{'branchaddress2'}       = $FromAddress->address2;
@@ -2112,12 +2102,16 @@ sub BuildShipmentInfo
 	$ShipmentData->{'density'} = $params->{'density'};
 	$ShipmentData->{'ipaddress'} = $params->{'ipaddress'};
 	$ShipmentData->{'custnum'} = $params->{'custnum'};
-	$ShipmentData->{'shipasname'} = $params->{'customername'};
+
 	$ShipmentData->{'manualthirdparty'} = $params->{'manualthirdparty'};
 	$ShipmentData->{'originid'} = 3;
 	$ShipmentData->{'insurance'} = $params->{'insurance'};
-	$ShipmentData->{'oacontactname'} = $params->{'branchcontact'};
-	$ShipmentData->{'oacontactphone'} = $params->{'branchphone'};
+
+	$ShipmentData->{'branchcontact'}  = $Customer->contact;
+	$ShipmentData->{'oacontactname'}  = $Customer->contact;
+	$ShipmentData->{'branchphone'}    = $Customer->phone;
+	$ShipmentData->{'oacontactphone'} = $Customer->phone;
+
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};
 	$ShipmentData->{'dryicewt'} = $params->{'dryicewt'};

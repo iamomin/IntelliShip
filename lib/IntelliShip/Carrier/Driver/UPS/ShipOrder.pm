@@ -87,14 +87,16 @@ sub process_request
 		# }
 
 	my $numericaccount;
+	my $CustomerService = $self->customerservice;
+
 	if (defined($shipmentData->{'billingaccount'}) and $shipmentData->{'billingaccount'} ne '')
 		{
 		$shipmentData->{'billingaccount'} = uc($shipmentData->{'billingaccount'});
 		$numericaccount = $self->convert_string($shipmentData->{'billingaccount'});
 		}
-	elsif (defined($shipmentData->{'webaccount'}) and $shipmentData->{'webaccount'} ne '')
+	elsif ($CustomerService->{'webaccount'})
 		{
-		$shipmentData->{'webaccount'} = uc($shipmentData->{'webaccount'});
+		$shipmentData->{'webaccount'} = uc($CustomerService->{'webaccount'});
 		$numericaccount = $self->convert_string($shipmentData->{'webaccount'});
 		}
 
@@ -122,18 +124,7 @@ sub process_request
 	my $check_digit = ($next - $total);
 	if ($check_digit == 10){ $check_digit = 0; }
 
-	unless ($shipmentData->{'tracking1'})
-		{
-		if (defined($shipmentData->{'billingaccount'}) and $shipmentData->{'billingaccount'} ne '')
-			{
-			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'billingaccount'}.$ServiceCode.$referencenumber.$check_digit;
-			}
-		elsif (defined($shipmentData->{'webaccount'}) and $shipmentData->{'webaccount'} ne '')
-			{
-			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'webaccount'}.$ServiceCode.$referencenumber.$check_digit;
-			}
-		}
-	else
+	if ($shipmentData->{'tracking1'})
 		{
 		# this is a manually entered trackingnumber
 		$shipmentData->{'manualtrackingflag'} = 1;
@@ -148,6 +139,17 @@ sub process_request
 		if (length($shipmentData->{'tracking1'}) == 18 and !$self->validate_check_digit($shipmentData->{'tracking1'}))
 			{
 			return (undef,"Tracking Number Failed Check Digit Validation (" . $shipmentData->{'tracking1'} . ")");
+			}
+		}
+	else
+		{
+		if ($shipmentData->{'billingaccount'})
+			{
+			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'billingaccount'}.$ServiceCode.$referencenumber.$check_digit;
+			}
+		elsif ($shipmentData->{'webaccount'})
+			{
+			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'webaccount'}.$ServiceCode.$referencenumber.$check_digit;
 			}
 		}
 
@@ -170,7 +172,39 @@ sub process_request
 
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	$self->insert_shipment($shipmentData);
+	my $Shipment = $self->insert_shipment($shipmentData);
+
+	if ($Shipment->billingaccount)
+		{
+		$shipmentData->{'billingtype'} = "3RD PARTY";
+		}
+	else
+		{
+		$shipmentData->{'billingtype'} = "P/P";
+		}
+
+	if (my @packages = $Shipment->packages)
+		{
+		my $Pkg = $packages[0];
+		($shipmentData->{'productdescr'},
+		 $shipmentData->{'density'},
+		 $shipmentData->{'dimweight'},
+		 $shipmentData->{'dimlength'},
+		 $shipmentData->{'dimwidth'},
+		 $shipmentData->{'dimheight'},
+		 $shipmentData->{'originalcoid'}
+		 ) = (
+		 $Pkg->description,
+		 $Pkg->density,
+		 $Pkg->dimweight,
+		 $Pkg->dimlength,
+		 $Pkg->dimwidth,
+		 $Pkg->dimheight,
+		 $Pkg->originalcoid,
+		 );
+		}
+
+	$self->Assize($shipmentData);
 
 	my $PrinterString = $self->BuildPrinterString($shipmentData);
 	$self->response->printer_string($PrinterString);
@@ -415,6 +449,9 @@ sub BuildPrinterString
 
 	push (@service_lines,"P1\nR0,0\n.");
 
+	$CgiRef->{'shiptocompany'} = uc $CgiRef->{'addressname'};
+	$CgiRef->{'shiptoname'}    = uc($CgiRef->{'contactname'} ? $CgiRef->{'contactname'} : $CgiRef->{'addressname'});
+
 	if ( $CgiRef->{'enteredweight'} == 0 )
 		{
 		$CgiRef->{'displayweight'} = "LTR";
@@ -441,11 +478,7 @@ sub BuildPrinterString
 	#	push(@string_lines,split(/\~/,$stream));
 	#	}
 
-	my $printer_string = '';
-	foreach my $line (@string_lines)
-		{
-		$printer_string .= "$line\n";
-		}
+	my $printer_string = join("\n", @string_lines);
 
 	$self->log($printer_string);
 	return $printer_string;
@@ -531,6 +564,66 @@ sub leapDay
 		{
 		return 1;
 		}
+	}
+
+## the service icon changes based on assessorials used
+sub Assize
+	{
+	my $self = shift;
+	my $shipmentData = shift;
+
+	my $serviceicon = $shipmentData->{'serviceicon'};
+	my $shipmentid  = $shipmentData->{'shipmentid'};
+	my $dryicewt    = $shipmentData->{'dryicewt'};
+
+	my $AssList = '';
+	my $DryIce = '';
+
+	my $SQL = "
+		SELECT
+			distinct upper(assdisplay) AS assdisplay
+		FROM
+			assdata
+		WHERE
+			ownertypeid=2000 AND ownerid = '$shipmentid'
+		ORDER BY
+			upper(assdisplay)
+	";
+
+	my $STH = $self->myDBI->select($SQL);
+
+	foreach (my $row=0; $row < $STH->numrows; $row++)
+		{
+		my $assdisplay = $STH->fetchrow($row)->{'assdisplay'};
+		# dry ice gets it's own block of info on the label
+		if ( $assdisplay eq 'DRY ICE' )
+			{
+			# convery to KG
+			my $DryIceWtKG = sprintf("%02.1f",($dryicewt/2.2));
+			$DryIce = 'UN1845, DRY ICE, CLASS 9, 1 x ' .  $DryIceWtKG . ' KG';
+			next;
+			}
+
+		# add text to adult signature
+		if ( $assdisplay eq 'ADULT SIGNATURE REQUIRED' )
+			{
+			$assdisplay = 'ADULT SIGNATURE REQUIRED-MIN 21';
+			}
+
+		$AssList .= $assdisplay . " / ";
+		}
+
+	chop $AssList;
+
+	# add an S to the service icon for saturday pickup/delivery for services that offer it
+	if ( ($serviceicon eq '15' || $serviceicon eq '01' || $serviceicon eq '02') && $AssList =~ /Saturday/ )
+		{
+		$serviceicon .= "S";
+		}
+
+	$shipmentData->{'serviceicon'} = $serviceicon;
+	$shipmentData->{'asslist'} = $AssList;
+	$shipmentData->{'dryice'} = $DryIce;
 	}
 
 __PACKAGE__->meta()->make_immutable();
