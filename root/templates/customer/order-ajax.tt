@@ -278,30 +278,35 @@
 			<th>EST. DELIVERY</th>
 			<th>EST. COST</th>
 			<th>DECLD. VAL/INSUR</th>
-			<th>EST. TOTAL COST</th>
+			<th style="width:161px;">EST. TOTAL COST</th>
+			<th style="width:10px;"></th>
 			[% END %]
 		</tr>
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
-			<td>
+			<td valign="top">
 				<label><input type="radio" name="customerserviceid" id="customerserviceid" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]')" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
-				<div style="display: none;" id="SC-[% item.customerserviceid %]">
-					<table class="app" style="font-size: 11px;">
+			[% IF item.checked %]<script>$("#carrier").val('[% item.carrier %]');</script>[% END %]
+			</td>
+			<td valign="top">[% item.carrier %]</td>
+			<td valign="top">[% item.service %]</td>
+			[% IF IS_PREPAID %]
+			<td valign="top">[% item.days %]</td>
+			<td valign="top" [% IF item.no_on_time %]style="color: #D44444;"[% END %]>[% item.delivery %]</td>
+			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td valign="top" style="text-align: right; padding-right: 10px;"><green>[% item.shipment_charge %]&nbsp;&nbsp;</green>
+				<div class="charge-details" style="display: none;" id="SC-[% item.customerserviceid %]">
+					<table style="font-size: 11px;float:right;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
-						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b>[% scd.text %]</b></td><td style="text-align: right;"><b>[% scd.value %]</b></td>[% END %]</tr>
+						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b><i>[% scd.text %]</i></b></td><td style="text-align: right;"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
 					[% END %]
 					</table>
 				</div>
-			[% IF item.checked %]<script>$("#carrier").val('[% item.carrier %]');</script>[% END %]
 			</td>
-			<td class="sc-hover">[% item.carrier %]</td>
-			<td class="sc-hover">[% item.service %]</td>
-			[% IF IS_PREPAID %]
-			<td class="sc-hover">[% item.days %]</td>
-			<td class="sc-hover"[% IF item.no_on_time %]style="color: #D44444;"[% END %]>[% item.delivery %]</td>
-			<td class="sc-hover" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
-			<td class="sc-hover" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
-			<td class="sc-hover" style="text-align: right; padding-right: 20px;"><green>[% item.shipment_charge %]</green></td>
+			<td valign="top" >
+				<b><a class="show-hide-link" style="text-decoration: none;font-size:14px;color:#005C8A" id="showHide-[%item.customerserviceid%]" href="javascript:void(0);">+</a></>
+			</td>
 			[% END %]
 		</tr>
 		[% END %]
@@ -339,7 +344,7 @@
 				resizable  : false,
 				title      : "Estimated Shipment Charges"
 				});
-
+		/*
 		$(".sc-hover").mouseover(function() {
 			$("#SC-DLG").html($("#SC-" + $(this).parent('tr').attr('id')).html());
 			shipmentChargeDlg.dialog("open");
@@ -354,6 +359,18 @@
 				}).mouseout(function() {
 					shipmentChargeDlg.dialog("close");
 					});
+
+		*/
+
+			$(".show-hide-link").click(function showDetails(){
+				var linkObject = $(this);
+				linkObject.closest('tr').find('div.charge-details').slideToggle("slow", function(){
+						if (linkObject.text() == "+")
+							linkObject.html("&#8211");
+						else
+							linkObject.text("+");
+				});
+			});
 	</script>
   [% END %]
 [% END %]

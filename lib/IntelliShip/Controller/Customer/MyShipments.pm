@@ -133,6 +133,8 @@ sub populate_my_shipment_list :Private
 		{
 		my $row_data = $sth->fetchrow($row);
 		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
+		
+		$row_data->{'tracking_url'} = IntelliShip::Utils->get_tracking_URL($row_data->{'carrier'}, $row_data->{'tracking'});
 		push(@$myshipment_list, $row_data);
 		}
 =as

@@ -201,16 +201,16 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Fuel Charges' , value => '$' . sprintf("%.2f",$fuelcharges) }) if $fuelcharges;
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Declared Value Insurance' , value => '$' . sprintf("%.2f",$DVI_Charge) }) if $DVI_Charge;
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
-			push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
+			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
-			if ($detail_hash->{'shipment_charge'} =~ /Quote/)
-				{
-				push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>' . $detail_hash->{'shipment_charge'} . '</green>' });
-				}
-			else
-				{
-				push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>$' . sprintf("%.2f",$detail_hash->{'shipment_charge'}) . '</green>' });
-				}
+			#if ($detail_hash->{'shipment_charge'} =~ /Quote/)
+			#	{
+			#	push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>' . $detail_hash->{'shipment_charge'} . '</green>' });
+			#	}
+			#else
+			#	{
+			#	push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>$' . sprintf("%.2f",$detail_hash->{'shipment_charge'}) . '</green>' });
+			#	}
 
 			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $SHIPMENT_CHARGE_DETAILS;
 			#$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));

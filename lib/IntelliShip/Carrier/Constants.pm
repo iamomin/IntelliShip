@@ -7,6 +7,7 @@ our $VERSION = 1.0;
 
 our @EXPORT = qw(
 	CARRIER_UPS
+	CARRIER_DHL
 	CARRIER_USPS
 	CARRIER_FEDEX
 
@@ -15,6 +16,7 @@ our @EXPORT = qw(
 	);
 
 use constant CARRIER_UPS => "UPS";
+use constant CARRIER_DHL => "DHL";
 use constant CARRIER_USPS => "USPS";
 use constant CARRIER_FEDEX => "FedEx";
 

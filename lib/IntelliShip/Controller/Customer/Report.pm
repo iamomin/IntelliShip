@@ -336,22 +336,7 @@ sub format_SHIPMENT_xls
 				if ($carrier_name)
 					{
 						$tracking_number = $Column->{value};
-						if ( $carrier_name eq 'Airborne Express' || $carrier_name eq 'DHL' )
-						{
-							$tracking_url = "http://track.dhl-usa.com/TrackByNbr.asp?ShipmentNumber=$tracking_number&nav=TrackBynumber"
-						}
-						elsif ( $carrier_name eq 'FedEx' )
-						{
-							$tracking_url = "HTTP://www.fedex.com/cgi-bin/tracking?action=track&language=english&cntry_code=us&initial=x&tracknumbers=$tracking_number";
-						}
-						elsif ( $carrier_name eq 'UPS' )
-						{
-							$tracking_url = "HTTP://wwwapps.ups.com/etracking/tracking.cgi?tracknums_displayed=5&TypeOfInquiryNumber=T&HTMLVersion=4.0&InquiryNumber1=$tracking_number&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&track=Track";
-						}
-						else
-						{
-							$tracking_url = '';
-						}
+						$tracking_url = IntelliShip::Utils->get_tracking_URL($carrier_name,$tracking_number);
 					}
 				$worksheet->write_url($row, $col++, $tracking_url, $tracking_number,$LinkFormat );
 				}
