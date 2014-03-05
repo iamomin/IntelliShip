@@ -104,6 +104,7 @@ sub import
 			}
 
 		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file);
+		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file);
 
 		#my $import_base_file = fileparse($file);
 
@@ -148,7 +149,8 @@ sub ImportOrders
 
 	my $FILE = new IO::File;
 
-	$c->log->debug("... Read File: " . $import_file);
+	$c->log->debug("\n");
+	$c->log->debug("##### ImportOrders Read File: " . $import_file);
 
 	unless (open($FILE, $import_file))
 		{
@@ -923,6 +925,354 @@ sub ImportOrders
 	return ($ImportFailureRef,$OrderTypeRef);
 	}
 
+sub ImportProducts
+	{
+	my $self = shift;
+	my $import_file = shift;
+
+	return unless $import_file;
+
+	my $c = $self->context;
+
+	my $UnknownCustCount = 0;
+	my $Error_File = '';
+	my $OrderTypeRef = {};
+	my $ordertype;
+
+	my $FILE = new IO::File;
+
+	$c->log->debug("\n");
+	$c->log->debug("##### ImportProducts Read File: " . $import_file);
+
+	unless (open($FILE, $import_file))
+		{
+		print STDERR "\n... Error: " . $!;
+		return;
+		}
+
+	my @FileLines;
+	while (<$FILE>)
+		{
+		chomp;
+		push(@FileLines,$_);
+		}
+
+	close ($FILE);
+
+	$c->log->debug("... Total file lines: " . @FileLines);
+
+	my $LineCount = 0;
+	my $ImportFailureRef = {};
+
+	my $LastCOID = '';
+	foreach my $Line (@FileLines)
+		{
+		$LineCount++;
+
+		my $CustRef = {};
+
+		# Trim spaces from front and back
+		$Line =~ s/^\s+//;
+		$Line =~ s/\s+$//;
+
+		next unless $Line;
+
+		($CustRef->{'extloginid'},
+		$CustRef->{'ordernumber'},
+		$CustRef->{'productquantity'},
+		$CustRef->{'unittype'},
+		$CustRef->{'weighttype'},
+		$CustRef->{'productprice'},
+		$CustRef->{'productdescr'},
+		$CustRef->{'productweight'},
+		$CustRef->{'partnumber'},
+		$CustRef->{'linenum'},
+		$CustRef->{'dimlength'},
+		$CustRef->{'dimwidth'},
+		$CustRef->{'dimheight'},
+		$CustRef->{'hazardous'},
+		$CustRef->{'serialnumber'},
+		$CustRef->{'producttype'},
+		$CustRef->{'cotype'}) = split(/\t/, $Line);
+
+		my $export_flag = 0;
+
+		IntelliShip::Utils->trim_hash_ref_values($CustRef);
+
+		#$c->log->debug("...CustRef:  " . Dumper $CustRef);
+
+		# set cotypeid
+		if ( defined($CustRef->{'cotype'}) && $CustRef->{'cotype'} =~ /PO/i )
+			{
+			$CustRef->{'cotypeid'} = 2;
+			$ordertype = 'PO';
+			}
+		elsif ( defined($CustRef->{'cotype'}) && $CustRef->{'cotype'} =~ /Quote/i )
+			{
+			$CustRef->{'cotypeid'} = 10;
+			$ordertype = 'quote';
+			}
+		else
+			{
+			$CustRef->{'cotypeid'} = 1;
+			$ordertype = 'order';
+			}
+
+		# set descr equal to part number if descr is not given and part number is
+		if ( $CustRef->{'productdescr'} eq '' && $CustRef->{'partnumber'} ne '' )
+			{
+			$CustRef->{'productdescr'} = $CustRef->{'partnumber'};
+			}
+
+		if ( !defined($CustRef->{'productprice'}) || $CustRef->{'productprice'} eq '' )
+			{
+			$CustRef->{'productprice'} = 0;
+			}
+
+		if ( !defined($CustRef->{'productweight'}) || $CustRef->{'productweight'} eq '' )
+			{
+			$CustRef->{'productweight'} = undef;
+			}
+
+		#if (!defined($CustRef->{'dimwidth'}) || $CustRef->{'dimwidth'} eq '')
+		#	{
+		#	$CustRef->{'dimwidth'} = 0;
+		#	}
+        #
+		#if (!defined($CustRef->{'dimheight'}) || $CustRef->{'dimheight'} eq '')
+		#	{
+		#	$CustRef->{'dimheight'} = 0;
+		#	}
+        #
+		#if (!defined($CustRef->{'dimlength'}) || $CustRef->{'dimlength'} eq '')
+		#	{
+		#	$CustRef->{'dimlength'} = 0;
+		#	}
+
+		################################################
+		### Check for required fields & errors
+		################################################
+		#Check for valid extloginid
+
+		my ($ContactID,$CustomerID) = $self->AuthenticateContact($CustRef->{'extloginid'});
+		#$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
+
+		my $Contact = $c->model('MyDBI::Contact')->find({ contactid => $ContactID }) if $ContactID;
+		my $Customer = $c->model('MyDBI::Customer')->find({ customerid => $CustomerID }) if $CustomerID;
+
+		#$c->log->debug("... Contact DATA DETAILS:  " . Dumper $Contact);
+		#$c->log->debug("... Customer DATA DETAILS:  " . Dumper $Customer);
+
+		my $ProductStatus = 200;
+
+		if (!defined($CustomerID) || $CustomerID eq '')
+			{
+			$export_flag = -1;
+			}
+		#else
+		#	{
+		#	my $Company = new CUSTOMER($DBRef->{'aos'}, $Customer);
+		#	$Company->Load($CustomerID);
+
+		#	my $PickPack = $Company->GetCustomerValue('pickpack');
+		#	if ( defined($PickPack) && $PickPack == 1 )
+		#		{
+		#		$ProductStatus = 0;
+		#		}
+		#	}
+
+		# Must have an order number
+		if (!defined($CustRef->{'ordernumber'}) || $CustRef->{'ordernumber'} eq '')
+			{
+			$export_flag = -2;
+			}
+
+		if (defined($CustRef->{'ordernumber'}) && $CustRef->{'ordernumber'} ne '' && $export_flag ne '-1')
+			{
+			$c->log->debug("... search for CO by ordernumber:  " . $CustRef->{'ordernumber'});
+			 my $sth = $self->myDBI->select("
+				SELECT
+					coid
+				FROM
+					co
+				WHERE
+					customerid = '$CustomerID'
+					AND ordernumber = '$CustRef->{'ordernumber'}'
+					AND cotypeid = '$CustRef->{'cotypeid'}'
+				ORDER BY
+					datecreated DESC
+				LIMIT 1
+			 ");
+
+			my $coid = $sth->fetchrow(0)->{'coid'} if $sth->numrows;
+			$CustRef->{'coid'} = $coid;
+
+			$c->log->debug("... CO found, ID:  " . $coid);
+
+			if (!defined($CustRef->{'coid'}) || $CustRef->{'coid'} eq '')
+				{
+				$export_flag = -2;
+				}
+			}
+
+		# use this to issue delete of products for an order only once.
+		$LastCOID = $CustRef->{'coid'};
+
+		if ($CustRef->{'productquantity'})
+			{
+			$CustRef->{'productquantity'} =~ s/[^\d\.]//g;
+			$CustRef->{'productquantity'} = int $CustRef->{'productquantity'};
+			}
+		else
+			{
+			$CustRef->{'productquantity'} = 0;
+			}
+
+		unless ($CustRef->{'productquantity'} =~ /^\d+$/)
+			{
+			$export_flag = -3;
+			}
+
+		if (!defined($CustRef->{'partnumber'}) || $CustRef->{'partnumber'} eq '')
+			{
+			$export_flag = -4;
+			}
+
+		if (!defined($CustRef->{'productdescr'}) || $CustRef->{'productdescr'} eq '')
+			{
+			$export_flag = -5;
+			}
+
+		if ($CustRef->{'unittype'})
+			{
+			my $STH = $self->myDBI->select("
+				SELECT
+					unittypeid
+				FROM
+					unittype
+				WHERE
+					upper(unittypename) = upper('$CustRef->{'unittype'}')
+				LIMIT 1
+				");
+
+			my $unittypeid = $STH->fetchrow(0)->{'unittypeid'} if $STH->numrows;
+			$CustRef->{'unittypeid'} = $unittypeid;
+
+			$c->log->debug("... unittypeid:  " . $unittypeid);
+			}
+		else
+			{
+			$CustRef->{'unitttypeid'} = 3;
+			}
+
+		if ($CustRef->{'weighttype'} && $CustRef->{'weighttype'} =~ /(KG|KGS)/i)
+			{
+			$CustRef->{'weighttypeid'} = 2;
+			}
+		else
+			{
+			$CustRef->{'weighttypeid'} = 1;
+			}
+
+		my $CO;
+		if ( $export_flag == 0 )
+			{
+			# if it's the 1st hit on a particular order then delete any existing product records
+			if ( $LineCount== 1 || ($LastCOID ne $CustRef->{'coid'}) )
+				{
+				$CO=$c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
+
+				#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
+
+				$CO->delete_all_package_details;
+				}
+
+			my $productData = { datatypeid => '2000' };
+
+			# coid and packageid are passed in.  ideally products will associate to a package.
+			# if none exist, the coid is passed so that the products will tie to the order instead.
+			my @packages;
+			if ($CO and @packages = $CO->packages)
+				{
+				$productData->{'packageid'} = $packages[0]->packprodataid;
+				}
+
+			$productData->{'ownerid'}          = $CustRef->{'coid'};
+			$productData->{'quantity'}         = $CustRef->{'productquantity'};
+			$productData->{'reqqty'}           = $CustRef->{'productquantity'};
+			$productData->{'unittypeid'}       = $CustRef->{'unittypeid'};
+			$productData->{'weighttypeid'}     = $CustRef->{'weighttypeid'} || 0;
+			$productData->{'decval'}           = $CustRef->{'productprice'};
+			$productData->{'description'}      = $CustRef->{'productdescr'};
+			$productData->{'weight'}           = $CustRef->{'productweight'};
+			$productData->{'partnumber'}       = $CustRef->{'partnumber'};
+			$productData->{'statusid'}         = $ProductStatus;
+			#$productData->{'shippedquantity1'} = 0;
+			$productData->{'linenum'}          = $CustRef->{'linenum'};
+			$productData->{'dimlength'}        = $CustRef->{'dimlength'} || 0;
+			$productData->{'dimwidth'}         = $CustRef->{'dimwidth'} || 0;
+			$productData->{'dimheight'}        = $CustRef->{'dimheight'} || 0;
+			$productData->{'serialnumber'}     = $CustRef->{'serialnumber'};
+			$productData->{'producttype'}      = $CustRef->{'producttype'};
+
+			$productData->{'description'} =~ s/'//g if $productData->{'description'};
+
+			if ($CustRef->{'hazardous'})
+				{
+				$productData->{'hazardous'} = ($CustRef->{'hazardous'} =~ /Y/i ? 1 : 0);
+				}
+
+			# set onwertypeid
+			my $OwnerTypeID = '1000';
+
+			# Let the product go to a package if we've got one
+			$OwnerTypeID = '3000' if $productData->{'packageid'};
+
+			#$c->log->debug("....productdata  : ".Dumper $productData );
+
+			my $Product = $c->model('MyDBI::Packprodata')->new($productData);
+			$Product->packprodataid($self->myDBI->get_token_id);
+			$Product->insert;
+
+			$c->log->debug("... NEW Product INSERTED, packprodataid:  " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
+			}
+		elsif ( $export_flag < 0 )
+			{
+			# We need a valid customerid for the failure to do any good...it's likely a header line
+			 if ( defined($CustomerID) && $CustomerID ne '' )
+				{
+				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'}: $export_flag\n";
+				}
+			 # Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
+			 # code for them explicitly
+			 else
+				{
+				$UnknownCustCount++;
+
+				if ( $UnknownCustCount == 1 )
+					{
+					$Error_File = fileparse($import_file);
+					$Error_File = "product_unknowncustomer_".$Error_File;
+
+					#open(OUT,">$config->{BASE_PATH}/var/processing/$Error_File") or warn "unable to open error file";
+					}
+				print STDERR "\n___ Unknown line: $Line\n\n";
+				#print OUT "$Line\n\n";
+				}
+			}
+		}
+
+	if ( $UnknownCustCount > 0 )
+		{
+		print STDERR"\n  ###UnknownCustCount ".$UnknownCustCount;
+		#close (OUT);
+		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
+		#   or &TraceBack("Could not move $Error_File: $!");
+		}
+
+	return ($ImportFailureRef,$ordertype);
+	}
+
 # Send email with list of failed imports
 sub EmailImportFailures
 	{
@@ -966,7 +1316,6 @@ sub EmailImportFailures
 	#	#SendFileAsEmailAttachment($fromemail,$toemail,$cc,undef,$subject,$body,$filepath."/".$filename,$filename,$fromname);
 	#	}
 	}
-
 
 sub SaveAssessorial
 	{
