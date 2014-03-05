@@ -72,20 +72,21 @@ sub get_EPL
 
 	my $carrier = $self->CO->extcarrier;
 	return unless $carrier;
-	my $method = 'get_' . $carrier;
+	my $method = 'get_' . uc($carrier) . '_EPL';
 
 	my $EPL = '';
-	eval {
+	#eval {
 		$EPL = IntelliShip::Carrier::EPLTemplates->$method($DATA);
-	};
+	#};
 
-	if ($@)
-		{
-		$self->log("EPLTemplates: $method Errors : " . $!);
-		}
+	#if ($@)
+	#	{
+	#	$self->log("EPLTemplates: $method Errors : " . $!);
+	#	}
 
 	return $EPL;
 	}
+
 sub TagPrinterString
 	{
 	my $self = shift;

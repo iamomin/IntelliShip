@@ -36,9 +36,9 @@ function PrintLabel()
 
 	catch(err)
 		{
-		//var messageStr="<div class='error'>Sorry, this browser won't support EPL label print</div>";
-		//showMessage(messageStr, "Label Print Error");
-		//return false;
+		var messageStr="<div class='error'>Sorry, this browser won't support EPL label print</div>";
+		showMessage(messageStr, "Label Print Error");
+		return false;
 		}
 
 	MarkShipmentAsPrinted();

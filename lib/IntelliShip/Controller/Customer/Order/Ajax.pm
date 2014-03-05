@@ -534,7 +534,7 @@ sub add_pkg_detail_row :Private
 	$c->stash->{unittype} = ($params->{'detail_type'} eq 'package' ? $self->contact->default_package_type : $self->contact->default_product_type);
 
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	#$self->context->log->debug("add_pkg_detail_row : " . $row_HTML);
+	#$c->log->debug("add_pkg_detail_row : " . $row_HTML);
 	$c->stash->{PKG_DETAIL_ROW} = 0;
 
 	return { rowHTML => $row_HTML };
@@ -589,6 +589,7 @@ sub mark_shipment_as_printed
 	$Shipment->statusid('100'); ## Printed
 	$Shipment->update;
 
+	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
 	return { UPDATED => 1};
 	}
 
