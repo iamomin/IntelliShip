@@ -126,6 +126,7 @@ sub process_request
 
 	if ($shipmentData->{'tracking1'})
 		{
+		$self->log("____ shipmentData tracking1 FOUND");
 		# this is a manually entered trackingnumber
 		$shipmentData->{'manualtrackingflag'} = 1;
 
@@ -143,15 +144,17 @@ sub process_request
 		}
 	else
 		{
+		$self->log("____ ELSE PART");
 		if ($shipmentData->{'billingaccount'})
 			{
 			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'billingaccount'}.$ServiceCode.$referencenumber.$check_digit;
 			}
-		elsif ($shipmentData->{'webaccount'})
+		elsif ($CustomerService->{'webaccount'})
 			{
-			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'webaccount'}.$ServiceCode.$referencenumber.$check_digit;
+			$shipmentData->{'tracking1'} = "1Z".$CustomerService->{'webaccount'}.$ServiceCode.$referencenumber.$check_digit;
 			}
 		}
+	$self->log("____ tracking1: " . $shipmentData->{'tracking1'});
 
 	if ( $shipmentData->{'totalquantity'} >= $shipmentData->{'quantity'} )
 		{
