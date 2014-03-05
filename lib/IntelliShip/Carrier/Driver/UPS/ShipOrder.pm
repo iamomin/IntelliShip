@@ -5,7 +5,6 @@ use Date::Manip;
 use Data::Dumper;
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
-use IntelliShip::Carrier::EPLTemplates;
 
 BEGIN { extends 'IntelliShip::Carrier::Driver'; }
 
@@ -428,7 +427,7 @@ sub BuildPrinterString
 		$CgiRef->{'maxi_weight'} = $CgiRef->{'enteredweight'};
 		}
 
-	my $raw_string = IntelliShip::Carrier::EPLTemplates->get_UPS_EPL($CgiRef);
+	my $raw_string = $self->get_EPL($CgiRef);
 
 	my @string_lines = split("\n",$raw_string);
 

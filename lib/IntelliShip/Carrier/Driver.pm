@@ -3,6 +3,7 @@ package IntelliShip::Carrier::Driver;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::Carrier::EPLTemplates;
 
 BEGIN {
 
@@ -64,6 +65,27 @@ sub void_shipment
 	$CO->update;
 	}
 
+sub get_EPL
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $carrier = $self->CO->extcarrier;
+	return unless $carrier;
+	my $method = 'get_' . $carrier;
+
+	my $EPL = '';
+	eval {
+		$EPL = IntelliShip::Carrier::EPLTemplates->$method($DATA);
+	};
+
+	if ($@)
+		{
+		$self->log("EPLTemplates: $method Errors : " . $!);
+		}
+
+	return $EPL;
+	}
 sub TagPrinterString
 	{
 	my $self = shift;
