@@ -1646,11 +1646,29 @@ sub generate_label :Private
 
 	my $ShipmentData = $self->BuildShipmentInfo;
 
-	# Alt SOP mangling
-	# if ( $CgiRef->{'usingaltsop'} )
-		# {
-		# $CgiRef->{'addressname'} = $self->GetAltSOPConsigneeName($CgiRef->{'customerserviceid'},$CgiRef->{'addressname'});
-		# }
+	## Alt SOP mangling
+	if ($params->{'usingaltsop'})
+		{
+		$params->{'addressname'} = $self->API->get_alt_SOP_consignee_name($params->{'customerserviceid'},$params->{'addressname'});
+		}
+	if ($params->{'originalcoid'})
+		{
+		my $ParentCO = $c->model('MyDBI::CO')->find({ coid => $params->{'originalcoid'} });
+		$params->{'refnumber'} = $ParentCO->ordernumber if $ParentCO;
+		}
+	else
+		{
+		$params->{'refnumber'} = $params->{'ordernumber'} || $CO->ordernumber;
+		}
+
+	if ($params->{'ponumber'})
+		{
+		$params->{'refnumber'} .= " - $params->{'ponumber'}";
+		}
+	elsif ($params->{'custnum'})
+		{
+		$params->{'refnumber'} .= " - $params->{'custnum'}";
+		}
 
 	$c->stash($params);
 	$c->stash($Shipment->{_column_data});
@@ -1690,24 +1708,7 @@ sub generate_label :Private
 		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
 		}
 
-	if ($params->{'originalcoid'})
-		{
-		my $ParentCO = $c->model('MyDBI::CO')->find({ coid => $params->{'originalcoid'} });
-		$params->{'refnumber'} = $ParentCO->ordernumber if $ParentCO;
-		}
-	else
-		{
-		$params->{'refnumber'} = $params->{'ordernumber'} || $CO->ordernumber;
-		}
-
-	if ($params->{'ponumber'})
-		{
-		$params->{'refnumber'} .= " - $params->{'ponumber'}";
-		}
-	elsif ($params->{'custnum'})
-		{
-		$params->{'refnumber'} .= " - $params->{'custnum'}";
-		}
+	$c->stash->{refnumber} = $params->{'refnumber'};
 
 	$self->ProcessPrinterStream($Shipment, $PrinterString);
 
