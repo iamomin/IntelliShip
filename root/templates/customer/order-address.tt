@@ -241,16 +241,17 @@ $("#dateneeded").datepicker({
 		minDate: '-0d'
 		});
 [% END %]
-var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]",[% END %]];
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[% item.city %]:[% item.state %]:[% item.address1 %]",[% END %]];
 var arrCompanyAddress = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[%item.value%]",[% END %]];
 
 $("#toname").autocomplete({
 	source: availableCustomers,
 	select: function( event, ui ) {
 		var SelectedCompany = ui.item.value
+		var Company = SelectedCompany.split(":");
 		$.each( arrCompanyAddress, function( index, value ){
 			var availableCompany = value.split(":");
-			if (availableCompany[0] == SelectedCompany) {
+			if (availableCompany[0] == Company[0]) {
 				populate_ship_to_address(availableCompany[1]);
 				}
 			});

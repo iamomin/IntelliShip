@@ -382,7 +382,7 @@ sub get_select_list
 		my $SQL = "
 		SELECT
 			DISTINCT ON (addressname)
-			addressname,
+			addressname,city,state,address1,
 			co.coid as referenceid
 		FROM
 			co
@@ -396,14 +396,14 @@ sub get_select_list
 		ORDER BY
 			$OrderBy
 		";
-		#$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
+		$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
 		my $myDBI = $c->model('MyDBI');
 		my $sth = $myDBI->select($SQL);
 
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			push(@$list, { name => $data->{addressname}, value => $data->{referenceid} });
+			push(@$list, { name => $data->{addressname},value => $data->{referenceid},city => $data->{city},state => $data->{state},address1 => $data->{address1}});
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')
