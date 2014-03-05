@@ -56,10 +56,10 @@
 		lblimg.onload =  function(){
 			var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
 			var lbl = $("#label").html();
-			lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + "</body></html>";
+			lbl = "<html><head><script>var lbl = document.getElementById("lblimg"); lbl.onload = window.print();</script></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + "</body></html>";
 			printWin.document.write(lbl);
 			printWin.focus();
-			printWin.print();
+			//printWin.print();
 			printWin.close();
 
 			MarkShipmentAsPrinted(function() {
