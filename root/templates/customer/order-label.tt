@@ -23,44 +23,52 @@
 </form>
 
 <script>
-function PrintLabel()
-	{
-	try
+[% IF printerstring_loop %]
+
+	function PrintEplLabel()
 		{
-		var fso = new ActiveXObject("Scripting.FileSystemObject");
-		var a = fso.CreateTextFile("[% label_port %]:", true);
-		[% FOREACH line IN printerstring_loop %]
-		a.Writeline("[% line %]");[% END %]
-		a.Close();
+		try
+			{
+			var fso = new ActiveXObject("Scripting.FileSystemObject");
+			var a = fso.CreateTextFile("[% label_port %]:", true);
+			[% FOREACH line IN printerstring_loop %]
+			a.Writeline("[% line %]");[% END %]
+			a.Close();
+			}
+
+		catch(err)
+			{
+			var messageStr="<div class='error'>Sorry, this browser won't support EPL label print</div>";
+			showMessage(messageStr, "Label Print Error");
+			return false;
+			}
+
+		MarkShipmentAsPrinted(function() {
+			window.location.href = window.location.href;
+			});
 		}
 
-	catch(err)
+[% ELSE %]
+
+	function PrintImageLabel()
 		{
-		var messageStr="<div class='error'>Sorry, this browser won't support EPL label print</div>";
-		showMessage(messageStr, "Label Print Error");
-		return false;
+		var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+		var lbl = $("#label").html();
+		lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + "</body></html>";
+		printWin.document.write(lbl);
+		printWin.focus();
+		printWin.print();
+		printWin.close();
+
+		MarkShipmentAsPrinted(function() {
+			window.location.href = window.location.href;
+			});
 		}
 
-	MarkShipmentAsPrinted(function() {
-		window.location.href=window.location.href;
-		});
-	}
-
-function Print()
-	{
-	var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
-	var lbl = $("#label").html();
-	lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + "</body></html>";
-	printWin.document.write(lbl);
-	printWin.focus();
-	printWin.print();
-	printWin.close();
-	}
+[% END %]
 
 $(document).ready(function(){
-	[% IF printerstring_loop %]PrintLabel();[% END %]
-	//Print();
-	//[% IF totalquantity > 0 %]window.print(false);[% END %]
+	[% IF printerstring_loop %]PrintEplLabel();[% ELSE %]PrintImageLabel();[% END %]
 	});
 
 </script>
