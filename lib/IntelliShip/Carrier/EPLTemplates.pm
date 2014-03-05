@@ -6,6 +6,7 @@ sub get_UPS_EPL
 	{
 	my $self = shift;
 	my $DATA = shift;
+
 	my $EPL = <<END;
 .
 
@@ -64,6 +65,61 @@ A45,1185,0,1,1,1,N,"Powered by Intelliship(tm)"
 A45,1205,0,1,1,1,N,"$DATA->{'footer_datetime'}"
 A670,1205,0,1,1,1,N,"$DATA->{'routingversion'}"
 b30,390,M,m2,"$DATA->{'servicecode'},$DATA->{'isocountry'},$DATA->{'maxicode_zip5'},$DATA->{'maxicode_zip4'},[)>0196$DATA->{'maxicode_tracking1'}UPSN$DATA->{'webaccount'}$DATA->{'julianpickup'}$DATA->{'currentpiece'}/$DATA->{'totalquantity'}$DATA->{'maxi_weight'}N$DATA->{'maxicity'}$DATA->{'iso2state'}"
+END
+
+	return $EPL;
+	}
+
+sub get_USPS_EPL
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $EPL = <<END;
+.
+
+N
+OD10
+q912
+Q1218,24
+D15
+ZB
+LO0,80,1000,2
+LO205,80,2,150
+LO0,80,2,1042
+LO813,80,2,1042
+A60,80,0,5,3,3,N,"F"
+LO0,230,1000,2
+A60,250,0,2,3,3,N,"USPS FIRST-CLASS MAIL"
+LO0,300,1000,2
+A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,350,0,2,1,1,N,"$DATA->{'customername'} "
+A25,370,0,2,1,1,N,"$DATA->{'customername'}"
+A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'} "
+A25,410,0,2,1,1,N,"$DATA->{'branchaddresscity'}, $DATA->{'branchaddressstate'} $DATA->{'branchaddresszip'}"
+A100,510,0,3,1,1,N,"$DATA->{'contactname'}"
+A100,530,0,3,1,1,N,"$DATA->{'addressname'}"
+A100,550,0,3,1,1,N,"$DATA->{'address1'}"
+A100,570,0,3,1,1,N,"$DATA->{'address2'}"
+A100,590,0,3,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
+A600,330,0,2,1,1,N,"$DATA->{datetoship}"
+A600,350,0,2,1,1,N,"Weight: $DATA->{weightinounces} oz"
+A600,370,0,1,2,2,N,"0005"
+LO590,430,1,40
+LO500,430,1,40
+LO500,430,90,1
+LO500,470,90,1
+A510,440,0,1,2,2,N,"C000"
+LO0,700,1000,10
+A190,740,0,3,2,2,N,"USPS TRACKING #"
+B150,790,0,1E,3,7,150,B,"$DATA->{tracking1}"
+LO0,1020,1000,10
+A100,1070,0,4,1,1,N,"Electronic Rate Approved # 699329"
+LO0,1120,1000,4
+P1
+N
+R0,0
+.
 END
 
 	return $EPL;

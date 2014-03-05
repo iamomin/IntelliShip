@@ -64,20 +64,19 @@ sub process_request
 		$self->add_error( $XMLResponse->{Description});
 		return $shipmentData;
 		}
-	
-	my $PrinterString = $XMLResponse->{DeliveryConfirmationLabel};
+
 	my $TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
+	$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
 
-	$self->log("PrinterString: " . $PrinterString);
-	$self->log("PrinterString: " . $TrackingNumber);
-
-	#$PrinterString = $self->TagPrinterString($PrinterString,$shipmentData->{'ordernumber'});
+	$TrackingNumber = substr ($TrackingNumber, -22);
+	$self->log("TrackingNumber: ".$TrackingNumber);
 
 	$shipmentData->{'tracking1'} = $TrackingNumber;
-	$shipmentData->{'printerstring'} = $PrinterString;
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
-	#$self->log("### shipmentData ###: " . Dumper $shipmentData);
+	my $raw_string = $self->get_EPL($shipmentData);
+	my $PrinterString = $raw_string;
+	$shipmentData->{'printerstring'} = $PrinterString;
 
 	$self->insert_shipment($shipmentData);
 	$self->response->printer_string($PrinterString);
@@ -133,7 +132,7 @@ sub get_xml_request
 <Revision>2</Revision>
 <ImageParameters />
 <FromName>$shipmentData->{FromName}</FromName>
-<FromFirm> $shipmentData->{'customername'}</FromFirm>
+<FromFirm>$shipmentData->{'customername'}</FromFirm>
 <FromAddress1>$shipmentData->{'branchaddress1'}</FromAddress1>
 <FromAddress2>$shipmentData->{'branchaddress2'}</FromAddress2>
 <FromCity>$shipmentData->{'branchaddresscity'}</FromCity>
