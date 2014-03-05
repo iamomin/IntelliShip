@@ -126,7 +126,6 @@ sub process_request
 
 	if ($shipmentData->{'tracking1'})
 		{
-		$self->log("____ shipmentData tracking1 FOUND");
 		# this is a manually entered trackingnumber
 		$shipmentData->{'manualtrackingflag'} = 1;
 
@@ -144,7 +143,6 @@ sub process_request
 		}
 	else
 		{
-		$self->log("____ ELSE PART");
 		if ($shipmentData->{'billingaccount'})
 			{
 			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'billingaccount'}.$ServiceCode.$referencenumber.$check_digit;
@@ -154,24 +152,8 @@ sub process_request
 			$shipmentData->{'tracking1'} = "1Z".$CustomerService->{'webaccount'}.$ServiceCode.$referencenumber.$check_digit;
 			}
 		}
+
 	$self->log("____ tracking1: " . $shipmentData->{'tracking1'});
-
-	if ( $shipmentData->{'totalquantity'} >= $shipmentData->{'quantity'} )
-		{
-		$shipmentData->{'currentpiece'} = $shipmentData->{'totalquantity'} - $shipmentData->{'quantity'};
-
-		if ( $shipmentData->{'quantity'} > 0 )
-			{
-			$shipmentData->{'currentpiece'} ++;
-			}
-		}
-
-	# calculate shipment number.  presumably only needed for international but calcing for all
-	# a multi piece shipment uses a single shipment number
-	if ( $shipmentData->{'currentpiece'} == 1 )
-		{
-		$shipmentData->{'shipmentnumber'} = $self->CalculateShipmentNumber($shipmentData->{'tracking1'});
-		}
 
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
@@ -210,6 +192,7 @@ sub process_request
 	$self->Assize($shipmentData);
 
 	my $PrinterString = $self->BuildPrinterString($shipmentData);
+
 	$self->response->printer_string($PrinterString);
 	}
 
@@ -426,6 +409,45 @@ sub BuildPrinterString
 
 	($CgiRef->{'shipdate'},$CgiRef->{'maxi_dateshipped'}) = $self->FormatShipDate;
 
+	$CgiRef->{'servicename'} = uc($CgiRef->{'servicename'});
+
+	my $qual    = substr($CgiRef->{'tracking1'}, 0,2);
+	my $acct1   = substr($CgiRef->{'tracking1'}, 2,3);
+	my $acct2   = substr($CgiRef->{'tracking1'}, 5,3);
+	my $service = substr($CgiRef->{'tracking1'}, 8,2);
+	my $ref1    = substr($CgiRef->{'tracking1'},10,4);
+	my $ref2    = substr($CgiRef->{'tracking1'},14,4);
+
+	$CgiRef->{'spacedtracking1'} = $qual." ".$acct1." ".$acct2." ".$service." ".$ref1." ".$ref2;
+	$self->log("____ spacedtracking1: " . $CgiRef->{'tracking1'});
+
+	if ( $CgiRef->{'totalquantity'} >= $CgiRef->{'quantity'} )
+		{
+		$CgiRef->{'currentpiece'} = $CgiRef->{'totalquantity'} - $CgiRef->{'quantity'};
+
+		if ( $CgiRef->{'quantity'} > 0 )
+			{
+			$CgiRef->{'currentpiece'} ++;
+			}
+		}
+
+	if ($CgiRef->{'totalquantity'} >= $CgiRef->{'quantity'})
+		{
+		$CgiRef->{'currentpiece'} = $CgiRef->{'totalquantity'} - $CgiRef->{'quantity'};
+
+		if ($CgiRef->{'quantity'} > 0)
+			{
+			$CgiRef->{'currentpiece'}++;
+			}
+		}
+
+	# calculate shipment number.  presumably only needed for international but calcing for all
+	# a multi piece shipment uses a single shipment number 
+	if ( $CgiRef->{'currentpiece'} == 1 )
+		{
+		($CgiRef->{'shipmentnumber'}) = $self->CalculateShipmentNumber($CgiRef->{'tracking1'});
+		}
+
 	##################################################################
 	## Build EPL
 	##################################################################
@@ -483,7 +505,7 @@ sub BuildPrinterString
 
 	my $printer_string = join("\n", @string_lines);
 
-	$self->log($printer_string);
+	#$self->log($printer_string);
 	return $printer_string;
 	}
 
