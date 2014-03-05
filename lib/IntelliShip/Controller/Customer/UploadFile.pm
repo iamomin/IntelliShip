@@ -118,8 +118,6 @@ sub upload :Local
 	my $TARGET_file = $self->get_directory . "/\Q$FILE_name\E";
 	$TARGET_file .= '.' . IntelliShip::DateUtils->timestamp if stat $TARGET_file;
 
-	$c->log->debug("##### Target file $TARGET_file");
-	$c->log->debug("##### Target file $TARGET_file");
 	$c->log->debug("cp $TMP_file $TARGET_file");
 
 	if (system "cp $TMP_file $TARGET_file")

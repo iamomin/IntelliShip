@@ -16,18 +16,21 @@ use IntelliShip::DateUtils;
 
 extends 'IntelliShip::Errors';
 
-has 'import_file' => ( is => 'rw' );
-has 'customer'	=> ( is => 'rw' );
-has 'contact'	 => ( is => 'rw' );
-has 'myDBI_obj'   => ( is => 'rw' );
-has 'context'	 => ( is => 'rw' );
-has 'API'		 => ( is => 'rw' );
+has 'import_file'  => ( is => 'rw' );
+has 'customer'     => ( is => 'rw' );
+has 'contact'      => ( is => 'rw' );
+has 'myDBI_obj'    => ( is => 'rw' );
+has 'context'      => ( is => 'rw' );
+has 'API'          => ( is => 'rw' );
+has 'AuthContacts' => ( is => 'rw' );
 
 my $config;
+$Data::Dumper::Sortkeys = 1;
 
 sub BUILD
 	{
 	my $self = shift;
+	$self->AuthContacts({});
 	$config = IntelliShip::MyConfig->get_ARRS_configuration;
 	}
 
@@ -39,12 +42,12 @@ sub myDBI
 	return $self->myDBI_obj;
 	}
 
-sub parse_row
+=as
+sub parse_csv_row
 	{
 	my $self = shift;
 	my $row_data = shift;
-	return split /\t/, $row_data;
-=as
+
 	my $CSV = Text::CSV->new();
 
 	unless ($CSV->parse($row_data))
@@ -55,8 +58,9 @@ sub parse_row
 		}
 
 	return $CSV->fields();
-=cut
+
 	}
+=cut
 
 sub import
 	{
@@ -91,16 +95,24 @@ sub import
 
 		$c->log->debug("... Start Import Process For " . $file);
 
-		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($file);
+		my ($order_file, $product_file) = $self->format_file($import_file);
 
-		my $import_base_file = fileparse($file);
+		if (!$order_file and !$product_file)
+			{
+			$self->add_error("File formatting error");
+			next;
+			}
+
+		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file);
+
+		#my $import_base_file = fileparse($file);
 
 		#unless (move($file,"$imported_path/$import_base_file"))
 		#	{
 		#	print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
 		#	}
 
-		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
+		#$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
 		#system("$config->{BASE_PATH}/html/unknowncust_order_email.pl");
 		}
 	}
@@ -114,7 +126,7 @@ sub get_directory
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
-		print STDERR "Unable to create target directory, " . $!;
+		$self->context->log->debug("Unable to create target directory, " . $!);
 		return;
 		}
 
@@ -126,27 +138,21 @@ sub ImportOrders
 	my $self = shift;
 	my $import_file = shift;
 
+	return unless $import_file;
+
 	my $c = $self->context;
 
 	my $UnknownCustCount = 0;
 	my $Error_File = '';
 	my $OrderTypeRef = {};
 
-	my $formatted_import_file = $self->format_file($import_file);
-
-	unless ($formatted_import_file)
-		{
-		$self->add_error("File formatting error");
-		return;
-		}
-
 	my $FILE = new IO::File;
 
-	$c->log->debug(".... Read File: " . $formatted_import_file);
+	$c->log->debug("... Read File: " . $import_file);
 
-	unless (open($FILE, $formatted_import_file))
+	unless (open($FILE, $import_file))
 		{
-		print STDERR "\n... Error: " . $!;
+		$c->log->debug("*** Error: " . $!);
 		return;
 		}
 
@@ -175,8 +181,11 @@ sub ImportOrders
 		# skip blank lines
 		next unless $Line;
 
+		$c->log->debug("");
+		$c->log->debug("... Import Line: " . $Line);
+
 		my $CustRef = {};
-		# split the tab delimited line into fieldnames
+		# split the tab delimited line into field names
 		(
 			$CustRef->{'ordernumber'},
 			$CustRef->{'ponumber'},
@@ -243,7 +252,9 @@ sub ImportOrders
 			$CustRef->{'saturdayflag'},
 			$CustRef->{'AMflag'},
 			$CustRef->{'cotype'}
-		) = $self->parse_row($Line);
+		) = split(/\t/, $Line);
+
+		#$c->log->debug("... SPLIT DATA: " . Dumper $CustRef);
 
 		my $export_flag = 0;
 
@@ -338,14 +349,15 @@ sub ImportOrders
 		### Check for required fields and verify dates
 		################################################
 
-		if (!defined($CustRef->{'extloginid'}) or $CustRef->{'extloginid'} eq '')
+		unless ($CustRef->{'extloginid'})
 			{
+			$c->log->debug("--- no extloginid found");
 			$export_flag = -9;
 			}
 
 		# Figure out who this is
 		my ($ContactID,$CustomerID) = $self->AuthenticateContact($CustRef->{'extloginid'});
-		#$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
+		$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
 
 		my $Contact = $c->model('MyDBI::Contact')->find({ contactid => $ContactID }) if $ContactID;
 		my $Customer = $c->model('MyDBI::Customer')->find({ customerid => $CustomerID }) if $CustomerID;
@@ -364,6 +376,7 @@ sub ImportOrders
 
 		unless ($CustomerID)
 			{
+			$c->log->debug("--- no CustomerID found");
 			$export_flag = -9;
 			}
 
@@ -406,6 +419,7 @@ sub ImportOrders
 
 			unless ($customerserviceid)
 				{
+				$c->log->debug("--- customerserviceid not found");
 				$export_flag = -10;
 				}
 			}
@@ -413,12 +427,14 @@ sub ImportOrders
 		# Must have an order number
 		unless ($CustRef->{'ordernumber'})
 			{
+			$c->log->debug("--- ordernumber not found");
 			$export_flag = -1;
 			}
 
-		# Order needs an addr1 or an addr2
-		if (!$CustRef->{'address1'} or !$CustRef->{'address2'})
+		# Order needs an addr1 and an addr2
+		if (!$CustRef->{'address1'} and !$CustRef->{'address2'})
 			{
+			$c->log->debug("--- address 1 and 2 not found");
 			$export_flag = -2;
 			}
 
@@ -433,6 +449,7 @@ sub ImportOrders
 				}
 			else
 				{
+				$c->log->debug("--- address country not found");
 				$export_flag = -13;
 				}
 			}
@@ -447,6 +464,7 @@ sub ImportOrders
 				}
 			else
 				{
+				$c->log->debug("--- drop country not found");
 				$export_flag = -20;
 				}
 			}
@@ -457,24 +475,27 @@ sub ImportOrders
 			# Order needs a city, state, and zip
 			if (!$CustRef->{'addresscity'} or !$CustRef->{'addressstate'} or !$CustRef->{'addresszip'})
 				{
+				$c->log->debug("--- address city/state/zip not found");
 				$export_flag = -3;
 				}
 
 			# if we've got a 4 digit US zip then pad with zero
-			if ( defined($CustRef->{'addresszip'}) and $CustRef->{'addresszip'} =~ /^\d{4}$/ )
+			if ( $CustRef->{'addresszip'} and $CustRef->{'addresszip'} =~ /^\d{4}$/ )
 				{
 				$CustRef->{'addresszip'} = "0" . $CustRef->{'addresszip'};
 				}
 
 			# Zip needs to be 5 or 5+4
-			if ( defined($CustRef->{'addresszip'}) and $CustRef->{'addresszip'} !~ /\d{5}(\-\d{4})?/ )
+			if ( $CustRef->{'addresszip'} and $CustRef->{'addresszip'} !~ /\d{5}(\-\d{4})?/ )
 				{
+				$c->log->debug("--- address city/state/zip not found");
 				$export_flag = -4;
 				}
 			}
 
 		if (!defined($CustRef->{'addressname'}) or $CustRef->{'addressname'} eq '')
 			{
+			$c->log->debug("--- address name not found");
 			$export_flag = -6;
 			}
 
@@ -506,43 +527,42 @@ sub ImportOrders
 					}
 				else
 					{
+					$c->log->debug("--- drop country not found");
 					$export_flag = -20;
 					}
 				}
-			# Needs an addr1 or an addr2
-			if ( (!defined($CustRef->{'dropaddress1'}) or $CustRef->{'dropaddress1'} eq '') and
-			(!defined($CustRef->{'dropaddress2'}) or $CustRef->{'dropaddress2'} eq '') )
+			# Needs an addr1 and an addr2
+			if (!$CustRef->{'dropaddress1'} eq '' and !$CustRef->{'dropaddress2'})
 				{
+				$c->log->debug("--- drop address 1 and 2 not found");
 				$export_flag = -16;
 				}
 
 			if ( $CustRef->{'dropcountry'} eq 'US' )
 				{
 				# Needs a city, state, and zip
-				if
-				(
-					(!defined($CustRef->{'dropcity'}) or $CustRef->{'dropcity'} eq '') or
-				(!defined($CustRef->{'dropstate'}) or $CustRef->{'dropstate'} eq '') or
-				(!defined($CustRef->{'dropzip'}) or $CustRef->{'dropzip'} eq '')
-				)
+				if (!$CustRef->{'dropcity'} or !$CustRef->{'dropstate'} or !$CustRef->{'dropzip'})
 					{
+					$c->log->debug("--- drop city/state/zip not found");
 					$export_flag = -17;
 					}
 
 				# if we've got a 4 digit US zip then pad with zero
-				if ( defined($CustRef->{'dropzip'}) and $CustRef->{'dropzip'} =~ /^\d{4}$/ )
+				if ( $CustRef->{'dropzip'} and $CustRef->{'dropzip'} =~ /^\d{4}$/ )
 					{
 					$CustRef->{'dropzip'} = "0" . $CustRef->{'dropzip'};
 					}
 				# Zip needs to be 5 or 5+4
 				if ( defined($CustRef->{'dropzip'}) and $CustRef->{'dropzip'} !~ /\d{5}(\-\d{4})?/ )
 					{
+					$c->log->debug("--- drop zip not found");
 					$export_flag = -18;
 					}
 				}
 
-			if (!defined($CustRef->{'addressname'}) or $CustRef->{'addressname'} eq '')
+			if (!$CustRef->{'dropname'})
 				{
+				$c->log->debug("--- drop name not found");
 				$export_flag = -19;
 				}
 
@@ -554,6 +574,7 @@ sub ImportOrders
 			$CustRef->{'datetoship'} = $self->VerifyDate($CustRef->{'datetoship'});
 			if ( $CustRef->{'datetoship'} eq '0')
 				{
+				$c->log->debug("--- datetoship not found");
 				$export_flag = -7;
 				}
 			elsif ( $CustRef->{'datetoship'} ne '0' and defined($CustRef->{'errorshipdate'}) and $CustRef->{'errorshipdate'} == 1 )
@@ -572,6 +593,7 @@ sub ImportOrders
 
 				if ( Delta_Days(@TodayDate, @ShipDate) < 0 )
 					{
+					$c->log->debug("--- ship date less than today's date");
 					$export_flag = -12;
 					}
 				}
@@ -582,6 +604,7 @@ sub ImportOrders
 			$CustRef->{'dateneeded'} = $self->VerifyDate($CustRef->{'dateneeded'});
 			if ( $CustRef->{'dateneeded'} eq '0')
 				{
+				$c->log->debug("--- dateneeded not found");
 				$export_flag = -8;
 				}
 			elsif ( $CustRef->{'dateneeded'} ne '0' and defined($CustRef->{'errorduedate'}) and $CustRef->{'errorduedate'} == 1 )
@@ -602,6 +625,7 @@ sub ImportOrders
 				#if ( Delta_Days(@TodayDate, @DueDate) <= 0 ) #Same day or in the past
 				if ( Delta_Days(@TodayDate, @DueDate) < 0 )
 					{
+					$c->log->debug("--- due date less than today's date");
 					$export_flag = -11;
 					}
 				}
@@ -610,16 +634,18 @@ sub ImportOrders
 		# If shipment and delivery notification addresses are provided, they must be valid
 		if ( defined($CustRef->{'shipmentnotification'}) and $CustRef->{'shipmentnotification'} ne '' )
 			{
-			if ( !VerifyEmail($CustRef->{'shipmentnotification'}) )
+			unless (IntelliShip::Utils->is_valid_email($CustRef->{'shipmentnotification'}))
 				{
+				$c->log->debug("--- shipmentnotification email not valid");
 				$export_flag = -14;
 				}
 			}
 
 		if ( defined($CustRef->{'deliverynotification'}) and $CustRef->{'deliverynotification'} ne '' )
 			{
-			if ( !VerifyEmail($CustRef->{'deliverynotification'}) )
+			unless (IntelliShip::Utils->is_valid_email($CustRef->{'deliverynotification'}))
 				{
+				$c->log->debug("--- deliverynotification email not valid");
 				$export_flag = -15;
 				}
 			}
@@ -690,7 +716,7 @@ sub ImportOrders
 			#########################################################
 			## Store Drop Address
 			#########################################################
-			$c->log->debug("checking for Drop address availability");
+			$c->log->debug("... checking for Drop address availability");
 
 			my $returnAddressData = {
 				addressname => $CustRef->{'dropname'},
@@ -716,7 +742,7 @@ sub ImportOrders
 			else
 				{
 				$ReturnAddress = $c->model("MyDBI::Address")->new($returnAddressData);
-				$ReturnAddress->addressid($self->get_token_id);
+				$ReturnAddress->addressid($self->myDBI->get_token_id);
 				$ReturnAddress->insert;
 				$c->log->debug("... New Address Inserted, ID: " . $ReturnAddress->addressid);
 				}
@@ -821,38 +847,37 @@ sub ImportOrders
 
 			my $COID = $CO->coid;
 
-			$c->log->debug("... COID:" . $COID);
-			# delete any packages or products that are tied to the order, pass pseudoscreen so authorized will also get deleted
-			$CO->delete_all_package_details;
+			$c->log->debug("... COID: " . $COID);
 
-			# create package data
-			my $PackageRef = {
+			# Create package data
+			my $packageData = {
 				datatypeid  => '1000',
 				ownertypeid => '1000',
 				ownerid     => $COID,
 				};
 
 			# default package quantity to one if none was given
-			$PackageRef->{'quantity'} = defined($C->{'unitquantity'}) ? $C->{'unitquantity'} : 1;
-			$PackageRef->{'description'} = $C->{'description'};
-			$PackageRef->{'weight'} = $C->{'estimatedweight'};
-			$PackageRef->{'decval'} = $C->{'estimatedinsurance'};
+			$packageData->{'quantity'}    = defined($C->{'unitquantity'}) ? $C->{'unitquantity'} : 1;
+			$packageData->{'description'} = $C->{'description'};
+			$packageData->{'weight'}      = $C->{'estimatedweight'};
+			$packageData->{'decval'}      = $C->{'estimatedinsurance'};
 
-			my $PPD = $c->model('MyDBI::Packprodata')->new($PackageRef);
-			$PPD->packprodataid($self->myDBI->get_token_id);
-			$PPD->insert;
-			$c->log->debug("... NEW PPD INSERTED, packprodataid:  " . $PPD->packprodataid);
+			my $PackProData = $c->model('MyDBI::Packprodata')->new($packageData);
+			$PackProData->packprodataid($self->myDBI->get_token_id);
+			$PackProData->insert;
+
+			$c->log->debug("... NEW PackProData INSERTED, packprodataid:  " . $PackProData->packprodataid);
 
 			# set assessorials
-			if ( defined($CustRef->{'saturdayflag'}) and $CustRef->{'saturdayflag'} == 1 )
+			if ( $CustRef->{'saturdayflag'} and $CustRef->{'saturdayflag'} == 1 )
 				{
 				$self->SaveAssessorial($COID,'saturdaysunday','Saturday Delivery','0')
 				}
-			if ( defined($CustRef->{'residentialflag'}) and $CustRef->{'residentialflag'} == 1 )
+			if ( $CustRef->{'residentialflag'} and $CustRef->{'residentialflag'} == 1 )
 				{
 				$self->SaveAssessorial($COID,'residential','Residential Delivery','0')
 				}
-			if ( defined($CustRef->{'AMflag'}) and $CustRef->{'AMflag'} == 1 )
+			if ( $CustRef->{'AMflag'} and $CustRef->{'AMflag'} == 1 )
 				{
 				$self->SaveAssessorial($COID,'amdelivery','AM Delivery','0')
 				}
@@ -860,10 +885,10 @@ sub ImportOrders
 		elsif ( $export_flag < 0 )
 			{
 			# We need a valid customerid for the failure to do any good...it's likely a header line
-			if ( defined($CustomerID) and $CustomerID ne '' )
+			if ($CustomerID)
 				{
 				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'}";
-				if ( defined($CustRef->{'extcustnum'}) and $CustRef->{'extcustnum'} ne '' )
+				if ($CustRef->{'extcustnum'})
 					{
 					$ImportFailureRef->{$CustomerID} .= " ($CustRef->{'extcustnum'})";
 					}
@@ -881,17 +906,16 @@ sub ImportOrders
 					$Error_File = "unknowncustomer_".$Error_File;
 					#open(OUT, ">" . $config->{BASE_PATH} . "/var/processing/$Error_File") or warn "unable to open error file";
 					}
-				print STDERR "\n___ Unknown line: $Line\n\n";
+				$c->log->debug("___ Unknown line: $Line");
 				#print OUT "$Line\n\n";
 				#close (OUT);
 				}
 			}
-
 		}
 
 	if ( $UnknownCustCount > 0 )
 		{
-		print STDERR"\n  ###UnknownCustCount ".$UnknownCustCount;
+		$c->log->debug("*** UnknownCustCount ".$UnknownCustCount);
 		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
 		#or &TraceBack("Could not move $Error_File: $!");
 		}
@@ -971,7 +995,7 @@ sub SaveAssessorial
 	#}
 	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
-	print STDERR "\n... NEW AssData INSERTED, assdataid:  " . $AssData->assdataid;
+	$self->context->log->debug("... NEW AssData INSERTED, assdataid:  " . $AssData->assdataid);
 	}
 
 sub AuthenticateContact
@@ -980,9 +1004,16 @@ sub AuthenticateContact
 	my $Username = shift;
 
 	my $c = $self->context;
-	$c->log->debug("... AuthenticateContact, USERNAME: " . $Username);
 
 	my ($ContactID, $CustomerID);
+
+	$c->log->debug("... Authenticate Contact, USERNAME: " . $Username);
+
+	if ($self->AuthContacts and $self->AuthContacts->{$Username})
+		{
+		($ContactID, $CustomerID) = @{$self->AuthContacts->{$Username}};
+		return ($ContactID,$CustomerID);
+		}
 
 	my $myDBI = $self->myDBI;
 	my $SQL;
@@ -1023,10 +1054,12 @@ sub AuthenticateContact
 	#print STDERR "\n... SQL: " . $SQL;
 	my $STHC = $myDBI->select($SQL);
 
-	return ($ContactID,$CustomerID) unless  $STHC->numrows;
+	return ($ContactID,$CustomerID) unless $STHC->numrows;
 
 	my $DATA = $STHC->fetchrow(0);
 	($ContactID,$CustomerID) = ($DATA->{contactid},$DATA->{customerid});
+
+	$self->AuthContacts->{$Username} = [$ContactID,$CustomerID];
 
 	return ($ContactID,$CustomerID);
 	}
@@ -1074,7 +1107,7 @@ sub format_file
 
 	my $c = $self->context;
 
-	$c->log->debug("Format File, Name: " . $file);
+	$c->log->debug("... format file, Name: " . $file);
 
 	my $inputfilename = basename( $file );
 	$inputfilename =~ s/.csv//;
@@ -1090,23 +1123,23 @@ sub format_file
 
 	unless (open $FH, $file)
 		{
-		warn "Could not open '$file' $!\n";
+		$c->log->debug("*** Could not open '$file' $!");
 		$self->add_error($!);
 		return;
 		}
 	unless (open $PRODFILE, "+>$product_out_file")
 		{
-		warn "\nError: " . $!;
+		$c->log->debug("*** Error: " . $!);
 		$self->add_error($!);
 		return;
 		}
 	unless (open $ORDRFILE, "+>$order_out_file")
 		{
-		warn "\nError: " . $!;
+		$c->log->debug("*** Error: " . $!);
 		$self->add_error($!);
 		return;
 		}
- 
+
 	#my $CSV = Text::CSV->new( { binary    => 1, auto_diag => 1 } );
 
 	my $i = 0;
@@ -1114,8 +1147,9 @@ sub format_file
 		{
 		chomp;
 		next if $i++ == 0;
-
-		$c->log->debug("File Line: " . $_);
+		$_ =~ s/^\s+//;
+		$_ =~ s/\s+$//;
+		#$c->log->debug("File Line: " . $_) if $_;
 
 		#unless ($CSV->parse($_))
 		#	{
@@ -1128,7 +1162,7 @@ sub format_file
 
 		next unless @$fields;
 
-		$c->log->debug(".... Fields: " . Dumper $fields);
+		#$c->log->debug(".... Fields: " . Dumper $fields);
 
 		if ($fields->[10] eq '')
 			{
@@ -1150,7 +1184,7 @@ sub format_file
 	$c->log->debug("... Generated OrderImport file $order_out_file for $file");
 	$c->log->debug("... Generated ProductImport file $product_out_file for $file");
 
-	return $order_out_file;
+	return ($order_out_file,$product_out_file);
 	}
 
 sub printImports
@@ -1161,8 +1195,6 @@ sub printImports
 	my $ORDRFILE = shift;
 
 	my $c = $self->context;
-
-	$c->log->debug("printImports");
 
 	my $return1 = '';
 	my $return2 = '';
