@@ -71,11 +71,11 @@ $(document).ready(function(){
 	[% IF printerstring_loop %]
 	PrintEplLabel();
 	[% ELSE %]
-	if(document.getElementById("lblimg").complete){
-		PrintImageLabel();
-	}else{
-		setTimeOut(PrintImageLabel(), 2000);
+	//Wait while the image loads
+	while(!document.getElementById("lblimg").complete){
+		setTimeout(function(){}, 1000);
 	}
+	PrintImageLabel();
 	[% END %]
 	});
 
