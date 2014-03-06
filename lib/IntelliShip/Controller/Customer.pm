@@ -377,11 +377,11 @@ sub get_select_list
 		my $extcustnum_field = '';
 		$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
 
-		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname, address1, address2, city";
+		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname";
 
 		my $SQL = "
 		SELECT
-			DISTINCT ON (addressname)
+			DISTINCT ON (addressname,city,state,address1)
 			addressname,city,state,address1,
 			co.coid as referenceid
 		FROM
@@ -393,7 +393,7 @@ sub get_select_list
 			co.cotypeid in (1,2,10) AND
 			address.addressname <> '' AND
 			$smart_address_book_sql
-		ORDER BY
+		Order BY
 			$OrderBy
 		";
 		$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);

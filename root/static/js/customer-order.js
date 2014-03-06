@@ -676,7 +676,8 @@ function populate_ship_to_address(referenceid)
 	if (referenceid.length > 0) {
 		resetCSList();
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
-			if (JSON_data.address1) {
+			if (JSON_data.addressname) {
+				$("#toname").val(JSON_data.addressname);
 				$("#toaddress1").val(JSON_data.address1);
 				$("#toaddress2").val(JSON_data.address2);
 				$("#tocity").val(JSON_data.city);
@@ -686,7 +687,7 @@ function populate_ship_to_address(referenceid)
 				$("#tocontact").val(JSON_data.contactname);
 				$("#tophone").val(JSON_data.contactphone);
 				$("#tocustomernumber").val(JSON_data.extcustnum);
-				$("#toemail").val(JSON_data.deliverynotification);
+				$("#toemail").val(JSON_data.shipmentnotification);
 				}
 			});
 		}
