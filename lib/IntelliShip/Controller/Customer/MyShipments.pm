@@ -115,6 +115,8 @@ sub reprintlabel :Local
 	my $params = $c->req->params;
 	
 	my $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$params->{'shipmentid'} . '.jpg';
+
+	$c->res->header('Content-Type' => 'text/html');
 	my $HTML;
 	if (stat $label_file)
 		{
