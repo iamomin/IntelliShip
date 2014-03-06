@@ -1470,7 +1470,7 @@ sub format_file
 	my $order_out_file = $outdir . '/OrderImport-' . $inputfilename . '.txt';
 	my $product_out_file = $outdir . '/ProductImport-' . $inputfilename . '.txt';
 
-	unless (open $FH, $file)
+	unless (open $FH, '<:encoding(utf8)' . $file)
 		{
 		$c->log->debug("*** Could not open '$file' $!");
 		$self->add_error($!);
@@ -1489,15 +1489,15 @@ sub format_file
 		return;
 		}
 
-	#my $CSV = Text::CSV->new( { binary    => 1, auto_diag => 1 } );
-
 	my $i = 0;
-	while (<$FH>)
+	my $CSV = Text::CSV->new( { binary    => 1, auto_diag => 1 } );
+
+	while (my $fields = $CSV->getline( $FH ))
 		{
 		chomp;
 		next if $i++ == 0;
-		$_ =~ s/^\s+//;
-		$_ =~ s/\s+$//;
+		#$_ =~ s/^\s+//;
+		#$_ =~ s/\s+$//;
 		#$c->log->debug("File Line: " . $_) if $_;
 
 		#unless ($CSV->parse($_))
@@ -1507,11 +1507,11 @@ sub format_file
 		#	}
 
 		#my $fields = $CSV->fields();
-		my $fields = [split ',', $_];
+		#$my $fields = [split ',', $_];
 
-		next unless @$fields;
+		#next unless @$fields;
 
-		#$c->log->debug(".... Fields: " . Dumper $fields);
+		$c->log->debug(".... Fields: " . Dumper $fields);
 
 		if ($fields->[10] eq '')
 			{

@@ -76,7 +76,7 @@ sub get_EPL
 	return unless $carrier;
 	my $method = 'get_' . uc($carrier) . '_EPL';
 
-	$self->log("... $method: " . Dumper $DATA);
+	#$self->log("... $method: " . Dumper $DATA);
 
 	my $EPL = '';
 	#eval {

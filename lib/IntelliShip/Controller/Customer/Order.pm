@@ -1670,50 +1670,56 @@ sub generate_label :Private
 		$params->{'refnumber'} .= " - $params->{'custnum'}";
 		}
 
-	$c->stash($params);
-	$c->stash($Shipment->{_column_data});
-	$c->stash->{fromAddress} = $Shipment->origin_address;
-	$c->stash->{toAddress} = $Shipment->destination_address;
-	$c->stash->{shipdate} = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
-	$c->stash->{tracking1} = $Shipment->tracking1;
-	$c->stash->{custnum} = $Shipment->custnum;
+	my $CustomerLabelType = $self->contact->label_type;
+	$CustomerLabelType = $self->customer->label_type unless $CustomerLabelType;
+	$CustomerLabelType = 'JPG' unless $CustomerLabelType;
 
-	my $BillingAccount = $Shipment->billingaccount;
-	if (defined($BillingAccount) and $BillingAccount ne '')
+	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
+
+	if ($CustomerLabelType =~ /JPG/i)
 		{
-		$c->stash->{billingtype} = "3RD PARTY";
+		## Generate JPEG label image ##
+		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+
+		my $out_file = $Shipment->shipmentid . '.jpg';
+		my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
+		$c->log->debug("copyImgCommand: " . $copyImgCommand);
+
+		## Copy to Apache context path ##
+		system($copyImgCommand);
+
+		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
 	else
 		{
-		$c->stash->{billingtype} = "P/P";
+		$c->stash($params);
+		$c->stash($Shipment->{_column_data});
+		$c->stash->{fromAddress}   = $Shipment->origin_address;
+		$c->stash->{toAddress}     = $Shipment->destination_address;
+		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
+		$c->stash->{tracking1}     = $Shipment->tracking1;
+		$c->stash->{custnum}       = $Shipment->custnum;
+
+		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
+		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+		$c->stash->{enteredweight} = $CO->total_weight;
+		$c->stash->{ponumber}      = $Shipment->ponumber;
+		$c->stash->{tracking1}     = $Shipment->tracking1;
+		$c->stash->{service}       = uc($Service->{'servicename'});
+		$c->stash->{totalquantity} = $CO->total_quantity;
+		$c->stash->{refnumber}     = $params->{'refnumber'};
+
+		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+			{
+			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+			}
+
+		$self->ProcessPrinterStream($Shipment, $PrinterString);
+
+		my $template = $params->{'carrier'} || 'default';
+		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 		}
 
-	if (defined($Shipment->dimweight) and $Shipment->dimweight == 0)
-		{
-		$c->stash->{dimweight} = undef;
-		}
-
-	my $label_type = $self->contact->label_type;
-	$label_type = $self->customer->label_type unless $label_type;
-	$c->stash->{label_type} = $label_type || 'EPL';
-
-	$c->stash->{enteredweight} = $CO->total_weight;
-	$c->stash->{ponumber} = $Shipment->ponumber;
-	$c->stash->{tracking1} = $Shipment->tracking1;
-	$c->stash->{service} = uc($Service->{'servicename'});
-	$c->stash->{totalquantity} = $CO->total_quantity;
-
-	if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
-		{
-		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
-		}
-
-	$c->stash->{refnumber} = $params->{'refnumber'};
-
-	$self->ProcessPrinterStream($Shipment, $PrinterString);
-
-	my $template = $params->{'carrier'} || 'default';
-	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 	$c->stash(MEDIA_PRINT => 1);
 	$c->stash($params);
 	}
@@ -1756,49 +1762,36 @@ sub ProcessPrinterStream
 	# Label stub
 	my $CustomerLabelType = $c->stash->{label_type};
 
-	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
-	if ($CustomerLabelType =~ /^jpg$/i)
+	if ($CustomerLabelType =~ /^zpl$/i)
 		{
-		## Generate JPEG label image
-		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
-		##
-
-		my $out_file = $Shipment->shipmentid . '.jpg';
-		my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
-		$c->log->debug("copyImgCommand: " . $copyImgCommand);
-
-		## Copy to Apache context path
-		system($copyImgCommand);
-		##
-
-		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
+		require IntelliShip::EPL2TOZPL2;
+		my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
+		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
 		}
-	else
+
+	#$c->log->debug("PrinterString    : " . $PrinterString);
+
+	my $LABEL_FH = new IO::File;
+	if (open $LABEL_FH, ">" . IntelliShip::MyConfig->label_image_directory . $Shipment->shipmentid)
 		{
-		if ($CustomerLabelType =~ /^zpl$/i)
-			{
-			require IntelliShip::EPL2TOZPL2;
-			my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
-			$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
-			}
-
-		#$c->log->debug("PrinterString    : " . $PrinterString);
-
-		## Set Printer String Loop
-		my @PSLINES = split(/\n/,$PrinterString);
-
-		my $printerstring_loop = [];
-		foreach my $line (@PSLINES)
-			{
-			$line =~ s/"/\\"/sg;
-			$line =~ s/'//g;
-			push @$printerstring_loop, $line;
-			}
-
-		$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
-		$c->stash->{printerstring_loop} = $printerstring_loop;
-		$c->stash->{label_port} = 'LPT1';
+		print $LABEL_FH $PrinterString;
+		close $LABEL_FH;
 		}
+
+	## Set Printer String Loop
+	my @PSLINES = split(/\n/,$PrinterString);
+
+	my $printerstring_loop = [];
+	foreach my $line (@PSLINES)
+		{
+		$line =~ s/"/\\"/sg;
+		$line =~ s/'//g;
+		push @$printerstring_loop, $line;
+		}
+
+	$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
+	$c->stash->{printerstring_loop} = $printerstring_loop;
+	$c->stash->{label_port} = 'LPT1';
 	}
 
 sub SaveStringToFile
