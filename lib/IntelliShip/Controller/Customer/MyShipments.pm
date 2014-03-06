@@ -108,6 +108,33 @@ my $TITLE_DATE = {
 	'this_month'  => 'This Month',
 	};
 
+sub reprintlabel :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	
+	my $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$params->{'shipmentid'} . '.jpg';
+	my $HTML;
+	if (stat $label_file)
+		{
+		$HTML = '<center><img id="lblimg" src="/label/' . $params->{'shipmentid'} . '.jpg"></center><script>window.print();</script>';
+		}
+	else
+		{
+		$label_file = IntelliShip::MyConfig->label_image_directory.'/'.$params->{'shipmentid'};
+		if (stat $label_file)
+			{
+			$HTML = '';
+			}
+		else
+			{
+			$HTML = '<h3>Lable print information not found</h3>'; 
+			}
+		}
+	$c->response->body($HTML);
+	}
+
 sub populate_my_shipment_list :Private
 	{
 	my $self = shift;
