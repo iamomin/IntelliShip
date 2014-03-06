@@ -1227,6 +1227,7 @@ sub ImportProducts
 
 			# Let the product go to a package if we've got one
 			$OwnerTypeID = '3000' if $productData->{'packageid'};
+			$productData->{'ownertypeid'} = $OwnerTypeID;
 
 			#$c->log->debug("....productdata  : ".Dumper $productData );
 
@@ -1494,7 +1495,7 @@ sub format_file
 
 	while (my $fields = $CSV->getline( $FH ))
 		{
-		chomp;
+		#chomp;
 		next if $i++ == 0;
 		#$_ =~ s/^\s+//;
 		#$_ =~ s/\s+$//;
@@ -1511,7 +1512,7 @@ sub format_file
 
 		#next unless @$fields;
 
-		$c->log->debug(".... Fields: " . Dumper $fields);
+		#$c->log->debug(".... Fields: " . Dumper $fields);
 
 		if ($fields->[10] eq '')
 			{
