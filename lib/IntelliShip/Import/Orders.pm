@@ -1470,7 +1470,7 @@ sub format_file
 	my $order_out_file = $outdir . '/OrderImport-' . $inputfilename . '.txt';
 	my $product_out_file = $outdir . '/ProductImport-' . $inputfilename . '.txt';
 
-	unless (open $FH, '<:encoding(utf8)' . $file)
+	unless (open $FH, '<:encoding(utf8)', $file)
 		{
 		$c->log->debug("*** Could not open '$file' $!");
 		$self->add_error($!);
