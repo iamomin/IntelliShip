@@ -1644,6 +1644,8 @@ sub generate_label :Private
 	my $params = $c->req->params;
 	my $CO = $self->get_order;
 
+	#$c->log->debug("PrinterString    : " . $PrinterString);
+
 	my $ShipmentData = $self->BuildShipmentInfo;
 
 	## Alt SOP mangling
@@ -1669,6 +1671,9 @@ sub generate_label :Private
 		{
 		$params->{'refnumber'} .= " - $params->{'custnum'}";
 		}
+
+	## Save EPL Print String On Server
+	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
 
 	my $CustomerLabelType = $self->contact->label_type;
 	$CustomerLabelType = $self->customer->label_type unless $CustomerLabelType;
@@ -1757,8 +1762,6 @@ sub ProcessPrinterStream
 		#	}
 		}
 
-	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
-
 	# Label stub
 	my $CustomerLabelType = $c->stash->{label_type};
 
@@ -1767,15 +1770,6 @@ sub ProcessPrinterStream
 		require IntelliShip::EPL2TOZPL2;
 		my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
 		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
-		}
-
-	#$c->log->debug("PrinterString    : " . $PrinterString);
-
-	my $LABEL_FH = new IO::File;
-	if (open $LABEL_FH, ">" . IntelliShip::MyConfig->label_image_directory . $Shipment->shipmentid)
-		{
-		print $LABEL_FH $PrinterString;
-		close $LABEL_FH;
 		}
 
 	## Set Printer String Loop
