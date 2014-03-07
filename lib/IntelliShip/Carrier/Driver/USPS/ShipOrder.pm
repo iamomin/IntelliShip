@@ -22,9 +22,6 @@ sub process_request
 
 	#$self->log("Shipment Data" .Dumper($shipmentData));
 
-	$shipmentData->{'dateshipped'} = $shipmentData->{'datetoship'};
-	$shipmentData->{'datetoship'} = IntelliShip::DateUtils->format_to_yyyymmdd($shipmentData->{'datetoship'});
-
 	my $XML_request = $self->get_xml_request;
 
 	my $url = 'https://secure.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
@@ -68,11 +65,15 @@ sub process_request
 	my $TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
 	$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
 
+	$shipmentData->{'barcodedata'} = $TrackingNumber ;
+	
 	$TrackingNumber = substr ($TrackingNumber, -22);
 	$self->log("TrackingNumber: ".$TrackingNumber);
 
-	$shipmentData->{'tracking1'} = $TrackingNumber;
-	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
+	$shipmentData->{'tracking1'}    = $TrackingNumber;
+	$shipmentData->{'weight'}       = $shipmentData->{'enteredweight'};
+	$shipmentData->{'RDC'}          = $XMLResponse->{RDC};
+	$shipmentData->{'CarrierRoute'} = $XMLResponse->{CarrierRoute};
 
 	my $raw_string = $self->get_EPL($shipmentData);
 	my $PrinterString = $raw_string;

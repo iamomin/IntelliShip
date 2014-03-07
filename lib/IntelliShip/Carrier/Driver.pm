@@ -3,6 +3,7 @@ package IntelliShip::Carrier::Driver;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::DateUtils;
 use IntelliShip::Carrier::EPLTemplates;
 
 BEGIN {
@@ -137,10 +138,14 @@ sub insert_shipment
 
 	return unless $shipmentData;
 
+	$self->log("... shipmentData: " . Dumper $shipmentData);
+
+	my $date_shipped = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetoship'});
+
 	my $shipmentObj = {
 			'department' => $shipmentData->{'department'},
 			'coid' => $shipmentData->{'coid'},
-			'dateshipped' => $shipmentData->{'dateshipped'},
+			'dateshipped' => $date_shipped,
 			'quantityxweight' => $shipmentData->{'quantityxweight'},
 			'freightinsurance' => $shipmentData->{'freightinsurance'},
 			'hazardous' => $shipmentData->{'hazardous'},

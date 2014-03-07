@@ -165,6 +165,34 @@ sub get_db_format_date_time
 	return $returnVal;
 	}
 
+sub get_db_format_date_time_with_timezone
+	{
+	my $self = shift;
+	my $datetime = shift;
+
+	return unless $datetime;
+
+	$datetime =~ s/%2F/\//g if $datetime =~ /%2F/;
+
+	my ($date, $time) = split(/\ |T/, $datetime) if $datetime =~ /(\ |T)/;
+	$date = $datetime unless $date;
+
+	my ($mm, $dd, $yy) = split(/\//, $date);
+	$mm = '0' . $mm if length $mm == 1;
+	$dd = '0' . $dd if length $dd == 1;
+
+	my $microsecond = '9526';
+	my $timezone = Timezone();
+
+	$time = $self->current_time unless $time;
+	my $returnVal = "$yy-$mm-$dd $time.$microsecond-$timezone";
+
+	$date = undef;
+	$time = undef;
+
+	return $returnVal;
+	}
+
 =head2 timestamp
 
 	my $timestamp = IntelliShip::DateUtils->timestamp;
@@ -215,7 +243,7 @@ sub get_timestamp_with_time_zone
 	$min	= substr($timestamp, 10, 2);
 	$sec	= substr($timestamp, 12, 2);
 
-	my $microsecond = '952674';
+	my $microsecond = '9526';
 	my $timezone = Timezone();
 
 	$timestamp = $year.'-'.$month.'-'.$day.' '.$hours.':'.$min.':'.$sec.'.'.$microsecond.'-'.$timezone;

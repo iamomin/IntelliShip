@@ -1702,7 +1702,7 @@ sub generate_label :Private
 		$c->stash($params);
 		$c->stash->{fromAddress}   = $Shipment->origin_address;
 		$c->stash->{toAddress}     = $Shipment->destination_address;
-		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
+		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
 		$c->stash->{tracking1}     = $Shipment->tracking1;
 		$c->stash->{custnum}       = $Shipment->custnum;
 
