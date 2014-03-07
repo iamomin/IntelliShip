@@ -22,7 +22,6 @@
 	use Date::Calc qw(Delta_Days);
 	use Date::Manip qw(ParseDate UnixDate);
 	use IntelliShip::MyConfig;
-        use Data::Dumper;
 
 	my $Benchmark = 0;
 	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
@@ -40,10 +39,8 @@
 		return $self;
 	}
 
-	
-        sub GetServicesData
+	sub GetServicesDropdown
 	{
-                warn "############ GetServicesData\n";                
 		my $self = shift;
 		my ($CgiRef) = @_;
 #warn "clientid: $CgiRef->{'clientid'}";
@@ -52,10 +49,9 @@
 
 		my $S1 = &Benchmark() if $Benchmark;
 
-                
 		$CgiRef->{'efreightid'} = $self->{'dbref'}->gettokenid();
 		#warn "efreight fileid = $CgiRef->{'efreightid'}" if $Debug;
-                
+
 		my $qInternational = $CgiRef->{'intl'} ? $CgiRef->{'Intl'} : 0;
 
 		if ( defined($CgiRef->{'tocountry'}) && $CgiRef->{'tocountry'} ne 'US' && $CgiRef->{'tocountry'} ne '' )
@@ -75,11 +71,53 @@
 		# Standard Carriers/Services
 		my $ListRef = {};
 		my $Counter = 0;
-                
-                
-                my $csdata = $self->GetCSDataHash($CgiRef->{'sopid'}, $CgiRef->{'csid'}, $qInternational);
-                #warn "########## \%csdata: ". Dumper(%csdata);
-		
+
+		my $SQLString = "
+			SELECT DISTINCT
+				cs.customerserviceid,
+				c.carriername || ' - ' || s.servicename,
+				c.carrierid,
+				s.timeneededmax,
+				s.webhandlername,
+				s.serviceid
+			FROM
+				customerservice cs,
+				service s,
+				carrier c
+			WHERE
+				cs.serviceid = s.serviceid
+				AND s.carrierid = c.carrierid
+		";
+
+		# No CSID, route/rate everything
+		if ( !$CgiRef->{'csid'} )
+		{
+			$SQLString .= "
+				AND cs.customerid = '$CgiRef->{'sopid'}'
+				AND s.international = $qInternational
+			";
+		}
+		# Otherwise, just rate the csid in question
+		else
+		{
+			$SQLString .= "
+				AND cs.customerserviceid = '$CgiRef->{'csid'}'
+			";
+		}
+
+		$SQLString .= "
+			ORDER BY
+				2
+		";
+
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+		warn $SQLString if $Debug;
+
+		$sth->execute()
+			or die "Cannot execute carrier/service sql statement";
+
 		my $CSIDs = '';
 		my $CSNames = '';
 		my $DefaultExists = 0;
@@ -92,7 +130,7 @@
 		my @CSIDs = ();
 		push(@CSIDs,0);
 
-		my @CostList = ();  
+		my @CostList = ();
 		push(@CostList,0);
 
 		my $CostWeightList = "'0',";
@@ -115,52 +153,40 @@
 			$CgiRef->{'numeric_dowtoship'} = UnixDate($ParsedShipDate, "%w");
 		}
 
-                warn "############ 7\n";
-		foreach my $CSID (keys %$csdata)
+		while ( my ($CSID, $CSName, $CarrierID, $TimeNeededMax, $HandlerName, $ServiceID) = $sth->fetchrow_array() )
 		{
-                        my $csrecord = $csdata->{$CSID};
-                        warn "############ CSRecord: \n". Dumper($csrecord);
-                        my $CSName = $csrecord->{'csname'};
-                        my $CarrierID = $csrecord->{'carrierid'}; 
-                        my $TimeNeededMax = $csrecord->{'timeneededmax'}; 
-                        my $HandlerName = $csrecord->{'webhandlername'};
-                        my $ServiceID = $csrecord->{'serviceid'};                        
+                        my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
+			$CS->LoadWithCSOAndSCD($CSID, $CgiRef->{'customerid'}, $qInternational);
 
-
-                        my $csoverride = $csrecord->{'csoverride'};
-                        my $servicecsdata = $csrecord->{'servicecsdata'};
-
-                        warn "############ \$csoverride: \n". Dumper($csoverride);
-                        warn "############ \$servicecsdata: \n". Dumper($servicecsdata);
 			# Allow customers to exclude specific CS's
-			my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
-			$CS->Load($CSID);
-                        warn "############ ExcludeCS: $csoverride->{'excludecs'}"; 
-			if ( $csoverride->{'excludecs'} )
+			#my $CSOverride = new ARRS::CSOVERRIDE($self->{'dbref'}, $self->{'contact'});
+			if ( $CS->{'csoverride'}->{'excludecs'} ) 
 			{
+                                warn "########## Excluding $CSID";
 				next;
 			}
 
-			warn "########### ONLINE: $CSName ";
+			warn "ONLINE: $CSName " if $Debug;
 			#warn "ONLINE: $CSName " if $CSID eq 'TOTALTRANSPO1';
 
-			
+			#my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
+			#$CS->Load($CSID);
 			# If we get a list of assessorials - all selected services must have said assessorials
 			if
 			(
 				$CgiRef->{'required_assessorials'} &&
-				!$self->HasRequiredAssessorials($CSID, $ServiceID, $CgiRef->{'required_assessorials'})
+				!$self->HasRequiredAssessorials($CS,$CgiRef->{'required_assessorials'})
 			)
 			{
 				warn "EXCLUDED BASED ON REQUIRED ASSES: $CSName" if $Debug;
-				warn "EXCLUDED BASED ON REQUIRED ASSES: $CSName" if $CSID eq 'TOTALTRANSPO1';
+				#warn "EXCLUDED BASED ON REQUIRED ASSES: $CSName" if $CSID eq 'TOTALTRANSPO1';
 				next;
 			}
 
 			# Collect/3p filtering
 			if ( $CgiRef->{'collect'} )
 			{
-				my $CFCharge = $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'collectfreightcharge');
+				my $CFCharge = $CS->GetCSValue('collectfreightcharge');
 
 				if ( !defined($CFCharge) || $CFCharge eq '' )
 				{
@@ -172,7 +198,7 @@
 
 			if ( $CgiRef->{'thirdparty'} )
 			{
-				my $TPCharge = $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'thirdpartyfreightcharge');
+				my $TPCharge = $CS->GetCSValue('thirdpartyfreightcharge');
 
 				if ( !defined($TPCharge) || $TPCharge eq '' )
 				{
@@ -183,7 +209,7 @@
 			}
 
 			# Check if this service is ok to ship on the ship date - otherwise, skip it.
-			if ( my $ValidShipDays = $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'validshipdays') )
+			if ( my $ValidShipDays = $CS->GetCSValue('validshipdays') )
 			{
 				if ( !$self->OkToShipOnShipDate($CgiRef->{'numeric_dowtoship'},$ValidShipDays) )
 				{
@@ -245,14 +271,14 @@ warn "STILL HERE Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 			#if ( $CalcETA )
 			{
 				# If we've got a servicecsdata timeneededmax, use it, otherwise, fall back to pure service level
-				my $cs_timeneeded_max = $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'timeneededmax');
+				my $cs_timeneeded_max = $CS->GetCSValue('timeneededmax');
 				$TimeNeededMax = $cs_timeneeded_max ? $cs_timeneeded_max : $TimeNeededMax;
 				$TimeNeededMax = $TransitDays ? $TransitDays : $TimeNeededMax;
 
 				my $S2 = &Benchmark() if $Benchmark;
 				my $ETARef = {
 					datetoship			=> $CgiRef->{'datetoship'},
-					norm_datetoship                 => $CgiRef->{'norm_datetoship'},
+					norm_datetoship	=> $CgiRef->{'norm_datetoship'},
 					dateneeded			=> $CgiRef->{'dateneeded'},
 					downeeded			=> $CgiRef->{'downeeded'},
 					fromstate			=> $CgiRef->{'fromstate'},
@@ -265,8 +291,8 @@ warn "STILL HERE Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 					carrierid			=> $CarrierID,
 					serviceid			=> $ServiceID,
 					servicename			=> $CSName,
-					cs				=> $CS,                                                                                
-					timeneededmax                   => $TimeNeededMax,
+					cs						=> $CS,
+					timeneededmax		=> $TimeNeededMax,
 				};
 
 
@@ -303,7 +329,7 @@ warn "STILL HERE Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 #				If a customer doesn't have rates - show all services
 				|| !$CgiRef->{'hasrates'}
 #				Some services, we just always show
-				|| $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'alwaysshow')
+				|| $CS->GetCSValue('alwaysshow')
 				|| !$CalcRate
 			)
 			{
@@ -398,8 +424,8 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 					&&
 					(
 						( !$CgiRef->{'isdropship'} && !$CgiRef->{'isinbound'} ) ||
-						( $CgiRef->{'isdropship'} && $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'dropshipcapable') ) ||
-						( $CgiRef->{'isinbound'} && $self->GetCSValue($csoverride, $servicecsdata, $CSID, $ServiceID, 'inboundcapable') )
+						( $CgiRef->{'isdropship'} && $CS->GetCSValue('dropshipcapable') ) ||
+						( $CgiRef->{'isinbound'} && $CS->GetCSValue('inboundcapable') )
 					)
 				)
 				{
@@ -501,7 +527,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		print STDERR "Total Cost Calculation: $CostTotal\n" if $Benchmark;
 
 		if ( ! $DefaultExists && ! $AutoDefaultExists ) { undef($DefaultCSID); }
-		#$sth->finish();
+		$sth->finish();
 
 		# Build up costlist string in a JS array suitable string;
 		local $^W = 0;
@@ -527,162 +553,6 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 
 		return $ReturnRef;
 	}
-
-        sub GetCSValue
-	{
-		my $self = shift;
-		my ($csoverride, $servicecsdata, $CSID, $ServiceID, $ValueType, $AllowNull, $CustomerID) = @_;
-		#warn "\n$ValueType GetCSValue" ;
-		my $Value;
-
-		# Allow for customer overrides of specific CS values
-		my $CSOverride = new ARRS::CSOVERRIDE($self->{'object_dbref'}, $self->{'object_contact'});
-		if
-		(
-			exists $csoverride->{$ValueType}
-		)
-		{
-			return $csoverride->{$ValueType};
-		}
-
-		# Take cs value, if available, then take service value
-		if ( $ValueType && $CSID && $ServiceID )
-		{
-			$Value = $servicecsdata->{$ValueType."-4"};
-                        if(!$Value)
-                        {
-                            $Value = $servicecsdata->{$ValueType."-3"};
-                        }
-		}
-		else
-		{
-			my $Missing = '';
-			if ( !$ValueType ) { $Missing .= '|ValueType|' }
-			if ( !$CSID ) { $Missing .= '|CSID|' }
-			if ( !$ServiceID ) { $Missing .= '|Service ID|' }
-
-			TraceBack("Missing Variables: $Missing");
-		}
-
-		# If the allow null flag is set and we get no value (not even 0),
-		# undef the value before return, if it's null
-		if ( ( !defined($Value) || $Value eq '' ) && $AllowNull )
-		{
-			undef($Value);
-		}
-		# Otherwise, return 0
-		elsif ( !defined($Value) || $Value eq '' )
-		{
-			$Value = 0;
-		}
-
-		return $Value;
-	}
-
-        sub GetCSDataHash 
-        {
-            #warn "############ 3.1\n";
-            my $self = shift;
-            my ($customerid, $customerserviceid, $international) = @_;
-
-            #Prepare the statement that brings the data from 
-            #customerservice, service, carrier, csoverride and servicecsdata.    
-            my $sqlString = "
-                            SELECT 
-                            cs.customerserviceid as csid,
-                            c.carriername || ' - ' || s.servicename as csname,
-                            c.carrierid as cid,
-                            s.timeneededmax as time_needed,
-                            s.webhandlername as webhandler,
-                            s.serviceid as sid,
-                            cso.datatypename as csoname,
-                            cso.value as csovalue,
-                            scd.datatypename || '-' || scd.ownertypeid as scdname,
-                            scd.value as scdvalue
-                            FROM
-                            customerservice cs INNER JOIN service s on cs.serviceid = s.serviceid
-                            INNER JOIN carrier c on s.carrierid = c.carrierid
-                            LEFT OUTER JOIN csoverride cso on cs.customerserviceid = cso.customerserviceid
-                            LEFT OUTER JOIN servicecsdata scd on cs.customerserviceid = scd.ownerid
-                            ";
-
-
-            if($customerid)
-            {
-                $sqlString .= " WHERE  cs.customerid = '$customerid'";
-                $sqlString .= " AND s.international = $international";
-            }
-            else
-            {
-                $sqlString .= "AND cs.customerserviceid = '$customerserviceid'";
-            }
-
-            $sqlString .= " ORDER BY csname";
-
-            #warn "############ 3.2\n";
-            #print STDERR "################ SQL in CSDATA:\n$sqlString";
-
-            my $sth = $self->{'dbref'}->prepare($sqlString)
-                      or die "Could not prepare SQL statement in CSDATA";
-            #warn "############ 3.3\n";
-
-            $sth->execute()
-                      or die "Cannot execute CSDATA sql statement";
-            #warn "############ 3.4\n";
-
-            #Prepare a hash of data.
-            my %maindata = ();
-            while ( my ($csid, $csname, $cid, $time_needed, $webhandler, $sid, $csoname, $csovalue, $scdname, $scdvalue) = $sth->fetchrow_array() )
-            {
-                if(exists $maindata{$csid})
-                {
-                    my $csrecord = $maindata{$csid};
-                    #Just add the csoverride and servicecsdata fields to respective hashes
-                    #csoverride
-                    if($csoname)
-                    {
-                        my $cso = $csrecord->{'csoverride'};
-                        $cso->{$csoname} = $csovalue;                
-                    }
-                    #servicecsdata
-                    if($scdname)
-                    {
-                        my $scd = $csrecord->{'servicecsdata'};
-                        $scd->{$scdname} = $scdvalue;                
-                    } 
-                }
-                else
-                {
-                    #customerservice 
-                    my %csrecord = ();
-                    $csrecord{'csname'} = $csname; 
-                    $csrecord{'carrierid'} = $cid;
-                    $csrecord{'timeneededmax'} = $time_needed;
-                    $csrecord{'webhandlername'} = $webhandler;
-                    $csrecord{'serviceid'} = $sid;
-
-                    #csoverride
-                    if($csoname)
-                    {
-                        my %cso = ();
-                        $cso{$csoname} = $csovalue;
-                        $csrecord{'csoverride'} = \%cso;
-                    }
-
-                    #servicecsdata
-                    if($scdname)
-                    {
-                        my %scd = ();
-                        $scd{$scdname} = $scdvalue;
-                        $csrecord{'servicecsdata'} = \%scd;
-                    }
-                    $maindata{$csid} = \%csrecord;            
-                }
-            }
-
-            warn "################# Hash\n". (Dumper %maindata) ;
-            return \%maindata;
-        }
 
 	sub SortCSLists
 	{
@@ -1723,9 +1593,9 @@ warn "undef etadate";
 	sub HasRequiredAssessorials
 	{
 		my $self = shift;
-		my ($CS, $ServiceID, $required_assessorials) = @_;
+		my ($CS,$required_assessorials) = @_;
 
-		my @cs_assessorials = $self->GetCSAssessorialList($CS, $ServiceID);
+		my @cs_assessorials = $CS->GetCSAssessorialList();
 		my @required_assessorials = split(/,/,$required_assessorials);
 
 		# Check the intersection of our required assessorials with all the CS shippment data
@@ -1746,39 +1616,6 @@ warn "undef etadate";
 		{
 			return 0;
 		}
-	}
-
-        sub GetCSAssessorialList
-	{
-		my $self = shift;
-
-		my ($CSID,$ServiceID) = @_;
-
-		my $STH = $self->{'object_dbref'}->prepare("
-			SELECT DISTINCT
-				assname
-			FROM
-				assdata
-			WHERE
-				(ownerid=? AND ownertypeid=4)
-				OR
-				(ownerid=? AND ownertypeid=3)
-		")
-			or die "Cannot execute sql statement";
-
-		$STH->execute($CSID,$ServiceID)
-			or die "Cannot execute sql statement";
-
-		my @assessorials = ();
-
-		while ( my ($assessorial) = $STH->fetchrow_array() )
-		{
-			push(@assessorials,$assessorial);
-		}
-
-		$STH->finish();
-
-		return @assessorials;
 	}
 
 	sub GetTotalAssCost
@@ -1803,4 +1640,5 @@ warn "undef etadate";
 		return $total_ass_cost;
 	}
 }
-1;
+
+1
