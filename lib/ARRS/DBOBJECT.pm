@@ -384,8 +384,10 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 	# Retrieve the objects properties from the database
 	sub LowLevelLoad
 	{
-		my $self = shift;
+                my $self = shift;                
 		my ($PKName, $PKValue, $UpdateToken) = @_;
+
+                #warn "########## LowLevelLoad ".$self->{'object_tablename'};
 
 		$self->{'object_initialized'} = 0;
 
@@ -393,6 +395,8 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 
 		my $SQLString = "SELECT * FROM ".$self->{'object_tablename'}." WHERE ".$PKName." = ?";
 
+                #warn "########## LowLevelLoad $SQLString";
+                #warn "########## LowLevelLoad \$PKValue : $PKValue";
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or TraceBack("Could not prepare SQL statement", 1);
 
@@ -401,8 +405,9 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 
 		if (my $DataRef = $sth->fetchrow_hashref())
 		{
+                 #       warn "########## LowLevelLoad Iterating through keys";
 			foreach my $key (keys(%$DataRef))
-			{
+			{                                
 				$self->{'field_'.$key} = $DataRef->{$key};
 			}
 
@@ -420,6 +425,7 @@ foreach my $Bind (@BindArray) { if (defined($Bind)&& $Bind ne '') { warn $Bind; 
 			return 0;
 		}
 
+                #warn "########## LowLevelLoad returning $self->{'object_initialized'}";
 		return $self->{'object_initialized'};
 	}
 

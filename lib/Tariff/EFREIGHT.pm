@@ -28,7 +28,13 @@
 
 	my $Debug = 0;
 	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
-
+        our $DB_HANDLE = ARRS::IDBI->connect({
+         dbname      => 'arrs',
+         dbhost      => 'localhost',
+         dbuser      => 'webuser',
+         dbpassword  => 'Byt#Yu2e',
+         autocommit  => 1
+      }); 
 	sub new
 	{
 		my $proto = shift;
@@ -36,13 +42,7 @@
 
 		my $self = {};
 
-      $self->{'dbref'} = ARRS::IDBI->connect({
-         dbname      => 'arrs',
-         dbhost      => 'localhost',
-         dbuser      => 'webuser',
-         dbpassword  => 'Byt#Yu2e',
-         autocommit  => 1
-      });
+                $self->{'dbref'} = $DB_HANDLE;
 
 		bless($self, $class);
 

@@ -24,7 +24,13 @@
 	use ARRS::IDBI;
 
 	my $Debug = 0;
-
+        our $DB_HANDLE = ARRS::IDBI->connect({
+			dbname => 'fedexfreight',
+			dbhost => 'localhost',
+			dbuser => 'webuser',
+			dbpassword => 'Byt#Yu2e',
+			autocommit => 1
+		});
 	sub new
 	{
 		my $proto = shift;
@@ -32,13 +38,7 @@
 
 		my $self = {};
 
-		$self->{'dbref'} = ARRS::IDBI->connect({
-			dbname => 'fedexfreight',
-			dbhost => 'localhost',
-			dbuser => 'webuser',
-			dbpassword => 'Byt#Yu2e',
-			autocommit => 1
-		});
+		$self->{'dbref'} = $DB_HANDLE;
 
 		bless($self, $class);
 

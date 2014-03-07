@@ -23,6 +23,15 @@
 	use ARRS::COMMON;
 	use ARRS::IDBI;
 
+
+        our $DB_HANDLE =  ARRS::IDBI->connect({
+				dbname => 'roadway',
+				dbhost => 'localhost',
+				dbuser => 'webuser',
+				dbpassword => 'Byt#Yu2e',
+				autocommit => 1
+			});
+
 	sub new
 	{
 		my $proto = shift;
@@ -38,13 +47,7 @@
 		}
 		else
 		{
-			$self->{'dbref'} = ARRS::IDBI->connect({
-				dbname => 'roadway',
-				dbhost => 'localhost',
-				dbuser => 'webuser',
-				dbpassword => 'Byt#Yu2e',
-				autocommit => 1
-			});
+			$self->{'dbref'} = $DB_HANDLE ;
 		}
 
 		$self->{'ratetypeid'} = $RateTypeID;
