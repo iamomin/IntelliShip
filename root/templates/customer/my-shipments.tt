@@ -103,7 +103,7 @@
 				<td>[% item.carrier %]</td>
 				<td>[% item.mode %]</td>
 				<td class="center">
-					<a [% IF item.tracking_url %] href="[% item.tracking_url %]" target="_blank" [% ELSE %]href="javascript:void(0);"[% END %] class="track" name="track">TRACK</a>&nbsp;&nbsp;<a href="/customer/myshipments/reprintlabel?shipmentid=[% item.shipmentid %]&ajax=1" target="_blank" class="reprint" name="reprint">REPRINT</a>&nbsp;&nbsp;<a class="void" name="void" href="javascript:void(0);" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
+					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track" name="track">TRACK</a>&nbsp;&nbsp;<a href="/customer/myshipments/reprintlabel?shipmentid=[% item.shipmentid %]&ajax=1" target="_blank" class="reprint" name="reprint">REPRINT</a>&nbsp;&nbsp;<a class="void" name="void" href="javascript:void(0);" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
 				</td>
 			</tr>
 			[% END %]
@@ -168,7 +168,7 @@
 			});
 		}
 
-        var clickCount = 0;
+    var clickCount = 0;
 	$(document).ready(function() {
 
 		if ($("#view_date").val() == 'today') {
@@ -260,6 +260,11 @@
 				}
 			});
 		});
+
+	function openWindow(target)
+		{
+		window.open(target + '&ref=' + jQuery.now());
+		}
 	[% END %]
 
 	</script>

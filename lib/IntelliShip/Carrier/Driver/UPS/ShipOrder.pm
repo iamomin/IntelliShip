@@ -168,6 +168,17 @@ sub process_request
 		$shipmentData->{'billingtype'} = "P/P";
 		}
 
+	# Pop reference field with 'Order# - Customer#'
+	$shipmentData->{'refnumber'} = $shipmentData->{'ordernumber'};
+	if ($shipmentData->{'ponumber'})
+		{
+		$shipmentData->{'refnumber'} .= " - " . $shipmentData->{'ponumber'};
+		}
+	elsif ($shipmentData->{'custnum'})
+		{
+		$shipmentData->{'refnumber'} .= " - " . $shipmentData->{'custnum'};
+		}
+
 	if (my @packages = $Shipment->packages)
 		{
 		my $Pkg = $packages[0];
@@ -448,6 +459,7 @@ sub BuildPrinterString
 		($CgiRef->{'shipmentnumber'}) = $self->CalculateShipmentNumber($CgiRef->{'tracking1'});
 		}
 
+	$CgiRef->{'comments'} = $CgiRef->{'description'};
 	##################################################################
 	## Build EPL
 	##################################################################

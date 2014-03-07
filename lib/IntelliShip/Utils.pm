@@ -465,7 +465,8 @@ sub get_rules
 my $TRACK_URLS = {
 		lc(&CARRIER_DHL)   => "http://track.dhl-usa.com/TrackByNbr.asp?ShipmentNumber=XXXX&nav=TrackBynumber",
 		lc(&CARRIER_UPS)   => "http://wwwapps.ups.com/etracking/tracking.cgi?tracknums_displayed=5&TypeOfInquiryNumber=T&HTMLVersion=4.0&InquiryNumber1=XXXX&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&track=Track",
-		lc(&CARRIER_FEDEX) => "http://www.fedex.com/cgi-bin/tracking?action=track&language=english&cntry_code=us&initial=x&tracknumbers=XXXX",
+		lc(&CARRIER_FEDEX) => "http://www.fedex.com/Tracking?action=track&language=english&cntry_code=us&initial=x&tracknumbers=XXXX",
+		lc(&CARRIER_USPS)  => "https://tools.usps.com/go/TrackConfirmAction.action?tLabels=XXXX"
 		};
 
 sub get_tracking_URL
