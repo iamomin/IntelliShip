@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<securitytypecs>
 
@@ -38,10 +42,10 @@ __PACKAGE__->table("securitytypecs");
 
 =head1 ACCESSORS
 
-=head2 securitytypecsid
+=head2 sercuritytypecsid
 
   data_type: 'integer'
-  is_nullable: 0
+  is_nullable: 1
 
 =head2 customerserviceid
 
@@ -57,29 +61,17 @@ __PACKAGE__->table("securitytypecs");
 =cut
 
 __PACKAGE__->add_columns(
-  "securitytypecsid",
-  { data_type => "integer", is_nullable => 0 },
+  "sercuritytypecsid",
+  { data_type => "integer", is_nullable => 1 },
   "customerserviceid",
   { data_type => "char", is_nullable => 0, size => 13 },
   "securitytypeid",
   { data_type => "integer", is_nullable => 0 },
 );
 
-=head1 PRIMARY KEY
 
-=over 4
-
-=item * L</securitytypecsid>
-
-=back
-
-=cut
-
-#__PACKAGE__->set_primary_key("securitytypecsid");
-
-
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JFdMh8xHKIPveT/Dd+pWcw
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dxAcEsD49Kzk1sztubbp0w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

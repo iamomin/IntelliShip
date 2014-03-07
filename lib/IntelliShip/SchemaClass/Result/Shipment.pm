@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<shipment>
 
@@ -788,7 +792,7 @@ __PACKAGE__->has_many(
 );
 
 __PACKAGE__->belongs_to(
-	CO => 
+	CO =>
 		'IntelliShip::SchemaClass::Result::Co',
 		'coid'
 	);
@@ -819,17 +823,17 @@ Composing rels: L</shipmentcoassocs> -> coid
 __PACKAGE__->many_to_many("coids", "shipmentcoassocs", "coid");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SIqsoxucVnH7m+CvW/xJxg
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oa245XFRYKHIIrptJBr1pA
 
 __PACKAGE__->belongs_to(
-	origin_address => 
+	origin_address =>
 	"IntelliShip::SchemaClass::Result::Address",
 	"addressidorigin"
 	);
 
 __PACKAGE__->belongs_to(
-	destination_address => 
+	destination_address =>
 	"IntelliShip::SchemaClass::Result::Address",
 	"addressiddestin"
 	);
@@ -930,6 +934,28 @@ sub get_freight_charges
 		}
 
 	return $freight_charge;
+	}
+
+sub total_weight
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_weight = 0;
+	foreach (@packages)
+		{
+		my $weight = ($_->dimweight > $_->weight ? $_->dimweight : $_->weight);
+		$total_weight += ($_->quantity > 1 ? $_->quantity * $weight : $weight);
+		}
+	return $total_weight;
+	}
+
+sub total_charge
+	{
+	my $self = shift;
+	my @charges = $self->shipment_charges;
+	my $charge_sum = 0;
+	$charge_sum += $_->chargeamount foreach @charges;
+	return $charge_sum;
 	}
 
 sub get_charges

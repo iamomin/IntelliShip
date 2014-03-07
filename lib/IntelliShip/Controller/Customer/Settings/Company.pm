@@ -32,10 +32,17 @@ sub index :Path :Args(0) {
 
 	$c->log->debug("CUSTOMER MANAGEMENT");
 
-	my $customer_batches = $self->process_pagination('customermanagement');
+	my $customer_batches;
 	my $WHERE = {};
-	$WHERE->{customerid} = $customer_batches->[0] if $customer_batches;
-
+	if ($params->{'customer_ids'})
+		{
+		$WHERE = { customerid => [split(',', $params->{'customer_ids'})] };
+		}
+	else
+		{
+		$customer_batches = $self->process_pagination('customermanagement');
+		$WHERE->{customerid} = $customer_batches->[0] if $customer_batches;
+		}
 	my @customers = $self->context->model('MyDBI::Customer')->search($WHERE, {
 	select => [
 		'customerid',
@@ -125,12 +132,9 @@ sub setup :Local
 				$c->stash->{assmarkuptype} = 'percent';
 				}
 			}
-
-		$self->get_customer_contacts($Customer->customerid)
 		}
 
 	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
-	$c->stash->{CONTACT_INFORMATION}     = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company.tt" ]);
 	$c->stash->{CONTACT_LIST}            = 0;
 	$c->stash->{CONTACT_MANAGEMENT}      = 0;
 	$c->stash->{companysetting_loop}     = $self->get_company_setting_list($Customer);
@@ -159,7 +163,7 @@ sub setup :Local
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 
 	my $Contact = $self->contact;
-	$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser;
+	$c->stash->{READONLY} =1 unless $self->contact->is_superuser;
 
 	$c->stash->{SETUP_CUSTOMER}          = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
@@ -430,56 +434,72 @@ sub ajax :Local
 
 	$c->stash->{ajax} = 1;
 
-	if ($params->{'customername'})
+	if ($params->{'type'} eq 'HTML')
 		{
-		my $WHERE = { customerid => [split(',', $params->{'page'})] };
-		$c->log->debug("WHERE: " . Dumper $WHERE);
-		my @customers = $c->model('MyDBI::Customer')->search($WHERE, {
-								select => [ 'customerid', 'username', 'customername', 'contact', 'phone', 'email' ],
-								order_by => { -asc => 'customername' },
-							});
-
-		$c->log->debug("TOTAL CUSTOMERS: " . @customers);
-		$c->stash->{customerlist} = \@customers;
-		$c->stash->{customer_count} = scalar @customers;
-
-		$c->stash->{CUSTOMER_LIST} = 1;
-		$c->stash->{CUSTOMER_MANAGEMENT} = 1;
+		$self->get_HTML_DATA;
 		}
-	elsif($params->{'action'} eq 'validate_contact_username')
+	elsif ($params->{'type'} eq 'JSON')
 		{
-		my $dataHash = $self->validate_contact_username;
-		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
-		return $c->response->body($json_DATA);
+		$self->get_JSON_DATA;
 		}
-	elsif($params->{'action'} eq 'validate_customer_username')
-		{
-		my $dataHash = $self->validate_customer_username;
-		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
-		return $c->response->body($json_DATA);
-		}
-	elsif (length $params->{'term'})
-		{
-		my $sql = "SELECT customername FROM customer WHERE customername LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
-		my $sth = $c->model('MyDBI')->select($sql);
 
-		my $arr = [];
-		push(@$arr, $_->[0]) foreach @{$sth->query_data};
+	$c->stash($params);
+	}
 
-		return $c->response->body(IntelliShip::Utils->jsonify($arr));
+sub get_HTML_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $action = $params->{'action'} || '';
+
+	if ($action eq 'get_customers')
+		{
+		$self->index($c);
 		}
 	elsif (length $params->{'contactid'})
 		{
 		$params->{'do'} = 'configure';
 		$self->contactinformation;
 		}
-	elsif ($params->{'do'} eq 'cancel')
+	elsif ($action eq 'get_customer_contacts')
 		{
 		$self->get_customer_contacts;
 		}
 
-	$c->stash($params);
 	$c->stash(template => "templates/customer/settings-company.tt");
+	}
+
+sub get_JSON_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $action = $params->{'action'} || '';
+	my $dataHash;
+	if ($action eq 'validate_contact_username')
+		{
+		$dataHash = $self->validate_contact_username;
+		}
+	elsif ($action eq 'validate_customer_username')
+		{
+		$dataHash = $self->validate_customer_username;
+		}
+	elsif ($action eq 'search_customer')
+		{
+		my $sql = "SELECT customername FROM customer WHERE customername LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
+		my $sth = $c->model('MyDBI')->select($sql);
+		my $arr = [];
+		push(@$arr, $_->[0]) foreach @{$sth->query_data};
+		return $c->response->body(IntelliShip::Utils->jsonify($arr));
+		}
+
+		#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+		my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+		#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+		return $c->response->body($json_DATA);
 	}
 
 sub validate_contact_username :Private
@@ -518,11 +538,11 @@ sub get_customer
 	my $params = $c->req->params;
 
 	my $WHERE = {};
-	if (length $params->{'customerid'})
+	if ($params->{'customerid'})
 		{
 		$WHERE->{customerid} = $params->{'customerid'};
 		}
-	elsif (length $params->{'customername'})
+	elsif ($params->{'customername'})
 		{
 		$WHERE->{customername} = $params->{'customername'};
 		}

@@ -21,12 +21,12 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
-	<div class="float_left">
+	<div class="float-left">
 		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/>
 		<div id="special-requirements"></div>
 	</div>
 
-	<div class="float_right">
+	<div class="float-right">
 		[% UNLESS CONSOLIDATE %]<input type="button" class="green" id="save" value="SAVE"/>[% END %]
 		[% IF quickship %]<input type="button" class="green" id="ship_now" value="SHIP"/>[% END %]
 		<input type="button" class="gray" id="cancel" value="CANCEL"/>
@@ -60,9 +60,9 @@
 
 		if (carrier == undefined) return;
 
-		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS')
+		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
 			{
-			showError("Only FedEx/UPS is supported, please select correct carrier from list.");
+			showError("Only FedEx/UPS/USPS is supported, please select correct carrier from list.");
 			return;
 			}
 

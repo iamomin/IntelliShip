@@ -13,6 +13,22 @@ BEGIN {
 	has 'contact' => ( is => 'rw' );
 	has 'customer' => ( is => 'rw' );
 
+	has 'arrs_api_context' => ( is => 'rw' );
+
+	}
+
+sub API
+	{
+	my $self = shift;
+
+	unless ($self->arrs_api_context)
+		{
+		my $APIRequest = IntelliShip::Arrs::API->new;
+		$APIRequest->context($self->context);
+		$self->arrs_api_context($APIRequest);
+		}
+
+	return $self->arrs_api_context;
 	}
 
 sub make_report
@@ -72,38 +88,6 @@ sub generate_shipment_report
 
 	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
 
-	$report_heading_loop = [
-				{name => 'shipment id'},
-				{name => 'weight'},
-				{name => 'date delivered'},
-				{name => 'pod name'},
-				{name => 'dim weight'},
-				{name => 'tracking 1'},
-				{name => 'cost'},
-				{name => 'date shipped'},
-#				{name => 'commodityquantity'},
-#				{name => 'username'},
-#				{name => 'addressname'},
-#				{name => 'address1'},
-#				{name => 'addresscity'},
-#				{name => 'addressstate'},
-#				{name => 'addresszip'},
-#				{name => 'addressidorigin'},
-#				{name => 'ordernumber'},
-#				{name => 'zonenumber'},
-#				{name => 'currentdate'},
-#				{name => 'contactname'},
-#				{name => 'custnum'},
-#				{name => 'ppd.dimlength'},
-#				{name => 'ppd.dimwidth'},
-#				{name => 'ppd.dimheight'},
-#				{name => 'customerserviceid'},
-#				{name => 'custref3'},
-#				{name => 'carriername'},
-#				{name => 'servicename'},
-#				{name => 'customerid'},
-			];
-
 	my $and_customerid_sql = " AND c.customerid = '" . $Customer->customerid . "'";
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
@@ -144,7 +128,40 @@ sub generate_shipment_report
 		}
 
 	my $WHERE;
-	my $report_OUTPUT_fields = "
+
+	my $report_OUTPUT_fields = "";
+	if ($params->{'format'} eq 'CSV')
+		{
+		$report_heading_loop = [
+				{name => 'weight'},
+				{name => 'dim weight'},
+				{name => 'dims'},
+				{name => 'carrier name'},
+				{name => 'zone'},
+				{name => 'service name'},
+				{name => 'Airbill#'},
+				{name => 'freight charge'},
+				{name => 'other charges'},
+				{name => 'total charges'},
+				{name => 'est pick up date'},
+				{name => 'commodity quantity'},
+				{name => 'shipper number'},
+				{name => 'shipper name'},
+				{name => 'shipper city'},
+				{name => 'shipper state'},
+				{name => 'deliver date'},
+				{name => 'signed for by'},
+				{name => 'receiver company'},
+				{name => 'receiver address'},
+				{name => 'receiver city'},
+				{name => 'receiver state'},
+				{name => 'receiver zip'},
+				{name => 'receiver contact'},
+				{name => 'order number'},
+				{name => 'customer number'},
+			];
+
+		$report_OUTPUT_fields = "
 				sh.shipmentid,
 				sh.weight,
 				sh.datedelivered,
@@ -175,13 +192,40 @@ sub generate_shipment_report
 				sh.service as servicename,
 				c.customerid
 				";
+		}
+	else
+		{
+		$report_heading_loop = [
+				{name => 'order number'},
+				{name => 'receiver address'},
+				{name => 'tracking number'},
+				{name => 'zone'},
+				{name => 'service level'},
+				{name => 'zip/zone'},
+				{name => 'billing weight'},
+				{name => 'total charges'},
+				{name => 'date shipped'},
+			];
 
+		$report_OUTPUT_fields = "
+				sh.shipmentid,
+				co.ordernumber,
+				sh.tracking1,
+				a.addressname || ' ' || a.address1 || ' ' || a.city || ' ' || a.state || ' ' || a.zip as receiveraddress,
+				sh.zonenumber,
+				substring(a.zip from 1 for 3) || '/' || a.state as zipzone,
+				sh.service as servicename,
+				sh.weight,
+				sh.cost,
+				sh.dateshipped,
+				sh.carrier as carriername
+				";
+		}
 	my $report_SQL_1 = '';
 	if (!grep(/^OTHER_/, @$carriers))
 		{
 		$WHERE =
 				$and_customerid_sql .
-				$and_carrier_sql .
 				$and_start_date_sql .
 				$and_stop_date_sql .
 				$and_status_id_sql .
@@ -189,7 +233,8 @@ sub generate_shipment_report
 				$and_datatypeid_sql .
 				$and_username_sql .
 				$and_co_type_id_sql .
-				$and_allowed_extcustnum_sql;
+				$and_allowed_extcustnum_sql .
+				$and_carrier_sql;
 
 		$WHERE =~ s/^\ *AND//;
 		$WHERE = " WHERE " . $WHERE if $WHERE;
@@ -271,67 +316,29 @@ sub generate_shipment_report
 
 	$report_SQL .= " ORDER BY 3,2,4 ";
 
-	#$c->log->debug("REPORT SQL: \n" . $report_SQL);
+	#$c->log->debug("SHIPMENT REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
-	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
+	#$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
+
+	my $weight_sum = 0;
+	my $dimweight_sum = 0;
+	my $tot_chg_sum = 0;
+	my $other_chg_sum = 0;
+	my $commodity_sum = 0;
+	my $distinctCarriers = {};
+	my $ship_count = $report_sth->numrows;
 
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
 
+		$distinctCarriers->{$row_data->{'carriername'}} = 1;
+
 		#$c->log->debug("row_data: " . Dumper $row_data);
-
-		if ( $row_data->{'customerserviceid'} )
-			{
-=as
-			my $CSRef = &APIRequest({
-					action	=> 'GetCSShippingValues',
-					csid	=> $row_data->{'customerserviceid'},
-					customerid => $row_data->{'customerid'}
-				});
-			$row_data->{'webaccount'} = $CSRef->{'webaccount'};
-=cut
-			$row_data->{'webaccount'} = 'IMRAN_ARRRS';
-			}
-
-		## Load up origin addr info
-		$row_data->{'shipper_name'} = $Address->addressname;
-		$row_data->{'shipper_city'} = $Address->city;
-		$row_data->{'shipper_state'} = $Address->state;
-
-		# The Excel module does NOT like undefined variables...need to stuff the undef'd ones with something
-		$row_data->{'weight'} = $row_data->{'weight'} || "";
-		$row_data->{'dimweight'} = $row_data->{'dimweight'} || "";
-		$row_data->{'carriername'} = $row_data->{'carriername'} || "";
-		$row_data->{'zonenumber'} = $row_data->{'zonenumber'} || "";
-		$row_data->{'servicename'} = $row_data->{'servicename'} || "";
-		$row_data->{'tracking1'} = $row_data->{'tracking1'} || "";
- 		$row_data->{'cost'} = $row_data->{'cost'} || "";
-		$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
-		$row_data->{'commodityquantity'} = $row_data->{'commodityquantity'} || 1;
-		$row_data->{'username'} = $row_data->{'username'} || "";
-		$row_data->{'webaccount'} = $row_data->{'webaccount'} || "";
-		$row_data->{'shipper_name'} = $row_data->{'shipper_name'} || "";
-		$row_data->{'shipper_city'} = $row_data->{'shipper_city'} || "";
-		$row_data->{'shipper_state'} = $row_data->{'shipper_state'} || "";
-		$row_data->{'shipper_zip'} = $row_data->{'shipper_zip'} || "";
-		$row_data->{'addressname'} = $row_data->{'addressname'} || "UNKNOWN";
-		$row_data->{'address1'} = $row_data->{'address1'} || "UNKNOWN";
-		$row_data->{'addresscity'} = $row_data->{'addresscity'} || "UNKNOWN";
-		$row_data->{'addressstate'} = $row_data->{'addressstate'} || "UNKNOWN";
-		$row_data->{'addresszip'} = $row_data->{'addresszip'} || "UNKNOWN";
-		$row_data->{'datedelivered'} = $row_data->{'datedelivered'} || "";
-		$row_data->{'podname'} = $row_data->{'podname'} || "";
-		$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
-		$row_data->{'contactname'} = $row_data->{'contactname'} || "";
-		$row_data->{'custnum'} = $row_data->{'custnum'} || "";
-
 		my ($date, $time) = split(/ /,$row_data->{'dateshipped'});
 		$row_data->{'dateshipped'} = $date;
-
-		$row_data->{'datedelivered'} = $row_data->{'datedelivered'} =~ /(.*)-\d{2}$/;
 
 		my $ShipmentChargeCost;
 		## Get Accessorial charges (non-freight) for shipment
@@ -353,29 +360,172 @@ sub generate_shipment_report
 			$row_data->{'cost'} = $ShipmentCost;
 			}
 
-		# Build dim string
-		$row_data->{'dims'} = $row_data->{'dimlength'};
-		$row_data->{'dims'} .= 'x' . $row_data->{'dimwidth'} if $row_data->{'dims'} and $row_data->{'dimwidth'};
-		$row_data->{'dims'} .= 'x' . $row_data->{'dimheight'} if $row_data->{'dims'} and $row_data->{'dimheight'};
-		$row_data->{'dims'} = '' unless $row_data->{'dims'};
+		my $report_output_column_loop = [];
+		if ($params->{'format'} eq 'CSV')
+			{
+			if ( $row_data->{'customerserviceid'} )
+				{
+				my $CSRef = $self->API->get_CS_shipping_values($row_data->{'customerserviceid'},$row_data->{'customerid'});
+				$row_data->{'webaccount'} = $CSRef->{'webaccount'};
+				#$c->log->debug("get_CS_shipping_values: " . Dumper $CSRef);
+				}
 
-		my $report_output_column_loop = [
-				{ value => $row_data->{'shipmentid'} },
-				{ value => $row_data->{'weight'} },
-				{ value => $row_data->{'datedelivered'} },
-				{ value => $row_data->{'podname'} },
-				{ value => $row_data->{'dimweight'} },
-				{ value => $row_data->{'tracking1'} },
-				{ value => $row_data->{'cost'}, align => 'right' },
-				{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) },
-			];
+			## Load up origin addr info
+			$row_data->{'shipper_name'} = $Address->addressname;
+			$row_data->{'shipper_city'} = $Address->city;
+			$row_data->{'shipper_state'} = $Address->state;
+
+			# The Excel module does NOT like undefined variables...need to stuff the undef'd ones with something
+			$row_data->{'weight'} = $row_data->{'weight'} || "";
+			$row_data->{'dimweight'} = $row_data->{'dimweight'} || "";
+			$row_data->{'carriername'} = $row_data->{'carriername'} || "";
+			$row_data->{'zonenumber'} = $row_data->{'zonenumber'} || "";
+			$row_data->{'servicename'} = $row_data->{'servicename'} || "";
+			$row_data->{'tracking1'} = $row_data->{'tracking1'} || "";
+			$row_data->{'cost'} = $row_data->{'cost'} || "";
+			$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
+			$row_data->{'commodityquantity'} = $row_data->{'commodityquantity'} || 1;
+			$row_data->{'username'} = $row_data->{'username'} || "";
+			$row_data->{'webaccount'} = $row_data->{'webaccount'} || "";
+			$row_data->{'shipper_name'} = $row_data->{'shipper_name'} || "";
+			$row_data->{'shipper_city'} = $row_data->{'shipper_city'} || "";
+			$row_data->{'shipper_state'} = $row_data->{'shipper_state'} || "";
+			$row_data->{'shipper_zip'} = $row_data->{'shipper_zip'} || "";
+			$row_data->{'addressname'} = $row_data->{'addressname'} || "UNKNOWN";
+			$row_data->{'address1'} = $row_data->{'address1'} || "UNKNOWN";
+			$row_data->{'addresscity'} = $row_data->{'addresscity'} || "UNKNOWN";
+			$row_data->{'addressstate'} = $row_data->{'addressstate'} || "UNKNOWN";
+			$row_data->{'addresszip'} = $row_data->{'addresszip'} || "UNKNOWN";
+			$row_data->{'datedelivered'} = $row_data->{'datedelivered'} || "";
+			$row_data->{'podname'} = $row_data->{'podname'} || "";
+			$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
+			$row_data->{'contactname'} = $row_data->{'contactname'} || "";
+			$row_data->{'custnum'} = $row_data->{'custnum'} || "";
+
+			$row_data->{'datedelivered'} = $row_data->{'datedelivered'} =~ /(.*)-\d{2}$/;
+
+			# Build dim string
+			$row_data->{'dims'} = $row_data->{'dimlength'};
+			$row_data->{'dims'} .= 'x' . $row_data->{'dimwidth'} if $row_data->{'dims'} and $row_data->{'dimwidth'};
+			$row_data->{'dims'} .= 'x' . $row_data->{'dimheight'} if $row_data->{'dims'} and $row_data->{'dimheight'};
+			$row_data->{'dims'} = '' unless $row_data->{'dims'};
+
+			$report_output_column_loop = [
+					{ value => $row_data->{'weight'} },
+					{ value => $row_data->{'dimweight'} },
+					{ value => $row_data->{'dims'} },
+					{ value => $row_data->{'carriername'} },
+					{ value => $row_data->{'zonenumber'} },
+					{ value => $row_data->{'servicename'} },
+					{ value => $row_data->{'tracking1'} },
+					{ value => $row_data->{'cost'}, align => 'right', currency => '$' },
+					{ value => $row_data->{'othercharges'}, align => 'right', currency => '$' },
+					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right', currency => '$' },
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) },
+					{ value => $row_data->{'commodityquantity'} },
+					{ value => $row_data->{'webaccount'} },
+					{ value => $row_data->{'shipper_name'} },
+					{ value => $row_data->{'shipper_city'} },
+					{ value => $row_data->{'shipper_state'} },
+					{ value => $row_data->{'datedelivered'} },
+					{ value => $row_data->{'podname'} },
+					{ value => $row_data->{'addressname'} },
+					{ value => $row_data->{'address1'} },
+					{ value => $row_data->{'addresscity'} },
+					{ value => $row_data->{'addressstate'} },
+					{ value => $row_data->{'addresszip'} },
+					{ value => $row_data->{'contactname'} },
+					{ value => $row_data->{'ordernumber'} },
+					{ value => $row_data->{'custnum'} },
+				];
+			}
+		else
+			{
+			$row_data->{'weight'} = $row_data->{'weight'} || "";
+			$row_data->{'zonenumber'} = $row_data->{'zonenumber'} || "";
+			$row_data->{'servicename'} = $row_data->{'servicename'} || "";
+			$row_data->{'tracking1'} = $row_data->{'tracking1'} || "";
+			$row_data->{'cost'} = $row_data->{'cost'} || "";
+			$row_data->{'dateshipped'} = $row_data->{'dateshipped'} || "";
+			$row_data->{'receiveraddress'} = $row_data->{'receiveraddress'} || "UNKNOWN";
+			$row_data->{'ordernumber'} = $row_data->{'ordernumber'} || "";
+			$row_data->{'zipzone'} = $row_data->{'zipzone'} || "";
+
+			$report_output_column_loop = [
+					{ value => $row_data->{'ordernumber'} },
+					{ value => $row_data->{'receiveraddress'} }	,
+					{ value => $row_data->{'tracking1'} },
+					{ value => $row_data->{'zonenumber'} },
+					{ value => $row_data->{'servicename'} },
+					{ value => $row_data->{'zipzone'} },
+					{ value => $row_data->{'weight'} , align => 'right'},
+					{ value => $row_data->{'cost'} + $row_data->{'othercharges'}, align => 'right', currency => '$' },
+					{ value => IntelliShip::DateUtils->american_date($row_data->{'dateshipped'}) }
+				];
+			}
 
 		push(@$report_output_row_loop, $report_output_column_loop);
+
+		$weight_sum += $row_data->{'weight'};
+		$dimweight_sum += $row_data->{'dimweight'};
+		$tot_chg_sum += $row_data->{'cost'};
+		$other_chg_sum += $row_data->{'othercharges'};
+		$commodity_sum += $row_data->{'commodityquantity'};
 
 		## Keep the browser from timing out.
 		# print "\n";
 		# STDOUT->autoflush(1);
 		}
+		my $report_summary_row_loop = [];
+
+		if ($params->{'format'} eq 'CSV')
+			{
+			$report_summary_row_loop = [
+					{ value => $weight_sum, grandtotal => '1' },
+					{ value => $dimweight_sum, grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => $tot_chg_sum, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => $other_chg_sum, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => $commodity_sum , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+				];
+			}
+		else
+			{
+			$report_summary_row_loop = [
+					{ value => 'Total Shipments '. scalar @$report_output_row_loop },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => $weight_sum, align => 'right' },
+					{ value => $tot_chg_sum + $other_chg_sum, align => 'right', currency => '$' },
+					{ value => '' }
+				];
+			}
+	push(@$report_output_row_loop, $report_summary_row_loop);
+
+	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
 
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
@@ -423,9 +573,9 @@ sub generate_summary_service_report
 	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
 
 	$report_heading_loop = [
-				{name => 'shipment id'},
 				{name => 'carrier'},
 				{name => 'service'},
+				{name => 'shipments'},
 				{name => 'total charge'},
 				{name => 'total weight'},
 			];
@@ -442,8 +592,8 @@ sub generate_summary_service_report
 			$and_customerid_sql .
 			$and_start_date_sql .
 			$and_stop_date_sql .
-			$and_carrier_sql .
-			$and_status_id_sql;
+			$and_status_id_sql .
+			$and_carrier_sql;
 
 	$WHERE =~ s/^\ *AND//;
 	$WHERE = " WHERE " . $WHERE if $WHERE;
@@ -451,44 +601,105 @@ sub generate_summary_service_report
 	my $report_SQL = "
 		SELECT
 			sh.shipmentid,
-			SUM(sc.chargeamount) AS total_chargeamount,
-			SUM(ppd.weight) AS total_weight
+			sh.carrier as carriername,
+			sh.service
 		FROM
 			shipment sh
 			INNER JOIN co ON co.coid = sh.coid
-			INNER JOIN shipmentcharge sc ON sc.shipmentid = sh.shipmentid
-			INNER JOIN packprodata ppd ON ppd.ownerid = sh.shipmentid
-				AND ppd.ownertypeid = 2000
-				AND ppd.datatypeid = 1000
 		$WHERE
-		GROUP BY
-			sh.shipmentid
 		ORDER BY
-			3,2,1
+			2,1
 	";
 
-	$c->log->debug("SUMMARY SERVICE REPORT SQL: \n" . $report_SQL);
+	#$c->log->debug("SUMMARY SERVICE REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
-	$c->log->debug("TOTAL RECORDS: " . $report_sth->numrows);
-
+	my $summaryDetails = {};
+	my $distinctCarriers = {};
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
 		my $row_data = $report_sth->fetchrow($row);
-
+		$distinctCarriers->{$row_data->{'carriername'}} = 1;
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $row_data->{shipmentid} });
 
-		my $report_output_column_loop = [
-				{ value => $row_data->{'shipmentid'} },
-				{ value => $Shipment->carrier },
-				{ value => $Shipment->service },
-				{ value => $row_data->{'total_chargeamount'}, align => 'right' },
-				{ value => $row_data->{'total_weight'}, align => 'right' },
-			];
-
-		push(@$report_output_row_loop, $report_output_column_loop);
+		$summaryDetails->{$row_data->{'carriername'}} = {} unless $summaryDetails->{$row_data->{'carriername'}};
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}} = {} unless $summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}};
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_WEIGHT'} += $Shipment->total_weight;
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_CHARGE'} += $Shipment->total_charge;
+		$summaryDetails->{$row_data->{'carriername'}}->{$row_data->{'service'}}->{'TTL_COUNT'} += 1;
 		}
+
+	#$c->log->debug("%$summaryDetails: " . Dumper $summaryDetails);
+
+	my $grand_total_shipment = 0;
+	my $grand_total_charge = 0;
+	my $grand_total_weight = 0;
+	foreach my $carrier (keys %$summaryDetails)
+		{
+		my $total_shipment = 0;
+		my $total_charge = 0;
+		my $total_weight = 0;
+		push(@$report_output_row_loop, [
+					{ value => $carrier, carriername => '1' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+				]);
+
+		my $serviceHash = $summaryDetails->{$carrier};
+		foreach my $service (keys %$serviceHash)
+			{
+			my $dataHash = $serviceHash->{$service};
+			my $report_output_column_loop = [
+					{ value => '' },
+					{ value => $service },
+					{ value => $dataHash->{'TTL_COUNT'} },
+					{ value => $dataHash->{'TTL_CHARGE'}, align => 'right', currency => '$' },
+					{ value => $dataHash->{'TTL_WEIGHT'}, align => 'right' },
+
+				];
+			$total_shipment	+= $dataHash->{'TTL_COUNT'};
+			$total_charge	+= $dataHash->{'TTL_CHARGE'};
+			$total_weight	+= $dataHash->{'TTL_WEIGHT'};
+
+			push(@$report_output_row_loop, $report_output_column_loop);
+			}
+
+		# Add Total Row
+		push(@$report_output_row_loop, [
+					{ value => $carrier. ' Total', carriertotal => '1' },
+					{ value => '', carriertotal => '1' },
+					{ value => $total_shipment, carriertotal => '1' },
+					{ value => $total_charge, align => 'right', currency => '$', carriertotal => '1' },
+					{ value => $total_weight, align => 'right', carriertotal => '1' },
+				]);
+		# Update Grand Total
+		$grand_total_shipment	+= $total_shipment;
+		$grand_total_charge		+= $total_charge;
+		$grand_total_weight		+= $total_weight;
+
+		# Add Blank Row
+		push(@$report_output_row_loop, [
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+					{ value => '' },
+				]);
+		}
+
+	# Add Grand Total Row
+	push(@$report_output_row_loop, [
+					{ value => 'Grand Total', grandtotal => '1'},
+					{ value => '' , grandtotal => '1'},
+					{ value => $grand_total_shipment , grandtotal => '1'},
+					{ value => $grand_total_charge, align => 'right', currency => '$' , grandtotal => '1'},
+					{ value => $grand_total_weight, align => 'right' , grandtotal => '1'},
+				]);
+
+	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
 
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
@@ -519,12 +730,14 @@ sub get_filter_details
 	#	{
 	#	#
 	#	}
-
+	$filter_criteria =~ s/\s*WHERE\s*//i;
 	my $filter_criteria_hash_arr = [];
 	my @filter_criteria_arr = split(' AND ' , $filter_criteria);
 
 	foreach my $criteria (@filter_criteria_arr)
 		{
+		$criteria =~ s/^\s+//;
+		$criteria =~ s/\s+$//;
 		my ($key,$value);
 
 		if ($criteria =~ m/\ >=\ /)
@@ -611,7 +824,10 @@ sub get_carrier_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return '' if (ref $params->{'carriers'} eq 'ARRAY' and grep(/all/, @{$params->{'carriers'}})) or  $params->{'carriers'} eq 'all';
+	if ($params->{'carriers'} eq 'all')
+		{
+		return '';
+		}
 
 	my $and_carrier_sql;
 	if (ref $params->{'carriers'} eq 'ARRAY')
@@ -631,9 +847,10 @@ sub get_co_status_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return '' if (ref $params->{'costatus'} eq 'ARRAY' and grep(/all/, @{$params->{'costatus'}})) or  $params->{'costatus'} eq 'all';
+	my $and_status_id_sql = ' AND sh.statusid IN (10,100) ';
 
-	my $and_status_id_sql = ''; #" AND sh.statusid IN (10,100) "
+	return $and_status_id_sql if (ref $params->{'costatus'} eq 'ARRAY' and grep(/all/, @{$params->{'costatus'}})) or  $params->{'costatus'} eq 'all';
+
 	if (ref $params->{'costatus'} eq 'ARRAY')
 		{
 		$and_status_id_sql = " AND sh.statusid IN ('" . join("','", @{$params->{'costatus'}}) . "') ";

@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<myorderscolumnsassoc>
 
@@ -37,11 +41,6 @@ __PACKAGE__->load_components("InflateColumn::DateTime");
 __PACKAGE__->table("myorderscolumnsassoc");
 
 =head1 ACCESSORS
-
-=head2 myorderscolumnsassocid
-
-  data_type: 'integer'
-  is_nullable: 0
 
 =head2 contactid
 
@@ -68,8 +67,6 @@ __PACKAGE__->table("myorderscolumnsassoc");
 =cut
 
 __PACKAGE__->add_columns(
-#  "myorderscolumnsassocid",
-#  { data_type => "integer", is_nullable => 0 },
   "contactid",
   { data_type => "char", is_nullable => 1, size => 13 },
   "myorderscolumnsid",
@@ -80,21 +77,9 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
 );
 
-=head1 PRIMARY KEY
 
-=over 4
-
-=item * L</myorderscolumnsassocid>
-
-=back
-
-=cut
-
-#__PACKAGE__->set_primary_key("myorderscolumnsassocid");
-
-
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CbB3w0EWxZDDp1SQ7/GAsQ
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:i6y5AljMAkreeMCdzGoWGg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

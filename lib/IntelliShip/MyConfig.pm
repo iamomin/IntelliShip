@@ -22,13 +22,25 @@ use constant TEST         => "TEST";
 
 # hostname-to-mode hash, any server not listed here is assumed to be production
 my %hosts = (
-	'DONT-KNOW'              => &PRODUCTION,
-	'atx00web01.localdomain' => &DEVELOPMENT,
+	'DONT-KNOW'  => &PRODUCTION,
+	'ENCD00'     => &DEVELOPMENT,
+	'RT-XML'     => &TEST,
+
+	'ATX00WEB01.LOCALDOMAIN' => &DEVELOPMENT,
 	);
 
-my %db_hosts = (
-	'D-IntelliShip' => &PRODUCTION,
-	'D-IntelliShip' => &DEVELOPMENT,
+# aos_intelliship DB hosts
+my %aos_db_hosts = (
+	&PRODUCTION  => 'localhost',
+	&DEVELOPMENT => 'localhost',
+	&TEST        => '192.168.9.226',
+	);
+
+# arrs DB hosts
+my %arrs_db_hosts = (
+	&PRODUCTION  => 'localhost',
+	&DEVELOPMENT => 'localhost',
+	&TEST        => '192.168.9.226',
 	);
 
 # sendmail
@@ -77,11 +89,11 @@ sub getDomain
 	my $domain;
 
 	# Determine what machine we are running on...
-	my $hostname = $ENV{'HOSTNAME'};
+	my $hostname = uc $ENV{'HOSTNAME'};
 
 	unless ($hostname)
 		{
-		$hostname = hostname();
+		$hostname = uc hostname();
 
 		if (index($hostname,'.') > -1)
 			{
@@ -92,9 +104,9 @@ sub getDomain
 		}
 
 	## check to see if hostname exists in %hosts hash
-	if ( defined $hosts{uc($hostname)} )
+	if ($hosts{$hostname})
 		{
-		$domain = $hosts{uc($hostname)};
+		$domain = $hosts{$hostname};
 		}
 	else
 		{
@@ -108,7 +120,7 @@ sub getDomain
 
 =head2 getDatabaseDomain
 
-depending on the server, will return DEVELOPMENT, PRODUCTION or PRODUCTION_NETSCALER.
+depending on the server, will return DEVELOPMENT, PRODUCTION or TEST.
 
 	my $mode = IntelliShip::MyConfig->getDatabaseDomain;
 
@@ -116,8 +128,6 @@ depending on the server, will return DEVELOPMENT, PRODUCTION or PRODUCTION_NETSC
 
 sub getDatabaseDomain
 	{
-	my $db_domain;
-
 	# Determine what machine we are running on...
 	my $hostname = $ENV{'HOSTNAME'};
 
@@ -133,19 +143,67 @@ sub getDatabaseDomain
 		$ENV{'HOSTNAME'} = $hostname;
 		}
 
-	## check to see if hostname exists in %db_hosts hash
-	if ( defined $db_hosts{uc($hostname)} )
-		{
-		$db_domain = $db_hosts{uc($hostname)};
-		}
-	else
+	#print STDERR "\nHOSTNAME: " . $hostname;
+
+	my $db_domain;
+
+	## check to see if hostname exists in %hosts hash
+	unless ($db_domain = $hosts{$hostname})
 		{
 		$db_domain = &DEVELOPMENT;
 		}
 
-	#print STDERR "\n DataBase Domain: " . $db_domain;
+	#print STDERR "\nDataBase Domain: " . $db_domain;
 
 	return $db_domain;
+	}
+
+=head2 getDatabaseHost
+
+depending on the server, will return DEVELOPMENT, PRODUCTION or TEST.
+
+	my $mode = IntelliShip::MyConfig->getDatabaseHost;
+
+=cut
+
+sub getDatabaseHost
+	{
+	## check to see if hostname exists in %aos_db_hosts hash
+	my $domain = getDatabaseDomain() || '';
+
+	my $db_host;
+	unless ($db_host = $aos_db_hosts{$domain})
+		{
+		$db_host = 'localhost';
+		}
+
+	#print STDERR "\nDataBase Host: " . $db_host;
+
+	return $db_host;
+	}
+
+=head2 getArrsDatabaseHost
+
+depending on the server, will return DEVELOPMENT, PRODUCTION or TEST.
+
+	my $mode = IntelliShip::MyConfig->getArrsDatabaseHost;
+
+=cut
+
+sub getArrsDatabaseHost
+	{
+	## check to see if hostname exists in %db_hosts hash
+	my $domain = getDatabaseDomain() || '';
+
+	my $db_host;
+	unless ($db_host = $arrs_db_hosts{$domain})
+		{
+		$db_host = 'localhost';
+		}
+
+	#print STDERR "\nArrs DataBase Host: " . $db_host;
+
+	return $db_host;
 	}
 
 =head2 getSendmailPath
@@ -166,13 +224,13 @@ sub application_root
 	my $self = shift;
 
 	my $application_root = '';
-	if (uc(hostname()) eq 'RT-XML')
+	if (getDomain() eq &TEST)
 		{
 		$application_root = '/var/intelliship/git/IntelliShip/';
 		}
 	else
 		{
-		$application_root = '/home/ALOHA11/IntelliShip';
+		$application_root = '/opt/engage/intelliship2/IntelliShip';
 		}
 
 	return $application_root;
@@ -181,7 +239,7 @@ sub application_root
 my $ARRS_CONFIG = {
 	BASE_PATH      => application_root(),
 	DB_NAME        => 'arrs',
-	DB_HOST        => 'darrs.engagetechnology.com',
+	DB_HOST        => getArrsDatabaseHost(),
 	DB_USER        => 'webuser',
 	DB_PASSWORD    => 'Byt#Yu2e',
 	BASE_DOMAIN    => 'engagetechnology.com',
@@ -235,6 +293,24 @@ sub report_file_directory
 	{
 	my $self = shift;
 	return $self->base_path . '/var/log/intelliship/reports';
+	}
+
+sub image_file_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/root/static/images';
+	}
+
+sub label_file_directory
+	{
+	my $self = shift;
+	return '/opt/engage/intelliship/html/print/label';
+	}
+
+sub label_image_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/root/label';
 	}
 
 __PACKAGE__->meta()->make_immutable();

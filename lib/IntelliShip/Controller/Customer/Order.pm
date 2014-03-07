@@ -1,5 +1,6 @@
 package IntelliShip::Controller::Customer::Order;
 use Moose;
+use IO::File;
 use Data::Dumper;
 use POSIX qw(ceil);
 use IntelliShip::Utils;
@@ -62,7 +63,7 @@ sub setup_one_page :Private
 	my $c = $self->context;
 
 	my $CO = $self->get_order;
-	if ($CO->can_autoship)
+	if ($CO->can_autoship and $self->customer->get_contact_data_value('autoprocess'))
 		{
 		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
 		return $self->SHIP_ORDER;
@@ -122,7 +123,7 @@ sub setup_address :Private
 	#DYNAMIC INPUT FIELDS VISIBILITY
 	unless ($Customer->login_level == 25)
 		{
-		$c->stash->{SHOW_PONUMBER} = $Customer->reqponum;
+		$c->stash->{SHOW_PONUMBER} = $Customer->get_contact_data_value('reqponum');
 		$c->stash->{SHOW_EXTID}    = $Customer->get_contact_data_value('reqextid');
 		$c->stash->{SHOW_CUSTREF2} = $Customer->get_contact_data_value('reqcustref2');
 		$c->stash->{SHOW_CUSTREF3} = $Customer->get_contact_data_value('reqcustref3');
@@ -874,7 +875,6 @@ sub populate_order :Private
 		## Ship To Section
 		$c->stash->{tocontact} = $CO->contactname;
 		$c->stash->{tophone} = $CO->contactphone;
-		#$c->stash->{tocustomernumber} = $CO->ordernumber;
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
 		$c->stash->{toAddress} = $CO->to_address;
@@ -1256,7 +1256,9 @@ sub SHIP_ORDER :Private
 	$params->{'carrier'} = $CO->extcarrier if $CO->extcarrier and !$params->{'carrier'};
 
 	$c->log->debug("CO->extcarrier      : " . $CO->extcarrier);
-	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'});
+	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'}) if $params->{'carrier'};
+	$c->log->debug("CO->extservice      : " . $CO->extservice);
+	$c->log->debug("params->{'service'} : " . $params->{'service'}) if $params->{'service'};
 
 	if (length $CO->extcarrier == 0 or length $params->{'carrier'} == 0)
 		{
@@ -1303,7 +1305,7 @@ sub SHIP_ORDER :Private
 		my ($CustomerServiceID) = $params->{'customerserviceid'} =~ m/OTHER_(.*)/;
 		if ($CustomerServiceID eq 'NEW')
 			{
-			my $Other = $c->model("MyDBI::Other")->new();
+			my $Other = $c->model("MyDBI::Other")->new({});
 			$Other->insert({
 				'othername' => $params->{'other'},
 				'customerid' => $CustomerID,
@@ -1372,6 +1374,12 @@ sub SHIP_ORDER :Private
 				{
 				#$params = $self->GetCurrentPackage;
 				}
+
+			################################################
+			$params->{'enteredweight'} = $CO->total_weight;
+			$params->{'dimweight'} = $CO->total_dimweight;
+			$params->{'quantity'} = $CO->total_quantity;
+			################################################
 			}
 		elsif ($ServiceTypeID == 3000) ## Process LTL shipments
 			{
@@ -1394,11 +1402,13 @@ sub SHIP_ORDER :Private
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
 	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
 
+	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $self->customer, $CO) unless $params->{'customerserviceid'};
+
 	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
-	$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
+	#$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
 
 	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$self->customer->customerid);
-	$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
+	#$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
 
 	if ($ShippingData->{'decvalinsrate'})
 		{
@@ -1417,10 +1427,10 @@ sub SHIP_ORDER :Private
 		$CustomerService->{'meternumber'} = $ShippingData->{'meternumber'};
 		}
 
-	$c->log->debug("WEBACCOUNT: " . $CustomerService->{'webaccount'} . ", BILLINGACCOUNT: " . $CustomerService->{'webaccount'} . ", TPACCTNUMBER: " . $ShipmentData->{'tpacctnumber'});
+	#$c->log->debug("WEBACCOUNT: " . $CustomerService->{'webaccount'} . ", BILLINGACCOUNT: " . $CustomerService->{'webaccount'} . ", TPACCTNUMBER: " . $ShipmentData->{'tpacctnumber'});
 
 	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
-	$c->log->debug("SERVICE: " . Dumper $Service);
+	#$c->log->debug("SERVICE: " . Dumper $Service);
 
 	unless ($Service)
 		{
@@ -1467,37 +1477,31 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
 
-	my $Shipment = $Response->data;
+	my $Shipment = $Response->shipment;
 	unless ($Shipment)
 		{
 		$c->log->debug("ERROR: No response received. " . $Response->message);
 		return $self->display_error_details($Response->message);
 		}
 
+	my $PrinterString = $Response->printer_string;
+	#$c->log->debug("PrinterString: " . $PrinterString);
+
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
 	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
 	#$params = {%$params, %{$Shipment->{'_column_data'}}};
-	$c->log->debug(Dumper $Shipment->{'_column_data'});
+	#$c->log->debug("Shipment->{'_column_data'}: " . Dumper $Shipment->{'_column_data'});
 
 	$params->{'pickuprequest'} = $params->{'storepickuprequest'};
 
 	# Process good shipment
 
-	# If the customer has an email address, check to see if the shipment address is different # from the co address (and send an email, if it is)
-	my $ToEmail = $Customer->losspreventemail;
-	my $CustomerName = $Customer->customername;
-
-	if ($ToEmail)
+	# If the customer has an email address, check to see if the shipment address is different
+	# from the co address (and send an email, if it is)
+	if ($Customer->losspreventemail)
 		{
-		$self->IsShipmentModified(
-				$ToEmail,
-				$CustomerName,
-				$params->{'ordernumber'},
-				$params->{'active_username'},
-				$params->{'cotypeid'},
-				$ShipmentData
-			);
+		$self->CheckIfShipmentModified($ShipmentData);
 		}
 
 	# If the csid was changed from the defaultcsid log the activity in the notes table
@@ -1624,97 +1628,186 @@ sub SHIP_ORDER :Private
 		#############################################
 		# GENERATE LABEL TO PRINT
 		#############################################
-		$self->generate_label($Shipment,$Service);
+		$self->generate_label($Shipment, $Service, $PrinterString);
 		$c->stash(template => "templates/customer/order-label.tt");
 		}
 	}
 
-sub generate_label
+sub generate_label :Private
 	{
 	my $self = shift;
 	my $Shipment = shift;
 	my $Service = shift;
+	my $PrinterString = shift;
 
 	my $c = $self->context;
 	my $params = $c->req->params;
 	my $CO = $self->get_order;
 
+	#$c->log->debug("PrinterString    : " . $PrinterString);
+
 	my $ShipmentData = $self->BuildShipmentInfo;
 
-	# Alt SOP mangling
-	# if ( $CgiRef->{'usingaltsop'} )
-		# {
-		# $CgiRef->{'addressname'} = $self->GetAltSOPConsigneeName($CgiRef->{'customerserviceid'},$CgiRef->{'addressname'});
-		# }
-
-	$c->stash($params);
-	$c->stash->{fromAddress} = $Shipment->origin_address;
-	$c->stash->{toAddress} = $Shipment->destination_address;
-	$c->stash->{shipdate} = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
-	$c->stash->{tracking1} = $Shipment->tracking1;
-	$c->stash->{custnum} = $Shipment->custnum;
-
-	my $BillingAccount = $Shipment->billingaccount;
-	if (defined($BillingAccount) and $BillingAccount ne '')
+	## Alt SOP mangling
+	if ($params->{'usingaltsop'})
 		{
-		$c->stash->{billingtype} = "3RD PARTY";
+		$params->{'addressname'} = $self->API->get_alt_SOP_consignee_name($params->{'customerserviceid'},$params->{'addressname'});
+		}
+	if ($params->{'originalcoid'})
+		{
+		my $ParentCO = $c->model('MyDBI::CO')->find({ coid => $params->{'originalcoid'} });
+		$params->{'refnumber'} = $ParentCO->ordernumber if $ParentCO;
 		}
 	else
 		{
-		$c->stash->{billingtype} = "P/P";
+		$params->{'refnumber'} = $params->{'ordernumber'} || $CO->ordernumber;
 		}
 
-	if (defined($Shipment->dimweight) and $Shipment->dimweight == 0)
+	if ($params->{'ponumber'})
 		{
-		$c->stash->{dimweight} = undef;
+		$params->{'refnumber'} .= " - $params->{'ponumber'}";
 		}
-
-	$c->stash->{enteredweight} = $CO->total_weight;
-	$c->stash->{ponumber} = $Shipment->ponumber;
-	$c->stash->{tracking1} = $Shipment->tracking1;
-	$c->stash->{service} = uc($Service->{'servicename'});
-	$c->stash->{totalquantity} = $CO->total_quantity;
-
-	if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+	elsif ($params->{'custnum'})
 		{
-		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+		$params->{'refnumber'} .= " - $params->{'custnum'}";
 		}
 
-	######### TODO IMPLEMENT PARENT ORDER NUMBER AS REFNUMBER #########
-	# if ( defined($CgiRef->{'originalcoid'}) and $CgiRef->{'originalcoid'} ne '' )
-		# {
-		# my $ParentCO = new CO($self->{'dbref'}->{'aos'},$self->{'customer'});
-		# $ParentCO->Load($CgiRef->{'originalcoid'});
-		# $CgiRef->{'refnumber'} = $ParentCO->GetValueHashRef()->{'ordernumber'};
-		# }
-	# else
-		# {
-		# $CgiRef->{'refnumber'} = $CgiRef->{'ordernumber'};
-		# }
+	## Save EPL Print String On Server
+	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
 
-	# if ( defined($CgiRef->{'ponumber'}) and $CgiRef->{'ponumber'} ne '' )
-		# {
-		# $CgiRef->{'refnumber'} .= " - $CgiRef->{'ponumber'}";
-		# }
-	# elsif ( defined($CgiRef->{'custnum'}) and $CgiRef->{'custnum'} ne '' )
-		# {
-		# $CgiRef->{'refnumber'} .= " - $CgiRef->{'custnum'}";
-		# }
-	######################################################################
+	my $CustomerLabelType = $self->contact->label_type;
+	$CustomerLabelType = $self->customer->label_type unless $CustomerLabelType;
+	$CustomerLabelType = 'JPG' unless $CustomerLabelType;
 
-	my $refnumber = $CO->ordernumber;
-	if ( defined($CO->{'ponumber'}) and $CO->ponumber ne '' )
+	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
+
+	if ($CustomerLabelType =~ /JPG/i)
 		{
-		$refnumber .= " - " . $CO->{'ponumber'};
+		## Generate JPEG label image ##
+		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+
+		my $out_file = $Shipment->shipmentid . '.jpg';
+		my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
+		$c->log->debug("copyImgCommand: " . $copyImgCommand);
+
+		## Copy to Apache context path ##
+		system($copyImgCommand);
+
+		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
-	$c->stash->{refnumber} = $refnumber;
+	else
+		{
+		$c->stash($params);
+		$c->stash($Shipment->{_column_data});
+		$c->stash->{fromAddress}   = $Shipment->origin_address;
+		$c->stash->{toAddress}     = $Shipment->destination_address;
+		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
+		$c->stash->{tracking1}     = $Shipment->tracking1;
+		$c->stash->{custnum}       = $Shipment->custnum;
 
-	#$CgiRef = $self->ProcessPrinterStream($CgiRef);
+		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
+		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+		$c->stash->{enteredweight} = $CO->total_weight;
+		$c->stash->{ponumber}      = $Shipment->ponumber;
+		$c->stash->{tracking1}     = $Shipment->tracking1;
+		$c->stash->{service}       = uc($Service->{'servicename'});
+		$c->stash->{totalquantity} = $CO->total_quantity;
+		$c->stash->{refnumber}     = $params->{'refnumber'};
 
-	my $template = $params->{'carrier'} || 'default';
-	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+			{
+			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+			}
+
+		$self->ProcessPrinterStream($Shipment, $PrinterString);
+
+		my $template = $params->{'carrier'} || 'default';
+		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+		}
+
 	$c->stash(MEDIA_PRINT => 1);
 	$c->stash($params);
+	}
+
+sub ProcessPrinterStream
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $PrinterString = shift;
+
+	my $c = $self->context;
+	my $Contact = $self->contact;
+
+	# Label stub
+	if ( my $StubTemplate = $Contact->get_contact_data_value('labelstub') )
+		{
+		#$CgiRef->{'truncd_custnum'} = TruncString($CgiRef->{'custnum'},16);
+		#$CgiRef->{'truncd_addressname'} = TruncString($CgiRef->{'addressname'},16);
+		#$PrinterString = $self->InsertLabelStubStream($PrinterString,$StubTemplate,$CgiRef);
+		}
+
+	#if ( $CgiRef->{'dhl_intl_labels'} )
+	#	{
+	#	$PrinterString .= $CgiRef->{'dhl_intl_labels'};
+	#	}
+
+	# UCC 128 label handling
+	if ($Contact->get_contact_data_value('checkucc128'))
+		{
+		#my $UCC128 = new UCC128($self->{'dbref'}->{'aos'}, $self->{'customer'});
+		#if ( my $UCC128ID = $UCC128->GetUCC128ID($CgiRef->{'addressname'},$CgiRef->{'department'},$CgiRef->{'custnum'},$CgiRef->{'externalpk'}) )
+		#	{
+		#	$UCC128->Load($UCC128ID);
+		#	$PrinterString .= $self->BuildUCC128Label;
+		#	}
+		}
+
+	# Label stub
+	my $CustomerLabelType = $c->stash->{label_type};
+
+	if ($CustomerLabelType =~ /^zpl$/i)
+		{
+		require IntelliShip::EPL2TOZPL2;
+		my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
+		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
+		}
+
+	## Set Printer String Loop
+	my @PSLINES = split(/\n/,$PrinterString);
+
+	my $printerstring_loop = [];
+	foreach my $line (@PSLINES)
+		{
+		$line =~ s/"/\\"/sg;
+		$line =~ s/'//g;
+		push @$printerstring_loop, $line;
+		}
+
+	$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
+	$c->stash->{printerstring_loop} = $printerstring_loop;
+	$c->stash->{label_port} = 'LPT1';
+	}
+
+sub SaveStringToFile
+	{
+	my $self = shift;
+	my $FileName = shift;
+	my $FileString = shift;
+
+	return unless $FileName;
+	return unless $FileString;
+
+	$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
+	$self->context->log->debug("EPL File: " . $FileName);
+
+	my $FILE = new IO::File;
+	unless (open ($FILE,">$FileName"))
+		{
+		warn "\nLabel String Save Error: " . $!;
+		return;
+		}
+	print $FILE $FileString;
+	close $FILE;
 	}
 
 # Push all shipment charges onto a simple delimited string, for passing back so that all
@@ -1777,6 +1870,79 @@ sub BuildShipmentChargePassThru
 	return $ShipmentChargePassThru;
 	}
 
+sub BuildUCC128Label
+	{
+	my $self = shift;
+
+	my $Shipment;
+	# Build carrier routing stuff
+	my $Zip = $Shipment->{'addresszip'};
+	if ( $Zip =~ /(\d{5})-\d{4}/ ) { $Zip = $1 }
+	$Shipment->{'carrierroutingbc'} = '420' . $Zip;
+	$Shipment->{'carrierroutinghr'} = '(420) ' . $Zip;
+
+	# Build sscc stuff
+	my $SSCAIN = '00';
+
+	my $Sequence = $self->{'dbref'}->seqnumber($self->{'sequencename'});
+
+	my $Contact = new CONTACT($self->{'dbref'}, $self->{'customer'});
+	$Contact->Load($Shipment->{'contactid'});
+	my $EANUCCPrefix = $Contact->GetContactValue('eanuccprefix');
+
+	while ( length($Sequence . $EANUCCPrefix) < 17 ) { $Sequence = '0' . $Sequence }
+
+	my ($SeqFirst,$SeqLast16) = $Sequence =~ /(\d)(\d+)/;
+
+	my $BaseNumber = $SeqFirst . $EANUCCPrefix . $SeqLast16;
+	my @BaseNumbers = split(//,$BaseNumber);
+	pop(@BaseNumbers);
+	my $BaseOdd;
+	my $BaseEven;
+
+	while (@BaseNumbers)
+		{
+		$BaseOdd += shift(@BaseNumbers);
+		$BaseEven += shift(@BaseNumbers);
+		}
+
+	my $CheckDigit = 10 - ((($BaseOdd * 3) + $BaseEven) % 10);
+
+	$Shipment->{'ssccbc'} = $SSCAIN . $SeqFirst . $EANUCCPrefix . $SeqLast16 . $CheckDigit;
+	$Shipment->{'sscchr'} = "($SSCAIN) $SeqFirst $EANUCCPrefix $SeqLast16 $CheckDigit";
+
+	# Save sscc back to shipment
+	$Shipment->ssccnumber('',$Shipment->{'ssccbc'});
+	$Shipment->update;
+
+	my $UCC128Label;
+=as
+	# Build up UCC128 label stream
+	chop(my $CONF_DIRECTORY = "$config->{BASE_PATH}/conf/");
+	my $TEMPLATE_DIR = $CONF_DIRECTORY;
+	use DISPLAY;
+	my $DISPLAY = new DISPLAY($TEMPLATE_DIR);
+
+	my $RawString = $DISPLAY->TranslateTemplate($self->{'ucc128template'}, $Shipment);
+
+	$RawString =~ s/"/\\"/sg;
+	$RawString =~ s/'//g;
+
+	# Generate proper number of copies
+	for ( my $i = 1; $i <= $self->{'ucc128copies'}; $i ++ )
+		{
+		my @StringLines = split("\n",$RawString);
+
+		# Tag lines for web use
+		foreach my $Line (@StringLines)
+			{
+			$UCC128Label .= "$Line\n";
+			}
+		}
+=cut
+	return $UCC128Label;
+	}
+
 sub GetPackageRatios
 	{
 	my $self = shift;
@@ -1832,7 +1998,10 @@ sub BuildShipmentInfo
 
 	my $ShipmentData = { 'shipmentid' => $params->{'new_shipmentid'} };
 
+	$ShipmentData->{$_} = $params->{$_} foreach keys %$params;
+
 	my $FromAddress = $Customer->address;
+	$ShipmentData->{'shipasname'}           = $FromAddress->addressname;
 	$ShipmentData->{'customername'}         = $FromAddress->addressname;
 	$ShipmentData->{'branchaddress1'}       = $FromAddress->address1;
 	$ShipmentData->{'branchaddress2'}       = $FromAddress->address2;
@@ -1910,21 +2079,27 @@ sub BuildShipmentInfo
 	$ShipmentData->{'billingpostalcode'} = $params->{'billingpostalcode'};
 	$ShipmentData->{'tracking1'} = $params->{'tracking1'};
 	$ShipmentData->{'defaultcsid'} = $params->{'defaultcsid'};
-	$ShipmentData->{'carrier'} = $params->{'carrier'};
-	$ShipmentData->{'service'} = $params->{'service'};
-	$ShipmentData->{'quantity'} = $params->{'quantity'};
+
+	$ShipmentData->{'carrier'} = ($params->{'carrier'} ? $params->{'carrier'} : $CO->extcarrier);
+	$ShipmentData->{'service'} = ($params->{'service'} ? $params->{'service'} : $CO->extservice);
+
+	$ShipmentData->{'quantity'} = ($params->{'quantity'} ? $params->{'quantity'} : $CO->total_weight);
 	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
 	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
 	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
 	$ShipmentData->{'density'} = $params->{'density'};
 	$ShipmentData->{'ipaddress'} = $params->{'ipaddress'};
 	$ShipmentData->{'custnum'} = $params->{'custnum'};
-	$ShipmentData->{'shipasname'} = $params->{'customername'};
+
 	$ShipmentData->{'manualthirdparty'} = $params->{'manualthirdparty'};
 	$ShipmentData->{'originid'} = 3;
 	$ShipmentData->{'insurance'} = $params->{'insurance'};
-	$ShipmentData->{'oacontactname'} = $params->{'branchcontact'};
-	$ShipmentData->{'oacontactphone'} = $params->{'branchphone'};
+
+	$ShipmentData->{'branchcontact'}  = $Customer->contact;
+	$ShipmentData->{'oacontactname'}  = $Customer->contact;
+	$ShipmentData->{'branchphone'}    = $Customer->phone;
+	$ShipmentData->{'oacontactphone'} = $Customer->phone;
+
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};
 	$ShipmentData->{'dryicewt'} = $params->{'dryicewt'};
@@ -2032,24 +2207,23 @@ sub BuildShipmentInfo
 	return $ShipmentData;
 	}
 
-sub IsShipmentModified
+sub CheckIfShipmentModified
 	{
 	my $self = shift;
-	my ($COTypeID,$ShipmentData) = @_;
+	my $ShipmentData = shift;
 
 	# Load CO so we we can check against what was actually shipped.
 	my $CO = $self->get_order;
-	my $coid = '';
 
 	my $OriginalAddress = $CO->to_address;
 
-	if ($OriginalAddress->addressname ne $ShipmentData->{'addressname'} or
-		$OriginalAddress->address1 ne $ShipmentData->{'address1'} or
-		$OriginalAddress->address2 ne $ShipmentData->{'address2'} or
-		$OriginalAddress->city ne $ShipmentData->{'addresscity'} or
-		$OriginalAddress->state ne $ShipmentData->{'addressstate'} or
-		$OriginalAddress->zip ne $ShipmentData->{'addresszip'} or
-		$OriginalAddress->country ne $ShipmentData->{'addresscountry'})
+	if (   $OriginalAddress->addressname ne $ShipmentData->{'addressname'} 
+		or $OriginalAddress->address1 ne $ShipmentData->{'address1'}
+		or $OriginalAddress->address2 ne $ShipmentData->{'address2'}
+		or $OriginalAddress->city ne $ShipmentData->{'addresscity'}
+		or $OriginalAddress->state ne $ShipmentData->{'addressstate'}
+		or $OriginalAddress->zip ne $ShipmentData->{'addresszip'}
+		or $OriginalAddress->country ne $ShipmentData->{'addresscountry'})
 		{
 		$self->SendShipmentModifiedEmail($OriginalAddress,$ShipmentData);
 		}
@@ -2122,44 +2296,50 @@ sub set_required_fields :Private
 
 	my $requiredList = [];
 
+	my @custcondata_arr = $Customer->custcondata({ownertypeid => '1'});
+	my %customerRules = map { $_->datatypename => $_->value } @custcondata_arr;
+	#$c->log->debug("Customer->ID: " . $Customer->customerid . ", customerRules: " . Dumper %customerRules);
 	if (!$page or $page eq 'address')
 		{
 		$requiredList = [
-			{ name => 'fromemail', details => "{ email: false }"},
-			{ name => 'toname', details => "{ minlength: 2 }"},
+			{ name => 'fromemail',  details => "{ email: false }"},
+			{ name => 'toname',     details => "{ minlength: 2 }"},
 			{ name => 'toaddress1', details => "{ minlength: 2 }"},
-			{ name => 'tocity', details => " { minlength: 2 }"},
-			{ name => 'tostate', details => "{ minlength: 2 }"},
-			{ name => 'tozip', details => "{ minlength: 5 }"},
-			{ name => 'tocountry', details => "{ minlength: 2 }"},
-			{ name => 'tophone', details => "{ phone: false }"},
-			{ name => 'toemail', details => "{ email: false }"},
+			{ name => 'tocity',     details => " { minlength: 2 }"},
+			{ name => 'tostate',    details => "{ minlength: 2 }"},
+			{ name => 'tozip',      details => "{ minlength: 5 }"},
+			{ name => 'tocountry',  details => "{ minlength: 2 }"},
+			{ name => 'tophone',    details => "{ phone: false }"},
+			{ name => 'toemail',    details => "{ email: false }"},
 		];
 
 		unless ($Customer->login_level == 25)
 			{
 			if ($c->stash->{one_page})
 				{
-				push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
-				push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+				push(@$requiredList, { name => 'datetoship', details => "{ date: true }"})    if $customerRules{'reqdatetoship'} and $Customer->allowpostdating;
+				push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"})    if $customerRules{'reqdateneeded'};
+
+				push(@$requiredList, { name => 'ponumber',    details => "{ minlength: 2 }"}) if $customerRules{'reqponum'};
+				push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqordernumber'};
+				push(@$requiredList, { name => 'extid',    details => "{ minlength: 2 }"})    if $customerRules{'reqextid'};
+				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref2'};
+				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref3'};
 				}
 
-			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $Customer->reqcustnum;
-			push(@$requiredList, { name => 'ponumber', details => "{ minlength: 2 }"}) if $Customer->reqponum;
-			push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqordernumber');
-			push(@$requiredList, { name => 'extid', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqextid');
-			push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref2');
-			push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqcustref3');
-			push(@$requiredList, { name => 'fromdepartment', details => "{ minlength: 2 }"}) if $Customer->get_contact_data_value('reqdepartment');
+			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqcustnum'};
+			push(@$requiredList, { name => 'fromdepartment',   details => "{ minlength: 2 }"}) if $customerRules{'reqdepartment'};
 			}
 		}
+
 	if (!$page or $page eq 'shipment')
 		{
 		unless ($Customer->login_level == 25 or $c->stash->{one_page})
 			{
-			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $Customer->reqdatetoship and $Customer->allowpostdating;
-			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $Customer->reqdateneeded;
+			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $customerRules{'reqdatetoship'} and $Customer->allowpostdating;
+			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $customerRules{'reqdateneeded'};
 			}
+
 		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validate_package_details }"})
 		}
 
@@ -2200,17 +2380,16 @@ sub get_auto_order_number :Private
 	my $c = $self->context;
 	my $MyDBI = $c->model('MyDBI');
 	my $CustomerID = $self->customer->customerid;
-	$c->log->debug("get_auto_order_number IN ordernumber = $OrderNumber");
 
 	# see if a customer sequence exists for the order number
 	my $SQL = "SELECT count(*) from pg_class where relname = lower('ordernumber_" . $CustomerID . "_seq')";
 
-	$c->log->debug("SQL: " . $SQL);
+	#$c->log->debug("SQL: " . $SQL);
 
 	my $STH = $MyDBI->select($SQL);
 	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count(*)'};
 
-	# get order number if one is needed 
+	# get order number if one is needed
 	if ($HasAutoOrderNumber and !$OrderNumber)
 		{
 		my $sql = "SELECT nextval('ordernumber_" . $CustomerID . "_seq')";
@@ -2218,7 +2397,7 @@ sub get_auto_order_number :Private
 		$OrderNumber = "QS" . $sth->fetchrow(0)->{'nextval'};
 		}
 
-	$c->log->debug("HasAutoOrderNumber=$HasAutoOrderNumber, OUT ordernumber=$OrderNumber");
+	#$c->log->debug("HasAutoOrderNumber=$HasAutoOrderNumber, OUT ordernumber=$OrderNumber");
 
 	return $OrderNumber;
 	}

@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<co>
 
@@ -499,6 +503,18 @@ __PACKAGE__->table("co");
   is_nullable: 1
   size: 13
 
+=head2 oacontactname
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 100
+
+=head2 oacontactphone
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 100
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -668,6 +684,10 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 50 },
   "oaaddressid",
   { data_type => "varchar", is_nullable => 1, size => 13 },
+  "oacontactname",
+  { data_type => "varchar", is_nullable => 1, size => 100 },
+  "oacontactphone",
+  { data_type => "varchar", is_nullable => 1, size => 100 },
 );
 
 =head1 PRIMARY KEY
@@ -760,14 +780,20 @@ Composing rels: L</shipmentcoassocs> -> shipmentid
 __PACKAGE__->many_to_many("shipmentids", "shipmentcoassocs", "shipmentid");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9gb1XDCzBKUV29zu3sUxdg
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:YTQlIclxYtyEmFla5UMRWg
 
 sub set_datecreated
 	{
 	my $self = shift;
 	$self->datecreated('now');
 	}
+
+__PACKAGE__->belongs_to(
+	contact =>
+	"IntelliShip::SchemaClass::Result::Contact",
+	"contactid"
+	);
 
 __PACKAGE__->belongs_to(
 	to_address => 
@@ -958,7 +984,6 @@ sub delete_all_package_details
 sub can_autoship
 	{
 	my $self = shift;
-	return unless $self->customer->autoprocess;
 	return ($self->extcarrier ne '' and $self->extservice ne '' and $self->total_weight > 0);
 	}
 

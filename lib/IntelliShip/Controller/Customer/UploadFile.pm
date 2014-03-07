@@ -5,6 +5,8 @@ use Data::Dumper;
 use IntelliShip::DateUtils;
 use namespace::autoclean;
 
+require IntelliShip::Import::Orders;
+
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
 =head1 NAME
@@ -124,7 +126,7 @@ sub upload :Local
 		$c->stash->{MESSAGE} = "File Copy Error: " . $!;
 		$c->detach("setup",$params);
 		}
-
+=cut
 	if (system "/opt/engage/intelliship/html/uploadorders.sh $token_id")
 		{
 		$c->stash->{MESSAGE} = "Upload Order Error: " . $!;
@@ -140,9 +142,27 @@ sub upload :Local
 		$c->detach("setup",$params);
 		return;
 		}
+=cut
+	my $ImportHandler = IntelliShip::Import::Orders->new;
+	$ImportHandler->API($self->API);
+	$ImportHandler->context($self->context);
+	$ImportHandler->contact($self->contact);
+	$ImportHandler->customer($self->customer);
+	$ImportHandler->import_file($TMP_file);
+	$ImportHandler->import;
 
-	$c->log->debug("... File imported successfully");
-	$c->stash->{MESSAGE} = "File Imported Successfully";
+	my $msg;
+	if ($ImportHandler->has_errors)
+		{
+		$msg = $ImportHandler->errors->[0];
+		}
+	else
+		{
+		$msg = "File imported successfully";
+		}
+
+	$c->log->debug("... " . $msg);
+	$c->stash->{MESSAGE} = $msg;
 
 	$c->detach("setup",$params);
 	}

@@ -19,7 +19,7 @@
 			<td>&nbsp;</td>
 		</tr>
 		<tr>
-			<td><input type="text" class="broad_text" name="trackingnumber" id="trackingnumber"/></td>
+			<td><input type="text" class="broad-text" name="trackingnumber" id="trackingnumber"/></td>
 			<td><select name="csid" id="csid">
 				<option value="">-----</option>
 				[% FOREACH item IN carrierservice_list %]

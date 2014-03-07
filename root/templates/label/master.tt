@@ -10,6 +10,24 @@
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/print.css" media="print"/>
 		[% END %]
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
+		<script>
+		function print_label()
+			{
+			window.print();
+			}
+
+		function PrintLabel()
+			{
+			var fso = new ActiveXObject("Scripting.FileSystemObject");
+			var a = fso.CreateTextFile("[% labelport %]:", true);
+			[% FOREACH item IN printerstring_loop %]
+				a.Writeline("[% item.line %]");
+			[% END %]
+			a.Close();
+			//InitLegend();
+			//Submit();
+			}
+		</script>
 	</head>
 
 	<body>

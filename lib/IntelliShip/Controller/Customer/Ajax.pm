@@ -153,11 +153,10 @@ sub get_address_detail :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $co = $self->context->model('MyDBI::Co')->find({coid => $c->req->params->{'referenceid'}});
+	my $Address = $self->context->model('MyDBI::Address')->find({addressid => $co->addressid}) if $co->addressid;; 
 
-	my $addressid = $c->req->params->{'addressid'};
-	my $Address = $self->context->model('MyDBI::Address')->find({addressid => $addressid});
-
-	return { address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country };
+	return { addressname => $Address->addressname, address1 => $Address->address1, address2 => $Address->address2, city => $Address->city, state => $Address->state, zip => $Address->zip, country => $Address->country, contactname => $co->contactname, contactphone =>$co->contactphone, extcustnum => $co->extcustnum, shipmentnotification => $co->shipmentnotification};
 	}
 
 sub validate_department :Private

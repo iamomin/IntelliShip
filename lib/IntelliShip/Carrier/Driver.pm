@@ -3,19 +3,23 @@ package IntelliShip::Carrier::Driver;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::Carrier::EPLTemplates;
 
 BEGIN {
 
 	extends 'IntelliShip::Errors';
 
-	has 'CO' => ( is => 'rw' );
-	has 'SHIPMENT' => ( is => 'rw' );
-	has 'context' => ( is => 'rw' );
-	has 'customer' => ( is => 'rw' );
-	has 'DB_ref' => ( is => 'rw' );
-	has 'data' => ( is => 'rw' );
+	has 'CO'              => ( is => 'rw' );
+	has 'SHIPMENT'        => ( is => 'rw' );
+	has 'context'         => ( is => 'rw' );
+	has 'customer'        => ( is => 'rw' );
+	has 'DB_ref'          => ( is => 'rw' );
+	has 'data'            => ( is => 'rw' );
 	has 'customerservice' => ( is => 'rw' );
-	has 'service' => ( is => 'rw' );
+	has 'service'         => ( is => 'rw' );
+	has 'response'        => ( is => 'rw' );
+
+	$Data::Dumper::Sortkeys = 1;
 	}
 
 sub model
@@ -63,45 +67,67 @@ sub void_shipment
 	$CO->update;
 	}
 
+sub get_EPL
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $carrier = $self->CO->extcarrier;
+	return unless $carrier;
+	my $method = 'get_' . uc($carrier) . '_EPL';
+
+	#$self->log("... $method: " . Dumper $DATA);
+
+	my $EPL = '';
+	#eval {
+		$EPL = IntelliShip::Carrier::EPLTemplates->$method($DATA);
+	#};
+
+	#if ($@)
+	#	{
+	#	$self->log("EPLTemplates: $method Errors : " . $!);
+	#	}
+
+	return $EPL;
+	}
+
 sub TagPrinterString
 	{
 	my $self = shift;
-	#my ($string,$ordernumber) = @_;
-	#my $tagged_string = '';
-    #
-	#my @string_lines = split("\n",$string);
-    #
-	## Check for order stream, and add it to main stream, if it exists
-	#my $CO = new CO($self->{'dbref'}, $self->{'customer'});
-	#my ($ID) = $CO->GetCurrentCOID($ordernumber,$self->{'customer'}->GetValueHashRef()->{'customerid'});
-	#$CO->Load($ID);
-    #
-	#my $Stream = $CO->GetValueHashRef()->{'stream'};
-	#if ( defined($Stream) && $Stream ne '' )
-	#{
-	#	push(@string_lines,split(/\~/,$Stream));
-	#}
-    #
-	#$tagged_string .= ".\n";
-	#foreach my $line (@string_lines)
-	#{
-	#	# Need to reverse print direction of local labels
-	#	if ( $line eq 'ZT' )
-	#	{
-	#		$line = 'ZB';
-	#	}
-    #
-	#	if ( $line =~ /Svcs/ || $line =~ /TRCK/ || $line =~ /CLS/ )
-	#	{
-	#		next;
-	#	}	
-	#	$tagged_string .= "$line\n";
-	#}
-    #
-	#$tagged_string .= "R0,0\n";
-	#$tagged_string .= ".\n\n";
-    #
-	#return $tagged_string;
+	my $string = shift;
+	my $ordernumber = shift;
+
+	# Check for order stream, and add it to main stream, if it exists
+	my $CO = $self->CO;
+
+	my @string_lines = split("\n",$string);
+
+	my $Stream = $CO->stream;
+	if ($Stream)
+		{
+		push(@string_lines,split(/\~/,$Stream));
+		}
+
+	my $tagged_string = ".\n";
+	foreach my $line (@string_lines)
+		{
+		# Need to reverse print direction of local labels
+		if ( $line eq 'ZT' )
+			{
+			$line = 'ZB';
+			}
+		if ( $line =~ /Svcs/ || $line =~ /TRCK/ || $line =~ /CLS/ )
+			{
+			next;
+			}
+
+		$tagged_string .= "$line\n";
+		}
+
+	$tagged_string .= "R0,0\n";
+	$tagged_string .= ".\n\n";
+
+	return $tagged_string;
 	}
 
 sub insert_shipment
@@ -210,6 +236,10 @@ sub insert_shipment
 	$Shipment->insert;
 
 	$self->log('New shipment inserted, ID: ' . $Shipment->shipmentid);
+
+	$shipmentData->{'shipmentid'} = $Shipment->shipmentid;
+
+	$self->response->shipment($Shipment);
 
 	return $Shipment;
 	}

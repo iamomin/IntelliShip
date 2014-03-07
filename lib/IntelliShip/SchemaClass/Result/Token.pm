@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<token>
 
@@ -109,10 +113,10 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("tokenid");
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HIjVjhRdv3gBoykhxO314g
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7g//DuxxW5a41+sE7Tjn6w
  
-__PACKAGE__->has_one(
+__PACKAGE__->belongs_to(
 	customer =>
 		'IntelliShip::SchemaClass::Result::Customer',
 		'customerid'

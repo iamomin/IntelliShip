@@ -11,7 +11,7 @@
 	<tr>
 	<td colspan="3">
 		<div style="position: relative;">
-			<hr class="solid_line"/>
+			<hr class="solid-line"/>
 			<img style="z-index: 1; float: left; margin-left: 14%; margin-top: -0.2%;" src="/static/images/thumbs-up-grayed.png">
 			<img style="z-index: 1; float: left; margin-left: 31%; margin-top: -0.2%;" src="/static/images/navigation-down.png">
 		</div>
@@ -29,7 +29,7 @@
 <table class="app">
 	<caption>SHIPMENT DETAIL:</caption>
 	<tr>
-		<td><label for="datetoship" class="bold_text">Estimated Ship Date</label></td>
+		<td><label for="datetoship" class="bold-text">Estimated Ship Date</label></td>
 		<td><label for="dateneeded">Due Date</label></td>
 		[% IF PONUMBER %]<td><label for="ponumber">PO Number</label></td>[% END %]
 		[% IF one_page %]
@@ -74,9 +74,9 @@
 			<td><label><input type="checkbox" name="quantityxweight" id="quantityxweight" value="1"/><span><label for="quantityxweight">Multiply Qty*Weight</label></span></label></td>
 			<td><label><input type="checkbox" name="printpackinglist" id="printpackinglist"/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
 			<td><label>Total Weight:</label></td>
-			<td><input type="text" class="default_text" style="border: none; width: 40px;" id="totalweight" name="totalweight" value="0.00" readonly /></td>
+			<td><input type="text" class="bold-text" style="border: none; width: 40px;" id="totalweight" name="totalweight" value="0.00" readonly /></td>
 			<td><label>Total Packages:</label></td>
-			<td><input type="text" class="default_text" style="border: none; width: 20px;" id="totalpackages" name="totalpackages" value="1" readonly /></td>
+			<td><input type="text" class="bold-text" style="border: none; width: 20px;" id="totalpackages" name="totalpackages" value="1" readonly /></td>
 			<td><label for="insurance">Declared Value:</label></td>
 			<td><input type="text" name="insurance" id="insurance" value="0.00" style="width: 40px;"/></td>
 			<td><label for="freightinsurance">Freight Insurance:</label></td>
@@ -118,9 +118,9 @@
 			<table>
 			<tr>
 				<td style="width: 01%"><input  type="hidden" name="type_1" id="type_1" value="package"/><label><input type="checkbox" id="ppd_1" value="package"/><span></span></label></td>
-				<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1"/></td>
+				<td style="width: 04%"><input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" value="1"/></td>
 				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_1" id="sku_1"/></td>
-				<td style="width: 11%"><input  type="text" class="broad_text" name="description_1" id="description_1"/></td>
+				<td style="width: 11%"><input  type="text" class="broad-text" name="description_1" id="description_1"/></td>
 				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
@@ -140,9 +140,9 @@
 			<table>
 			<tr>
 				<td style="width: 01%"><input  type="hidden" name="type_2" id="type_2" value="product"/><label><input type="checkbox" id="ppd_2" value="product"/><span></span></label></td>
-				<td style="width: 04%"><input  type="text" class="total_pkg_detail float_right" name="quantity_2" id="quantity_2" value="1"/></td>
+				<td style="width: 04%"><input  type="text" class="total_pkg_detail float-right" name="quantity_2" id="quantity_2" value="1"/></td>
 				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_2" id="sku_2"/></td>
-				<td style="width: 11%"><input  type="text" class="broad_text" name="description_2" id="description_2"/></td>
+				<td style="width: 11%"><input  type="text" class="broad-text" name="description_2" id="description_2"/></td>
 				<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_product_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_2" id="weight_2"/></td>
 				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2"/></td>
@@ -184,7 +184,7 @@
 			[% package_detail_section %]
 		[% ELSE %]
 			<tr>
-				<td><input  type="text" class="total_pkg_detail float_right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;"/></td>
+				<td><input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;"/></td>
 				<td><input  type="text" style="width: 150px;" name="description_1" id="description_1"/></td>
 				<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 				<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;"/></td>
@@ -227,12 +227,12 @@
 	</div>
 
 [% UNLESS one_page %]
-	<div class="float_left">
+	<div class="float-left">
 		<div id="special-requirements"></div>
 		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
 	</div>
 
-	<div class="float_right">
+	<div class="float-right">
 		<table><tr>
 		<td><div class="gray-backward"><input type="button" value="PREVIOUS" onclick="javascript:history.back();"/></div></td>
 		<td>&nbsp;</td>
@@ -337,8 +337,7 @@
 	$('#freightinsurance').change(distribute_insurance_among_products);
 
 [% UNLESS one_page %]
-	[% FOREACH item IN requiredfield_list %]
-		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
 
 	$("#frm_shipment").submit(function() {
@@ -352,7 +351,6 @@
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();
 		[% END %]
-
 		/*
 		calculate_total_weight();
 		calculate_total_packages();

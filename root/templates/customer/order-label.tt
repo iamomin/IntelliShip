@@ -1,31 +1,107 @@
 <h2 class="DoNotPrint">SHIP A PACKAGE</h2>
 
-<form id="frm_label" name="frm_label" action="/customer/dashboard">
+<script src="/static/js/customer-order.js"></script>
 
-	<div id="label" class="Print">[% LABEL %]</div>
+<form id="frm_label" name="frm_label" action="/customer/dashboard">
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
+
+	<div id="label" class="Print">
+	[% IF LABEL_IMG %]
+		<center><img id="lblimg" src="[% LABEL_IMG %]"></center>
+	[% ELSE %]
+		[% LABEL %]
+	[% END %]
+	</div>
 
 	<table class="center DoNotPrint">
 		<tr>
-			<td><input type="button" class="blue" value="PRINT" onclick="window.print();"/></td>
+			<td><input type="button" class="blue" value="PRINT" onclick="Print();"/></td>
 		</tr>
 	</table>
 
 </form>
 
 <script>
-function Print()
-	{
-	var printWin = window.open('', '', 'left=0,top=0,width=400,height=500,status=0');
-	var printWin = $("#label").html();
-	printWin.document.write(printWin);
-	printWin.focus();
-	printWin.print();
-	printWin.close();
-	}
+[% IF printerstring_loop %]
+
+	function PrintEplLabel()
+		{
+		try
+			{
+			var fso = new ActiveXObject("Scripting.FileSystemObject");
+			var a = fso.CreateTextFile("[% label_port %]:", true);
+			[% FOREACH line IN printerstring_loop %]
+			a.Writeline("[% line %]");[% END %]
+			a.Close();
+			}
+
+		catch(err)
+			{
+			var messageStr="<div class='error'>Sorry, this browser won't support EPL label print</div>";
+			showMessage(messageStr, "Label Print Error");
+			return false;
+			}
+
+		MarkShipmentAsPrinted(function() {
+			window.location.href = window.location.href;
+			});
+		}
+
+[% ELSE %]
+
+	function PrintImageLabel()
+		{
+		var lblimg = document.getElementById("lblimg");
+		lblimg.onload =  function(){
+			var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+			 var lbl = $("#label").html();
+			 var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){window.print(); window.close(); }" +"</script" + ">";
+			 lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + " " + strScript + "</body></html>";
+			 printWin.document.write(lbl);
+			 printWin.document.close();
+			 printWin.focus();
+			 //printWin.print();
+			 //printWin.document.getElementById("lblimg").onload = function(){window.print(); };
+			 //printWin.close();
+
+
+			MarkShipmentAsPrinted(function() {
+				window.location.href = window.location.href;
+				});
+			}
+		}
+
+                var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+                var lbl = $("#label").html();
+                lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + "</body></html>";
+                printWin.document.write(lbl);
+                printWin.focus();
+                printWin.print();
+                printWin.close();
+
+                MarkShipmentAsPrinted(function() {
+                        window.location.href = window.location.href;
+                        });
+
+                }
+
+[% END %]
 
 $(document).ready(function(){
-	print();
-	//[% IF totalquantity > 0 %]window.print(false);[% END %]
+	[% IF printerstring_loop %]
+	PrintEplLabel();
+	[% ELSE %]	
+	PrintImageLabel();
+	[% END %]
+	[% IF printerstring_loop %]PrintEplLabel();
+        [% ELSE %]
+        if(document.getElementById("lblimg").complete){
+            PrintImageLabel();
+        }else{
+            setTimeout(PrintImageLabel(), 2000);
+        }
+        [% END %]
 	});
 
 </script>

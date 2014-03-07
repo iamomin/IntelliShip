@@ -16,7 +16,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 	waiting_COUNT++;
 	$('#preload').show();
 
-	var data_string = "ajax=1";
+	var data_string = "ajax=1&eventtimestamp=" + jQuery.now();
 	if (type_value) data_string += '&type='+ (type_value ? type_value : 'HTML');
 	if (action_value) data_string += '&action='+ action_value;
 
@@ -286,9 +286,11 @@ function markRequiredFields(requireFields)
 
 			if ( property == "email" || property == "phone" || property == "date" || property == "numeric"){
 				$('#'+control).prop("required", value);
+				if (value != false) $('label[for="'+control+'"]').addClass('require');
 				}
 				else{
 					$('#'+control).prop("required", true);
+					$('label[for="'+control+'"]').addClass('require');
 				}
 			});
 		});

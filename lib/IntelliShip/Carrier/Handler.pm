@@ -19,8 +19,9 @@ BEGIN {
 	}
 
 my $carriers = {
+	'UPS' => &CARRIER_UPS,
+	'USPS' => &CARRIER_USPS,
 	'FEDEX' => &CARRIER_FEDEX,
-	'UPS' => 'UPS',
 	};
 
 sub model
@@ -137,6 +138,7 @@ sub process_request
 	###############################################
 
 	my $Driver = $DriverModule->new;
+	$Driver->response($Response);
 	$Driver->DB_ref($myDBI);
 	$Driver->CO($self->CO);
 	$Driver->SHIPMENT($self->SHIPMENT);
@@ -150,10 +152,8 @@ sub process_request
 	# GET POPULATED RESPONSE OBJECT
 	###############################################
 
-	my $response;
-
 	eval {
-	$response = $Driver->process_request;
+	$Driver->process_request;
 	};
 
 	if ($@)
@@ -175,7 +175,6 @@ sub process_request
 
 	$Response->response_code('0');
 	$Response->is_success(1);
-	$Response->data($response);
 
 	return $Response;
 	}

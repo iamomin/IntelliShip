@@ -3,8 +3,8 @@
 
 <table class="center">
 	<tr>
-		<td><label for="barChart" class="bold_text">Monthly Orders</label></td>
-		<td><label for="pieChart" class="bold_text">My Orders</label></td>
+		<td><label for="barChart" class="bold-text">Monthly Orders</label></td>
+		<td><label for="pieChart" class="bold-text">My Orders</label></td>
 	</tr>
 	<tr>
 		<td><canvas id="barChart" width="400" height="300"></canvas></td>
@@ -14,8 +14,8 @@
 	<tr><td colspan=2><hr></td></tr>
 	<tr><td colspan=2>&nbsp;</td></tr>
 	<tr>
-		<td><label for="doughnutChart" class="bold_text">Total System Orders</label></td>
-		<td><label for="lineChart" class="bold_text">Orders Vs Revenue</label></td>
+		<td><label for="doughnutChart" class="bold-text">Total System Orders</label></td>
+		<td><label for="lineChart" class="bold-text">Orders Vs Revenue</label></td>
 	</tr>
 	<tr>
 		<td><canvas id="doughnutChart" width="300" height="300"></canvas></td>

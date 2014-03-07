@@ -146,8 +146,7 @@ sub GetCSShippingValues {
 
 	# csid = Singular csid (r)
 
-	my $CS =
-	  new ARRS::CUSTOMERSERVICE( $self->{'dbref'}, $self->{'contact'} );
+	my $CS = new ARRS::CUSTOMERSERVICE( $self->{'dbref'}, $self->{'contact'} );
 
 	return $CS->GetCSShippingValues($Ref);
 }

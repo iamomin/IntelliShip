@@ -17,14 +17,14 @@
 		<form id="frm_company_management" method="post" action="/customer/settings/company/setup">
 			<input type="hidden" id="do" name="do" value="setup"/>
 			<input type="hidden" id="customerid" name="customerid"/>
-			<div class="float_right">
+			<div class="float-right">
 			<table><tr>
-				<td><label class="float_right" for="customer">Customer Name:</label></td>
+				<td><label class="float-right" for="customer">Customer Name:</label></td>
 				<td><input type="text" class="text" id="customername" name="customername" /></td>
 				<td><input type="button" class="blue" id="customer_edit" value="Edit" /></td>
 				<td><input type="button" class="green" id="customer_add" value="Add New" /></td>
 				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
-				<td><label class="float_right" for="records_per_page">Records Per Page:</label></td>
+				<td><label class="float-right" for="records_per_page">Records Per Page:</label></td>
 				<td>
 					<select name="records_per_page" id="records_per_page">
 					[% FOREACH item IN recordsperpage_list %]
@@ -46,9 +46,9 @@
 
 
 	[% UNLESS ajax %]<div id="divCustomerList">[% END %]
-	
+
 	<div style="clear: both;">&nbsp;</div>
-	<table class="float_right"><tr><td><b>Customer Count: [% customer_count %]</b></tr></td></table>
+	<table class="float-right"><tr><td><b>Customer Count: [% customer_count %]</b></td></tr></table>
 
 	<div id="myShipments">
 	<table>
@@ -96,7 +96,7 @@
 						return;
 						}
 					$('#preload').show();
-					$.getJSON( "/customer/settings/company/ajax", request, function( data, status, xhr ) {
+					$.getJSON( "/customer/settings/company/ajax?type=JSON&action=search_customer", request, function( data, status, xhr ) {
 						cachedCustomers[ term ] = data;
 						response( data );
 						$('#preload').hide();
@@ -106,6 +106,7 @@
 
 		$("#customer_edit").click(function() {
 			if (validateForm({ customername : { minlength: 1, description: "Please specify valid User Name" } })) {
+				$("#customerid").val("");
 				$("#frm_company_management").submit();
 				}
 			});
@@ -122,8 +123,8 @@
 			});
 
 		$("#customers").change(function() {
-			var query_param = "&customername=1&page=" + $(this).val();
-			send_ajax_request('divCustomerList', 'HTML', 'settings/company', '', query_param);
+			var query_param = "&customer_ids=" + $(this).val();
+			send_ajax_request('divCustomerList', 'HTML', 'settings/company', 'get_customers', query_param);
 			});
 
 		$("#frm_company_management").submit(function() {
@@ -154,72 +155,114 @@
 			   <li><a href="#company-profile">Profile</a></li>
 			   <li><a href="#company-rules">Rules</a></li>
                <li><a href="#company-settings">Default Settings</a></li>
-			   <li><a href="#company-contacts">Contacts</a></li>
+			   <li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
 			</ul>
             <div id="company-profile">
-				<table class="center_app">
+				<table class="center-app">
 					<tr>
-						<td><label class="float_right" for="customerid">Company ID:</label></td>
+						<td><label class="float-right" for="customerid">Company ID:</label></td>
                         <td>[% customerid %]</td>
 
-						<td><label class="float_right" for="auxaddressname">Form Name:</label></td>
-						<td><input type="text" name="auxaddressname" id="auxaddressname" value="[%customerAuxFormAddress.addressname%]"  class="broad_text" maxlength="50"></td>
+						<td><label class="float-right" for="phone">Phone:</label></td>
+						<td><input type="text" class="broad-text" name="phone" id="phone" value="[% phone %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="customername">Company Name:</label></td>
-						<td><input type="text" name="customername" id="customername" value="[%customername%]"  class="broad_text"></td>
+						<td><label class="float-right" for="customername">Company Name:</label></td>
+						<td><input type="text" name="customername" id="customername" value="[%customername%]"  class="broad-text"></td>
 
-						<td><label class="float_right" for="auxaddress1">Form Address 1:</label></td>
-						<td><input type="text" class="broad_text" name="auxaddress1" id="auxaddress1" value="[% customerAuxFormAddress.address1 %]"></td>
+						<td><label class="float-right" for="email">Email:</label></td>
+						<td><input type="text" class="broad-text" name="email" id="email" value="[% email %]"/></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="username">User Name:</label></td>
+						<td><label class="float-right" for="username">User Name:</label></td>
 						<td>
-							[% IF ENABLE_EDIT %]
-								<input type="text" name="username" id="username" value="[% username %]" class="broad_text" onchange="validateCustomerUsername();">
-							[% ELSE %]
+							[% IF READONLY %]
 								[% username %]
+							[% ELSE %]
+								<input type="text" name="username" id="username" value="[% username %]" class="broad-text" onchange="validateCustomerUsername();">
 							[% END %]
 						</td>
-						<td><label class="float_right" for="auxaddress2">Form Address 2:</label></td>
-						<td><input type="text" class="broad_text" name="auxaddress2" id="auxaddress2" value="[% customerAuxFormAddress.address2 %]"></td>
+						<td><label class="float-right" for="fax">Fax:</label></td>
+						<td><input type="text" class="broad-text" name="fax" id="fax" value="[% fax %]"/></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="password">Password:</label></td>
+						<td><label class="float-right" for="password">Password:</label></td>
 						<td>
-							[%IF ENABLE_EDIT %]
-								<input type="text" class="broad_text" name="password" id="password" value="[% password %]"/>
-							[%ELSE%]
+							[%IF READONLY %]
 								[%password%]
+							[%ELSE%]
+								<input type="text" class="broad-text" name="password" id="password" value="[% password %]"/>
 							[%END%]
 						</td>
-						<td><label class="float_right" for="auxcity">Form City:</label></td>
-						<td><input type="text" class="broad_text" name="auxcity" id="auxcity" value="[% customerAuxFormAddress.city %]"></td>
+						<td><label class="float-right" for="ssnein">EIN:</label></td>
+						<td><input type="text" class="broad-text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="halocustomerid">HALO Company ID:</td>
-						<td><input type="text" name="halocustomerid" id="halocustomerid" value="[%halocustomerid%]"  class="broad_text"></td>
-						<td><label class="float_right" for="auxstate">Form State:</label></td>
+						<td><label class="float-right" for="halocustomerid">HALO Company ID:</td>
+						<td><input type="text" name="halocustomerid" id="halocustomerid" value="[%halocustomerid%]"  class="broad-text"></td>
+						<td><label class="float-right" for="auxaddressname">Form Name:</label></td>
+						<td><input type="text" name="auxaddressname" id="auxaddressname" value="[%customerAuxFormAddress.addressname%]"  class="broad-text" maxlength="50"></td>
+					</tr>
+					<tr>
+						<td><label class="float-right" for="address1">Address 1:</label></td>
+						<td><input type="text" class="broad-text" name="address1" id="address1" value="[% customerAddress.address1 %]"></td>
+						<td><label class="float-right" for="auxaddress1">Form Address 1:</label></td>
+						<td><input type="text" class="broad-text" name="auxaddress1" id="auxaddress1" value="[% customerAuxFormAddress.address1 %]"></td>
+					</tr>
+					<tr>
+						<td><label class="float-right" for="address2">Address 2:</label></td>
+						<td><input type="text" class="broad-text" name="address2" id="address2" value="[% customerAddress.address2 %]"></td>
+						<td><label class="float-right" for="auxaddress2">Form Address 2:</label></td>
+						<td><input type="text" class="broad-text" name="auxaddress2" id="auxaddress2" value="[% customerAuxFormAddress.address2 %]"></td>
+					</tr>
+					<tr>
+						<td><label class="float-right">
+							<label for="city">City</label>,
+							<label for="state">State</label>,
+							<label for="zip">Zip</label>:
+							</label>
+						</td>
+						<td>
+							<input type="text" name="city" id="city" style="width: 100px;" value="[% customerAddress.city %]"/>
+							<label>
+								<select name="state" id="state" style="width: 50px;>
+								[% FOREACH item IN statelist_loop %]
+									<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+								[% END %]
+								</select>
+							</label>
+							<input type="text" name="zip" id="zip" style="width: 55px;" value="[% customerAddress.zip %]"/>
+						</td>
+						<td><label class="float-right">
+							<label for="auxcity">Form City</label>,
+							<label for="auxstate">State</label>,
+							<label for="auxzip">Zip</label>:
+							</label>
+						</td>
+						<td>
+						<input type="text" name="auxcity" id="auxcity" style="width: 100px;" value="[% customerAuxFormAddress.city %]" />
+						<label>
+							<select name="auxstate" id="auxstate" style="width: 50px;>
+							[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == customerAuxFormAddress.state %] SELECTED [% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+							[% END %]
+							</select>
+						</label>
+						<input type="text" name="auxzip" id="auxzip"  style="width: 55px;" value="[% customerAuxFormAddress.zip %]">
+						<td>
+					</tr>
+					<tr>
+						<td><label class="float-right" for="country">Country:</label></td>
 						<td>
 						<label>
-							<select name="auxstate" id="auxstate">
-							[% FOREACH item IN statelist_loop %]
-								<option value="[% item.value %]" [% IF item.value == customerAuxFormAddress.state %] selected [% END %]>[% item.name %]</option>
+							<select name="country" id="country">
+							[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]" [% (item.value == customerAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
 							[% END %]
 							</select>
 						</label>
 						</td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="address1">Address 1:</label></td>
-						<td><input type="text" class="broad_text" name="address1" id="address1" value="[% customerAddress.address1 %]"></td>
-						<td><label class="float_right" for="auxzip">Form Zipcode:</label></td>
-						<td><input type="text" class="broad_text" name="auxzip" id="auxzip" value="[% customerAuxFormAddress.zip %]"></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td><input type="text" class="broad_text" name="address2" id="address2" value="[% customerAddress.address2 %]"></td>
-						<td><label class="float_right" for="auxcountry">Form Country:</label></td>
+						<td><label class="float-right" for="auxcountry">Form Country:</label></td>
 						<td>
 						<label>
 							<select name="auxcountry" id="auxcountry">
@@ -231,84 +274,15 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="city">City:</label></td>
-						<td><input type="text" class="broad_text" name="city" id="city" value="[% customerAddress.city %]"></td>
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="state">State:</label></td>
-						<td>
-						<label>
-							<select name="state" id="state">
-							[% FOREACH item IN statelist_loop %]
-								<option value="[% item.value %]" [% IF item.value == customerAddress.state %] selected [% END %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
-						</td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="zip">Zipcode:</label></td>
-						<td><input type="text" class="broad_text" name="zip" id="zip" value="[% customerAddress.zip %]"></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="country">Country:</label></td>
-						<td>
-						<label>
-							<select name="country" id="country">
-							[% FOREACH item IN countrylist_loop %]
-								<option value="[% item.value %]" [% (item.value == customerAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
-						</td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="contact">Contact:</label></td>
-						<td><input type="text" class="broad_text" name="contact" id="contact" value="[% contact %]"></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					</tr>
-						<td><label class="float_right" for="phone">Phone:</label></td>
-						<td><input type="text" class="broad_text" name="phone" id="phone" value="[% phone %]"></td>
-
-						<td></td>
-						<td></td>
-					<tr>
-					<tr>
-						<td><label class="float_right" for="email">Email:</label></td>
-						<td><input type="text" class="broad_text" name="email" id="email" value="[% email %]"/></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="fax">Fax:</label></td>
-						<td><input type="text" class="broad_text" name="fax" id="fax" value="[% fax %]"/></td>
-
-						<td></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><label class="float_right" for="ssnein">EIN:</label></td>
-						<td><input type="text" class="broad_text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
-
+						<td><label class="float-right" for="contact">Contact:</label></td>
+						<td><input type="text" class="broad-text" name="contact" id="contact" value="[% contact %]"></td>
 						<td></td>
 						<td></td>
 					</tr>
 				</table>
 			</div>
 			<div id="company-rules">
-				<table class="center_app css3-checkboxes">
+				<table class="center-app css3-checkboxes">
 					[% count=0 %]
 					<tr>
 						[% FOREACH item IN companysetting_loop %]
@@ -330,9 +304,9 @@
 				</table>
 			</div>
 			<div id="company-settings">
-				<table class="center_app">
+				<table class="center-app">
 					<tr>
-						<td><label class="float_right" for="cust_sopid">SOP:</label></td>
+						<td><label class="float-right" for="cust_sopid">SOP:</label></td>
 						<td>
 						<label>
 							<select name="cust_sopid" id="cust_sopid">
@@ -343,18 +317,18 @@
 						</label>
 						</td>
 
-						<td><label class="float_right" for="cust_losspreventemail">Loss Prevention Email:</label></td>
-						<td><input type="text" class="broad_text" name="cust_losspreventemail" id="cust_losspreventemail" value="[% losspreventemail %]"></td>
+						<td><label class="float-right" for="cust_losspreventemail">Loss Prevention Email:</label></td>
+						<td><input type="text" class="broad-text" name="cust_losspreventemail" id="cust_losspreventemail" value="[% losspreventemail %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_clientid">Client ID:</label></td>
-						<td><input type="text" class="broad_text" name="cust_clientid" id="cust_clientid" value="[% cust_clientid %]"></td>
+						<td><label class="float-right" for="cust_clientid">Client ID:</label></td>
+						<td><input type="text" class="broad-text" name="cust_clientid" id="cust_clientid" value="[% cust_clientid %]"></td>
 
-						<td><label class="float_right" for="cust_losspreventemailordercreate">Loss Prevention Email<br/>(Manual Order Create):</label></td>
-						<td><input type="text" class="broad_text" name="cust_losspreventemailordercreate" id="cust_losspreventemailordercreate" value="[% losspreventemailordercreate %]"></td>
+						<td><label class="float-right" for="cust_losspreventemailordercreate">Loss Prevention Email<br/>(Manual Order Create):</label></td>
+						<td><input type="text" class="broad-text" name="cust_losspreventemailordercreate" id="cust_losspreventemailordercreate" value="[% losspreventemailordercreate %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_sopid">Weight Type:</label></td>
+						<td><label class="float-right" for="cust_sopid">Weight Type:</label></td>
 						<td>
 						<label>
 							<select name="weighttype" id="weighttype">
@@ -365,7 +339,7 @@
 						</label>
 						</td>
 
-						<td><label class="float_right" for="cust_dropshipcapability">Dropship Capability:</label></td>
+						<td><label class="float-right" for="cust_dropshipcapability">Dropship Capability:</label></td>
 						<td>
 						<label>
 							<select name="cust_dropshipcapability" id="cust_dropshipcapability">
@@ -377,10 +351,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="labelbanner">Label Banner:</label></td>
-						<td><input type="text" class="broad_text" name="labelbanner" id="labelbanner" value="[% labelbanner %]"></td>
+						<td><label class="float-right" for="labelbanner">Label Banner:</label></td>
+						<td><input type="text" class="broad-text" name="labelbanner" id="labelbanner" value="[% labelbanner %]"></td>
 
-						<td><label class="float_right" for="cust_loginlevel">Login Level:</label></td>
+						<td><label class="float-right" for="cust_loginlevel">Login Level:</label></td>
 						<td>
 						<label>
 							<select name="cust_loginlevel" id="cust_loginlevel">
@@ -392,10 +366,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_labelport">Label Printer Port:</label></td>
-						<td><input type="text" class="broad_text" name="cust_labelport" id="cust_labelport" value="[% labelport %]"></td>
+						<td><label class="float-right" for="cust_labelport">Label Printer Port:</label></td>
+						<td><input type="text" class="broad-text" name="cust_labelport" id="cust_labelport" value="[% labelport %]"></td>
 
-						<td><label class="float_right" for="cust_quotemarkup">Display Quote Markup:</label></td>
+						<td><label class="float-right" for="cust_quotemarkup">Display Quote Markup:</label></td>
 						<td>
 						<label>
 							<select name="cust_quotemarkup" id="cust_quotemarkup">
@@ -407,10 +381,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_defaultthermalcount">Thermal Label Count:</label></td>
-						<td><input type="text" class="broad_text" name="cust_defaultthermalcount" id="cust_defaultthermalcount" value="[% defaultthermalcount %]"></td>
+						<td><label class="float-right" for="cust_defaultthermalcount">Thermal Label Count:</label></td>
+						<td><input type="text" class="broad-text" name="cust_defaultthermalcount" id="cust_defaultthermalcount" value="[% defaultthermalcount %]"></td>
 
-						<td><label class="float_right" for="cust_quotemarkupdefault">Quote Markup Default:</label></td>
+						<td><label class="float-right" for="cust_quotemarkupdefault">Quote Markup Default:</label></td>
 						<td>
 						<label>
 							<select name="cust_quotemarkupdefault" id="cust_quotemarkupdefault">
@@ -422,21 +396,21 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_bolcount8_5x11">8.5x11 BOL Label Count:</label></td>
-						<td><input type="text" class="broad_text" name="cust_bolcount8_5x11" id="cust_bolcount8_5x11" value="[% bolcount8_5x11 %]"></td>
+						<td><label class="float-right" for="cust_bolcount8_5x11">8.5x11 BOL Label Count:</label></td>
+						<td><input type="text" class="broad-text" name="cust_bolcount8_5x11" id="cust_bolcount8_5x11" value="[% bolcount8_5x11 %]"></td>
 
-						<td><label class="float_right" for="cust_defaultfreightclass">Default Freight Class:</label></td>
-						<td><input type="text" class="broad_text" name="cust_defaultfreightclass" id="cust_defaultfreightclass" value="[% cust_defaultfreightclass %]"></td>
+						<td><label class="float-right" for="cust_defaultfreightclass">Default Freight Class:</label></td>
+						<td><input type="text" class="broad-text" name="cust_defaultfreightclass" id="cust_defaultfreightclass" value="[% cust_defaultfreightclass %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_bolcountthermal">Thermal BOL Label Count:</label></td>
-						<td><input type="text" class="broad_text" name="cust_bolcountthermal" id="cust_bolcountthermal" value="[% bolcountthermal %]"></td>
+						<td><label class="float-right" for="cust_bolcountthermal">Thermal BOL Label Count:</label></td>
+						<td><input type="text" class="broad-text" name="cust_bolcountthermal" id="cust_bolcountthermal" value="[% bolcountthermal %]"></td>
 
-						<td><label class="float_right" for="cust_cycletimethreshold">Cycle Time Threshold:</label></td>
-						<td><input type="text" class="broad_text" name="cust_cycletimethreshold" id="cust_cycletimethreshold" value="[% cust_cycletimethreshold %]"></td>
+						<td><label class="float-right" for="cust_cycletimethreshold">Cycle Time Threshold:</label></td>
+						<td><input type="text" class="broad-text" name="cust_cycletimethreshold" id="cust_cycletimethreshold" value="[% cust_cycletimethreshold %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_boltype">BOL Type:</label></td>
+						<td><label class="float-right" for="cust_boltype">BOL Type:</label></td>
 						<td>
 						<label>
 							<select name="cust_boltype" id="cust_boltype">
@@ -447,11 +421,11 @@
 						</label>
 						</td>
 
-						<td><label class="float_right" for="cust_duedateoffsetequal">Due Date Offset (equal):</label></td>
-						<td><input type="text" class="broad_text" name="cust_duedateoffsetequal" id="cust_duedateoffsetequal" value="[% cust_duedateoffsetequal %]"></td>
+						<td><label class="float-right" for="cust_duedateoffsetequal">Due Date Offset (equal):</label></td>
+						<td><input type="text" class="broad-text" name="cust_duedateoffsetequal" id="cust_duedateoffsetequal" value="[% cust_duedateoffsetequal %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_boldetail">BOL Detail:</label></td>
+						<td><label class="float-right" for="cust_boldetail">BOL Detail:</label></td>
 						<td>
 						<label>
 							<select name="cust_boldetail" id="cust_boldetail">
@@ -462,14 +436,14 @@
 						</label>
 						</td>
 
-						<td><label class="float_right" for="cust_duedateoffsetlessthan">Due Date Offset (less than):</label></td>
-						<td><input type="text" class="broad_text" name="cust_duedateoffsetlessthan" id="cust_duedateoffsetlessthan" value="[% cust_duedateoffsetlessthan %]"></td>
+						<td><label class="float-right" for="cust_duedateoffsetlessthan">Due Date Offset (less than):</label></td>
+						<td><input type="text" class="broad-text" name="cust_duedateoffsetlessthan" id="cust_duedateoffsetlessthan" value="[% cust_duedateoffsetlessthan %]"></td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_autoreporttime">Auto Report Times:</label></td>
-						<td><input type="text" class="broad_text" name="cust_autoreporttime" id="cust_autoreporttime" value="[% autoreporttime %]"></td>
+						<td><label class="float-right" for="cust_autoreporttime">Auto Report Times:</label></td>
+						<td><input type="text" class="broad-text" name="cust_autoreporttime" id="cust_autoreporttime" value="[% autoreporttime %]"></td>
 
-						<td><label class="float_right" for="cust_defaultpackageunittype">Default Package Unit Type:</label></td>
+						<td><label class="float-right" for="cust_defaultpackageunittype">Default Package Unit Type:</label></td>
 						<td>
 						<label>
 							<select name="cust_defaultpackageunittype" id="cust_defaultpackageunittype">
@@ -481,10 +455,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_autoreportemail">Auto Report Email:</label></td>
-						<td><input type="text" class="broad_text" name="cust_autoreportemail" id="cust_autoreportemail" value="[% autoreportemail %]"></td>
+						<td><label class="float-right" for="cust_autoreportemail">Auto Report Email:</label></td>
+						<td><input type="text" class="broad-text" name="cust_autoreportemail" id="cust_autoreportemail" value="[% autoreportemail %]"></td>
 
-						<td><label class="float_right" for="cust_defaultproductunittype">Default Product Unit Type:</label></td>
+						<td><label class="float-right" for="cust_defaultproductunittype">Default Product Unit Type:</label></td>
 						<td>
 						<label>
 							<select name="cust_defaultproductunittype" id="cust_defaultproductunittype">
@@ -496,10 +470,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_autoreportinterval">Auto Report Interval:</label></td>
-						<td><input type="text" class="broad_text" name="cust_autoreportinterval" id="cust_autoreportinterval" value="[% autoreportinterval %]"></td>
+						<td><label class="float-right" for="cust_autoreportinterval">Auto Report Interval:</label></td>
+						<td><input type="text" class="broad-text" name="cust_autoreportinterval" id="cust_autoreportinterval" value="[% autoreportinterval %]"></td>
 
-						<td><label class="float_right" for="cust_poinstructions">PO Instructions:</label></td>
+						<td><label class="float-right" for="cust_poinstructions">PO Instructions:</label></td>
 						<td>
 						<label>
 							<select name="cust_poinstructions" id="cust_poinstructions">
@@ -511,10 +485,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_proxyip">Proxy IP:</label></td>
-						<td><input type="text" class="broad_text" name="cust_proxyip" id="cust_proxyip" value="[% proxyip %]"></td>
+						<td><label class="float-right" for="cust_proxyip">Proxy IP:</label></td>
+						<td><input type="text" class="broad-text" name="cust_proxyip" id="cust_proxyip" value="[% proxyip %]"></td>
 
-						<td><label class="float_right" for="cust_poauthtype">PO Auth Type:</label></td>
+						<td><label class="float-right" for="cust_poauthtype">PO Auth Type:</label></td>
 						<td>
 						<label>
 							<select name="cust_poauthtype" id="cust_poauthtype">
@@ -526,10 +500,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_proxyport">Proxy Port:</label></td>
-						<td><input type="text" class="broad_text" name="cust_proxyport" id="cust_proxyport" value="[% proxyport %]"></td>
+						<td><label class="float-right" for="cust_proxyport">Proxy Port:</label></td>
+						<td><input type="text" class="broad-text" name="cust_proxyport" id="cust_proxyport" value="[% proxyport %]"></td>
 
-						<td><label class="float_right" for="cust_companytype">Company Type:</label></td>
+						<td><label class="float-right" for="cust_companytype">Company Type:</label></td>
 						<td>
 						<label>
 							<select name="cust_companytype" id="cust_companytype">
@@ -541,10 +515,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_smartaddressbook">Smart Address Book:</label></td>
-						<td><input type="text" class="broad_text" name="cust_smartaddressbook" id="cust_smartaddressbook" value="[% smartaddressbook %]"></td>
+						<td><label class="float-right" for="cust_smartaddressbook">Smart Address Book:</label></td>
+						<td><input type="text" class="broad-text" name="cust_smartaddressbook" id="cust_smartaddressbook" value="[% smartaddressbook %]"></td>
 
-						<td><label class="float_right" for="cust_defaultpackinglist">Print Packing List:</label></td>
+						<td><label class="float-right" for="cust_defaultpackinglist">Print Packing List:</label></td>
 						<td>
 						<label>
 							<select name="cust_defaultpackinglist" id="cust_defaultpackinglist">
@@ -556,10 +530,10 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_apiaosaddress">API Intelliship Address:</label></td>
-						<td><input type="text" class="broad_text" name="cust_apiaosaddress" id="cust_apiaosaddress" value="[% apiaosaddress %]"></td>
+						<td><label class="float-right" for="cust_apiaosaddress">API Intelliship Address:</label></td>
+						<td><input type="text" class="broad-text" name="cust_apiaosaddress" id="cust_apiaosaddress" value="[% apiaosaddress %]"></td>
 
-						<td><label class="float_right" for="cust_packinglist">Packing List:</label></td>
+						<td><label class="float-right" for="cust_packinglist">Packing List:</label></td>
 						<td>
 						<label>
 							<select name="cust_packinglist" id="cust_packinglist">
@@ -571,7 +545,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_fceditability">Freight Charge Editablity:</label></td>
+						<td><label class="float-right" for="cust_fceditability">Freight Charge Editablity:</label></td>
 						<td>
 						<label>
 							<select name="cust_fceditability" id="cust_fceditability">
@@ -582,7 +556,7 @@
 						</label>
 						</td>
 
-						<td><label class="float_right" for="cust_liveproduct">Live Product TAB:</label></td>
+						<td><label class="float-right" for="cust_liveproduct">Live Product TAB:</label></td>
 						<td>
 						<label>
 							<select name="cust_liveproduct" id="cust_liveproduct">
@@ -594,7 +568,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_labelstub">Label Stub:</label></td>
+						<td><label class="float-right" for="cust_labelstub">Label Stub:</label></td>
 						<td>
 						<label>
 							<select name="cust_labelstub" id="cust_labelstub">
@@ -605,8 +579,8 @@
 						</label>
 						</td>
 
-						<td><label class="float_right" for="shipmentmarkup">Shipment Markup:</label></td>
-						<td><input type="text" class="broad_text" style="width:50%" name="shipmentmarkup" id="shipmentmarkup" value="[% shipmentmarkup %]">
+						<td><label class="float-right" for="shipmentmarkup">Shipment Markup:</label></td>
+						<td><input type="text" class="broad-text" style="width:50%" name="shipmentmarkup" id="shipmentmarkup" value="[% shipmentmarkup %]">
 							<select name="shipmentmarkuptype" id="shipmentmarkuptype">
 							[% FOREACH item IN markuptype_loop %]
 								<option value="[% item.value %]" [% (item.value == shipmentmarkuptype) ? 'SELECTED' : '' %]>[% item.name %]</option>
@@ -616,27 +590,27 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_chargediffflat">Charge Difference<br/>Threshold (flat):</label></td>
-						<td><input type="text" class="broad_text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
+						<td><label class="float-right" for="cust_chargediffflat">Charge Difference<br/>Threshold (flat):</label></td>
+						<td><input type="text" class="broad-text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
 
-						<td><label class="float_right" for="assmarkup">Assessorial Markup:</label></td>
-						<td><input type="text" class="broad_text" style="width:50%" name="assmarkup" id="assmarkup" value="[% assmarkup %]">
+						<td><label class="float-right" for="assmarkup">Assessorial Markup:</label></td>
+						<td><input type="text" class="broad-text" style="width:50%" name="assmarkup" id="assmarkup" value="[% assmarkup %]">
 							<select name="assmarkuptype" id="assmarkuptype">
 							[% FOREACH item IN markuptype_loop %]
 								<option value="[% item.value %]" [% (item.value == assmarkuptype) ? 'SELECTED' : '' %]>[% item.name %]</option>
 							[% END %]
-							</select>						
+							</select>
 						</label>
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_chargediffpct">Charge Difference<br/>Threshold (%/min):</label></td>
-						<td><input type="text" class="broad_text" style="width:43%" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]">&nbsp;&nbsp;
-							<input type="text" class="broad_text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
+						<td><label class="float-right" for="cust_chargediffpct">Charge Difference<br/>Threshold (%/min):</label></td>
+						<td><input type="text" class="broad-text" style="width:43%" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]">&nbsp;&nbsp;
+							<input type="text" class="broad-text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
 
-						<td><label class="float_right" for="cust_labeltype">Label Type:</label></td>
+						<td><label class="float-right" for="cust_labeltype">Label Type:</label></td>
 						<td class="css3-radios">
-							[% FOREACH item IN labeltype_loop %]				
+							[% FOREACH item IN labeltype_loop %]
 								<label>
 								<input type="radio" name="cust_labeltype" id="[% item.value %]" value="[% item.value %]" [% item.value == cust_labeltype ? 'CHECKED' : ''%]/>
 								<span><label for="[% item.value %]">[% item.name %]</label></span>
@@ -645,7 +619,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float_right" for="cust_returncapability">Return Capability:</label></td>
+						<td><label class="float-right" for="cust_returncapability">Return Capability:</label></td>
 						<td>
 						<label>
 							<select name="cust_returncapability" id="cust_returncapability">
@@ -661,21 +635,20 @@
 					</tr>
 				</table>
 			</div>
-			<div id="company-contacts">
-				[% CONTACT_INFORMATION %]
-			</div>
+			<div id="company-contacts"></div>
 		</div>
 
 		<center><input type="submit" class="green" id="update_customer" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 	</form>
 
 	<script>
-	
+
 		function validateCustomerUsername(){
+			if($("#username").val.length == 0) return ;
 			var customerid = $("#customerid").val();
 			var username = $("#username").val();
 			var query  = '&customerid=' + customerid + '&username=' + username;
-			
+
 			if (username == undefined || username.length == 0) return;
 			send_ajax_request('', 'JSON', 'settings/company', 'validate_customer_username', query, function() {
 			if (JSON_data.COUNT > 0) {
@@ -692,6 +665,7 @@
 	$("#frm_setup_customer").submit(function () {
 		var requireHash = {
 			customername : { minlength: 1, description: "Please specify customer name" },
+			username     : { minlength: 1, description: "Please specify username" },
 			address1     : { minlength: 1, description: "Please specify address" },
 			city         : { minlength: 1, description: "Please specify city" },
 			state        : { minlength: 1, description: "Please specify state" },
@@ -699,6 +673,8 @@
 			};
 
 		if (validateForm(requireHash)) {
+			$("#company-contacts-tab").tabs({ disabled: true });
+			$("#company-settings" ).tabs({ disabled: true });
 			$('#company-contacts').html('');
 			$("#update_customer").val("Please Wait...");
 			$("#update_customer").attr("disabled", true);
@@ -711,6 +687,19 @@
 	$(document).ready(function(){
 		$("#update_customer").attr("disabled", false);
 		});
+		
+	$("#company-contacts-tab").click(function() {
+		if($("#company-contacts").html().length == 0){
+			$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
+			getCustomerContacts();
+			}
+		});
+
+	function getCustomerContacts()
+		{
+		var params = 'customerid='+$("#customerid").val();
+		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
+		}
 	</script>
 
 	[% END %]
@@ -733,8 +722,31 @@
 	[% IF CONTACT_LIST %]
 
 	[% UNLESS ajax %]<div id="divContactList">[% END %]
-	<h3>Contact Count [% contact_count %]</h3>
-	<div id="myShipments">
+		[% IF SHOW_PAGINATION %]
+		<table class="float-right"><tr>			
+			<td><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></td>
+			<td><label class="float-right" for="records_per_page">Records Per Page:</td>
+			<td>
+				<select name="records_per_page" id="records_per_page" onchange="recordsPerPage();">
+				[% FOREACH item IN recordsperpage_list %]
+					<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
+				[% END %]
+				</select>
+			</td>
+			<td>
+				<select name="contact_page" id="contact_page" onchange="contactPage();">
+				[% FOREACH ids IN contact_batches %]
+					<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
+				[% END %]
+				</select>
+			</td>
+
+		</tr></table>
+		[% END %]
+
+	[% IF contact_batches %]<div id="myShipments">[% END %]
+	<div style="clear: both;">&nbsp;</div>
+	<div class="float-right"><b>Contact Count: [% contact_count %]</b></div>
 	<table>
 		<tr>
 			<th>&nbsp;</th>
@@ -758,13 +770,11 @@
 			<tr><td colspan="6">No contacts found</td></tr>
 		[% END %]
 	</table>
+	[% IF contact_batches %]</div>[% END %]
 
-	<center><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></center>
-	[% UNLESS ajax %]
-	</div>
+	[% IF SHOW_PAGINATION %]
 
 	<script>
-
 	function editContact(contactid) {
 		var customerid = $("#customerid").val();
 		var params = '&do=&SHOW_RULES=1&customerid=' + customerid + '&contactid=' + contactid;
@@ -778,6 +788,40 @@
 		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', params, '');
 		}
 
+	function recordsPerPage() {
+		var customerid = $("#customerid").val();
+		var query_param = "customerid=" + customerid + "&records_per_page=" + $("#records_per_page").val();
+		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', query_param);
+		}
+
+	function contactPage() {
+		var query_param = "contact_ids=" + $("#contact_page").val();
+		$("#myShipments").html('');
+		send_ajax_request('myShipments', 'HTML', 'settings/company', 'get_customer_contacts', query_param);
+		}
+/*
+	function searchContact(){
+		autocomplete({
+			minLength: 2,
+			source: function ( request, response ) {
+					alert("00000000000000000");
+					var term = request.term;
+					if ( term in cachedContactnames ) {
+						response( cachedContactnames[ term ] );
+						return;
+						}
+					$('#preload').show();
+					var customerid = $("#customerid").val();
+					alert(customerid);
+					$.getJSON( "/customer/settings/company/ajax?action=search_contact&customerid=" + customerid, request, function( data, status, xhr ) {
+						cachedContactnames[ term ] = data;
+						response( data );
+						$('#preload').hide();
+						});
+					}
+			});
+		}
+*/
 	</script>
 	[% END %]
 	[% END %]

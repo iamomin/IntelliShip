@@ -1,11 +1,5 @@
 var requiredFieldHash = {};
 
-function print_label()
-	{
-	window.print();
-	//Submit();
-	}
-
 function check_due_date()
 	{
 	var ShipDate = $('#datetoship').val();
@@ -675,23 +669,34 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
-function populate_ship_to_address(addressid)
+function populate_ship_to_address(referenceid)
 	{
-	var query_param = '&addressid='+addressid;
+	var query_param = '&referenceid='+referenceid;
 
-	if (addressid.length > 0) {
+	if (referenceid.length > 0) {
 		resetCSList();
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
-			if (JSON_data.address1) {
+			if (JSON_data.addressname) {
+				$("#toname").val(JSON_data.addressname);
 				$("#toaddress1").val(JSON_data.address1);
 				$("#toaddress2").val(JSON_data.address2);
 				$("#tocity").val(JSON_data.city);
 				$("#tostate").val(JSON_data.state);
 				$("#tozip").val(JSON_data.zip);
 				$("#tocountry").val(JSON_data.country);
+				$("#tocontact").val(JSON_data.contactname);
+				$("#tophone").val(JSON_data.contactphone);
+				$("#tocustomernumber").val(JSON_data.extcustnum);
+				$("#toemail").val(JSON_data.shipmentnotification);
 				}
 			});
 		}
+	}
+
+function MarkShipmentAsPrinted(callback_function)
+	{
+	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + $("#shipmentid").val();
+	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, callback_function);
 	}
 
 function CSSelectFunctions()

@@ -24,8 +24,8 @@ sub get_carrier_service_name
 	my $CSID = shift;
 
 	my $http_request = {
-		action	=>	'GetCarrierServiceName',
-		csid		=>	$CSID,
+		action	=> 'GetCarrierServiceName',
+		csid	=> $CSID,
 	};
 
 	my $response = $self->APIRequest($http_request);
@@ -89,8 +89,8 @@ sub get_CS_shipping_values
 
 	my $http_request = {
 		action => 'GetCSShippingValues',
-		customerserviceid => $CSID,
 		customerid => $CustomerID,
+		csid => $CSID,
 		};
 
 	return $self->APIRequest($http_request);
@@ -203,12 +203,13 @@ sub get_carrrier_service_rate_list
 		}
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
-	#$self->context->log->debug("API REQUEST: ". Dumper($request));
 
-	warn "========================= Start of ARRS request:  ".time;
+	#$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
+	############################################
 	my $response = $self->APIRequest($request);
-	warn "========================= End of ARRS request:  ".time;
-	#$self->context->log->debug("response :". Dumper($response));
+	############################################
+	$self->context->log->debug("GetCSList API RESPONSE:". Dumper($response));
+
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
 
@@ -306,6 +307,21 @@ sub get_carrier_ID
 		});
 
 	return $SRef->{'carrierid'};
+	}
+
+# Bolt alt sop account number after the customer name
+# The alt sop account number is assumed to be always attached to the CS
+sub get_alt_SOP_consignee_name
+	{
+	my $self = shift;
+	my ($CustomerID, $CSID, $ConsigneeName) = @_;
+
+	if (my $AltSOPAcctNum = $self->get_CS_value($CSID, 'thirdpartyacct', $CustomerID))
+		{
+		$ConsigneeName .= " ($AltSOPAcctNum)";
+		}
+
+	return $ConsigneeName;
 	}
 
 __PACKAGE__->meta()->make_immutable();

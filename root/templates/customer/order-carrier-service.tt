@@ -10,7 +10,7 @@
 	<tr>
 	<td colspan="3">
 		<div style="position: relative;">
-			<hr class="solid_line"/>
+			<hr class="solid-line"/>
 			<img style="z-index: 1; float: left; margin-left: 14%; margin-top: -0.2%;" src="/static/images/thumbs-up-grayed.png">
 			<img style="z-index: 1; float: left; margin-left: 31%; margin-top: -0.2%;" src="/static/images/thumbs-up-grayed.png">
 			<img style="z-index: 1; float: left; margin-left: 31%; margin-top: -0.2%;" src="/static/images/navigation-down.png">
@@ -28,10 +28,10 @@
 		<div id="row">
 			<div class="add-summary">
 			<table class="summary-app">
-				<caption>ADDRESS SUMMARY:<div class="float_right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
+				<caption>ADDRESS SUMMARY:<div class="float-right"><a id="edit_address" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
-					<td class="float_right bold_text">SHIP FROM </th><td>[% customer.customername %]</td>
-					<td class="float_right bold_text">SHIP TO </th><td>[% toAddress.addressname %]</td>
+					<td class="float-right bold-text">SHIP FROM </th><td>[% customer.customername %]</td>
+					<td class="float-right bold-text">SHIP TO </th><td>[% toAddress.addressname %]</td>
 				</tr>
 				<tr>
 					<td>&nbsp;</td><td>[% customerAddress.address1 %][% IF customerAddress.address2 %], [% customerAddress.address2 %][% END %]</td>
@@ -58,25 +58,25 @@
 
 			<div class="sd-summary">
 			<table class="summary-app">
-				<caption>SHIPMENT DETAIL SUMMARY:<div class="float_right"><a id="edit_shipment" href="javascript:void(0);">edit</a></div></caption>
+				<caption>SHIPMENT DETAIL SUMMARY:<div class="float-right"><a id="edit_shipment" href="javascript:void(0);">edit</a></div></caption>
 				<tr>
-					<td class="text_align_right bold_text" style="width: 50%">Due Date: </td>
+					<td class="text-align-right bold-text" style="width: 50%">Due Date: </td>
 					<td>[% dateneeded %]</td>
 				</tr>
 				<tr>
-					<td class="text_align_right bold_text" style="width: 50%">#Packages: </td>
+					<td class="text-align-right bold-text" style="width: 50%">#Packages: </td>
 					<td>[% total_packages %]</td>
 				</tr>
 				<tr>
-					<td class="text_align_right bold_text" style="width: 50%">Total Weight: </td>
+					<td class="text-align-right bold-text" style="width: 50%">Total Weight: </td>
 					<td>[% total_weight ? total_weight : '0.00' %]</td>
 				</tr>
 				<tr>
-					<td class="text_align_right bold_text" style="width: 50%">Declared Value: </td>
+					<td class="text-align-right bold-text" style="width: 50%">Declared Value: </td>
 					<td>[% insurance ? insurance : '0.00' %]</td>
 				</tr>
 				<tr>
-					<td class="text_align_right bold_text" style="width: 50%">International: </td>
+					<td class="text-align-right bold-text" style="width: 50%">International: </td>
 					<td>[% international ? international : '0.00' %]</td>
 				</tr>
 				<tr>
@@ -146,7 +146,7 @@
 	<table>
 		<tr>
 		[% IF SHOW_NEW_OTHER_CARRIER %]
-		<td><label for="othercarrier" class="float_right">New Other Carrier:</label></td>
+		<td><label for="othercarrier" class="float-right">New Other Carrier:</label></td>
 		<td><input type="text" class="text" name="othercarrier" id="othercarrier"/></td>
 		[% END %]
 [% IF one_page %]
@@ -160,11 +160,11 @@
 	<div style="clear: both;">&nbsp;</div>
 
 [% UNLESS one_page %]
-	<div class="float_left">
+	<div class="float-left">
 		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
 		<div id="special-requirements"></div>
 	</div>
-	<div class="float_right">
+	<div class="float-right">
 		<table><tr>
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
 		<td>&nbsp;</td>
@@ -212,9 +212,9 @@
 		var carrier = $("#carrier").val();
 		if (carrier == undefined) return;
 
-		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS')
+		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
 			{
-			showError("Only FedEx/UPS is supported, please select correct carrier from list.");
+			showError("Only FedEx/UPS/USPS is supported, please select correct carrier from list.");
 			return;
 			}
 

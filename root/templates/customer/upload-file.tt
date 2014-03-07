@@ -31,10 +31,10 @@
 
 	<form id="frm_upload_order" enctype="multipart/form-data" method="post" action="/customer/uploadfile/upload">
 		<input type="hidden" name="type" id="type" value="[% type %]"/> 
-		<table class="center_app">
+		<table class="center-app">
 			<tr><td colspan="2"><div class="validateTips"></div></td></tr>
 			<tr>
-				<td><label for="orderfile" class="float_right">Order File :</label></td>
+				<td><label for="orderfile" class="float-right">Order File :</label></td>
 				<td><input type="file" class="button" name="orderfile" id="orderfile" size="35"/></td>
 			</tr>
 		</table>

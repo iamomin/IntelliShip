@@ -34,21 +34,21 @@
 		<div class="error">[% ERR_MESSAGE %]</div>
 	[% END %]
 
-	<table class="center_app">
+	<table class="center-app">
 		<tr>
 			<td colspan=2>&nbsp;</td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="oldpassword">Old Password:</td>
-			<td><input type="password" class="broad_text" id="oldpassword" name="oldpassword" autocomplete="off" maxlength="50" /></td>
+			<td><label class="float-right" for="oldpassword">Old Password:</td>
+			<td><input type="password" class="broad-text" id="oldpassword" name="oldpassword" autocomplete="off" maxlength="50" /></td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="newpassword1">New Password:</td>
-			<td align="left"><input type="password" class="broad_text" id="newpassword1" name="newpassword1" autocomplete="off" maxlength="50" /></td>
+			<td><label class="float-right" for="newpassword1">New Password:</td>
+			<td align="left"><input type="password" class="broad-text" id="newpassword1" name="newpassword1" autocomplete="off" maxlength="50" /></td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="newpassword2">Confirm New Password:</td>
-			<td align="left"><input type="password" class="broad_text" id="newpassword2" name="newpassword2" autocomplete="off" maxlength="50" /></td>
+			<td><label class="float-right" for="newpassword2">Confirm New Password:</td>
+			<td align="left"><input type="password" class="broad-text" id="newpassword2" name="newpassword2" autocomplete="off" maxlength="50" /></td>
 		</tr>
 		<tr>
 			<td colspan=2>&nbsp;</td>
@@ -98,14 +98,14 @@ $(document).ready(function(){
 		<form id="frm_sku_management" method="post" action="/customer/settings/productskusetup">
 			<input type="hidden" id="do" name="do" value="setup"/>
 			<input type="hidden" id="productskuid" name="productskuid"/>
-			<div class="float_right">
+			<div class="float-right">
 			<table><tr>
-				<td><label class="float_right" for="productsku">SKU:</td>
+				<td><label class="float-right" for="productsku">SKU:</td>
 				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
 				<td><input type="button" class="blue" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="green" id="sku_add" value="Add New" /></td>
 				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
-				<td><label class="float_right" for="records_per_page">Records Per Page:</td>
+				<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 				<td>
 					<select name="records_per_page" id="records_per_page">
 					[% FOREACH item IN recordsperpage_list %]
@@ -125,8 +125,9 @@ $(document).ready(function(){
 		</form>
 	[% END %]
 
-	[% UNLESS ajax %]<div id="divSkuList">[% END %]
-	<h3>Product Sku Count [% productsku_count %]</h3>
+	[% UNLESS ajax %]<div id="myShipments">[% END %]
+	<div style="clear: both;">&nbsp;</div>
+	<div class="float-right"><b>Product Sku Count: [% productsku_count %]</b></div>
 
 	<table class="report">
 		<tr>
@@ -145,7 +146,7 @@ $(document).ready(function(){
 		</tr>
 		[% FOREACH item IN productskulist %]
 			<tr>
-				<td><a href="javascript:editProductSku('[% item.productskuid %]');">edit</a></td>
+				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
 				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
@@ -232,7 +233,7 @@ $(document).ready(function(){
 	<form id="frm_setup_sku" method="post" action="/customer/settings/productskusetup">
 		<input type="hidden" id="do" name="do" value="configure"/>
 		<input type="hidden" id="productskuid" name="productskuid" value="[% productskuid %]"/>
-		<table class="center_app">
+		<table class="center-app">
 			<tr>
 				<td>SKU Item ID:</td>
 				<td><input type="text" name="customerskuid" id="customerskuid" value="[%customerskuid%]" size="30" maxlength="50"></td>
@@ -283,7 +284,7 @@ $(document).ready(function(){
 				<td></td>
 			</tr>
 		</table>
-		<table class="center_app">
+		<table class="center-app">
 			<tr height=20 align='center'>
 				<th>&nbsp;</th>
 				<th>Weight</th>
@@ -422,15 +423,15 @@ $(document).ready(function(){
 			<form id="frm_extid_management" method="post" action="/customer/settings/extidsetup">
 				<input type="hidden" id="do" name="do" value="setup"/>
 				<input type="hidden" id="droplistdataid" name="droplistdataid"/>
-				<div class="float_right">
+				<div class="float-right">
 					<table>
 						<tr>
-							<td><label class="float_right" for="extidvalue">Value:</td>
+							<td><label class="float-right" for="extidvalue">Value:</td>
 							<td><input type="text" class="text" id="fieldvalue" name="fieldvalue" /></td>
 							<td><input type="button" class="button" id="extid_edit" value="Edit" /></td>
 							<td><input type="button" class="button" id="extid_add" value="Add New" /></td>
 
-							<td><label class="float_right" for="records_per_page">Records Per Page:</td>
+							<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 							<td>
 								<select name="records_per_page" id="records_per_page">
 									[% FOREACH item IN recordsperpage_list %]
@@ -534,7 +535,7 @@ $(document).ready(function(){
 		<form id="frm_setup_sku" method="post" action="/customer/settings/extidsetup">
 			<input type="hidden" id="do" name="do" value="configure"/>
 			<input type="hidden" id="droplistdataid" name="droplistdataid" value="[% droplistdataid %]"/>
-			<table class="center_app">
+			<table class="center-app">
 				<tr>
 					<td>Ext Value:</td>
 					<td><input type="text" name="fieldvalue" id="fieldvalue" value="[%fieldvalue%]" size="30" maxlength="50"></td>
@@ -601,72 +602,62 @@ $(document).ready(function(){
 		<input type="hidden" id="ajax" name="ajax" value="[% ajax %]"/>
 		<input type="hidden" id="contactid" name="contactid" value="[% contactInfo.contactid %]"/>
 		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
-		<table class="center_app">
+		<table class="center-app">
 		<tr>
-			<td><label class="float_right" for="username">User Name:</label></td>
+			<td><label class="float-right" for="contact_username">User Name:</label></td>
 			<td>
-			[% IF ENABLE_EDIT %]
-				<input type="text" name="username" id="username" value="[% contactInfo.username %]" class="broad_text" onchange="validateContactUsername();">
-			[% ELSE %]
+			[% IF READONLY %]
 				[% contactInfo.username %]
+			[% ELSE  %]
+				<input type="text" name="contact_username" id="contact_username" value="[% contactInfo.username %]" class="broad-text" onchange="validateContactUsername();">
 			[% END %]
 			</td>
-			
-			<td><label class="float_right" for="firstname">First Name:</label></td>
+			<td><label class="float-right" for="firstname">First Name:</label></td>
 			<td id="firstnamedisplay">
-			[% IF ENABLE_EDIT %]
-				<input type="text" name="firstname" id="firstname" value="[% contactInfo.firstname %]" class="broad_text">
-			[% ELSE %]
-				[% contactInfo.firstname %]
-			[% END %]
+				<input type="text" name="firstname" id="firstname" value="[% contactInfo.firstname %]" class="broad-text">
 			</td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="password">Password:</label></td>
+			<td><label class="float-right" for="password">Password:</label></td>
 			<td>
-			[% IF ENABLE_EDIT %]
-				<input type="text" name="password" id="password" value="[% password %]" class="broad_text">
-			[% ELSE %]
+			[% IF READONLY %]
 				[% password %]
-			[% END %]
-			</td>
-			
-			<td><label class="float_right" for="lastname">Last Name:</label></td>
-			<td id="lastnamedisplay">
-			[% IF ENABLE_EDIT %]
-				<input type="text" name="lastname" id="lastname" value="[% contactInfo.lastname %]" class="broad_text">
 			[% ELSE %]
-				[% contactInfo.lastname %]
+				<input type="text" name="password" id="password" value="[% password %]" class="broad-text">
 			[% END %]
+			</td>
+			<td><label class="float-right" for="lastname">Last Name:</label></td>
+			<td id="lastnamedisplay">
+				<input type="text" name="lastname" id="lastname" value="[% contactInfo.lastname %]" class="broad-text">
 			</td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="department">Department:</label></td>
-			<td><input type="text" name="department" id="department" class="broad_text" value="[% contactInfo.department%]" onchange='validateDepartment("department", $("#customerid").val())'></td>
-			
-			<td><label class="float_right" for="contact_address1">Shipping Address1:</label></td>
-			<td><input type="text" name="contact_address1" id="contact_address1" value="[% contactAddress.address1 %]" class="broad_text"></td>
+			<td><label class="float-right" for="department">Department:</label></td>
+			<td><input type="text" name="department" id="department" class="broad-text" value="[% contactInfo.department%]" onchange='validateDepartment("department", $("#customerid").val())'></td>
+
+			<td><label class="float-right" for="contact_address1">Shipping Address1:</label></td>
+			<td><input type="text" name="contact_address1" id="contact_address1" value="[% contactAddress.address1 %]" class="broad-text"></td>
 
 		</tr>
 		<tr>
-			<td><label class="float_right" for="phonebusiness">Business Phone:</label></td>
-			<td><input type="text" name="phonebusiness" id="phonebusiness" value="[% contactInfo.phonebusiness %]" class="broad_text"></td>
-			
-			<td><label class="float_right" for="contact_address2">Shipping Address2:</label></td>
-			<td><input type="text" name="contact_address2" id="contact_address2" value="[% contactAddress.address2 %]" class="broad_text"></td>
+			<td><label class="float-right" for="phonebusiness">Business Phone:</label></td>
+			<td><input type="text" name="phonebusiness" id="phonebusiness" value="[% contactInfo.phonebusiness %]" class="broad-text"></td>
+
+			<td><label class="float-right" for="contact_address2">Shipping Address2:</label></td>
+			<td><input type="text" name="contact_address2" id="contact_address2" value="[% contactAddress.address2 %]" class="broad-text"></td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="phonemobile">Mobile Phone:</label></td>
-			<td><input type="text" name="phonemobile" id="phonemobile" value="[% contactInfo.phonemobile %]" class="broad_text"></td>
+			<td><label class="float-right" for="phonemobile">Mobile Phone:</label></td>
+			<td><input type="text" name="phonemobile" id="phonemobile" value="[% contactInfo.phonemobile %]" class="broad-text"></td>
 
-			<td><label class="float_right" for="contact_city">Shipping City:</label></td>
-			<td><input type="text" name="contact_city" id="contact_city" value="[% contactAddress.city %]" class="broad_text"></td>
+			<td><label class="float-right" for="contact_city">Shipping City:</label></td>
+			<td><input type="text" name="contact_city" id="contact_city" value="[% contactAddress.city %]" class="broad-text"></td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="phonehome">Home Phone:</label></td>
-			<td><input type="text" class="broad_text" name="phonehome" id="phonehome" value="[% contactInfo.phonehome %]" ></td>
+			<td><label class="float-right" for="phonehome">Home Phone:</label></td>
+			<td><input type="text" class="broad-text" name="phonehome" id="phonehome" value="[% contactInfo.phonehome %]" ></td>
 
-			<td><label class="float_right" for="contact_state">Shipping State:</label></td>
+			<td><label class="float-right" for="contact_state">Shipping State:</label></td>
 			<td>
 			<label>
 				<select name="contact_state" id="contact_state">
@@ -678,17 +669,17 @@ $(document).ready(function(){
 			</td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="fax">Fax:</label></td>
-			<td><input type="text" name="fax" id="fax" value="[% contactInfo.fax %]" class="broad_text"></td>
+			<td><label class="float-right" for="fax">Fax:</label></td>
+			<td><input type="text" name="fax" id="fax" value="[% contactInfo.fax %]" class="broad-text"></td>
 
-			<td><label class="float_right" for="contact_zip">Shipping Zip:</label></td>
-			<td><input type="text" name="contact_zip" id="contact_zip" value="[% contactAddress.zip %]" class="broad_text"></td>
+			<td><label class="float-right" for="contact_zip">Shipping Zip:</label></td>
+			<td><input type="text" name="contact_zip" id="contact_zip" value="[% contactAddress.zip %]" class="broad-text"></td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="email">E-mail:</label></td>
-			<td><input type="text" name="email" id="email" value="[% contactInfo.email %]" class="broad_text"></td>
+			<td><label class="float-right" for="email">E-mail:</label></td>
+			<td><input type="text" name="email" id="email" value="[% contactInfo.email %]" class="broad-text"></td>
 
-			<td><label for="contact_country" class="float_right">Country:</label></td>
+			<td><label for="contact_country" class="float-right">Country:</label></td>
 			<td>
 			<label>
 				<select name="contact_country" id="contact_country">
@@ -700,32 +691,32 @@ $(document).ready(function(){
 			</td>
 		</tr>
 		<tr>
-			<td><label class="float_right" for="ownerid">OwnerID:</label></td>
+			<td><label class="float-right" for="ownerid">OwnerID:</label></td>
 			<td>[% ownerid %]</td>
-			
-			<td><label class="float_right" for="location">Location:</label></td>
+
+			<td><label class="float-right" for="location">Location:</label></td>
 			<td>[% location %]</td>
 		</tr>
 		<tr>
-		
-			<td><label class="float_right" for="origdate">Orig Date:</label></td>
+
+			<td><label class="float-right" for="origdate">Orig Date:</label></td>
 			<td>[% origdate %]</td>
 
-			<td><label class="float_right" for="sourcedate">Source Date:</label></td>
+			<td><label class="float-right" for="sourcedate">Source Date:</label></td>
 			<td>[% sourcedate %]</td>
 		</tr>
 		<tr>
-		
+
 			<td></td>
 			<td></td>
-			<td><label class="float_right" for="disabledate">Disable Date:</label></td>
+			<td><label class="float-right" for="disabledate">Disable Date:</label></td>
 			<td>[% disabledate %]</td>
 		</tr>
 		</table>
 
 		[% IF SHOW_RULES %]
 		<h2>RULES</h2>
-		<table class="center_app css3-checkboxes">
+		<table class="center-app css3-checkboxes">
 
 			[% count=0 %]
 			<tr>
@@ -750,20 +741,20 @@ $(document).ready(function(){
 		</table>
 
 		<h2>DEFUALT SETTINGS</h2>
-		<table class="center_app">
+		<table class="center-app">
 
 			[% count=1 %]
 			<tr>
 				[% FOREACH item IN contactsetting_loop %]
 					[% IF item.type == 'INPUT' %]
 						[% count=count+1 %]
-						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
-					    <td><input type="text" class="broad_text" name="[% item.value %]" id="[% item.value %]" value="[% item.text %]"></td>
+						<td><label class="float-right" for="[% item.value %]">[% item.name %]:</label></td>
+					    <td><input type="text" class="broad-text" name="[% item.value %]" id="[% item.value %]" value="[% item.text %]"></td>
 					[% END %]
 
 					[% IF item.type == 'SELECT'%]
 						[% count=count+1 %]
-						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
+						<td><label class="float-right" for="[% item.value %]">[% item.name %]:</label></td>
 						<td>
 							<label>
 							<select name="[% item.value %]" id="[% item.value %]">
@@ -777,7 +768,7 @@ $(document).ready(function(){
 
 					[% IF item.type == 'RADIO'%]
 						[% count=count+1 %]
-						<td><label class="float_right" for="[% item.value %]">[% item.name %]:</label></td>
+						<td><label class="float-right" for="[% item.value %]">[% item.name %]:</label></td>
 						<td class="css3-radios">
 							[% FOREACH list_item IN item.loop %]
 								<label>
@@ -799,28 +790,34 @@ $(document).ready(function(){
 		<center>
 			<input type="button" class="green" id="update_contact" value="[% IF contactInfo.contactid %] Update [% ELSE %] Add [% END %] Contact" onclick="updateContact();"/>
 			&nbsp;&nbsp;
-			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %] "cancelUpdate();" [% ELSE %] javascript:history.back(); [% END %]/>
+			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %] "getCustomerContacts();" [% ELSE %] javascript:history.back(); [% END %]/>
 		</center>
 	</form>
 
 	<script>
 	function validateContactUsername(){
+			if ($("#contact_username").val.length == 0) return;
 			var customerid = $("#customerid").val();
-			var contactid = $("#contactid").val();
-			var username = $("#username").val();
+			var contactid  = $("#contactid").val();
+			var username   = $("#contact_username").val();
+
 			var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
-			
+
 			if (username == undefined || username.length == 0) return;
 			send_ajax_request('', 'JSON', 'settings/company', 'validate_contact_username', query, function() {
 			if (JSON_data.COUNT > 0) {
 				showError("User name exist. Please specify different user name");
-				$("#username").val("");
+				$("#contact_username").val("");
 			}
 			else
 				return ;
 			});
 		}
-	 
+
+	var requiredFieldHash = [];
+	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
 	function updateContact()
 		{
 		if(validateContactDetials())
@@ -828,23 +825,15 @@ $(document).ready(function(){
 			if($("#ajax").val())
 				send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '&'+$('#frm_setup_contact').serialize(), '');
 			else
+				{
 				$("#frm_setup_contact").submit();
+				}
 			}
 		}
 
 	function validateContactDetials()
 		{
-		var requireHash = {
-			phonebusiness    : { phone: true, description: "Please specify business contact" },
-			phonemobile      : { phone: true, description: "Please specify mobile contact" },
-			contact_address1 : { minlength: 2, description: "Please specify address 1" },
-			contact_city     : { minlength: 2, description: "Please specify city" },
-			contact_state    : { minlength: 2, description: "Please specify state" },
-			contact_zip      : { minlength: 5, description: "Please specify zip code" },
-			contact_country  : { minlength: 1, description: "Please specify country" },
-			};
-
-		if (validateForm(requireHash)) {
+		if (validateForm(requiredFieldHash)) {
 			$("#update_contact").val("Please Wait...");
 			$("#update_contact").attr("disabled", true);
 			return true;
@@ -853,14 +842,9 @@ $(document).ready(function(){
 			}
 		}
 
-	function cancelUpdate()
-		{
-		var params = '&do=cancel&customerid='+$("#customerid").val();
-		send_ajax_request('company-contacts', 'HTML', 'settings/company', params, '');
-		}
-
 	$(document).ready(function(){
 		$("#update_contact").attr("disabled", false);
+		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
 		});
 	</script>
 	[% #---------------------------------------------------------- %]

@@ -2,7 +2,7 @@ package IntelliShip::Controller::Customer;
 use Moose;
 use IO::File;
 use Data::Dumper;
-use Math::BaseCalc;
+#use Math::BaseCalc;
 use IntelliShip::DateUtils;
 use IntelliShip::Arrs::API;
 use namespace::autoclean;
@@ -18,6 +18,20 @@ BEGIN {
 	has 'customer' => ( is => 'rw' );
 	has 'arrs_api_context' => ( is => 'rw' );
 
+	}
+
+sub API
+	{
+	my $self = shift;
+
+	unless ($self->arrs_api_context)
+		{
+		my $APIRequest = IntelliShip::Arrs::API->new;
+		$APIRequest->context($self->context);
+		$self->arrs_api_context($APIRequest);
+		}
+
+	return $self->arrs_api_context;
 	}
 
 =head1 NAME
@@ -130,26 +144,42 @@ sub get_customer_contact
 	$contactUser = $customerUser unless $contactUser;
 
 	#$c->log->debug("Customer user: " . $customerUser);
-	#$c->log->debug("Contact  user: " . $contactUser) if $contactUser;
+	#$c->log->debug("Contact  user: " . $contactUser);
 
-	my $contact_search = { username => $contactUser };
-	$contact_search->{password} = $password unless $self->token;
-	$contact_search->{customerid} = $self->token->customerid if $self->token;
+	my @customerArr;
+	if ($self->token)
+		{
+		push @customerArr, $self->token->customer;
+		}
+	else
+		{
+		@customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
+		}
 
-	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
-	return unless @contactArr;
-	my $Contact = $contactArr[0] if @contactArr;
-
-	#$c->log->debug($Contact ? "Contact customerid: " . $Contact->customerid : Dumper $contact_search);
-	#$c->log->debug($Contact ? "Contact contactid: " . $Contact->contactid : "no contact found");
-
-	my @customerArr = $c->model('MyDBI::Customer')->search({ customerid => $Contact->customerid, username => $customerUser });
 	return unless @customerArr;
-	my $Customer = $customerArr[0] if @customerArr;
 
-	#$c->log->debug("Customer customerid: " . $Customer->customerid);
+	foreach my $Customer (@customerArr)
+		{
+		my $contact_search = {
+				username => $contactUser,
+				customerid => $Customer->customerid
+				};
 
-	return ($Customer, $Contact);
+		$contact_search->{password} = $password unless $self->token;
+
+		my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
+
+		next unless @contactArr;
+
+		my $Contact = $contactArr[0];
+
+		#$c->log->debug("Customer ID : " . $Customer->customerid);
+		#$c->log->debug("Contact ID  : " . $Contact->contactid);
+
+		return ($Customer, $Contact);
+		}
+
+	$c->log->debug("No Matching Information Found");
 	}
 
 sub get_token :Private
@@ -186,6 +216,8 @@ sub get_token_id :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $myDBI = $c->model('MyDBI')->new;
+	return $myDBI->get_token_id;
+=head
 	my $sth = $myDBI->select("SELECT to_char(timestamp 'now', 'YYYYMMDDHH24MISS')||lpad(CAST(nextval('master_seq') AS text),6,'0') AS rawtoken");
 
 	my $RawToken = $sth->fetchrow(0)->{'rawtoken'} if $sth->numrows;
@@ -199,6 +231,7 @@ sub get_token_id :Private
 	#$c->log->debug("get_token_id, Token ID: " . $SeqID);
 
 	return $SeqID;
+=cut
 	}
 
 sub get_branding_id
@@ -302,20 +335,6 @@ sub get_address_dropdown_list
 	return $list;
 	}
 
-sub API
-	{
-	my $self = shift;
-
-	unless ($self->arrs_api_context)
-		{
-		my $APIRequest = IntelliShip::Arrs::API->new;
-		$APIRequest->context($self->context);
-		$self->arrs_api_context($APIRequest);
-		}
-
-	return $self->arrs_api_context;
-	}
-
 sub get_select_list
 	{
 	my $self = shift;
@@ -358,13 +377,13 @@ sub get_select_list
 		my $extcustnum_field = '';
 		$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
 
-		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname, address1, address2, city";
+		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname";
 
 		my $SQL = "
 		SELECT
-			DISTINCT ON (addressname)
-			addressname,
-			address.addressid
+			DISTINCT ON (addressname,city,state,address1)
+			addressname,city,state,address1,
+			co.coid as referenceid
 		FROM
 			co
 			INNER JOIN
@@ -374,17 +393,17 @@ sub get_select_list
 			co.cotypeid in (1,2,10) AND
 			address.addressname <> '' AND
 			$smart_address_book_sql
-		ORDER BY
+		Order BY
 			$OrderBy
 		";
-		#$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
+		$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
 		my $myDBI = $c->model('MyDBI');
 		my $sth = $myDBI->select($SQL);
 
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			push(@$list, { name => $data->{addressname}, value => $data->{addressid} });
+			push(@$list, { name => $data->{addressname},value => $data->{referenceid},city => $data->{city},state => $data->{state},address1 => $data->{address1}});
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')

@@ -10,7 +10,7 @@
 		<table style="width:100%">
 		<tr>
 			<td >My Orders</td>
-			<td class="float_right">
+			<td class="float-right">
 				<div  style="white-space: nowrap;">
 					<select name="view" id="view" onChange="refreshMyOrders()">
 						[% FOREACH item IN view_list %]
@@ -45,14 +45,14 @@
 			<td><input type="submit" class="button" id="new_order" value="Add" onclick="$('#frm_my_ordres').attr('action', '/customer/order/new');"/></td>
 			<td><input type="submit" class="button" id="quick_ship" value="Quick Ship" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"/></td>
 			<td width="65%">&nbsp;</td>
-			<td><label class="float_right" for="view">Type:</td>
+			<td><label class="float-right" for="view">Type:</td>
 			<td><select name="view" id="view" onChange="refreshMyOrders()">
 					[% FOREACH item IN view_list %]
 					<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
 					[% END %]
 			</select></td>
 			<td><input type="submit" class="button" id="refresh" value="Refresh"/></td>
-			<td><input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></td><td><label class="float_right" for="records_per_page">Records Per Page:</td>
+			<td><input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></td><td><label class="float-right" for="records_per_page">Records Per Page:</td>
 				<td>
 					<select name="records_per_page" id="records_per_page">
 					[% FOREACH item IN recordsperpage_list %]

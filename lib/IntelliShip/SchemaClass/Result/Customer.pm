@@ -24,11 +24,15 @@ extends 'DBIx::Class::Core';
 
 =item * L<DBIx::Class::InflateColumn::DateTime>
 
+=item * L<DBIx::Class::TimeStamp>
+
+=item * L<DBIx::Class::PassphraseColumn>
+
 =back
 
 =cut
 
-__PACKAGE__->load_components("InflateColumn::DateTime");
+__PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp", "PassphraseColumn");
 
 =head1 TABLE: C<customer>
 
@@ -395,12 +399,6 @@ __PACKAGE__->table("customer");
   is_nullable: 1
   size: 13
 
-=head2 oaaddressid
-
-  data_type: 'varchar'
-  is_nullable: 1
-  size: 13
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -536,8 +534,6 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 100 },
   "auxformaddressid",
   { data_type => "char", is_nullable => 1, size => 13 },
-  "oaaddressid",
-  { data_type => "varchar", is_nullable => 1, size => 13 },
 );
 
 =head1 PRIMARY KEY
@@ -577,8 +573,15 @@ Related object: L<IntelliShip::SchemaClass::Result::Producttype>
 
 =cut
 
-# Created by DBIx::Class::Schema::Loader v0.07036 @ 2013-10-30 19:40:45
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1yH/WM6bTe43n+aMkRzvCA
+__PACKAGE__->has_many(
+  "producttypes",
+  "IntelliShip::SchemaClass::Result::Producttype",
+  { "foreign.customerid" => "self.customerid" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+# Created by DBIx::Class::Schema::Loader v0.07039 @ 2014-02-26 01:20:35
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:R96fxv0S07o6j30zOYDqiA
 
 __PACKAGE__->belongs_to(
 	address =>
@@ -595,12 +598,6 @@ __PACKAGE__->belongs_to(
 __PACKAGE__->has_many(
 	contacts =>
 		'IntelliShip::SchemaClass::Result::Contact',
-		'customerid'
-	);
-
-__PACKAGE__->has_many(
-	producttypes =>
-		'IntelliShip::SchemaClass::Result::Producttype',
 		'customerid'
 	);
 
@@ -626,6 +623,12 @@ __PACKAGE__->has_many(
 	thirdpartyaccts => 
 		'IntelliShip::SchemaClass::Result::Thirdpartyacct',
 		{ "foreign.customerid" => "self.customerid" },
+	);
+
+__PACKAGE__->has_many(
+	ucc128 =>
+		'IntelliShip::SchemaClass::Result::Ucc128',
+		{ "foreign.companyid" => "self.customerid" },
 	);
 
 sub settings
@@ -673,30 +676,30 @@ sub has_extid_data
 sub get_sop_id
 	{
 	my $self = shift;
-
-	my $usealtsop = $self->get_contact_data_value('usealtsop');
-	my $custnum = $self->get_contact_data_value('extcustnum');
+	my $usealtsop = shift;
+	my $extcustnum = shift;
 
 	# Allow for alternate sopid's (customerid in customerservice - we can't change the field at this point)
-	my $customerid = $self->get_contact_data_value('sopid');
-	$customerid = $self->customerid unless $customerid;
+	my $sop_id = $self->get_contact_data_value('sopid');
+	$sop_id = $self->customerid unless $sop_id;
 
 	# Check if the customer is capable of alt sops, and if this is a 3rd party shipment.  If so, check for new sopid.
-	my $using_altsop = 0;
-	my $altsopid = '';
+	my ($using_altsop,$alt_sop_id) = (0,'');
+
+	$usealtsop = $self->get_contact_data_value('usealtsop') unless $usealtsop;
 	if ($usealtsop)
 		{
-		my $AltSOP = $self->contact->model('MyDBI::Altsop')->new({});
-		my $alt_sopid = $AltSOP->get_alt_sopid($self->customerid,'extcustnum',$custnum);
+		$extcustnum = $self->get_contact_data_value('extcustnum') unless $extcustnum;
+		my $AltSOP  = $self->contact->model('MyDBI::Altsop')->new({});
 
-		if ($alt_sopid)
+		if (my $alt_sop_id = $AltSOP->get_alt_sopid($self->customerid,'extcustnum',$extcustnum))
 			{
-			$customerid = $alt_sopid;
+			$sop_id = $alt_sop_id;
 			$using_altsop = 1;
 			}
 		}
 
-	return ($customerid,$using_altsop,$altsopid);
+	return $sop_id;
 	}
 
 sub third_party_account
@@ -711,6 +714,12 @@ sub third_party_account
 		{
 		return $ThirdPartyAcct if uc $ThirdPartyAcct->tpacctnumber eq uc $accountnumber;
 		}
+	}
+
+sub label_type
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('labeltype');
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

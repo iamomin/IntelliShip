@@ -475,6 +475,10 @@ sub process_pagination
 		{
 		$sql = "SELECT customerid FROM customer ORDER BY customername";
 		}
+	elsif ($type eq 'contactmanagement')
+		{
+		$sql = "SELECT contactid FROM contact WHERE customerid = '" . $c->stash->{customerid} ."' ORDER BY username";
+		}
 
 	my $sth = $c->model('MyDBI')->select($sql);
 
@@ -547,11 +551,11 @@ sub contactinformation :Local
 
 		$Address->update($addressData);
 
-		$Contact->username($params->{'username'}) if $params->{'username'};
+		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
 		$Contact->password($params->{'password'}) if $params->{'password'};
 
-		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
-		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
+		$Contact->firstname($params->{'firstname'});
+		$Contact->lastname($params->{'lastname'});
 		$Contact->email($params->{'email'});
 		$Contact->fax($params->{'fax'});
 		$Contact->department($params->{'department'});
@@ -641,15 +645,43 @@ sub contactinformation :Local
 		$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');
-		$c->stash->{labeltype_loop}         = $self->get_select_list('LABEL_TYPE');
+		$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
-		$c->stash->{ENABLE_EDIT} = $self->contact->is_superuser || (!$self->contact->is_superuser  and !$c->stash->{contactInfo});
+		$c->stash->{READONLY} = 1 unless $self->contact->is_superuser;
+		$self->set_required_fields($self->contact);
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
 	}
 
+sub set_required_fields :Private
+	{
+	my $self = shift;
+	my $Contact = $self->contact;
+	my $c = $self->context;
+
+	
+	my $requiredList = [];
+
+	unless ($Contact->is_superuser)
+		{
+		$requiredList = [
+			{ name => 'phonebusiness',  details => "{ phone: true }"},
+			{ name => 'phonemobile',     details => "{ phone: true }"},
+			{ name => 'contact_address1', details => "{ minlength: 2 }"},
+			{ name => 'contact_city',     details => " { minlength: 2 }"},
+			{ name => 'contact_state',    details => "{ minlength: 2 }"},
+			{ name => 'contact_zip',      details => "{ minlength: 5 }"},
+			{ name => 'contact_country',  details => "{ minlength: 1 }"},
+		];
+	}
+	push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"});
+	push(@$requiredList, { name => 'password', details => "{ minlength: 6 }"});
+	$c->log->debug("requiredfield_list: " . Dumper $requiredList);
+	$c->stash->{requiredfield_list} = $requiredList;
+	}
+	
 sub get_customer_contacts :Private
 	{
 	my $self = shift;
@@ -659,11 +691,23 @@ sub get_customer_contacts :Private
 	my $params = $c->req->params;
 
 	$customerid = $params->{'customerid'} if !$customerid and $params->{'customerid'};
-
+	$c->stash->{customerid} = $customerid;
 	$c->log->debug("CUSTOMER CONTACT MANAGEMENT");
 
-	my $WHERE = { customerid => $customerid };
-	$c->log->debug("customerid " . $customerid);
+	my $contact_batches;
+	my $WHERE = {};
+	if ($params->{'contact_ids'})
+		{
+		$WHERE = { contactid => [split(',', $params->{'contact_ids'})] };
+		}
+	else
+		{
+		$contact_batches = $self->process_pagination('contactmanagement');
+		$WHERE->{contactid} = $contact_batches->[0] if $contact_batches;
+		}
+	$c->stash->{SHOW_PAGINATION} = 1 unless $params->{'contact_ids'};
+	
+	#$c->log->debug("WHERE: " . Dumper $WHERE);
 
 	my @contacts = $self->context->model('MyDBI::Contact')->search($WHERE, {
 	select => [
@@ -681,6 +725,9 @@ sub get_customer_contacts :Private
 	$c->stash->{contactlist} = \@contacts;
 	$c->stash->{contact_count} = scalar @contacts;
 	$c->log->debug("contact_count " . $c->stash->{contact_count});
+
+	$c->stash->{contact_batches} = $contact_batches;
+	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
 
 	$c->stash->{CONTACT_LIST} = 1;
 	$c->stash->{CONTACT_MANAGEMENT} = 1;
