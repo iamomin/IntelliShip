@@ -464,8 +464,8 @@ sub get_rules
 
 my $TRACK_URLS = {
 		lc(&CARRIER_DHL)   => "http://track.dhl-usa.com/TrackByNbr.asp?ShipmentNumber=XXXX&nav=TrackBynumber",
-		lc(&CARRIER_UPS)   => "HTTP://wwwapps.ups.com/etracking/tracking.cgi?tracknums_displayed=5&TypeOfInquiryNumber=T&HTMLVersion=4.0&InquiryNumber1=XXXX&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&track=Track",
-		lc(&CARRIER_FEDEX) => "http://www.fedex.com/cgi-bin/tracking?action=track&language=english&cntry_code=us&initial=x&tracknumbers=XXXX",		
+		lc(&CARRIER_UPS)   => "http://wwwapps.ups.com/etracking/tracking.cgi?tracknums_displayed=5&TypeOfInquiryNumber=T&HTMLVersion=4.0&InquiryNumber1=XXXX&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&track=Track",
+		lc(&CARRIER_FEDEX) => "http://www.fedex.com/cgi-bin/tracking?action=track&language=english&cntry_code=us&initial=x&tracknumbers=XXXX",
 		};
 
 sub get_tracking_URL
@@ -474,11 +474,12 @@ sub get_tracking_URL
 	my $carrier_name = shift;
 	my $tracking_number = shift;
 
-	my $tracking_url = $TRACK_URLS->{lc $carrier_name};	
+	my $tracking_url = $TRACK_URLS->{lc $carrier_name};
 	$tracking_url =~ s/XXXX/$tracking_number/g;
 
 	return $tracking_url;
 	}
+
 1;
 
 __END__

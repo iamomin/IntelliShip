@@ -241,20 +241,20 @@ $("#dateneeded").datepicker({
 		minDate: '-0d'
 		});
 [% END %]
-var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[% item.city %]:[% item.state %]:[% item.address1 %]",[% END %]];
-var arrCompanyAddress = [[% FOREACH item IN customerlist_loop %]"[% item.name %]:[%item.value%]",[% END %]];
+
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %]:[% item.city %]:[% item.state %]:[% item.address1 %]",[% END %]];
+var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]'[% item.company_name %]': '[% item.reference_id %]',[% END %]};
 
 $("#toname").autocomplete({
 	source: availableCustomers,
 	select: function( event, ui ) {
 		var SelectedCompany = ui.item.value
-		var Company = SelectedCompany.split(":");
-		$.each( arrCompanyAddress, function( index, value ){
-			var availableCompany = value.split(":");
-			if (availableCompany[0] == Company[0]) {
-				populate_ship_to_address(availableCompany[1]);
-				}
-			});
+		var AddrParts = SelectedCompany.split(":");
+		var Company = AddrParts[0];
+		var RefID = hashCompanyRef[Company];
+		if (RefID == undefined) return;
+		ui.item.value = Company;
+		populate_ship_to_address(RefID);
 		}
 	});
 

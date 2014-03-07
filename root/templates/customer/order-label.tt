@@ -16,7 +16,7 @@
 
 	<table class="center DoNotPrint">
 		<tr>
-			<td><input type="button" class="blue" value="PRINT" onclick="Print();"/></td>
+			<td><input type="button" class="blue" value="PRINT" onclick="[% IF printerstring_loop %]PrintEplLabel();[% ELSE %]PrintImageLabel();[% END %]"/></td>
 		</tr>
 	</table>
 
@@ -77,7 +77,7 @@
 $(document).ready(function(){
 	[% IF printerstring_loop %]
 	PrintEplLabel();
-	[% ELSE %]	
+	[% ELSE %]
 	PrintImageLabel();
 	[% END %]
 	});

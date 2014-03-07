@@ -4,6 +4,7 @@ use Data::Dumper;
 use IntelliShip::Utils;
 use namespace::autoclean;
 use IntelliShip::Carrier::Constants;
+
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
 
 =head1 NAME
@@ -113,10 +114,9 @@ sub reprintlabel :Local
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	
+
 	my $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$params->{'shipmentid'} . '.jpg';
 
-	$c->res->header('Content-Type' => 'text/html');
 	my $HTML;
 	if (stat $label_file)
 		{
@@ -131,9 +131,11 @@ sub reprintlabel :Local
 			}
 		else
 			{
-			$HTML = '<h3>Lable print information not found</h3>'; 
+			$HTML = '<h3>Lable print information not found</h3>';
 			}
 		}
+
+	$c->res->header('Content-Type' => 'text/html');
 	$c->response->body($HTML);
 	}
 
@@ -162,7 +164,7 @@ sub populate_my_shipment_list :Private
 		{
 		my $row_data = $sth->fetchrow($row);
 		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
-		
+
 		$row_data->{'tracking_url'} = IntelliShip::Utils->get_tracking_URL($row_data->{'carrier'}, $row_data->{'tracking'});
 		push(@$myshipment_list, $row_data);
 		}

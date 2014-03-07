@@ -671,6 +671,8 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 
 function populate_ship_to_address(referenceid)
 	{
+	if (referenceid == undefined) return;
+
 	var query_param = '&referenceid='+referenceid;
 
 	if (referenceid.length > 0) {

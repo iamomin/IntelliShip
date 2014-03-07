@@ -378,7 +378,7 @@ sub get_select_list
 		$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
 
 		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname";
-
+=as
 		my $SQL = "
 		SELECT
 			DISTINCT ON (addressname,city,state,address1)
@@ -396,14 +396,34 @@ sub get_select_list
 		Order BY
 			$OrderBy
 		";
-		$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
+=cut
+		my $SQL = "
+		SELECT
+			address1, city, state, MAX( co.coid ) referenceid, MAX( addressname ) addressname
+		FROM
+			co INNER JOIN address ON co.addressid = address.addressid AND co.customerid = '0000000000001'
+		WHERE
+			co.cotypeid in (1,2,10)
+			AND address1 <> ''
+			AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
+		GROUP BY
+			address1, city, state";
+
+		#$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
+
 		my $myDBI = $c->model('MyDBI');
 		my $sth = $myDBI->select($SQL);
 
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			push(@$list, { name => $data->{addressname},value => $data->{referenceid},city => $data->{city},state => $data->{state},address1 => $data->{address1}});
+			push(@$list, {
+					company_name => $data->{addressname},
+					reference_id => $data->{referenceid},
+					address1     => $data->{address1},
+					city         => $data->{city},
+					state        => $data->{state}
+				});
 			}
 		}
 	elsif ($list_name eq 'COUNTRY')
