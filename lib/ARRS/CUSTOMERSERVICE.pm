@@ -16,6 +16,7 @@ use ARRS::ZONETYPE;
 use POSIX qw(ceil);
 use Date::Manip qw(Date_GetPrev DateCalc);
 use IntelliShip::MyConfig;
+use Data::Dumper;
 
 my $Benchmark = 0;
 my $BenchCSID = 'MAERSKDUGAN01';
@@ -752,6 +753,94 @@ sub BuildArrayFromJSString
 		return @Array;
 	}
 
+sub LoadWithCSOAndSCD
+        {
+                warn "######### LoadWithCSOAndSCD";
+                my $self = shift;
+                my ($csid, $customerid, $international) = @_;
+                warn "########## \$csid:  $csid";
+                warn "########## \$customerid:  $customerid";
+                warn "########## \$international:  $international";
+                my $cs = $self->Load($csid);
+                #warn "######### \$cs: ".Dumper($cs);;
+                my $sql = "
+                            SELECT                             
+                            cso.datatypename as csoname,
+                            cso.value as csovalue
+                            FROM
+                            customerservice cs 
+                            INNER JOIN csoverride cso on cs.customerserviceid = cso.customerserviceid
+                            WHERE cs.customerserviceid = '$csid' AND cs.customerid = '$customerid'
+                            ";
+                #warn "########## \$sql: $sql";
+                my $sth = $self->{'object_dbref'}->prepare($sql)
+			or TraceBack("Could not prepare SQL statement", 1);
+
+                $sth->execute()
+			or TraceBack("Cannot execute sql statement", 1);
+
+                my %cso = ();
+                while ( my ($csoname, $csovalue) = $sth->fetchrow_array() )
+                {                    
+                    $cso{$csoname} = $csovalue;
+                }
+                $self->{'csoverride'} = \%cso;
+                $sth->finish();
+
+                my $serviceid = $self->{'field_serviceid'};
+                warn "########## \$serviceid: $serviceid";
+                my $sql2 = "
+                        SELECT 
+                        ownerid,
+                        datatypename, 
+                        value 
+                        FROM
+                        servicecsdata scd where scd.ownerid = '$csid' and ownertypeid = 4
+                        UNION
+                        SELECT 
+                        ownerid,
+                        datatypename,
+                        value 
+                        FROM
+                        servicecsdata scd where scd.ownerid = '$serviceid' and ownertypeid = 3
+                        ";
+                        
+                #warn "########## \$sql2: $sql2";
+                my $sth2 = $self->{'object_dbref'}->prepare($sql2)
+			or TraceBack("Could not prepare SQL statement", 1);
+
+                
+                $sth2->execute()
+			or TraceBack("Cannot execute sql statement", 1);
+
+                
+
+                my %scd = ();
+                while ( my ($ownerid, $datatypename, $value) = $sth2->fetchrow_array() )
+                {  
+                    my $row = {};
+                    if(exists $scd{$ownerid})
+                    {                        
+                        $row = $scd{$ownerid};
+                        $row->{$datatypename} = $value;                    
+                    }
+                    else                    
+                    {                        
+                        my %row = ();
+                        $row{$datatypename} = $value;
+                        $scd{$ownerid} =\%row;
+                    }
+                    
+                }
+                $self->{'servicecsdata'} = \%scd;
+                $sth2->finish();
+
+                #warn "########## cso: " . Dumper($self->{'csoverride'});
+                #warn "########## scd: " . Dumper($self->{'servicecsdata'});
+
+                return $cs;                
+        }
+
 sub GetCSValue
 	{
 		my $self = shift;
@@ -761,47 +850,28 @@ sub GetCSValue
 
 		my $CSID = $self->{'field_customerserviceid'};
 		my $ServiceID = $self->{'field_serviceid'};
+                my $csoverride = $self->{'csoverride'};
+                my $servicecsdata = $self->{'servicecsdata'};
 
-		# Allow for customer overrides of specific CS values
-		my $CSOverride = new ARRS::CSOVERRIDE($self->{'object_dbref'}, $self->{'object_contact'});
-		if
-		(
-			$CSOverride->LowLevelLoadAdvanced(undef,{
-				customerid			=>	$CustomerID,
-				customerserviceid	=>	$CSID,
-				datatypename		=>	$ValueType
-			})
-		)
-		{
-			return $CSOverride->GetValueHashRef()->{'value'};
-		}
-
+                # Allow for customer overrides of specific CS values
+                if(exists $csoverride->{$ValueType})
+                {
+                    return $csoverride->{$ValueType};
+                }
+		
+		
 		# Take cs value, if available, then take service value
 		if ( $ValueType && $CSID && $ServiceID )
-		{
-			my $SQL = "
-				SELECT
-					coalesce
-					(
-						(SELECT value FROM servicecsdata WHERE ownerid = '$CSID' AND ownertypeid = 4 AND datatypename = '$ValueType' LIMIT 1),
-						(SELECT value FROM servicecsdata WHERE ownerid = '$ServiceID' AND ownertypeid = 3 AND datatypename = '$ValueType' LIMIT 1)
-					)
-			";
-
-			my $STH = $self->{'object_dbref'}->prepare($SQL)
-			or die "Could not prepare SQL statement";
-
-		$STH->execute()
-			or die "Cannot execute sql statement";
-
-			($Value) = $STH->fetchrow_array();
-
-			$STH->finish();
-
-			if ( (!defined($Value) || $Value eq '') && $ValueType eq 'webaccount' )
-			{
-				$Value = $self->{'field_webaccount'};
-			}
+		{                        
+                        if(exists $servicecsdata->{$CSID} && exists $servicecsdata->{$CSID}->{$ValueType})
+                        {
+                            $Value = $servicecsdata->{$CSID}->{$ValueType};
+                        }
+                        elsif(exists $servicecsdata->{$ServiceID} && exists $servicecsdata->{$ServiceID}->{$ValueType})
+                        {
+                            $Value = $servicecsdata->{$ServiceID}->{$ValueType};
+                        }
+			
 		}
 		else
 		{
@@ -833,6 +903,8 @@ sub GetCSShippingValues
 		my $self = shift;
 		my ($Ref) = @_;
 
+
+                #warn "########## GetCSShippingValues: ".Dumper($Ref);
 		my $CSID = $Ref->{'csid'};
 
 		my $ShipmentValueRef = {};
@@ -880,7 +952,7 @@ sub GetCSShippingValues
 		);
 
 		my $CSIDLoaded = 0;
-		if ( $self->Load($CSID) ) { $CSIDLoaded = 1; }
+		if ( $self->LoadWithCSOAndSCD($CSID, $Ref->{'customerid'}, 0) ) { $CSIDLoaded = 1; }
 
 		foreach my $ValueType (@ShipmentNoNullValues)
 		{
