@@ -772,7 +772,7 @@ sub ImportOrders
 			$C->{'dimlength'}             = $CustRef->{'dimlength'} || 0;
 			$C->{'dimwidth'}              = $CustRef->{'dimwidth'} || 0;
 			$C->{'dimheight'}             = $CustRef->{'dimheight'} || 0;
-			$C->{'unitquantity'}          = $CustRef->{'unitquantity'} || 0;
+			$C->{'unitquantity'}          = $CustRef->{'unitquantity'} || 1;
 			$C->{'commodityquantity'}     = $CustRef->{'commodityquantity'} || 0;
 			$C->{'chargeamount'}          = $CustRef->{'chargeamount'} || 0;
 			$C->{'stream'}                = $CustRef->{'stream'} if $CustRef->{'stream'};

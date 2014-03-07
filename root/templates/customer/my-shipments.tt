@@ -41,7 +41,7 @@
 			</td>
 			<td style="width: 20%;">&nbsp;</td>
 			<td>
-				<button class="quick-ship"><label></label><span>QUICK SHIP</span></button>
+				<button class="quick-ship" onclick="$('#frm_my_shipments').attr('action', '/customer/order/quickship');"><label></label><span>QUICK SHIP</span></button>
 			</td>
 		</tr>
 		</table>

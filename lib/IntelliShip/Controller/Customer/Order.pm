@@ -1681,6 +1681,8 @@ sub generate_label :Private
 
 	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
 
+	$c->stash($Shipment->{_column_data});
+
 	if ($CustomerLabelType =~ /JPG/i)
 		{
 		## Generate JPEG label image ##
@@ -1698,7 +1700,6 @@ sub generate_label :Private
 	else
 		{
 		$c->stash($params);
-		$c->stash($Shipment->{_column_data});
 		$c->stash->{fromAddress}   = $Shipment->origin_address;
 		$c->stash->{toAddress}     = $Shipment->destination_address;
 		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long(IntelliShip::DateUtils->american_date($Shipment->dateshipped));
