@@ -401,10 +401,10 @@ sub get_select_list
 		SELECT
 			address1, city, state, MAX( co.coid ) referenceid, MAX( addressname ) addressname
 		FROM
-			co INNER JOIN address ON co.addressid = address.addressid AND co.customerid = '0000000000001'
+			co INNER JOIN address ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
 		WHERE
-			co.cotypeid in (1,2,10)
-			AND address1 <> ''
+			address1 <> ''
+			AND co.cotypeid in (1,2,10)
 			AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
 		GROUP BY
 			address1, city, state";
