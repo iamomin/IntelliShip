@@ -460,6 +460,13 @@ sub BuildPrinterString
 		}
 
 	$CgiRef->{'comments'} = $CgiRef->{'description'};
+	
+	# Build dim string
+	$CgiRef->{'dims'} = $CgiRef->{'dimlength'};
+	$CgiRef->{'dims'} .= 'x' . $CgiRef->{'dimwidth'} if $CgiRef->{'dims'} and $CgiRef->{'dimwidth'};
+	$CgiRef->{'dims'} .= 'x' . $CgiRef->{'dimheight'} if $CgiRef->{'dims'} and $CgiRef->{'dimheight'};
+	$CgiRef->{'dims'} = '' unless $CgiRef->{'dims'};
+
 	##################################################################
 	## Build EPL
 	##################################################################

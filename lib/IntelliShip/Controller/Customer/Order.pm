@@ -270,7 +270,11 @@ sub save_CO_details :Private
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
 	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'}) if $params->{'datetoship'};
 	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'}) if $params->{'dateneeded'};
-
+	
+	$coData->{'ponumber'} = $params->{'ponumber'} if $params->{'ponumber'};
+	$coData->{'extid'} = $params->{'extid'} if $params->{'extid'};
+	$coData->{'custref2'} = $params->{'custref2'} if $params->{'custref2'};
+	$coData->{'custref3'} = $params->{'custref3'} if $params->{'custref3'};
 	$coData->{'description'} = $params->{'description'} if $params->{'description'};
 	#$coData->{'extcd'} = $params->{'comments'};
 	$coData->{'extloginid'} = $self->customer->username;
@@ -861,7 +865,11 @@ sub populate_order :Private
 	## Shipment Information
 	$c->stash->{datetoship} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$c->stash->{dateneeded} = IntelliShip::DateUtils->american_date($CO->dateneeded);
-
+	$c->stash->{ponumber} = $CO->ponumber;
+	$c->stash->{extid} = $CO->extid;
+	$c->stash->{custref2} = $CO->custref2;
+	$c->stash->{custref3} = $CO->custref3;
+	
 	## Address and Shipment Information
 	if (!$populate or $populate eq 'address' or $populate eq 'summary')
 		{

@@ -178,26 +178,26 @@
 
 				[% IF SHOW_PONUMBER %]
 				<tr>
-					<td><label for="ponumber" class="float-right require">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
+					<td><label for="ponumber" class="float-right require">PO Number:</label></td><td><input type="text" class="text" id="ponumber" name="ponumber" value="[% ponumber %]"/></td>
 				</tr>
 				[% END %]
 				[% IF SHOW_EXTID %]
 				<tr>
-					<td><label for="extid" class="float-right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"/></td>
+					<td><label for="extid" class="float-right">GO #:</label></td><td><input type="text" class="text" id="extid" name="extid"  value="[% extid %]"/></td>
 				</tr>
 				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF SHOW_CUSTREF2 %]
 				<tr>
-					<td><label for="custref2" class="float-right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"/></td>
+					<td><label for="custref2" class="float-right">Program:</label></td><td><input type="text" class="text" id="custref2" name="custref2"  value="[% custref2 %]"/></td>
 				</tr>
 				[% ELSE %]
 				<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 				[% END %]
 				[% IF SHOW_CUSTREF3 %]
 				<tr>
-					<td><label for="custref3" class="float-right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"/></td>
+					<td><label for="custref3" class="float-right">DRS #:</label></td><td><input type="text" class="text" id="custref3" name="custref3"  value="[% custref3 %]"/></td>
 				</tr>
 				[% ELSE %]
 				<tr style="height: 33px"><td>&nbsp;</td><td>&nbsp;</td></tr>
