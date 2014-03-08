@@ -585,23 +585,24 @@ sub save_package_product_details :Private
 		my $ownertypeid = 1000;
 		$ownertypeid = 3000 if ($params->{'type_' . $PackageIndex } eq 'product');
 
-		my $weight    = $params->{'weight_'.$PackageIndex} || 0;
-		my $dimweight = $params->{'dimweight_'.$PackageIndex} || 0;
-		my $dimlength = $params->{'dimlength_'.$PackageIndex} || 0;
-		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex} || 0;
-		my $dimheight = $params->{'dimheight_'.$PackageIndex} || 0;
-		my $density   = $params->{'density_' . $PackageIndex} || 0;
-		my $class     = $params->{'class_' . $PackageIndex} || 0;
-		my $decval    = $params->{'decval_' . $PackageIndex} || 0;
-		my $frtins    = $params->{'frtins_'.$PackageIndex} || 0;
+		my $quantity  = $params->{'quantity_' . $PackageIndex} || 0;
+		my $weight    = $params->{'weight_'.$PackageIndex}     || 0;
+		my $dimweight = $params->{'dimweight_'.$PackageIndex}  || 0;
+		my $dimlength = $params->{'dimlength_'.$PackageIndex}  || 0;
+		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex}   || 0;
+		my $dimheight = $params->{'dimheight_'.$PackageIndex}  || 0;
+		my $density   = $params->{'density_' . $PackageIndex}  || 0;
+		my $class     = $params->{'class_' . $PackageIndex}    || 0;
+		my $decval    = $params->{'decval_' . $PackageIndex}   || 0;
+		my $frtins    = $params->{'frtins_'.$PackageIndex}     || 0;
 		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
 
 		my $PackProData = {
 				ownertypeid => $ownertypeid,
 				ownerid     => $ownerid,
 				datatypeid  => $datatypeid,
-				boxnum      => $params->{'quantity_' . $PackageIndex},
-				quantity    => $params->{'quantity_' . $PackageIndex},
+				boxnum      => $quantity,
+				quantity    => $quantity,
 				unittypeid  => $params->{'unittype_' . $PackageIndex },
 				weight      => sprintf("%.2f", $weight),
 				dimweight   => sprintf("%.2f", $dimweight),
@@ -617,7 +618,7 @@ sub save_package_product_details :Private
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
 		$PackProData->{description} = $params->{'description_' . $PackageIndex} if $params->{'description_' . $PackageIndex};
-		$PackProData->{nmfc} = $params->{'nmfc_' . $PackageIndex} if $params->{'nmfc_' . $PackageIndex};
+		$PackProData->{nmfc}        = $params->{'nmfc_' . $PackageIndex} if $params->{'nmfc_' . $PackageIndex};
 		$PackProData->{datecreated} = IntelliShip::DateUtils->get_timestamp_with_time_zone;
 
 		#$c->log->debug("PackProData: " . Dumper $PackProData);
@@ -989,10 +990,23 @@ sub add_detail_row :Private
 	my $type = shift;
 	my $row_num_id = shift;
 	my $PackProData = shift;
+
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	$c->stash->{ROW_COUNT} = $row_num_id;
 	$c->stash->{DETAIL_TYPE} = $type;
+
+	## Shipment Automation Has Entered Weight, Set Package Weight
+	if ($params->{'enteredweight'} and $params->{'enteredweight'} > 0 and $PackProData->datatypeid == 1000)
+		{
+		$PackProData->weight($params->{'enteredweight'});
+		}
+	## Shipment Automation Has Entered Package Quantity, Set Package Quantity
+	if ($params->{'quantity'} and $params->{'quantity'} > 0 and $PackProData->datatypeid == 1000)
+		{
+		$PackProData->quantity($params->{'quantity'});
+		}
 
 	$c->stash->{'coid'}        = $PackProData->ownerid;
 	$c->stash->{'weight'}      = $PackProData->weight;

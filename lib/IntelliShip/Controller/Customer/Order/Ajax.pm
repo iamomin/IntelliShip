@@ -394,43 +394,44 @@ sub get_JSON_DATA :Private
 	my $params = $c->req->params;
 
 	my $dataHash;
-	if ($c->req->param('action') eq 'get_address_detail')
+	my $action = $c->req->param('action') || '';
+	if ($action eq 'get_address_detail')
 		{
 		$dataHash = $self->get_address_detail;
 		}
-	elsif ($params->{'action'} eq 'get_sku_detail')
+	elsif ($action eq 'get_sku_detail')
 		{
 		$dataHash = $self->get_sku_detail;
 		}
-	elsif ($params->{'action'} eq 'adjust_due_date')
+	elsif ($action eq 'adjust_due_date')
 		{
 		$dataHash = $self->adjust_due_date;
 		}
-	elsif ($params->{'action'} eq 'add_pkg_detail_row')
+	elsif ($action eq 'add_pkg_detail_row')
 		{
 		$dataHash = $self->add_pkg_detail_row;
 		}
-	elsif ($params->{'action'} eq 'get_freight_class')
+	elsif ($action eq 'get_freight_class')
 		{
 		$dataHash = $self->get_freight_class;
 		}
-	elsif ($c->req->param('action') eq 'third_party_delivery')
+	elsif ($action eq 'third_party_delivery')
 		{
 		$dataHash = $self->set_third_party_delivery;
 		}
-	elsif ($c->req->param('action') eq 'get_city_state')
+	elsif ($action eq 'get_city_state')
 		{
 		$dataHash = $self->get_city_state;
 		}
-	elsif ($c->req->param('action') eq 'save_special_services')
+	elsif ($action eq 'save_special_services')
 		{
 		$dataHash = $self->update_special_services;
 		}
-	elsif ($c->req->param('action') eq 'save_third_party_info')
+	elsif ($action eq 'save_third_party_info')
 		{
 		$dataHash = $self->save_third_party_info;
 		}
-	elsif ($c->req->param('action') eq 'mark_shipment_as_printed')
+	elsif ($action eq 'mark_shipment_as_printed')
 		{
 		$dataHash = $self->mark_shipment_as_printed;
 		}

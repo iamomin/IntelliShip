@@ -42,16 +42,14 @@
 		<p class="require_text">* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges.</p>
 	</div>
 
-	[% IF ERROR %]<div class="error">[% ERROR %]</div>[% END %]
-
-	<div class="validateTips"></div>
+	<div class="validateTips">[% IF ERROR %]<div class="error">[% ERROR %]</div>[% END %]</div>
 
 	<form id="frm_ship_packages" method="post" action="/customer/shippackages">
 		<input type="hidden" id="do" name="do" value="shippackages"/>
 
 		<table class="app css3-checkboxes">
 			<tr>
-				<td><label for="ordernumber" class="float-right">Order Number:</label></td>
+				<td><label for="ordernumber" class="float-right require">Order Number:</label></td>
 				<td><input type="text" class="broad-text" name="ordernumber" id="ordernumber" value="[% ordernumber %]"/></td>
 				<td><label><input type="checkbox" name="multiordershipment" id="multiordershipment" value="1"/><span><label for="multiordershipment">Multiple Order Numbers</label></span></label></td>
 			</tr>
@@ -83,15 +81,25 @@
 		$("#quantity").mask("99999");
 
 		$("#ordernumber").change(function() {
-			$('#multiordershipment').attr('checked', false);
-			$("#myShipments").slideUp(1000);
+
+			if ($(this).val().length == 0) return;
+
+			var query_param = 'ordernumber='+$(this).val();
+			$(".validateTips").fadeOut( "slow", function() {
+				$('#multiordershipment').attr('checked', false);
+				$("#myShipments").slideUp(1000);
+
+				send_ajax_request('', 'JSON', 'shippackages', 'check_order_number', query_param, function() {
+					if (JSON_data.ORDERS_FOUND == 0) updateTips("Sorry, no matching order details found").fadeIn("slow");
+					});
+				});
 			});
 
 		$("#multiordershipment").change(function() {
 			if ($(this).is(":checked") && $("#ordernumber").val().length > 0)
 				{
 				var query_param = "&ordernumber=" + $("#ordernumber").val() + "&multiordershipment=" + $("#multiordershipment").val();
-				send_ajax_request('myShipments', 'HTML', 'shippackages', '', query_param, function() {
+				send_ajax_request('myShipments', 'HTML', 'shippackages', 'load_matching_orders', query_param, function() {
 					$("#myShipments").slideDown(1000);
 					});
 				}

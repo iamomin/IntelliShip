@@ -48,12 +48,60 @@ sub ajax :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if ($params->{'multiordershipment'})
+	if ($params->{'type'} eq 'HTML')
 		{
-		$self->load_multiple_order;
+		$self->get_HTML;
+		}
+	elsif ($params->{'type'} eq 'JSON')
+		{
+		$self->get_JSON_DATA;
+		}
+	}
+
+sub get_HTML :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $action = $c->req->param('action') || '';
+	if ($action eq 'load_matching_orders')
+		{
+		$self->load_matching_orders;
 		}
 
 	$c->stash(template => "templates/customer/ship-packages.tt");
+	}
+
+sub get_JSON_DATA
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $dataHash;
+	my $action = $c->req->param('action') || '';
+	if ($action eq 'check_order_number')
+		{
+		$dataHash = $self->check_order_number;
+		}
+	else
+		{
+		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
+		}
+
+	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	$c->response->body($json_DATA);
+	}
+
+sub check_order_number :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $order_found = ($params->{'ordernumber'} ? $c->model('MyDBI::CO')->search({ ordernumber => $params->{'ordernumber'} })->count : 0);
+	return { ORDERS_FOUND => $order_found };
 	}
 
 sub setup_ship_packages :Private
@@ -64,7 +112,7 @@ sub setup_ship_packages :Private
 	$c->stash(template => "templates/customer/ship-packages.tt");
 	}
 
-sub load_multiple_order :Private
+sub load_matching_orders :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -137,7 +185,7 @@ sub load_order :Private
 
 	unless ($self->fetch_valid_order)
 		{
-		$c->stash(ERROR => "Order not found");
+		$c->stash(ERROR => "Sorry, no matching order details found");
 		return $self->setup_ship_packages;
 		}
 

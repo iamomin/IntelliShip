@@ -40,7 +40,7 @@
 		</table>
 		<center>
 			<table><tr>
-			<td><input type="submit" class="green" id="submit" value="Upload File"/></td>
+			<td><input type="submit" class="green" id="cmd-upload" value="Upload File"/></td>
 			<td><input type="button" class="button" id="back" value="Back" onClick="window.location.href='/customer/uploadfile';"></td>
 			</tr></table>
 		</center>
@@ -69,8 +69,8 @@
 	<script>
 
 	$(document).ready(function() {
-		$("#submit").val("Upload File");
-		$("#submit").attr("disabled", false);
+		$("#cmd-upload").val("Upload File");
+		$("#cmd-upload").attr("disabled", false);
 /*
 		$("#uploaded-files").fixheadertable({
 				height: 300
@@ -81,9 +81,10 @@
 				};
 
 		$("#frm_upload_order").submit(function() {
+
 			if (validateForm(requireHash)) {
-				$("#submit").val("Please wait...");
-				$("#submit").attr("disabled", true);
+				$("#cmd-upload").val("Please wait...");
+				$("#cmd-upload").attr("disabled", true);
 				return true;
 				} else {
 				return false;

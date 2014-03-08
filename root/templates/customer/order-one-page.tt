@@ -87,6 +87,8 @@
 	[% END %]
 
 	$(document).ready(function(){
+		calculate_total_packages();
+		calculate_total_weight();
 		checkInternationalSection();
 		$('#carrier-service-list').tabs();
 		if(requiredFieldHash) {

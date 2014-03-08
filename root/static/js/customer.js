@@ -174,14 +174,20 @@ function validDate( DateStr )
 	return composedDate.getDate() == dd && composedDate.getMonth() == mm && composedDate.getFullYear() == yyyy;
 	}
 
-function updateTips( tips, t )
+function updateTips( t, tips )
 	{
+	if (tips == undefined) tips = $(".validateTips");
+	if (tips == undefined) return;
+	if (t == undefined || t.length == 0) tips.empty();
+
 	tips
 		.html( "<div class='error'>" + t + "</div>")
 		.addClass( "ui-state-highlight" );
 		setTimeout(function() {
 			tips.removeClass( "ui-state-highlight", 1500 );
 			}, 500 );
+
+	return tips;
 	}
 
 function validateForm( requireFields )
@@ -254,7 +260,7 @@ function validateForm( requireFields )
 
 			showMessage(messageStr, "Error");
 			} else {
-			updateTips(tips, messageStr);
+			updateTips(messageStr,tips);
 			}
 		}
 	}
@@ -284,11 +290,11 @@ function markRequiredFields(requireFields)
 		Object.keys(properties).forEach(function (property) {
 			var value = properties[property];
 
-			if ( property == "email" || property == "phone" || property == "date" || property == "numeric"){
+			if ( property == "email" || property == "phone" || property == "date" || property == "numeric") {
 				$('#'+control).prop("required", value);
 				if (value != false) $('label[for="'+control+'"]').addClass('require');
 				}
-				else{
+				else {
 					$('#'+control).prop("required", true);
 					$('label[for="'+control+'"]').addClass('require');
 				}

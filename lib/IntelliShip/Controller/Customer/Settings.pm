@@ -91,7 +91,7 @@ sub update_password :Private
 
 	if ($params->{'oldpassword'} ne $Contact->password)
 		{
-		$c->stash->{ERR_MESSAGE} = "Old password isn't valid";
+		$c->stash->{MESSAGE} = "Incorrect current password, please retry.";
 		$c->stash->{CHANGE_PASSWORD_SETUP} = 1;
 		}
 	else

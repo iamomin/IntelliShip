@@ -184,7 +184,7 @@ sub ImportOrders
 		next unless $Line;
 
 		$c->log->debug("");
-		$c->log->debug("... Import Line: " . $Line);
+		#$c->log->debug("... Import Line: " . $Line);
 
 		my $CustRef = {};
 		# split the tab delimited line into field names
@@ -263,6 +263,19 @@ sub ImportOrders
 		#$c->log->debug("... CO information gathered");
 
 		IntelliShip::Utils->trim_hash_ref_values($CustRef);
+
+		##########################################################
+		##  FLUSH OLD DETAILS IF ANY FOR MATCHING ORDERNUMBER   ##
+		##########################################################
+		if (my @DuplicateCOs = $c->model('MyDBI::CO')->search({ ordernumber => $CustRef->{'ordernumber'} }))
+			{
+			$c->log->debug("*** ".@DuplicateCOs." DUPLICATE order found for order number '$CustRef->{'ordernumber'}', delete old details...");
+			foreach my $DuplicateCO (@DuplicateCOs)
+				{
+				$DuplicateCO->delete_all_package_details;
+				$DuplicateCO->delete;
+				}
+			}
 
 		# Sort out generic values - in the MAERSK era, we were saddled with a very bad design where the
 		# dim fields were co-opted for other uses (volume,density,class, at this point)

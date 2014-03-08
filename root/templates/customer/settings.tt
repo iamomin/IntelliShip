@@ -28,11 +28,7 @@
 	<br>If the password you entered isn't strong enough, try mixing together uppercase and lowercase letters or making the password longer.
 	</div>
 
-	<p class="validateTips"></p>
-
-	[% IF ERR_MESSAGE %]
-		<div class="error">[% ERR_MESSAGE %]</div>
-	[% END %]
+	<p class="validateTips">[% IF MESSAGE %]<div class="error">[% MESSAGE %]</div>[% END %]</p>
 
 	<table class="center-app">
 		<tr>
