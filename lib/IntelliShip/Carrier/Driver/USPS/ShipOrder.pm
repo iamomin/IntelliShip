@@ -22,7 +22,15 @@ sub process_request
 
 	#$self->log("Shipment Data" .Dumper($shipmentData));
 
-	my $XML_request = $self->get_xml_request;
+	my $XML_request;
+	if ($shipmentData->{'servicecode'} eq 'USPSF')
+		{
+		$XML_request = $self->get_FirstClass_xml_request;
+		}
+	elsif ($shipmentData->{'servicecode'} eq 'USTPO')
+		{
+		$XML_request = $self->get_StandarPost_xml_request;
+		}
 
 	my $url = 'https://secure.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
 	$self->log("Sending request to URL: " . $url);
@@ -57,7 +65,7 @@ sub process_request
 
 	if( $XMLResponse->{Number} and $XMLResponse->{Description})
 		{
-		$self->log("USPS: Shipment information is no valid");
+		$self->log("USPS: Shipment information is not valid");
 		$self->add_error( $XMLResponse->{Description});
 		return $shipmentData;
 		}
@@ -66,7 +74,7 @@ sub process_request
 	$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
 
 	$shipmentData->{'barcodedata'} = $TrackingNumber ;
-	
+
 	$TrackingNumber = substr ($TrackingNumber, -22);
 	$self->log("TrackingNumber: ".$TrackingNumber);
 
@@ -77,36 +85,24 @@ sub process_request
 
 	my $raw_string = $self->get_EPL($shipmentData);
 	my $PrinterString = $raw_string;
+
 	$shipmentData->{'printerstring'} = $PrinterString;
 
 	$self->insert_shipment($shipmentData);
 	$self->response->printer_string($PrinterString);
 	}
 
-sub get_xml_request
+sub get_FirstClass_xml_request
 	{
 	my $self = shift;
 	my $shipmentData = $self->data;
 	my $CO = $self->CO;
 	my $Contact = $CO->contact;
 
-	$self->log("### Get XML Request ###: " );
+	$self->log("### Get XML Request for First Class Mail ###: " );
 	#$self->log("### Get XML Request ###: " . Dumper $shipmentData);
 
-	if ($shipmentData->{servicecode} eq 'USPSF')
-		{
 		$shipmentData->{serviceType} = 'First Class';
-		}
-	elsif($shipmentData->{servicecode} eq 'ST')
-		{
-		$shipmentData->{serviceType} = 'Standard Post';
-		}
-	else
-		{
-		$self->log("Invalid Service Type");
-		$self->add_error("Invalid Service Type");
-		return $shipmentData;
-		}
 
 	#$self->log("### Service Type" .$shipmentData->{serviceType} );
 
@@ -147,7 +143,7 @@ sub get_xml_request
 <ToCity>$shipmentData->{'addresscity'}</ToCity>
 <ToState>$shipmentData->{'addressstate'}</ToState>
 <ToZip5>$shipmentData->{'addresszip'}</ToZip5>
-<ToZip4 />
+<ToZip4/>
 <WeightInOunces>$shipmentData->{'weightinounces'}</WeightInOunces>
 <ServiceType>$shipmentData->{serviceType}</ServiceType>
 <SeparateReceiptPage>True</SeparateReceiptPage>
@@ -159,6 +155,78 @@ sub get_xml_request
 <Length>$shipmentData->{'dimwidth'}</Length>
 <Height>$shipmentData->{'dimlength'}</Height>
 <ReturnCommitments>true</ReturnCommitments>
+</DeliveryConfirmationV4.0Request>
+END
+
+	$self->log("... XML Request Data:  " . $XML_request);
+
+	return $XML_request;
+	}
+
+sub get_StandarPost_xml_request
+	{
+	my $self = shift;
+	my $shipmentData = $self->data;
+	my $CO = $self->CO;
+	my $Contact = $CO->contact;
+
+	$self->log("### Get XML Request for Standar Post ###: " );
+	#$self->log("### Get XML Request ###: " . Dumper $shipmentData);
+
+		$shipmentData->{serviceType} = 'Standard Post';
+
+	#$self->log("### Service Type" .$shipmentData->{serviceType} );
+
+	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
+	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
+	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$self->log("Senders Name ". $shipmentData->{FromName});
+
+	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+		{
+		$shipmentData->{'packagesize'} = 'LARGE';
+		}
+	else
+		{
+		$shipmentData->{'packagesize'} = 'REGULAR';
+		}
+
+	my $XML_request = <<END;
+<?xml version="1.0" encoding="UTF-8" ?>
+<DeliveryConfirmationV4.0Request USERID="667ENGAG1719" PASSWORD="044BD12WF954">
+<Revision>2</Revision>
+<ImageParameters/>
+<FromName>$shipmentData->{FromName}</FromName>
+<FromFirm>$shipmentData->{'customername'}</FromFirm>
+<FromAddress1>$shipmentData->{'branchaddress1'}</FromAddress1>
+<FromAddress2>$shipmentData->{'branchaddress2'}</FromAddress2>
+<FromCity>$shipmentData->{'branchaddresscity'}</FromCity>
+<FromState>$shipmentData->{'branchaddressstate'}</FromState>
+<FromZip5>$shipmentData->{'branchaddresszip'}</FromZip5>
+<FromZip4/>
+<ToName>$shipmentData->{'contactname'}</ToName>
+<ToFirm>$shipmentData->{'addressname'}</ToFirm>
+<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToCity>$shipmentData->{'addresscity'}</ToCity>
+<ToState>$shipmentData->{'addressstate'}</ToState>
+<ToZip5>$shipmentData->{'addresszip'}</ToZip5>
+<ToZip4/>
+<WeightInOunces>$shipmentData->{'weightinounces'}</WeightInOunces>
+<ServiceType>$shipmentData->{serviceType}</ServiceType>
+<SeparateReceiptPage>True</SeparateReceiptPage>
+<ImageType>TIF</ImageType>
+<AddressServiceRequested>False</AddressServiceRequested>
+<HoldForManifest>N</HoldForManifest>
+<Size>$shipmentData->{'packagesize'}</Size>
+<Width>$shipmentData->{'dimheight'}</Width>
+<Length>$shipmentData->{'dimwidth'}</Length>
+<Height>$shipmentData->{'dimlength'}</Height>
+<ReturnCommitments>true</ReturnCommitments>
+<GroundOnly>True</GroundOnly>
 </DeliveryConfirmationV4.0Request>
 END
 

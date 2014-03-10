@@ -624,6 +624,9 @@ function get_customer_service_list(params)
 
 function resetCSList()
 	{
+	$("#customerserviceid").val('');
+	$("#carrier").val('');
+
 	if (has_FC) $("#service-level-summary").slideUp(1000);
 	}
 

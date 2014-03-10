@@ -213,27 +213,45 @@ sub get_carrier_service_list
 			#	}
 
 			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $SHIPMENT_CHARGE_DETAILS;
-			#$self->context->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));
+			#$c->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));
 			}
 
 		($detail_hash->{'shipment_charge'} =~ /\d+/ and $detail_hash->{'shipment_charge'} > 0) ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
-	my @sortByDays = sort { $a->{days} <=> $b->{days} || $a->{shipment_charge} <=> $b->{shipment_charge} } @$CS_list_1;
-	my @sortByCharge = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
-
 	$c->stash->{CARRIERSERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
-	$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP}->[0]->{checked} = 0;
+	#$c->log->debug("CS_list_1: ". Dumper($CS_list_1));
+	if ($CO->has_carrier_service_details)
+		{
+		my @selected_carrier_service = grep { uc($_->{carrier}) eq uc($CO->extcarrier) and uc($_->{service}) eq uc($CO->extservice) } @$CS_list_1;
+		$selected_carrier_service[0]->{checked} = 1 if @selected_carrier_service;
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@selected_carrier_service];
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
-	$c->stash->{transitdayscarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		my $selected_carrier_html = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		#$c->log->debug("selected_carrier_html: ". $selected_carrier_html);
+		$c->stash->{recommendedcarrierlist}  = $selected_carrier_html;
 
-	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByCharge, @$CS_list_2];
-	$c->stash->{viewallcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		$selected_carrier_html =~ s/CHECKED//;
+		$c->stash->{transitdayscarrierlist}  = $selected_carrier_html;
+		$c->stash->{viewallcarrierlist}      = $selected_carrier_html;
+		}
+	else
+		{
+		my @sortByDays = sort { $a->{days} <=> $b->{days} || $a->{shipment_charge} <=> $b->{shipment_charge} } @$CS_list_1;
+		my @sortByCharge = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
+
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
+		$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP}->[0]->{checked} = 0;
+
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
+		$c->stash->{transitdayscarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByCharge, @$CS_list_2];
+		$c->stash->{viewallcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		}
 
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = undef;
 	$c->stash->{ONLY_TABLE} = 0;

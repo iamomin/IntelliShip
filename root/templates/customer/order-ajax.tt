@@ -359,7 +359,6 @@
 				}).mouseout(function() {
 					shipmentChargeDlg.dialog("close");
 					});
-
 		*/
 
 			$(".show-hide-link").click(function showDetails(){
@@ -370,6 +369,10 @@
 						else
 							linkObject.text("+");
 				});
+			});
+
+		$(document).ready(function() {
+			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();
 			});
 	</script>
   [% END %]

@@ -112,10 +112,11 @@ sub get_carrier_list
 
 sub get_carrrier_service_rate_list
 	{
-	my $self = shift;
-	my $CO = shift;
-	my $Contact = shift;
-	my $Customer = shift;
+	my $self             = shift;
+	my $CO               = shift;
+	my $Contact          = shift;
+	my $Customer         = shift;
+	my $skip_csid_search = shift || 1;
 
 	my $request = {};
 	$request->{'action'} = 'GetCSList';
@@ -193,12 +194,9 @@ sub get_carrrier_service_rate_list
 		$request->{'class'} = $agg_freight_class;
 		}
 
-	#Pass order csid in for rating on first pass - reclacs don't take this into account.
-	unless ($CO->freightcharges)
+	## Pass order csid in for rating on first pass - reclacs don't take this into account.
+	unless ($CO->freightcharges or $skip_csid_search)
 		{
-		my %CSRef = %$request;
-		my $CSRef = \%CSRef;
-		$CSRef->{'coid'} = $CO->coid;
 		$request->{'csid'} = $self->get_co_customer_service($request,$Customer,$CO);
 		}
 
@@ -208,7 +206,7 @@ sub get_carrrier_service_rate_list
 	############################################
 	my $response = $self->APIRequest($request);
 	############################################
-	$self->context->log->debug("GetCSList API RESPONSE:". Dumper($response));
+	#$self->context->log->debug("GetCSList API RESPONSE:". Dumper($response));
 
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});

@@ -292,7 +292,7 @@ sub get_contact_data_value
 sub login_level
 	{
 	my $self = shift;
-	return $self->get_contact_data_value('loginlevel');
+	return $self->get_contact_data_value('loginlevel') || 0;
 	}
 
 sub is_superuser

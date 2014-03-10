@@ -63,7 +63,7 @@ sub setup_one_page :Private
 	my $c = $self->context;
 
 	my $CO = $self->get_order;
-	if ($CO->can_autoship and $self->customer->get_contact_data_value('autoprocess'))
+	if ($CO->can_autoship and ($c->stash->{AUTO_PROCESS} == 1 or $self->customer->get_contact_data_value('autoprocess')))
 		{
 		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
 		return $self->SHIP_ORDER;
@@ -191,7 +191,8 @@ sub setup_carrier_service :Private
 	my $c = $self->context;
 
 	my $Customer = $self->customer;
-	my $Contact = $self->contact;
+	my $Contact  = $self->contact;
+	my $CO       = $self->get_order;
 
 	$c->stash->{review_order} = 1;
 	$c->stash->{customer} = $Contact;
@@ -211,8 +212,10 @@ sub setup_carrier_service :Private
 		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
 		}
 
-	unless ($c->stash->{one_page})
+	if ($CO->has_carrier_service_details)
 		{
+		$c->log->debug("CO has carrier service details, populate details...");
+
 		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
 		$CA->customer($Customer);
 		$CA->contact($Contact);
@@ -263,6 +266,22 @@ sub save_CO_details :Private
 
 	my $coData = { keep => '0' };
 
+	##########################################################
+	##  FLUSH OLD DETAILS IF ANY FOR MATCHING ORDERNUMBER   ##
+	##########################################################
+	if ($params->{'ordernumber'})
+		{
+		if (my @DuplicateCOs = $c->model('MyDBI::CO')->search({ ordernumber => $params->{'ordernumber'}, coid => { '!=' => $CO->coid} }))
+			{
+			$c->log->debug("*** ".@DuplicateCOs." DUPLICATE order found for order number '$params->{'ordernumber'}', delete old details...");
+			foreach my $DuplicateCO (@DuplicateCOs)
+				{
+				$DuplicateCO->delete_all_package_details;
+				$DuplicateCO->delete;
+				}
+			}
+		}
+
 	$coData->{'isdropship'} = $params->{'isdropship'} || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
 	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
@@ -270,7 +289,7 @@ sub save_CO_details :Private
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
 	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'}) if $params->{'datetoship'};
 	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'}) if $params->{'dateneeded'};
-	
+
 	$coData->{'ponumber'} = $params->{'ponumber'} if $params->{'ponumber'};
 	$coData->{'extid'} = $params->{'extid'} if $params->{'extid'};
 	$coData->{'custref2'} = $params->{'custref2'} if $params->{'custref2'};
@@ -807,8 +826,12 @@ sub get_order :Private
 		else
 			{
 			$c->log->debug("######## NO CO FOUND ########");
+			my $COID = $self->get_token_id;
+			my $OrderNumber = $self->get_auto_order_number($params->{'ordernumber'});
+			$OrderNumber = $COID unless $OrderNumber;
+
 			my $coData = {
-				ordernumber       => $self->get_auto_order_number($params->{'ordernumber'}),
+				ordernumber       => $OrderNumber,
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
@@ -820,7 +843,7 @@ sub get_order :Private
 				};
 
 			$CO = $c->model('MyDBI::Co')->new($coData);
-			$CO->coid($self->get_token_id);
+			$CO->coid($COID);
 			$CO->insert;
 
 			$c->log->debug("New CO Inserted, ID: " . $CO->coid);
@@ -869,7 +892,7 @@ sub populate_order :Private
 	$c->stash->{extid} = $CO->extid;
 	$c->stash->{custref2} = $CO->custref2;
 	$c->stash->{custref3} = $CO->custref3;
-	
+
 	## Address and Shipment Information
 	if (!$populate or $populate eq 'address' or $populate eq 'summary')
 		{
@@ -1034,8 +1057,9 @@ sub add_detail_row :Private
 
 	$c->stash->{PKG_DETAIL_ROW} = 1;
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-
-	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{PKG_DETAIL_ROW} = 0;
+	return $HTML;
 	}
 
 sub get_tooltips :Private
@@ -2240,7 +2264,7 @@ sub CheckIfShipmentModified
 
 	my $OriginalAddress = $CO->to_address;
 
-	if (   $OriginalAddress->addressname ne $ShipmentData->{'addressname'} 
+	if (   $OriginalAddress->addressname ne $ShipmentData->{'addressname'}
 		or $OriginalAddress->address1 ne $ShipmentData->{'address1'}
 		or $OriginalAddress->address2 ne $ShipmentData->{'address2'}
 		or $OriginalAddress->city ne $ShipmentData->{'addresscity'}

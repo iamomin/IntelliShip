@@ -987,6 +987,12 @@ sub can_autoship
 	return ($self->extcarrier ne '' and $self->extservice ne '' and $self->total_weight > 0);
 	}
 
+sub has_carrier_service_details
+	{
+	my $self = shift;
+	return ($self->extcarrier ne '' and $self->extservice ne '');
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

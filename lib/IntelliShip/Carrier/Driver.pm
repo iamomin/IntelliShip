@@ -75,9 +75,16 @@ sub get_EPL
 
 	my $carrier = $self->CO->extcarrier;
 	return unless $carrier;
-	my $method = 'get_' . uc($carrier) . '_EPL';
 
-	#$self->log("... $method: " . Dumper $DATA);
+	my $EPL_TEMPLATES = {
+		USPSF   => 'get_USPS_EPL_1',
+		USTPO   => 'get_USPS_EPL_2',
+		};
+
+	my $method = $EPL_TEMPLATES->{$DATA->{'servicecode'}};
+	$method = 'get_' . uc($carrier) . '_EPL' unless $method;
+
+	$self->log("... $method: " . Dumper $DATA);
 
 	my $EPL = '';
 	#eval {
@@ -138,7 +145,7 @@ sub insert_shipment
 
 	return unless $shipmentData;
 
-	$self->log("... shipmentData: " . Dumper $shipmentData);
+	#$self->log("... shipmentData: " . Dumper $shipmentData);
 
 	my $date_shipped = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetoship'});
 

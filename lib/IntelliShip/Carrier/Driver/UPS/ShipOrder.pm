@@ -153,7 +153,7 @@ sub process_request
 			}
 		}
 
-	$self->log("____ tracking1: " . $shipmentData->{'tracking1'});
+	$self->log("___ tracking1: " . $shipmentData->{'tracking1'});
 
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
@@ -404,14 +404,14 @@ sub BuildPrinterString
          FROM
             upsroutingcode
          WHERE
-			'$lookup_zip' between postalcodelow and postalcodehigh	
+			'$lookup_zip' between postalcodelow and postalcodehigh
 			AND countrycode = '" . $CgiRef->{'addresscountry'} . "'
 		";
 
 	my $STH = $self->myDBI->select($SQL);
 	my $DATA = $STH->fetchrow(0);
 	$CgiRef->{'routingcode'} = $DATA->{urc};
-	
+
 	$self->log("************ routingcode: " . $CgiRef->{'routingcode'});
 	# Prepare information for maxicode
 	my $barcodezip5 = substr($barcodezip,0,5);
@@ -450,7 +450,7 @@ sub BuildPrinterString
 	my $ref2    = substr($CgiRef->{'tracking1'},14,4);
 
 	$CgiRef->{'spacedtracking1'} = $qual." ".$acct1." ".$acct2." ".$service." ".$ref1." ".$ref2;
-	$self->log("____ spacedtracking1: " . $CgiRef->{'tracking1'});
+	$self->log("___ spacedtracking1: " . $CgiRef->{'tracking1'});
 
 	if ( $CgiRef->{'totalquantity'} >= $CgiRef->{'quantity'} )
 		{
@@ -473,14 +473,14 @@ sub BuildPrinterString
 		}
 
 	# calculate shipment number.  presumably only needed for international but calcing for all
-	# a multi piece shipment uses a single shipment number 
+	# a multi piece shipment uses a single shipment number
 	if ( $CgiRef->{'currentpiece'} == 1 )
 		{
 		($CgiRef->{'shipmentnumber'}) = $self->CalculateShipmentNumber($CgiRef->{'tracking1'});
 		}
 
 	$CgiRef->{'comments'} = $CgiRef->{'description'};
-	
+
 	# Build dim string
 	$CgiRef->{'dims'} = $CgiRef->{'dimlength'};
 	$CgiRef->{'dims'} .= 'x' . $CgiRef->{'dimwidth'} if $CgiRef->{'dims'} and $CgiRef->{'dimwidth'};

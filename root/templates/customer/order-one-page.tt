@@ -7,6 +7,9 @@
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="do" name="do" value="save"/>
+	[% IF AUTO_PROCESS %]
+	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
+	[% END %]
 	[% IF parent %]
 	<input type="hidden" name="parent" value="[% parent %]"/>
 	[% END %]
@@ -56,9 +59,18 @@
 
 	$("#ship_now").click(function() {
 
-		var carrier = $("#carrier").val();
+		var carrier     = $("#carrier").val();
+		var totalweight = $("#totalweight").val();
 
-		if (carrier == undefined) return;
+		if ($('#autoprocess').val() == 1)
+			{
+			if (totalweight == undefined || totalweight == 0) return;
+			if (carrier == undefined || carrier == '') $('#route').click();
+			}
+		else
+			{
+			if (carrier == undefined) return;
+			}
 
 		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
 			{
@@ -86,13 +98,17 @@
 		setToolTip();
 	[% END %]
 
-	$(document).ready(function(){
+	$(document).ready(function() {
 		calculate_total_packages();
 		calculate_total_weight();
 		checkInternationalSection();
 		$('#carrier-service-list').tabs();
 		if(requiredFieldHash) {
 			markRequiredFields(requiredFieldHash);
+			}
+
+		if ($('#autoprocess').val() == 1) {
+			$("#ship_now").click();
 			}
 		});
 

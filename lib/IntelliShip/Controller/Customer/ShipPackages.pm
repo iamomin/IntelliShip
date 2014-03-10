@@ -204,7 +204,8 @@ sub load_order :Private
 
 	my $Address = $CO->to_address;
 
-	$c->stash->{CONSOLIDATE} = 1;
+	$c->stash->{CONSOLIDATE}  = 1;
+	$c->stash->{AUTO_PROCESS} = 1;
 
 	$self->quickship;
 

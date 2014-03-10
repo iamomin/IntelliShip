@@ -84,13 +84,13 @@ sub setup :Local
 
 		my @shipmentmarkupdata =$c->model('MyArrs::RateData')->search({
 			-and => [
-			  -or => [
-				freightmarkupamt => { '!=', undef },
-				freightmarkuppercent  => { '!=', undef },
-			  ],
-			  customerid => $Customer->customerid,
-			  ownerid => $Customer->customerid,
-			  ownertypeid => 1,
+			-or => [
+				freightmarkupamt => { '!=' => undef },
+				freightmarkuppercent  => { '!=' => undef },
+				],
+			customerid => $Customer->customerid,
+			ownerid => $Customer->customerid,
+			ownertypeid => 1,
 			],
 		});
 
