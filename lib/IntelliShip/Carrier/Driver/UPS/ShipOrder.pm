@@ -393,6 +393,26 @@ sub BuildPrinterString
 		}
 	$CgiRef->{'barcodezip'} .= $barcodezip;
 
+
+	#need 5 digit zip for lookups
+	my $lookup_zip = substr($CgiRef->{'addresszip'},0,5);
+
+	# Get Routing (URSA) Code
+	my $SQL = "
+		SELECT
+            urc
+         FROM
+            upsroutingcode
+         WHERE
+			'$lookup_zip' between postalcodelow and postalcodehigh	
+			AND countrycode = '" . $CgiRef->{'addresscountry'} . "'
+		";
+
+	my $STH = $self->myDBI->select($SQL);
+	my $DATA = $STH->fetchrow(0);
+	$CgiRef->{'routingcode'} = $DATA->{urc};
+	
+	$self->log("************ routingcode: " . $CgiRef->{'routingcode'});
 	# Prepare information for maxicode
 	my $barcodezip5 = substr($barcodezip,0,5);
 	my $barcodezip4 = substr($barcodezip,5,4);
