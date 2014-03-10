@@ -452,6 +452,8 @@ function validate_package_details()
 
 		var row_ID = this.id.split('_')[2];
 
+		if ($('#type_'+row_ID).val() == 'product') return;
+
 		for (var i=0; i<controls.length; i++) {
 			var element = controls[i];
 			if (element == 'quantity') requiredPkgProduct[element+'_'+row_ID] = { numeric: true };

@@ -59,6 +59,9 @@
 
 	$("#ship_now").click(function() {
 
+		update_package_product_sequence();
+		validateForm(requiredFieldHash);
+
 		var carrier     = $("#carrier").val();
 		var totalweight = $("#totalweight").val();
 
