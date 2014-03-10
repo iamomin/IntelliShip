@@ -1,6 +1,7 @@
 package IntelliShip::Carrier::Driver::UPS::ShipOrder;
 
 use Moose;
+use POSIX;
 use Date::Manip;
 use Data::Dumper;
 use IntelliShip::Utils;
@@ -404,15 +405,53 @@ sub BuildPrinterString
          FROM
             upsroutingcode
          WHERE
-			'$lookup_zip' between postalcodelow and postalcodehigh
+			'$lookup_zip' between postalcodelow and postalcodehigh	
 			AND countrycode = '" . $CgiRef->{'addresscountry'} . "'
 		";
 
 	my $STH = $self->myDBI->select($SQL);
 	my $DATA = $STH->fetchrow(0);
 	$CgiRef->{'routingcode'} = $DATA->{urc};
-
+	
 	$self->log("************ routingcode: " . $CgiRef->{'routingcode'});
+	
+	 # Convert ISO2 country to ISO number
+     my $SQLISO = "
+         SELECT
+            countryid
+         FROM
+            country
+         WHERE
+            countryiso2 = '" . $CgiRef->{'addresscountry'} . "'
+		";
+	my $STH = $self->myDBI->select($SQLISO);
+	my $ISODATA = $STH->fetchrow(0);
+	$CgiRef->{'isocountry'} = $ISODATA->{countryid};
+      
+	#States needs to be ISO2 format
+	my $State_length = length($CgiRef->{'addressstate'});
+	if ( $State_length ne 2 )
+		{
+		my $SQL_ISO2 = "
+			SELECT
+				province
+			FROM
+				postalcode
+			WHERE
+				postalcode = '$lookup_zip'
+			LIMIT 1
+		";
+
+		my $STH  = $self->myDBI->select($SQL_ISO2);
+		my $ISO2DATA = $STH->fetchrow(0);
+		$CgiRef->{'iso2state'} = $ISO2DATA->{province};
+		}
+	else
+		{
+		$CgiRef->{'iso2state'} = $CgiRef->{'addressstate'};
+		}
+
+	$CgiRef->{'servicecode'} = $self->customerservice->{servicecode};
 	# Prepare information for maxicode
 	my $barcodezip5 = substr($barcodezip,0,5);
 	my $barcodezip4 = substr($barcodezip,5,4);
@@ -450,7 +489,8 @@ sub BuildPrinterString
 	my $ref2    = substr($CgiRef->{'tracking1'},14,4);
 
 	$CgiRef->{'spacedtracking1'} = $qual." ".$acct1." ".$acct2." ".$service." ".$ref1." ".$ref2;
-	$self->log("___ spacedtracking1: " . $CgiRef->{'tracking1'});
+	
+	$self->log("____ spacedtracking1: " . $CgiRef->{'tracking1'});
 
 	if ( $CgiRef->{'totalquantity'} >= $CgiRef->{'quantity'} )
 		{
@@ -462,22 +502,15 @@ sub BuildPrinterString
 			}
 		}
 
-	if ($CgiRef->{'totalquantity'} >= $CgiRef->{'quantity'})
-		{
-		$CgiRef->{'currentpiece'} = $CgiRef->{'totalquantity'} - $CgiRef->{'quantity'};
-
-		if ($CgiRef->{'quantity'} > 0)
-			{
-			$CgiRef->{'currentpiece'}++;
-			}
-		}
-
 	# calculate shipment number.  presumably only needed for international but calcing for all
-	# a multi piece shipment uses a single shipment number
+	# a multi piece shipment uses a single shipment number 
 	if ( $CgiRef->{'currentpiece'} == 1 )
 		{
 		($CgiRef->{'shipmentnumber'}) = $self->CalculateShipmentNumber($CgiRef->{'tracking1'});
 		}
+
+ 	$CgiRef->{'footer_datetime'} = IntelliShip::DateUtils->american_date_time . ' PT';
+	$CgiRef->{'routingversion'} = "96.5A 10/2009";
 
 	$CgiRef->{'comments'} = $CgiRef->{'description'};
 
