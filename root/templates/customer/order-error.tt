@@ -6,7 +6,8 @@
 [% END %]
 
 <form id="frm_label" name="frm_label" action="/customer/order/quickship">
-	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" name="coid" value="[% coid %]"/>
+	<input type="hidden" name="force_edit" value="1"/>
 	<center>
 		<input type="submit" class="button" value="EDIT ORDER""/>
 	</center>

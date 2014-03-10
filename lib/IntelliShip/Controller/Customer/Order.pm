@@ -62,10 +62,9 @@ sub setup_one_page :Private
 	my $self = shift;
 	my $c = $self->context;
 
-	my $CO = $self->get_order;
-	if ($CO->can_autoship and ($c->stash->{AUTO_PROCESS} == 1 or $self->customer->get_contact_data_value('autoprocess')))
+	if ($self->order_can_auto_process)
 		{
-		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
+		$c->log->debug("... Auto Shipping Order");
 		return $self->SHIP_ORDER;
 		}
 
@@ -84,6 +83,17 @@ sub setup_one_page :Private
 	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
 
 	$c->stash(template => "templates/customer/order-one-page.tt");
+	}
+
+sub order_can_auto_process
+	{
+	my $self = shift;
+
+	my $c      = $self->context;
+	my $params = $c->req->params;
+	my $CO     = $self->get_order;
+
+	return ($CO->can_autoship and !$params->{'force_edit'} and ($c->stash->{AUTO_PROCESS} == 1 or $self->customer->get_contact_data_value('autoprocess')));
 	}
 
 sub setup_address :Private
