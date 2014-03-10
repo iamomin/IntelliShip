@@ -5,4 +5,9 @@
 	<div class="notice">Please give one more try. Thank you for using our services!</div>
 [% END %]
 
-<center><input type="button" class="button" value="BACK" onclick="javascript:history.back();"/></center>
+<form id="frm_label" name="frm_label" action="/customer/order/quickship">
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<center>
+		<input type="submit" class="button" value="EDIT ORDER""/>
+	</center>
+</form>

@@ -29,7 +29,7 @@ sub process_request
 		}
 	elsif ($shipmentData->{'servicecode'} eq 'USTPO')
 		{
-		$XML_request = $self->get_StandarPost_xml_request;
+		$XML_request = $self->get_StandardPost_xml_request;
 		}
 
 	my $url = 'https://secure.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
@@ -163,7 +163,7 @@ END
 	return $XML_request;
 	}
 
-sub get_StandarPost_xml_request
+sub get_StandardPost_xml_request
 	{
 	my $self = shift;
 	my $shipmentData = $self->data;

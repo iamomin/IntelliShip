@@ -526,7 +526,8 @@ if ($TempCounter-- <= 0)
 		if (!$self->{'object_initialized'})
 		{
 			$self->{'object_errorstring'} = 'Object Not Initialized';
-			TraceBack($self->{'object_errorstring'});
+			#TraceBack($self->{'object_errorstring'});
+			warn "Object Not Initialized at 'GetValueHashRef' " . __PACKAGE__;
 			return 0;
 		}
 

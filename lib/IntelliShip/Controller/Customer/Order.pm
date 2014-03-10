@@ -1448,12 +1448,12 @@ sub SHIP_ORDER :Private
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
 	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
 
-	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $self->customer, $CO) unless $params->{'customerserviceid'};
+	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $Customer, $CO) unless $params->{'customerserviceid'};
 
 	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
 	#$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
 
-	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$self->customer->customerid);
+	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$Customer->customerid);
 	#$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
 
 	if ($ShippingData->{'decvalinsrate'})

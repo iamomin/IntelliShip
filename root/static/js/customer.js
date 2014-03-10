@@ -238,7 +238,7 @@ function validateForm( requireFields )
 
 		if (boolRequired) {
 			boolResult = false;
-			$('#'+control).addClass( "ui-state-error" );
+			if (control != 'package-detail-list') $('#'+control).addClass( "ui-state-error" );
 			}
 		else
 			if ($('#'+control).hasClass('ui-state-error')) $('#'+control).removeClass('ui-state-error');
