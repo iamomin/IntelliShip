@@ -163,6 +163,15 @@ function validNumericField( Numeric )
 	return Numeric.match(/^\d+(\.\d+)?$/g);
 	}
 
+function validNonZeroNumericField( Numeric )
+	{
+	if (Numeric == undefined) return false;
+	if (Numeric.match(/^\d+(\.\d+)?$/g)) {
+		return (Numeric > 0)
+		}
+	return false;
+	}
+
 function validDate( DateStr )
 	{
 	var matches = /^(\d{2})[-\/](\d{2})[-\/](\d{4})$/.exec(DateStr);
@@ -221,6 +230,8 @@ function validateForm( requireFields )
 				boolRequired = ( value && !validDate($('#'+control).val()) && $('#'+control).val('') );
 			else if ( proerty == "numeric" )
 				boolRequired = ( value ? !validNumericField($('#'+control).val()) : ($('#'+control).val().length > 0 && !validNumericField($('#'+control).val())));
+			else if ( proerty == "nonzero" )
+				boolRequired = ( value ? !validNonZeroNumericField($('#'+control).val()) : ($('#'+control).val().length > 0 && !validNonZeroNumericField($('#'+control).val())));
 			else if ( proerty == "minlength" )
 				boolRequired = ( $('#'+control).val() == undefined || $('#'+control).val().length < value );
 			else if ( proerty == "method" )
