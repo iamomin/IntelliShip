@@ -894,8 +894,8 @@ sub package_details
 		}
 
 	# Step 3: Find product belog to Order
-	my @co_products = $self->co_products;
-	foreach my $Product (@co_products)
+	my @shipment_products = $self->shipment_products;
+	foreach my $Product (@shipment_products)
 		{
 		push (@packageArr, $Product);
 		}
