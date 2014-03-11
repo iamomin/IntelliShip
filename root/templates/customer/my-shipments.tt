@@ -218,7 +218,6 @@
 
 		Object.keys(shipmentList).forEach(function (key) {
 			trackingURL = trackURLHash[key].replace("XXXX",shipmentList[key]);
-			alert(trackingURL);
 			window.open(trackingURL + '&ref=' + jQuery.now());
 			})
 		}
