@@ -68,12 +68,14 @@
 		if ($('#autoprocess').val() == 1)
 			{
 			if (totalweight == undefined || totalweight == 0) return;
-			if (carrier == undefined || carrier == '') $('#route').click();
+			if (carrier == undefined || carrier == '')
+				{
+				$('#route').click();
+				return;
+				}
 			}
-		else
-			{
-			if (carrier == undefined) return;
-			}
+
+		if (carrier == undefined) return;
 
 		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
 			{
