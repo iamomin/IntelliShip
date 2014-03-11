@@ -97,9 +97,13 @@ sub get_HTML :Private
 		{
 		$self->populate_my_shipment_list;
 		}
+	elsif( $action eq 'show_shipment_summary' )
+		{
+		$self->show_shipment_summary;
+		}
 
-	$c->stash($params);
-	$c->stash(template => "templates/customer/my-shipments.tt");
+		$c->stash($params);
+		$c->stash(template => "templates/customer/my-shipments.tt") unless $c->stash->{template};
 	}
 
 my $TITLE ;
@@ -444,6 +448,49 @@ sub SendShipmentVoidEmail
 	my $Body = 'ShipmentID: ' . $Shipment->shipmentid . "\n" . $self->customer->customername . "\n" . $CarrierName . " " . $ServiceName . "\n" . $TrackingNumber . "\n" . " " . $OrderNumber . "\n" . "\n\n\n";
 	}
 
+sub show_shipment_summary: Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("Get Shipment Summary for Shipmentid ". $params->{'shipmentid'});
+
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}});
+
+	my $originaddress = $Shipment->origin_address;
+	my $destinationaddress = $Shipment->destination_address;
+
+	$c->log->debug("Packages ". $Shipment->packages);
+	my $totalpackages = $Shipment->packages;
+	$c->log->debug("Total weight ". $Shipment->total_weight);
+	my $total_weight = $Shipment->total_weight;
+	
+	my @package_details = $Shipment->package_details;
+	foreach my $PackProData (@package_details)
+		{
+		$c->log->debug("package_Weight ". $PackProData->density );
+		}
+
+	
+	my $date_shipped = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+	my $due_date = IntelliShip::DateUtils->american_date($Shipment->datedue);
+
+	my $shipmentSummary = {
+			customerAddress => $Shipment->origin_address,
+			toAddress => $Shipment->destination_address,
+			shipmentinfo => $Shipment,
+			shipdate =>	$date_shipped,
+			duedate =>	$due_date,
+			carrier =>	$Shipment->carrier,
+			packages => $totalpackages,
+			total_weight => $total_weight,
+			packagedetails => @package_details,
+			};
+
+	$c->stash(template => "templates/customer/shipment-summary.tt");
+	$c->stash($shipmentSummary);
+	}
 =encoding utf8
 
 =head1 AUTHOR

@@ -1,0 +1,134 @@
+<h2>SHIPMENT-SUMMARY</h2>
+<div id="equal">
+		<div id="row">
+			<table class="single-row">
+			<tr>
+				<td class="threecolumns" style="padding-right: 5px">
+				<table class="app">
+				<caption>SHIP TO </caption>
+				<tr>
+					<td><label class="float-right">Company:</label></td><td>[% toAddress.addressname %]</td>
+				</tr>
+				<tr>
+					<td><label class="float-right">Address1:</label></td><td>[% toAddress.address1 %]</td>
+				</tr>
+				<tr>
+					<td><label class="float-right">Address2:</label></td><td>[% customerAddress.address2 %]</td>
+				</tr>
+				<tr>
+					<td><label class="float-right">City, State, Zip:</label></td><td>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</td>
+				</tr>
+				<tr>
+					<td><label class="float-right">Country:</label></td><td>[% toAddress.country_description %]</td>
+			</tr>
+			<tr>
+					<td><label class="float-right">Contact Name:</label></td>
+					<td>[% shipmentinfo.contactname %]</td>
+				</tr>	
+			<tr>
+				<td><label class="float-right">Phone:</label></td><td>[% shipmentinfo.oacontactphone%]</td>
+			</tr>
+		</table>
+		</td>
+		<td class="threecolumns" style="padding-right: 5px">
+		<table class="app">
+			<caption>SHIP From </caption>
+			<tr>
+				<td><label class="float-right">Company:</label></td><td>[% customerAddress.addressname %]</td>
+			</tr>
+			<tr>
+				<td><label class="float-right">Address1:</label></td><td>[% customerAddress.address1 %]</td>
+			</tr>
+			<tr>
+				<td><label class="float-right">Address2:</label></td><td>[% customerAddress.address2 %]</td>
+			</tr>
+			<tr>
+				<td><label class="float-right">City, State, Zip:</label></td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
+			</tr>
+			<tr>
+				<td><label class="float-right">Country:</label></td><td>[% customerAddress.country_description %]</td>
+			</tr>
+			<tr>
+				<td><label class="float-right">Contact Name:</label></td>
+				<td>[% shipmentinfo.oacontactname %]</td>
+			</tr>
+			<tr>
+				<td><label class="float-right">Phone:</label></td><td>[% shipmentinfo.oacontactphone%]</td>
+			</tr>
+		</table>
+		</td>
+		<td class="threecolumns" style="padding-right: 5px">
+		<table class="app">
+			<caption>SHIPMENT INFORMATION </caption>
+			<tr>
+				<td>Ship Date: </td>
+				<td>[% shipdate %]</td>
+			</tr>
+			<tr>
+				<td>Due Date: </td>
+				<td>[% duedate ? duedate : 'Not Define' %]</td>
+			</tr>
+			<tr>
+				<td>&nbsp</td>
+			</tr>
+			<tr>
+				<td>&nbsp</td>
+			</tr>
+			<tr>
+				<td>&nbsp</td>
+			</tr>
+			<tr>
+				<td>&nbsp</td>
+			</tr>
+			<tr>
+				<td>&nbsp</td>
+			</tr>
+		</table>
+		</td>
+	</tr>
+</table>
+</div>
+</div>
+<div>
+	<table class="summary-app">
+		<caption>Package DETAIL </caption>
+		<tr>
+			<td>QTY </td>
+			<td>SKU#</td>
+			<td>Descritpion</td>
+			<td> Type </td>
+			<td> Weight </td>
+			<td> Dim Weight </td>
+			<td> Dim Lenght</td>
+			<td>Dim Width </td>
+			<td>Dim Height </td>
+			<td>Density</td>
+			<td>NMFC </td>
+			<td>CLASS</td>
+			<td>DEC. VALUE</td>
+			<td>FREIGHT INS.</td>
+		</tr>
+		[% FOREACH  PackProData IN packagedetails %]
+		<tr>
+			<td>[% PackProData.quantity %]</td>
+			<td>[% PackProData.partnumber %]</td>
+			<td>[% PackProData.description %]</td>
+			<td>[% PackProData.unitofmeasure %]</td>
+			<td>[% PackProData.weight%]</td>
+			<td>[% PackProData.dimweight%]</td>
+			<td>[% PackProData.dimlength%]</td>
+			<td>[% PackProData.dimwidth%]</td>
+			<td>[% PackProData.dimheight%]</td>
+			<td>[% PackProData.density%]</td>
+			<td>[% PackProData.nmfc%]</td>
+			<td>[% PackProData.class%]</td>
+			<td>[% PackProData.decval%]</td>
+			<td>[% PackProData.frtins%]</td>
+			
+		</tr>
+		[% END %]
+		<tr>
+			<td>&nbsp;</td><td>&nbsp;</td>
+		</tr>
+	</table>
+</div>
