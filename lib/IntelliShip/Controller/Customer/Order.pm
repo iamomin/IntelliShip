@@ -1717,6 +1717,7 @@ sub generate_label :Private
 		## Copy to Apache context path ##
 		system($copyImgCommand);
 
+		$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
 		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
 	else
