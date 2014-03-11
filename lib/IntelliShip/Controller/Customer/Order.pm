@@ -177,6 +177,8 @@ sub setup_shipment_information :Private
 	$c->stash->{default_package_type} = $Contact->default_package_type;
 	$c->stash->{default_product_type} = $Contact->default_product_type;
 
+	$c->stash->{AUTO_QUANTITYxWIEGHT_SELECT} = $Contact->get_contact_data_value('auto_quantoty_x_wieght_select');
+	
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 

@@ -37,6 +37,7 @@ sub index :Path :Args(0) {
 			{ name => 'This Month', value => 'this_month' },
 			];
 	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
+	$c->stash->{trackurl_list} = $self->get_select_list('TRACK_URL');
 
 	$c->stash(template => "templates/customer/my-shipments.tt");
 }

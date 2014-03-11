@@ -76,7 +76,7 @@
 	[% END %]
 		<table class="css3-checkboxes">
 			<tr>
-				<th><label><input type="checkbox" id="checkAll" name="selectAll"/><span></span></label></th>
+				<th><label><input type="checkbox" id="checkAll" name="selectAll" onclick="check_uncheck_all();"/><span></span></label></th>
 				<th>STATUS</th>
 				<th>TRACKING#</th>
 				<th>ORDER#</th>
@@ -91,7 +91,7 @@
 			</tr>
 			[% FOREACH item IN myshipment_list %]
 			<tr>
-				<td><label><input type="checkbox" id="[% item.shipmentid %] " name="shipmentid" value="[% item.shipmentid %]" class="items"/><span></span></label></td>
+				<td><label><input type="checkbox" id="[% item.shipmentid %] " name="shipmentid" value="[% item.carrier _ '-' _ item.tracking %]" class="items"/><span></span></label></td>
 				<td><a class="[% item.a_class %]" href="javascript:showShipmentDetails('[% item.shipmentid %]');"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
@@ -116,20 +116,29 @@
 	</div>
 	</form>
 	[% END %]
+
 <script>
 
 	$("#datefrom").datepicker({ maxDate: '0d' });
 	$("#dateto").datepicker({ maxDate: '2w' });
 
 	$('.items').change(function(){
-
-		var v = +($("#count").html());
-		if($(this).is(':checked')) {
-			$("#count").html(v+1);
-			} else {
-			$("#count").html(v-1);
-			}
+		$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
 		});
+
+	function check_uncheck_all(){
+		if($("#checkAll").is(':checked')){
+			$("input:checkbox[name=shipmentid]").each(function() {
+				$(this).prop( "checked", true );
+				});
+			}
+		else{
+			$("input:checkbox[name=shipmentid]").each(function() {
+				$(this).prop( "checked", false );
+				});
+			}
+		$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
+	}
 
 	[% UNLESS ajax %]
 	//$(document).on("click","a[name='track']", function (e) {
@@ -181,6 +190,37 @@
 				showMessage("Shipment void operation failed...", "Void Shipment");
 				}
 			});
+		}
+
+	var trackURLHash = {};
+	[% FOREACH item IN trackurl_list %]
+		trackURLHash['[% item.name %]']='[% item.value %]';
+	[% END %]
+
+	function trackShipment(ShipmentArr)
+		{
+		if (ShipmentArr == "") return;
+		var shipmentList = {};
+		var dilimeter = '';
+		var count = 1;
+		for (var i in ShipmentArr){
+			var ShipmentParts = ShipmentArr[i].split("-");
+			
+			if(ShipmentParts[0] == 'UPS'){
+				count += 1;
+				dilimeter = '&InquiryNumber'+count+'=';
+				}
+			else
+				dilimeter = ',';
+			
+			shipmentList[ShipmentParts[0]] = shipmentList[ShipmentParts[0]] ? shipmentList[ShipmentParts[0]] + ShipmentParts[1] + dilimeter : ShipmentParts[1] + dilimeter;	
+			}
+
+		Object.keys(shipmentList).forEach(function (key) {
+			trackingURL = trackURLHash[key].replace("XXXX",shipmentList[key]);
+			alert(trackingURL);
+			window.open(trackingURL + '&ref=' + jQuery.now());
+			})
 		}
 
     var clickCount = 0;
@@ -262,6 +302,11 @@
 				voidShipment(arrShipment);
 				}
 			if (action == 'track') {
+				var arrShipment = [];
+				$("input:checkbox[name=shipmentid]:checked").each(function() {	
+					arrShipment.push($(this).val());
+					});
+				trackShipment(arrShipment);
 				}
 			if (action == 'reprint') {
 				}
@@ -276,10 +321,6 @@
 			});
 		});
 
-	function openWindow(target)
-		{
-		window.open(target + '&ref=' + jQuery.now());
-		}
 	[% END %]
 
 	</script>

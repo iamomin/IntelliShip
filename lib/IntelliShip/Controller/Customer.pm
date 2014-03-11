@@ -908,6 +908,15 @@ sub get_select_list
 			{ name => 'JPG', value => 'jpg' },
 			];
 		}
+	elsif ($list_name eq 'TRACK_URL')
+		{
+		$list = [
+			{ name => 'DHL'		, value => IntelliShip::Utils->get_tracking_URL('DHL', 'XXXX') },
+			{ name => 'UPS'		, value => IntelliShip::Utils->get_tracking_URL('UPS', 'XXXX') },
+			{ name => 'Fedex'	, value => IntelliShip::Utils->get_tracking_URL('Fedex', 'XXXX') },
+			{ name => 'USPS'	, value => IntelliShip::Utils->get_tracking_URL('USPS', 'XXXX') },
+			];
+		}
 
 	return $list;
 	}
