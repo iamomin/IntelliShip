@@ -136,207 +136,204 @@
 	[% UNLESS ajax %]
 	</div>
 	</form>
-	[% END %]
 
-<script>
+	<script>
 
-	$('#filter').keypress(function(event) {
-		var keycode = (event.keyCode ? event.keyCode : event.which);
-		if(keycode == '13') {
-			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', $("#frm_my_shipments").serialize());
-			}
-		});
-
-	$("#quick_ship").click(function() {
-		$('#frm_my_shipments').attr('action', '/customer/order/quickship');
-		$('#frm_my_shipments').submit();
-		});
-
-	$("#instant-filter-columns").click(function() {
-
-		var linkObject = $(this);
-		if (linkObject.text() == "+") {
-			$("#filter-checkbox").slideDown('slow');
-			linkObject.html("&#8211");
-			} else {
-			$("#filter-checkbox").slideUp('slow');
-			linkObject.text("+");
-			}
-		});
-
-	$("#datefrom").datepicker({ maxDate: '0d' });
-	$("#dateto").datepicker({ maxDate: '2w' });
-
-	$('.items').change(function(){
-		$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
-		});
-
-	function check_uncheck_all() {
-		if($("#checkAll").is(':checked'))
-			{
-			$("input:checkbox[name=shipmentid]").each(function() {
-				$(this).prop( "checked", true );
-				});
-			}
-		else
-			{
-			$("input:checkbox[name=shipmentid]").each(function() {
-				$(this).prop( "checked", false );
-				});
-			}
-
-		$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
-		}
-
-	[% UNLESS ajax %]
-
-	//$(document).on("click","a[name='reprint']", function (e) {
-	//	var query_param = "&tracking_id=" + $(this).closest('tr').children('td:eq(2)').text() + "&shipment_action=" + "reprint";
-	//	send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
-	//	});
-
-	function showShipmentDetails(shipmentid) {
-
-		$('#dialog-message').dialog( {
-			autoOpen: false,
-			title: 'Shipment Summary',
-			width : '90%',
-			buttons: {
-				Close: function() {
-					$( this ).dialog( "close" );
-					}
+		$('#filter').keypress(function(event) {
+			var keycode = (event.keyCode ? event.keyCode : event.which);
+			if(keycode == '13') {
+				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', $("#frm_my_shipments").serialize());
 				}
 			});
 
-		var query_param = "shipmentid=" + shipmentid;
-		send_ajax_request('dialog-message', 'HTML', 'myshipments', 'show_shipment_summary', query_param, function () {
-			$( "#dialog-message" ).dialog("open");
+		$("#quick_ship").click(function() {
+			$('#frm_my_shipments').attr('action', '/customer/order/quickship');
+			$('#frm_my_shipments').submit();
 			});
-		}
 
-	function voidShipment(ShipmentArr)
-		{
-		if (ShipmentArr == "") return;
+		$("#instant-filter-columns").click(function() {
 
-		var query_param = "shipmentids=" + ShipmentArr;
-
-		send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
-			if ( JSON_data.is_success ) {
-				showMessage("Shipment voided successfully...", "Void Shipment");
-				var vDate = $("#view_date").val();
-				var query_param = "view_date=" + vDate;
-				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-				}
-			else if( JSON_data.voided.length > 0 ) {
-				showMessage("Shipments partially voided...", "Void Shipment");
-				var vDate = $("#view_date").val();
-				var query_param = "&view_date=" + vDate;
-				send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
-				}
-			else {
-				showMessage("Shipment void operation failed...", "Void Shipment");
+			var linkObject = $(this);
+			if (linkObject.text() == "+") {
+				$("#filter-checkbox").slideDown('slow');
+				linkObject.html("&#8211");
+				} else {
+				$("#filter-checkbox").slideUp('slow');
+				linkObject.text("+");
 				}
 			});
-		}
 
-	var trackURLHash = {};
-	[% FOREACH item IN trackurl_list %]
-		trackURLHash['[% item.name %]']='[% item.value %]';
-	[% END %]
+		$("#datefrom").datepicker({ maxDate: '0d' });
+		$("#dateto").datepicker({ maxDate: '2w' });
 
-	function trackShipment(ShipmentArr)
-		{
-		if (ShipmentArr == "") return;
-		var shipmentList = {};
-		var dilimeter = '';
-		var count = 1;
-		for (var i in ShipmentArr){
-			var ShipmentParts = ShipmentArr[i].split("-");
+		$('.items').change(function(){
+			$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
+			});
 
-			if(ShipmentParts[0] == 'UPS'){
-				count += 1;
-				dilimeter = '&InquiryNumber'+count+'=';
+		function check_uncheck_all() {
+			if($("#checkAll").is(':checked'))
+				{
+				$("input:checkbox[name=shipmentid]").each(function() {
+					$(this).prop( "checked", true );
+					});
 				}
 			else
-				dilimeter = ',';
+				{
+				$("input:checkbox[name=shipmentid]").each(function() {
+					$(this).prop( "checked", false );
+					});
+				}
 
-			shipmentList[ShipmentParts[0]] = shipmentList[ShipmentParts[0]] ? shipmentList[ShipmentParts[0]] + ShipmentParts[1] + dilimeter : ShipmentParts[1] + dilimeter;
+			$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
 			}
 
-		Object.keys(shipmentList).forEach(function (key) {
-			trackingURL = trackURLHash[key].replace("XXXX",shipmentList[key]);
-			window.open(trackingURL + '&ref=' + jQuery.now());
-			})
-		}
+		//$(document).on("click","a[name='reprint']", function (e) {
+		//	var query_param = "&tracking_id=" + $(this).closest('tr').children('td:eq(2)').text() + "&shipment_action=" + "reprint";
+		//	send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+		//	});
 
-	var clickCount = 0;
+		function showShipmentDetails(shipmentid) {
 
-	$('#view_date').click(function () {
-		clickCount++;
-		if (clickCount == 2) {
-			$(this).change();
-			clickCount = 0;
-			}
-		}).change (function () {
-			var vDate = $("#view_date").val();
-			if (vDate == 'today') {
-				$("#datefrom").datepicker('setDate', '+0d');
-				$("#dateto").datepicker('setDate', '+0d');
-				}
-			if (vDate == 'this_week') {
-				$("#datefrom").datepicker('setDate', '-1w');
-				$("#dateto").datepicker('setDate', '+0d');
-				}
-			if(vDate == 'this_month') {
-				$("#datefrom").datepicker('setDate', '-1m');
-				$("#dateto").datepicker('setDate', '+0d');
-				}
-			var query_param = "&view_date=" + vDate;
-			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-			$("#count").html("0");
-			clickCount = -1;
-			});
-
-	$("#btn_submit").click(function() {
-		var action = $("input:radio[name=batch_action]:checked").val();
-
-		if (action == 'void') {
-			var arrShipment = [];
-			$("input:checkbox[name=shipmentid]:checked").each(function() {
-				arrShipment.push($(this).val());
+			$('#dialog-message').dialog( {
+				autoOpen: false,
+				title: 'Shipment Summary',
+				width : '90%',
+				buttons: {
+					Close: function() {
+						$( this ).dialog( "close" );
+						}
+					}
 				});
-			voidShipment(arrShipment);
-			}
-		if (action == 'track') {
-			var arrShipment = [];
-			$("input:checkbox[name=shipmentid]:checked").each(function() {
-				arrShipment.push($(this).val());
+
+			var query_param = "shipmentid=" + shipmentid;
+			send_ajax_request('dialog-message', 'HTML', 'myshipments', 'show_shipment_summary', query_param, function () {
+				$( "#dialog-message" ).dialog("open");
 				});
-			trackShipment(arrShipment);
-			}
-		if (action == 'reprint') {
-			}
-		});
-
-	$(document).ready(function() {
-
-		if ($("#view_date").val() == 'today') {
-			$("#datefrom").datepicker('setDate', '+0d');
-			$("#dateto").datepicker('setDate', '+0d');
 			}
 
-		$("#myshipment_count").text('[% myshipment_list_count %]');
+		function voidShipment(ShipmentArr)
+			{
+			if (ShipmentArr == "") return;
 
-		$("#records_per_page").change(function() {
-			$("#shipmentids").prop('disabled','disabled');
-			$('#frm_my_shipments').submit();
+			var query_param = "shipmentids=" + ShipmentArr;
+
+			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
+				if ( JSON_data.is_success ) {
+					showMessage("Shipment voided successfully...", "Void Shipment");
+					var vDate = $("#view_date").val();
+					var query_param = "view_date=" + vDate;
+					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+					}
+				else if( JSON_data.voided.length > 0 ) {
+					showMessage("Shipments partially voided...", "Void Shipment");
+					var vDate = $("#view_date").val();
+					var query_param = "&view_date=" + vDate;
+					send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+					}
+				else {
+					showMessage("Shipment void operation failed...", "Void Shipment");
+					}
+				});
+			}
+
+		var trackURLHash = {};
+		[% FOREACH item IN trackurl_list %]
+			trackURLHash['[% item.name %]']='[% item.value %]';
+		[% END %]
+
+		function trackShipment(ShipmentArr)
+			{
+			if (ShipmentArr == "") return;
+			var shipmentList = {};
+			var dilimeter = '';
+			var count = 1;
+			for (var i in ShipmentArr){
+				var ShipmentParts = ShipmentArr[i].split("-");
+
+				if(ShipmentParts[0] == 'UPS'){
+					count += 1;
+					dilimeter = '&InquiryNumber'+count+'=';
+					}
+				else
+					dilimeter = ',';
+
+				shipmentList[ShipmentParts[0]] = shipmentList[ShipmentParts[0]] ? shipmentList[ShipmentParts[0]] + ShipmentParts[1] + dilimeter : ShipmentParts[1] + dilimeter;
+				}
+
+			Object.keys(shipmentList).forEach(function (key) {
+				trackingURL = trackURLHash[key].replace("XXXX",shipmentList[key]);
+				window.open(trackingURL + '&ref=' + jQuery.now());
+				})
+			}
+
+		var clickCount = 0;
+
+		$('#view_date').click(function () {
+			clickCount++;
+			if (clickCount == 2) {
+				$(this).change();
+				clickCount = 0;
+				}
+			}).change (function () {
+				var vDate = $("#view_date").val();
+				if (vDate == 'today') {
+					$("#datefrom").datepicker('setDate', '+0d');
+					$("#dateto").datepicker('setDate', '+0d');
+					}
+				if (vDate == 'this_week') {
+					$("#datefrom").datepicker('setDate', '-1w');
+					$("#dateto").datepicker('setDate', '+0d');
+					}
+				if(vDate == 'this_month') {
+					$("#datefrom").datepicker('setDate', '-1m');
+					$("#dateto").datepicker('setDate', '+0d');
+					}
+				var query_param = "&view_date=" + vDate;
+				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+				$("#count").html("0");
+				clickCount = -1;
+				});
+
+		$("#btn_submit").click(function() {
+			var action = $("input:radio[name=batch_action]:checked").val();
+
+			if (action == 'void') {
+				var arrShipment = [];
+				$("input:checkbox[name=shipmentid]:checked").each(function() {
+					arrShipment.push($(this).val());
+					});
+				voidShipment(arrShipment);
+				}
+			if (action == 'track') {
+				var arrShipment = [];
+				$("input:checkbox[name=shipmentid]:checked").each(function() {
+					arrShipment.push($(this).val());
+					});
+				trackShipment(arrShipment);
+				}
+			if (action == 'reprint') {
+				}
 			});
 
 		$("#date_apply").click(function() {
 			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
 			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 			});
-		});
+
+		$("#records_per_page").change(function() {
+			$("#shipmentids").prop('disabled','disabled');
+			$('#frm_my_shipments').submit();
+			});
+
+		$(document).ready(function() {
+
+			if ($("#view_date").val() == 'today') {
+				$("#datefrom").datepicker('setDate', '+0d');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
+
+			$("#myshipment_count").text('[% myshipment_list_count %]');
+			});
 
 	[% END %]
 
