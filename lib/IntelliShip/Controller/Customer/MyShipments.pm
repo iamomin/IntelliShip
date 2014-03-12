@@ -493,46 +493,29 @@ sub SendShipmentVoidEmail
 sub show_shipment_summary: Private
 	{
 	my $self = shift;
+
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("Get Shipment Summary for Shipmentid ". $params->{'shipmentid'});
-
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}});
-
-	my $originaddress = $Shipment->origin_address;
-	my $destinationaddress = $Shipment->destination_address;
-
-	$c->log->debug("Packages ". $Shipment->packages);
-	my $totalpackages = $Shipment->packages;
-	$c->log->debug("Total weight ". $Shipment->total_weight);
-	my $total_weight = $Shipment->total_weight;
-
-	my @package_details = $Shipment->package_details;
-	foreach my $PackProData (@package_details)
+	if (my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}}))
 		{
-		$c->log->debug("package_Weight ". $PackProData->density );
-		}
-
-
-	my $date_shipped = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
-	my $due_date = IntelliShip::DateUtils->american_date($Shipment->datedue);
-
-	my $shipmentSummary = {
+		my $shipmentSummary = {
 			customerAddress => $Shipment->origin_address,
-			toAddress => $Shipment->destination_address,
-			shipmentinfo => $Shipment,
-			shipdate =>	$date_shipped,
-			duedate =>	$due_date,
-			carrier =>	$Shipment->carrier,
-			packages => $totalpackages,
-			total_weight => $total_weight,
-			packagedetails => @package_details,
+			toAddress       => $Shipment->destination_address,
+			shipmentinfo    => $Shipment,
+			coinfo          => $Shipment->CO,
+			shipdate        => IntelliShip::DateUtils->american_date($Shipment->dateshipped),
+			duedate         => IntelliShip::DateUtils->american_date($Shipment->datedue),
+			carrier         => $Shipment->carrier,
+			packagedetails  => $Shipment->package_details,
 			};
 
+		$c->stash($shipmentSummary);
+		}
+
 	$c->stash(template => "templates/customer/shipment-summary.tt");
-	$c->stash($shipmentSummary);
 	}
+
 =encoding utf8
 
 =head1 AUTHOR

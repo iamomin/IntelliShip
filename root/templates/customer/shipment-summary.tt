@@ -1,94 +1,70 @@
 <h2>SHIPMENT-SUMMARY</h2>
+
 <div id="equal">
-		<div id="row">
-			<table class="single-row">
+	<div id="row">
+		<div class="add-summary">
+			<table class="summary-app">
+			<caption>ADDRESS</caption>
 			<tr>
-				<td class="threecolumns" style="padding-right: 5px">
-				<table class="app">
-				<caption>SHIP TO </caption>
+				<th>SHIP FROM </th><td>[% shipmentinfo.oacontactname %]</td>
+				<th>SHIP TO </th><td>[% shipmentinfo.contactname %]</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td>[% customerAddress.addressname %]</td>
+				<td>&nbsp;</td><td>[% toAddress.addressname %]</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td>[% customerAddress.address1 %]</td>
+				<td>&nbsp;</td><td>[% toAddress.address1 %]</td>
+			</tr>
+			[% IF customerAddress.address2 != '' && toAddress.address2 != '' %]
+			<tr>
+				<td>&nbsp;</td><td>[% customerAddress.address2 %]</td>
+				<td>&nbsp;</td><td>[% toAddress.address2 %]</td>
+			</tr>
+			[% END %]
+			<tr>
+				<td>&nbsp;</td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
+				<td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td><td>[% customerAddress.country_description %]</td>
+				<td>&nbsp;</td><td>[% toAddress.country_description %]</td>
+			</tr>
+			</table>
+		</div>
+		<div class="sd-summary">
+			<table class="summary-app">
+				<caption>SHIPMENT INFORMATION </caption>
 				<tr>
-					<td><label class="float-right">Company:</label></td><td>[% toAddress.addressname %]</td>
+					<td class="text-align-right bold-text" style="width: 50%"> Order Number : </td>
+					<td>[% coinfo.ordernumber %]</td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Address1:</label></td><td>[% toAddress.address1 %]</td>
+					<td class="text-align-right bold-text" style="width: 50%"> Tracking Number : </td>
+					<td>[% shipmentinfo.tracking1 %]</td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Address2:</label></td><td>[% customerAddress.address2 %]</td>
+					<td class="text-align-right bold-text" style="width: 50%">Ship Date : </td>
+					<td>[% shipdate %]</td>
 				</tr>
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</td>
+					<td class="text-align-right bold-text" style="width: 50%">Due Date : </td>
+					<td>[% duedate ? duedate : 'Not Define' %]</td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Country:</label></td><td>[% toAddress.country_description %]</td>
-			</tr>
-			<tr>
-					<td><label class="float-right">Contact Name:</label></td>
-					<td>[% shipmentinfo.contactname %]</td>
-				</tr>	
-			<tr>
-				<td><label class="float-right">Phone:</label></td><td>[% shipmentinfo.oacontactphone%]</td>
-			</tr>
-		</table>
-		</td>
-		<td class="threecolumns" style="padding-right: 5px">
-		<table class="app">
-			<caption>SHIP From </caption>
-			<tr>
-				<td><label class="float-right">Company:</label></td><td>[% customerAddress.addressname %]</td>
-			</tr>
-			<tr>
-				<td><label class="float-right">Address1:</label></td><td>[% customerAddress.address1 %]</td>
-			</tr>
-			<tr>
-				<td><label class="float-right">Address2:</label></td><td>[% customerAddress.address2 %]</td>
-			</tr>
-			<tr>
-				<td><label class="float-right">City, State, Zip:</label></td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
-			</tr>
-			<tr>
-				<td><label class="float-right">Country:</label></td><td>[% customerAddress.country_description %]</td>
-			</tr>
-			<tr>
-				<td><label class="float-right">Contact Name:</label></td>
-				<td>[% shipmentinfo.oacontactname %]</td>
-			</tr>
-			<tr>
-				<td><label class="float-right">Phone:</label></td><td>[% shipmentinfo.oacontactphone%]</td>
-			</tr>
-		</table>
-		</td>
-		<td class="threecolumns" style="padding-right: 5px">
-		<table class="app">
-			<caption>SHIPMENT INFORMATION </caption>
-			<tr>
-				<td>Ship Date: </td>
-				<td>[% shipdate %]</td>
-			</tr>
-			<tr>
-				<td>Due Date: </td>
-				<td>[% duedate ? duedate : 'Not Define' %]</td>
-			</tr>
-			<tr>
-				<td>&nbsp</td>
-			</tr>
-			<tr>
-				<td>&nbsp</td>
-			</tr>
-			<tr>
-				<td>&nbsp</td>
-			</tr>
-			<tr>
-				<td>&nbsp</td>
-			</tr>
-			<tr>
-				<td>&nbsp</td>
-			</tr>
-		</table>
-		</td>
-	</tr>
-</table>
+					<td class="text-align-right bold-text" style="width: 50%">Comments : </td>
+					<td>[% coinfo.description %]</td>
+				</tr>
+				<tr>
+					<td class="text-align-right bold-text" style="width: 50%">PO Number : </td>
+					<td>[% coinfo.ponumber %]</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 </div>
-</div>
+
 <div>
 	<table class="summary-app">
 		<caption>Package DETAIL </caption>
@@ -113,7 +89,7 @@
 			<td>[% PackProData.quantity %]</td>
 			<td>[% PackProData.partnumber %]</td>
 			<td>[% PackProData.description %]</td>
-			<td>[% PackProData.unitofmeasure %]</td>
+			<td>[% PackProData.unittype.unittypename %]</td>
 			<td>[% PackProData.weight%]</td>
 			<td>[% PackProData.dimweight%]</td>
 			<td>[% PackProData.dimlength%]</td>
@@ -124,7 +100,6 @@
 			<td>[% PackProData.class%]</td>
 			<td>[% PackProData.decval%]</td>
 			<td>[% PackProData.frtins%]</td>
-			
 		</tr>
 		[% END %]
 		<tr>
