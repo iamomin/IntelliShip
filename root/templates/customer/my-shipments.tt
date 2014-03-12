@@ -347,7 +347,7 @@
 		$('#filter').keypress(function(event){
 			var keycode = (event.keyCode ? event.keyCode : event.which);
 			if(keycode == '13') {
-				var query_param = "&filter=" + $("#filter").val();
+				var query_param = $("frm_my_shipments").serialize();
 				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 				}
 			});
