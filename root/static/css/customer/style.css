@@ -578,17 +578,12 @@ button.quick-ship label {
     background: url(/static/images/open-box-white.png) no-repeat center center;
 }
 
-table.shipment-filter  { width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
-table.shipment-filter td {vertical-align:top; padding: 10px 0; color: #1875BA; font-weight: bold; white-space: nowrap; }
-table.shipment-filter-checkbox td { width:110px; padding: 0px 0;text-align: left; color: #1875BA; font-weight: bold; white-space: nowrap; }
-table.shipment-filter input[type=text] { width: 160px; }
-
-table.shipment-filter div {
-    height: 45px;
-    display: inline;
-    overflow: hidden;
-    background: url(/static/images/add.png) no-repeat center center;
-}
+table.shipment-filter { width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
+table.shipment-filter td { padding: 10px 0; color: #1875BA; font-weight: bold; white-space: nowrap; }
+table.shipment-filter input[type=text] { width: 200px; }
+table.shipment-filter td div table td { padding: 0px 10px; text-align: left; font-weight: normal; }
+table.shipment-filter a { font-weight: bold; }
+table.shipment-filter a:hover { text-decoration: none; }
 
 input.apply-filter {
     position: relative;

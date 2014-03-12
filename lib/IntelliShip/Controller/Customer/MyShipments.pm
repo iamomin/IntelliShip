@@ -146,8 +146,10 @@ sub reprintlabel :Local
 sub populate_my_shipment_list :Private
 	{
 	my $self = shift;
+
 	my $c = $self->context;
 	my $params = $c->req->params;
+
 	my $SQL;
 
 	my $do_value = $params->{'do'} || '';
@@ -198,62 +200,41 @@ sub get_search_by_term_sql
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	
+
 	return unless $params->{'filter'};
 
+	IntelliShip::Utils->hash_decode($params);
+
 	my $COLUMN_MAPPING = {
-		tracking    => 's.tracking1',
-		ordernumber => 'co.ordernumber',
-		customer    => 'da.addressname',
-		origin      => '(oa.city || oa.state)',
-		destination =>'(da.city || da.state)',
-		date        =>'to_char(s.dateshipped ,\'mm/dd/yy\')',
-		duedate     =>'to_char(s.datedue,\'mm/dd/yy\')',
-		carrier     =>'s.carrier',
-		mode        =>'s.mode'
+		tracking     => 's.tracking1',
+		ordernumber  => 'co.ordernumber',
+		customername => 'da.addressname',
+		origin       => '(oa.city || oa.state)',
+		destination  => '(da.city || da.state)',
+		shipdate     => 'to_char(s.dateshipped ,\'mm/dd/yy\')',
+		duedate      => 'to_char(s.datedue,\'mm/dd/yy\')',
+		carrier      => 's.carrier',
+		mode         => 's.mode'
 		};
 
-	my $search_value = $params->{'filter'};
-	my @arrsearchbyterm;
-	foreach my $filter_value (keys %$params)
-		{
-		my $filter = $1 if $filter_value =~ /filter_(.+)$/;
+	my @arrSearchByTerm;
+	my @searchParts = split(' ', $params->{'filter'});
 
-		$c->log->debug("... Filter: " . $filter);
-		my $field = $COLUMN_MAPPING->{$filter};
-		next unless $field;
-		push(@arrsearchbyterm," $field LIKE '%$search_value%'");
-=as
-		#$search_by_term_sql = "AND s.shipmentid like '$filter_value' OR s.tracking1 like '$filter_value' OR co.ordernumber like '$filter_value' ";
-		push(@arrsearchbyterm," s.tracking1 like '%$filter_value%'") if($params->{'filter_tracking'});
-		push(@arrsearchbyterm," co.ordernumber like '%$filter_value%'") if($params->{'filter_order'});
-		push(@arrsearchbyterm," da.addressname like '%$filter_value%'") if($params->{'filter_customer'});
-		if($params->{'filter_origin'})
-			{
-			push(@arrsearchbyterm," oa.city like '%$filter_value%'");
-			push(@arrsearchbyterm," oa.state like '%$filter_value%'");
-			}
-		if($params->{'filter_destination'})
+	foreach my $term (@searchParts)
 		{
-		push(@arrsearchbyterm," da.city like '%$filter_value%'");
-		push(@arrsearchbyterm," da.state like '%$filter_value%'");
+		foreach my $filter_value (keys %$params)
+			{
+			next unless $filter_value =~ /filter_(.+)$/;
+			my $filter = $1;
+			my $field = $COLUMN_MAPPING->{$filter};
+			next unless $field;
+			push(@arrSearchByTerm," $field LIKE '%$term%'");
+			}
 		}
-		push(@arrsearchbyterm," to_char(s.dateshipped ,'mm/dd/yy')like '%$filter_value%'") if($params->{'filter_date'});
-		push(@arrsearchbyterm," to_char(s.datedue,'mm/dd/yy') like '%$filter_value%'") if($params->{'filter_duedate'});
-		push(@arrsearchbyterm," s.carrier like '%$filter_value%'") if($params->{'filter_carrier'});
-		push(@arrsearchbyterm," s.mode like '%$filter_value%'") if($params->{'filter_mode'});
-		
-		$c->log->debug("arrsearchbyterm >>>>>>>: " .Dumper @arrsearchbyterm);
-		if(@arrsearchbyterm)
-	    {
-		$search_by_term_sql = " AND (".join('OR',@arrsearchbyterm) . " )";
-		}
-		$c->log->debug("search_by_term_sql : " . $search_by_term_sql);
-=cut
-		}
-		my $search_by_term_sql = " AND ( ".join(' OR ', @arrsearchbyterm) . " )" if @arrsearchbyterm;
-		return $search_by_term_sql || '';
-		
+
+	my $search_by_term_sql = " AND ( " . join(' OR ', @arrSearchByTerm) . " )" if @arrSearchByTerm;
+	$c->log->debug("... search_by_term_sql: " . $search_by_term_sql);
+	return $search_by_term_sql || '';
 	}
 
 sub get_shipped_sql :Private
@@ -266,14 +247,14 @@ sub get_shipped_sql :Private
 	my $Contact = $self->contact;
 
 
-	my $search_by_term_sql = $self->get_search_by_term_sql;
+	my $and_search_by_term_sql = $self->get_search_by_term_sql;
 
-	my $date_shipped_sql = '';
+	my $and_date_shipped_sql = '';
 	if ($params->{'date_apply'})
 		{
 		my $date_from = IntelliShip::DateUtils->get_db_format_date_time($params->{'datefrom'}) if $params->{'datefrom'};
 		my $date_to   = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateto'}) if $params->{'dateto'};
-		$date_shipped_sql = "AND s.dateshipped BETWEEN  date_trunc('day', TIMESTAMP '$date_from') AND date_trunc('day', TIMESTAMP '$date_to') ";
+		$and_date_shipped_sql = "AND s.dateshipped BETWEEN  date_trunc('day', TIMESTAMP '$date_from') AND date_trunc('day', TIMESTAMP '$date_to') ";
 		}
 	else
 		{
@@ -282,16 +263,16 @@ sub get_shipped_sql :Private
 		if ($view eq 'this_week')
 			{
 			my $weekday = IntelliShip::DateUtils->get_day_of_week($current_timestamp_with_time_zone);
-			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$weekday days')";
+			$and_date_shipped_sql = "AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$weekday days')";
 			}
 		elsif ($view eq 'this_month')
 			{
 			my $dd = substr($current_timestamp_with_time_zone, 8, 2) - 1;
-			$date_shipped_sql="AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$dd days')";
+			$and_date_shipped_sql = "AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$dd days')";
 			}
 		else
 			{
-			$date_shipped_sql = "AND date_trunc('day', s.dateshipped) = date_trunc('day', TIMESTAMP '$current_timestamp_with_time_zone')";
+			$and_date_shipped_sql = "AND date_trunc('day', s.dateshipped) = date_trunc('day', TIMESTAMP '$current_timestamp_with_time_zone')";
 			}
 		}
 
@@ -330,13 +311,15 @@ sub get_shipped_sql :Private
 		WHERE
 			s.dateshipped IS NOT NULL
 			$and_shipment_in_sql
-			$date_shipped_sql
-			$search_by_term_sql
+			$and_date_shipped_sql
+			$and_search_by_term_sql
 			AND s.datedelivered IS NULL
 		ORDER BY
 			dateshipped DESC, customername ASC
-	";
-	$c->log->debug("SHIPMENT SQL: " . $SQL);
+		";
+
+	#$c->log->debug("SHIPMENT SQL: " . $SQL);
+
 	return $SQL;
 	}
 
@@ -524,14 +507,14 @@ sub show_shipment_summary: Private
 	my $totalpackages = $Shipment->packages;
 	$c->log->debug("Total weight ". $Shipment->total_weight);
 	my $total_weight = $Shipment->total_weight;
-	
+
 	my @package_details = $Shipment->package_details;
 	foreach my $PackProData (@package_details)
 		{
 		$c->log->debug("package_Weight ". $PackProData->density );
 		}
 
-	
+
 	my $date_shipped = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
 	my $due_date = IntelliShip::DateUtils->american_date($Shipment->datedue);
 

@@ -41,7 +41,7 @@
 			</td>
 			<td style="width: 20%;">&nbsp;</td>
 			<td>
-				<!--<button type="submit" id="quick_ship" class="quick-ship" onclick="$('#frm_my_shipments').attr('action', '/customer/order/quickship');"><label></label><span>QUICK SHIP</span></button>-->
+				<button type="button" id="quick_ship" class="quick-ship"><label></label><span>QUICK SHIP</span></button>
 			</td>
 		</tr>
 		</table>
@@ -49,30 +49,32 @@
 
 	<table class="shipment-filter">
 		<tr>
-			<td style="width:8%">Show Filters</td>
-			<td style="width:1%">
-			<a class="show-hide-link" style="text-decoration: none;font-size:14px;color:#005C8A">+</td>
-			<td style="width:80%">
-			<div id="filter_checkbox">
-			<table class="shipment-filter-checkbox css3-checkboxes">
-				<tr>
-					<td ><label><input type="checkbox" id="tracking" name="filter_tracking" value="tracking"/><span></span>TRACKING</label></td>
-					<td><label><input type="checkbox" id="ordernumber" name="filter_ordernumber" value="ordernumber"/><span></span>ORDER</label></td>
-					<td><label><input type="checkbox" id="customer" name="filter_customer" value="customer"/><span></span>CUSTOMER</label></td>
-					<td><label><input type="checkbox" id="origin" name="filter_origin" value="origin"/><span></span>ORIGIN</label></td>
-					<td><label><input type="checkbox" id="destination" name="filter_destination" value="destination"/><span></span>DESTINATION</label></td>
-				</tr>
-				<tr>
-					<td><label><input type="checkbox" id="date" name="filter_date" value="date"/><span></span>DATE</label></td>
-					<td><label><input type="checkbox" id="duedate" name="filter_duedate" value="duedate"/><span></span>DUE DATE</label></td>
-					<td><label><input type="checkbox" id="carrier" name="filter_carrier" value="carrier"/><span></span>CARRIER</label></td>
-					<td><label><input type="checkbox" id="mode" name="filter_mode" value="mode"/><span></span>MODE</label></td>
-				</tr>
-			</table>
-			</div>
+			<td style="width: 05%">Show Filters</td>
+			<td style="width: 02%">
+				&nbsp;<a id="instant-filter-columns" style="font-size:14px;" href="javascript:void(0);">+</a>&nbsp;
 			</td>
-			<td style="width:8%"><label for="filter">Instant Filter</label>:</td>
-			<td style="width:10%"><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
+			<td style="width: 75%">
+				<div id="filter-checkbox" style="display: none;">
+					<table class="css3-checkboxes">
+						<tr>
+							<td><label><input type="checkbox" name="filter_tracking" value="1" checked/><span></span>TRACKING</label></td>
+							<td><label><input type="checkbox" name="filter_ordernumber" value="1" checked/><span></span>ORDER</label></td>
+							<td><label><input type="checkbox" name="filter_customername" value="1" checked/><span></span>CUSTOMER</label></td>
+							<td><label><input type="checkbox" name="filter_origin" value="1" checked/><span></span>ORIGIN</label></td>
+							<td><label><input type="checkbox" name="filter_destination" value="1" checked/><span></span>DESTINATION</label></td>
+						</tr>
+						<tr>
+							<td><label><input type="checkbox" name="filter_shipdate" value="1" checked/><span></span>DATE</label></td>
+							<td><label><input type="checkbox" name="filter_duedate" value="1" checked/><span></span>DUE DATE</label></td>
+							<td><label><input type="checkbox" name="filter_carrier" value="1" checked/><span></span>CARRIER</label></td>
+							<td><label><input type="checkbox" name="filter_mode" value="1" checked/><span></span>MODE</label></td>
+							<td>&nbsp;</td>
+						</tr>
+					</table>
+				</div>
+			</td>
+			<td style="width: 05%"><label for="filter">Instant Filter</label>:&nbsp;</td>
+			<td style="width: 13%"><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
 		</tr>
 	</table>
 
@@ -135,22 +137,32 @@
 	</div>
 	</form>
 	[% END %]
+
 <script>
 
-	$(".show-hide-link").click(function toggle_visibility(){
-			
-				var linkObject = $(this);
-					if (linkObject.text() == "+")
-					{
-						$("#filter_checkbox").show();
-						linkObject.html("&#8211");
-					}
-					else
-					{
-						$("#filter_checkbox").hide();
-						linkObject.text("+");
-					}
-			});
+	$('#filter').keypress(function(event) {
+		var keycode = (event.keyCode ? event.keyCode : event.which);
+		if(keycode == '13') {
+			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', $("#frm_my_shipments").serialize());
+			}
+		});
+
+	$("#quick_ship").click(function() {
+		$('#frm_my_shipments').attr('action', '/customer/order/quickship');
+		$('#frm_my_shipments').submit();
+		});
+
+	$("#instant-filter-columns").click(function() {
+
+		var linkObject = $(this);
+		if (linkObject.text() == "+") {
+			$("#filter-checkbox").slideDown('slow');
+			linkObject.html("&#8211");
+			} else {
+			$("#filter-checkbox").slideUp('slow');
+			linkObject.text("+");
+			}
+		});
 
 	$("#datefrom").datepicker({ maxDate: '0d' });
 	$("#dateto").datepicker({ maxDate: '2w' });
@@ -159,7 +171,7 @@
 		$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
 		});
 
-	function check_uncheck_all(){
+	function check_uncheck_all() {
 		if($("#checkAll").is(':checked')){
 			$("input:checkbox[name=shipmentid]").each(function() {
 				$(this).prop( "checked", true );
@@ -171,7 +183,7 @@
 				});
 			}
 		$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
-	}
+		}
 
 	[% UNLESS ajax %]
 	//$(document).on("click","a[name='track']", function (e) {
@@ -238,15 +250,15 @@
 		var count = 1;
 		for (var i in ShipmentArr){
 			var ShipmentParts = ShipmentArr[i].split("-");
-			
+
 			if(ShipmentParts[0] == 'UPS'){
 				count += 1;
 				dilimeter = '&InquiryNumber'+count+'=';
 				}
 			else
 				dilimeter = ',';
-			
-			shipmentList[ShipmentParts[0]] = shipmentList[ShipmentParts[0]] ? shipmentList[ShipmentParts[0]] + ShipmentParts[1] + dilimeter : ShipmentParts[1] + dilimeter;	
+
+			shipmentList[ShipmentParts[0]] = shipmentList[ShipmentParts[0]] ? shipmentList[ShipmentParts[0]] + ShipmentParts[1] + dilimeter : ShipmentParts[1] + dilimeter;
 			}
 
 		Object.keys(shipmentList).forEach(function (key) {
@@ -255,9 +267,57 @@
 			})
 		}
 
-    var clickCount = 0;
+	var clickCount = 0;
+
+	$('#view_date').click(function () {
+		clickCount++;
+		if (clickCount == 2) {
+			$(this).change();
+			clickCount = 0;
+			}
+		}).change (function () {
+			var vDate = $("#view_date").val();
+			if (vDate == 'today') {
+				$("#datefrom").datepicker('setDate', '+0d');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
+			if (vDate == 'this_week') {
+				$("#datefrom").datepicker('setDate', '-1w');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
+			if(vDate == 'this_month') {
+				$("#datefrom").datepicker('setDate', '-1m');
+				$("#dateto").datepicker('setDate', '+0d');
+				}
+			var query_param = "&view_date=" + vDate;
+			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+			$("#count").html("0");
+			clickCount = -1;
+			});
+
+	$("#btn_submit").click(function() {
+		var action = $("input:radio[name=batch_action]:checked").val();
+
+		if (action == 'void') {
+			var arrShipment = [];
+			$("input:checkbox[name=shipmentid]:checked").each(function() {
+				arrShipment.push($(this).val());
+				});
+			voidShipment(arrShipment);
+			}
+		if (action == 'track') {
+			var arrShipment = [];
+			$("input:checkbox[name=shipmentid]:checked").each(function() {
+				arrShipment.push($(this).val());
+				});
+			trackShipment(arrShipment);
+			}
+		if (action == 'reprint') {
+			}
+		});
+
 	$(document).ready(function() {
-		$("#filter_checkbox").hide();
+
 		if ($("#view_date").val() == 'today') {
 			$("#datefrom").datepicker('setDate', '+0d');
 			$("#dateto").datepicker('setDate', '+0d');
@@ -270,86 +330,9 @@
 			$('#frm_my_shipments').submit();
 			});
 
-
-                
-                $('#view_date').click(function () {        
-                    clickCount++;
-                    if (clickCount == 2) {
-                        $(this).change();
-                        clickCount = 0;
-                    }         
-                }).change (function () {
-                    var vDate = $("#view_date").val();
-                    if(vDate == 'today') {
-                            $("#datefrom").datepicker('setDate', '+0d');
-                            $("#dateto").datepicker('setDate', '+0d');
-                            }
-                    if(vDate == 'this_week') {
-                            $("#datefrom").datepicker('setDate', '-1w');
-                            $("#dateto").datepicker('setDate', '+0d');
-                            }
-                    if(vDate == 'this_month') {
-                            $("#datefrom").datepicker('setDate', '-1m');
-                            $("#dateto").datepicker('setDate', '+0d');
-                            }
-                    var query_param = "&view_date=" + vDate;
-                    send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-                    $("#count").html("0");
-                    clickCount = -1;
-                });     
-
-
-		/*$("#view_date").change(function() {
-			var vDate = $("#view_date").val();
-			if(vDate == 'today') {
-				$("#datefrom").datepicker('setDate', '+0d');
-				$("#dateto").datepicker('setDate', '+0d');
-				}
-			if(vDate == 'this_week') {
-				$("#datefrom").datepicker('setDate', '-1w');
-				$("#dateto").datepicker('setDate', '+0d');
-				}
-			if(vDate == 'this_month') {
-				$("#datefrom").datepicker('setDate', '-1m');
-				$("#dateto").datepicker('setDate', '+0d');
-				}
-			var query_param = "&view_date=" + vDate;
-			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-			$("#count").html("0");
-			});*/
-
 		$("#date_apply").click(function() {
 			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
 			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-			});
-
-		$("#btn_submit").click(function() {
-			var action = $("input:radio[name=batch_action]:checked").val();
-
-			if (action == 'void') {
-				var arrShipment = [];
-				$("input:checkbox[name=shipmentid]:checked").each(function() {
-					arrShipment.push($(this).val());
-					});
-				voidShipment(arrShipment);
-				}
-			if (action == 'track') {
-				var arrShipment = [];
-				$("input:checkbox[name=shipmentid]:checked").each(function() {	
-					arrShipment.push($(this).val());
-					});
-				trackShipment(arrShipment);
-				}
-			if (action == 'reprint') {
-				}
-			});
-
-		$('#filter').keypress(function(event){
-			var keycode = (event.keyCode ? event.keyCode : event.which);
-			if(keycode == '13') {
-				var query_param = $("frm_my_shipments").serialize();
-				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-				}
 			});
 		});
 
