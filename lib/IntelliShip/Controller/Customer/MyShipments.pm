@@ -37,7 +37,6 @@ sub index :Path :Args(0) {
 			{ name => 'This Month', value => 'this_month' },
 			];
 	$c->stash->{recordsperpage_list} = $self->get_select_list('RECORDS_PER_PAGE');
-	$c->stash->{trackurl_list} = $self->get_select_list('TRACK_URL');
 
 	$c->stash(template => "templates/customer/my-shipments.tt");
 }
@@ -194,6 +193,69 @@ sub populate_my_shipment_list :Private
 	$c->stash->{list_title} = $TITLE->{$params->{'view'}} if $params->{'view'};
 	}
 
+sub get_search_by_term_sql
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	
+	return unless $params->{'filter'};
+
+	my $COLUMN_MAPPING = {
+		tracking    => 's.tracking1',
+		ordernumber => 'co.ordernumber',
+		customer    => 'da.addressname',
+		origin      => '(oa.city || oa.state)',
+		destination =>'(da.city || da.state)',
+		date        =>'to_char(s.dateshipped ,\'mm/dd/yy\')',
+		duedate     =>'to_char(s.datedue,\'mm/dd/yy\')',
+		carrier     =>'s.carrier',
+		mode        =>'s.mode'
+		};
+
+	my $search_value = $params->{'filter'};
+	my @arrsearchbyterm;
+	foreach my $filter_value (keys %$params)
+		{
+		my $filter = $1 if $filter_value =~ /filter_(.+)$/;
+
+		$c->log->debug("... Filter: " . $filter);
+		my $field = $COLUMN_MAPPING->{$filter};
+		next unless $field;
+		push(@arrsearchbyterm," $field LIKE '%$search_value%'");
+=as
+		#$search_by_term_sql = "AND s.shipmentid like '$filter_value' OR s.tracking1 like '$filter_value' OR co.ordernumber like '$filter_value' ";
+		push(@arrsearchbyterm," s.tracking1 like '%$filter_value%'") if($params->{'filter_tracking'});
+		push(@arrsearchbyterm," co.ordernumber like '%$filter_value%'") if($params->{'filter_order'});
+		push(@arrsearchbyterm," da.addressname like '%$filter_value%'") if($params->{'filter_customer'});
+		if($params->{'filter_origin'})
+			{
+			push(@arrsearchbyterm," oa.city like '%$filter_value%'");
+			push(@arrsearchbyterm," oa.state like '%$filter_value%'");
+			}
+		if($params->{'filter_destination'})
+		{
+		push(@arrsearchbyterm," da.city like '%$filter_value%'");
+		push(@arrsearchbyterm," da.state like '%$filter_value%'");
+		}
+		push(@arrsearchbyterm," to_char(s.dateshipped ,'mm/dd/yy')like '%$filter_value%'") if($params->{'filter_date'});
+		push(@arrsearchbyterm," to_char(s.datedue,'mm/dd/yy') like '%$filter_value%'") if($params->{'filter_duedate'});
+		push(@arrsearchbyterm," s.carrier like '%$filter_value%'") if($params->{'filter_carrier'});
+		push(@arrsearchbyterm," s.mode like '%$filter_value%'") if($params->{'filter_mode'});
+		
+		$c->log->debug("arrsearchbyterm >>>>>>>: " .Dumper @arrsearchbyterm);
+		if(@arrsearchbyterm)
+	    {
+		$search_by_term_sql = " AND (".join('OR',@arrsearchbyterm) . " )";
+		}
+		$c->log->debug("search_by_term_sql : " . $search_by_term_sql);
+=cut
+		}
+		my $search_by_term_sql = " AND ( ".join(' OR ', @arrsearchbyterm) . " )" if @arrsearchbyterm;
+		return $search_by_term_sql || '';
+		
+	}
+
 sub get_shipped_sql :Private
 	{
 	my $self = shift;
@@ -203,14 +265,10 @@ sub get_shipped_sql :Private
 	my $Customer = $self->customer;
 	my $Contact = $self->contact;
 
-	my ($date_shipped_sql,$search_by_term_sql) = ('','');
 
-	if (my $filter_value = $params->{'filter'})
-		{
-		$c->log->debug("Filter : " . $filter_value);
-		$search_by_term_sql = "AND s.shipmentid = '$filter_value' OR s.tracking1 = '$filter_value' OR co.ordernumber = '$filter_value' ";
-		}
+	my $search_by_term_sql = $self->get_search_by_term_sql;
 
+	my $date_shipped_sql = '';
 	if ($params->{'date_apply'})
 		{
 		my $date_from = IntelliShip::DateUtils->get_db_format_date_time($params->{'datefrom'}) if $params->{'datefrom'};
@@ -278,7 +336,7 @@ sub get_shipped_sql :Private
 		ORDER BY
 			dateshipped DESC, customername ASC
 	";
-	#$c->log->debug("SHIPMENT SQL: " . $SQL);
+	$c->log->debug("SHIPMENT SQL: " . $SQL);
 	return $SQL;
 	}
 

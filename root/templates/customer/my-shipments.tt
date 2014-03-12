@@ -41,7 +41,7 @@
 			</td>
 			<td style="width: 20%;">&nbsp;</td>
 			<td>
-				<button class="quick-ship" onclick="$('#frm_my_shipments').attr('action', '/customer/order/quickship');"><label></label><span>QUICK SHIP</span></button>
+				<!--<button type="submit" id="quick_ship" class="quick-ship" onclick="$('#frm_my_shipments').attr('action', '/customer/order/quickship');"><label></label><span>QUICK SHIP</span></button>-->
 			</td>
 		</tr>
 		</table>
@@ -49,11 +49,30 @@
 
 	<table class="shipment-filter">
 		<tr>
-			<td>Show Filters</td>
-			<td><img src="/static/images/add.png"/></td>
-			<td style="width: 60%">&nbsp;</td>
-			<td><label for="filter">Instant Filter</label>:</td>
-			<td><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
+			<td style="width:8%">Show Filters</td>
+			<td style="width:1%">
+			<a class="show-hide-link" style="text-decoration: none;font-size:14px;color:#005C8A">+</td>
+			<td style="width:80%">
+			<div id="filter_checkbox">
+			<table class="shipment-filter-checkbox css3-checkboxes">
+				<tr>
+					<td ><label><input type="checkbox" id="tracking" name="filter_tracking" value="tracking"/><span></span>TRACKING</label></td>
+					<td><label><input type="checkbox" id="ordernumber" name="filter_ordernumber" value="ordernumber"/><span></span>ORDER</label></td>
+					<td><label><input type="checkbox" id="customer" name="filter_customer" value="customer"/><span></span>CUSTOMER</label></td>
+					<td><label><input type="checkbox" id="origin" name="filter_origin" value="origin"/><span></span>ORIGIN</label></td>
+					<td><label><input type="checkbox" id="destination" name="filter_destination" value="destination"/><span></span>DESTINATION</label></td>
+				</tr>
+				<tr>
+					<td><label><input type="checkbox" id="date" name="filter_date" value="date"/><span></span>DATE</label></td>
+					<td><label><input type="checkbox" id="duedate" name="filter_duedate" value="duedate"/><span></span>DUE DATE</label></td>
+					<td><label><input type="checkbox" id="carrier" name="filter_carrier" value="carrier"/><span></span>CARRIER</label></td>
+					<td><label><input type="checkbox" id="mode" name="filter_mode" value="mode"/><span></span>MODE</label></td>
+				</tr>
+			</table>
+			</div>
+			</td>
+			<td style="width:8%"><label for="filter">Instant Filter</label>:</td>
+			<td style="width:10%"><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
 		</tr>
 	</table>
 
@@ -116,8 +135,22 @@
 	</div>
 	</form>
 	[% END %]
-
 <script>
+
+	$(".show-hide-link").click(function toggle_visibility(){
+			
+				var linkObject = $(this);
+					if (linkObject.text() == "+")
+					{
+						$("#filter_checkbox").show();
+						linkObject.html("&#8211");
+					}
+					else
+					{
+						$("#filter_checkbox").hide();
+						linkObject.text("+");
+					}
+			});
 
 	$("#datefrom").datepicker({ maxDate: '0d' });
 	$("#dateto").datepicker({ maxDate: '2w' });
@@ -224,7 +257,7 @@
 
     var clickCount = 0;
 	$(document).ready(function() {
-
+		$("#filter_checkbox").hide();
 		if ($("#view_date").val() == 'today') {
 			$("#datefrom").datepicker('setDate', '+0d');
 			$("#dateto").datepicker('setDate', '+0d');
@@ -315,7 +348,7 @@
 			var keycode = (event.keyCode ? event.keyCode : event.which);
 			if(keycode == '13') {
 				var query_param = "&filter=" + $("#filter").val();
-				send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 				}
 			});
 		});
