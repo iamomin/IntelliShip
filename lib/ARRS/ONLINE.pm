@@ -22,6 +22,7 @@
 	use Date::Calc qw(Delta_Days);
 	use Date::Manip qw(ParseDate UnixDate);
 	use IntelliShip::MyConfig;
+        use Data::Dumper;
 
 	my $Benchmark = 0;
 	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
@@ -813,6 +814,72 @@ warn "undef etadate";
 
 		$sth->finish();
 
+		return $ReturnRef;
+	}
+
+        sub GetCarrierServiceList
+	{
+		my $self = shift;
+		my ($SOPID) = @_;
+
+                warn "########## GetCarrierServiceList " . $SOPID;
+
+		my $SQLString = "select 
+                                    cs.customerserviceid, 
+                                    c.carrierid, 
+                                    c.carriername, 
+                                    s.serviceid, 
+                                    s.servicename, 
+                                    cso.value
+                                from 
+                                    customerservice cs 
+                                inner join 
+                                    service s on cs.serviceid = s.serviceid 
+                                inner join 
+                                    carrier c on s.carrierid = c.carrierid 
+                                left outer join 
+                                    csoverride cso on (cs.customerserviceid = cso.customerserviceid and cso.datatypename = 'excludecs' and cso.value <> '1') 
+                                where cs.customerid = '$SOPID' 
+                                order by c.carriername, s.servicename;
+		";
+
+
+                warn "######### \$SQLString $SQLString";
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+                
+		$sth->execute()
+			or die "Cannot execute carrier/service sql statement";
+
+                
+		my $ReturnRef = {};
+		while ( my ($csid, $cid, $carriername, $sid, $servicename, $exclude) = $sth->fetchrow_array() )
+		{
+                        warn "######### 3";
+			if($exclude){next;}
+
+                        my $carrier = $ReturnRef->{$cid};
+                        if(!$carrier)
+                        {
+                            $carrier = {};
+                            $carrier->{'carriername'} = $carriername;                            
+                            my @arr = ();
+                            $carrier->{'csrecords'} = \@arr;
+                            $ReturnRef->{$cid} = $carrier;
+                        }
+
+                        my $csrecord = {};
+                        $csrecord->{'csid'} = $csid;
+                        $csrecord->{'sid'} = $sid;
+                        $csrecord->{'servicename'} = $servicename;
+                        push(@{$carrier->{'csrecords'}}, $csrecord);
+                        
+		}
+
+		$sth->finish();
+
+                warn "########## ReturnRef: " . Dumper($ReturnRef);
 		return $ReturnRef;
 	}
 

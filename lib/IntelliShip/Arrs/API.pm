@@ -110,6 +110,19 @@ sub get_carrier_list
 	return $self->APIRequest($http_request);
 	}
 
+sub get_carrier_service_list
+	{
+	my $self = shift;
+	my ($SOPID) = @_;
+
+	my $http_request = {
+		action => 'GetCarrierServiceList',
+		sopid => $SOPID		
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;
