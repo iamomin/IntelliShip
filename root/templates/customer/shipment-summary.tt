@@ -37,6 +37,14 @@
 			<table class="summary-app">
 				<caption>SHIPMENT INFORMATION </caption>
 				<tr>
+					<td class="text-align-right bold-text" style="width: 50%"> Carrier : </td>
+					<td>[% shipmentinfo.carrier %]</td>
+				</tr>
+				<tr>
+					<td class="text-align-right bold-text" style="width: 50%"> Service : </td>
+					<td>[% shipmentinfo.service %]</td>
+				</tr>
+				<tr>
 					<td class="text-align-right bold-text" style="width: 50%"> Order Number : </td>
 					<td>[% coinfo.ordernumber %]</td>
 				</tr>
@@ -52,58 +60,98 @@
 					<td class="text-align-right bold-text" style="width: 50%">Due Date : </td>
 					<td>[% duedate ? duedate : 'Not Define' %]</td>
 				</tr>
+				[% IF coinfo.description %]
 				<tr>
 					<td class="text-align-right bold-text" style="width: 50%">Comments : </td>
 					<td>[% coinfo.description %]</td>
 				</tr>
+				[% END %]
+				[% IF coinfo.ponumber %]
 				<tr>
 					<td class="text-align-right bold-text" style="width: 50%">PO Number : </td>
 					<td>[% coinfo.ponumber %]</td>
 				</tr>
+				[% END %]
 			</table>
 		</div>
 	</div>
 </div>
 
 <div>
-	<table class="summary-app">
-		<caption>Package DETAIL </caption>
-		<tr>
-			<td>QTY </td>
-			<td>SKU#</td>
-			<td>Descritpion</td>
-			<td> Type </td>
-			<td> Weight </td>
-			<td> Dim Weight </td>
-			<td> Dim Lenght</td>
-			<td>Dim Width </td>
-			<td>Dim Height </td>
-			<td>Density</td>
-			<td>NMFC </td>
-			<td>CLASS</td>
-			<td>DEC. VALUE</td>
-			<td>FREIGHT INS.</td>
-		</tr>
+<h2>Package Detail</h2>
+	<ul class="sortable css3-checkboxes" id="package-detail-list">
+		<li class="ui-state-fixed">
+			<table style="font-size: 11px">
+				<tr>
+					<th style="width: 04%">QTY</th>
+					<th style="width: 04%">SKU#</th>
+					<th style="width: 11%">Description</th>
+					<th style="width: 10%">Type</th>
+					<th style="width: 07%">Weight</th>
+					<th style="width: 07%">Dim Weight</th>
+					<th style="width: 05%">Length</th>
+					<th style="width: 05%">Width</th>
+					<th style="width: 05%">Height</th>
+					<th style="width: 07%">Density</th>
+					<th style="width: 05%">NMFC</th>
+					<th style="width: 05%">Class</th>
+					<th style="width: 07%">Dec. Value</th>
+					<th style="width: 07%">Freight Ins.</th>
+				</tr>
+				<tr>
+				<td colspan="3">&nbsp;</td>
+				</tr>
+			</table>
+		</li>
 		[% FOREACH  PackProData IN packagedetails %]
-		<tr>
-			<td>[% PackProData.quantity %]</td>
-			<td>[% PackProData.partnumber %]</td>
-			<td>[% PackProData.description %]</td>
-			<td>[% PackProData.unittype.unittypename %]</td>
-			<td>[% PackProData.weight%]</td>
-			<td>[% PackProData.dimweight%]</td>
-			<td>[% PackProData.dimlength%]</td>
-			<td>[% PackProData.dimwidth%]</td>
-			<td>[% PackProData.dimheight%]</td>
-			<td>[% PackProData.density%]</td>
-			<td>[% PackProData.nmfc%]</td>
-			<td>[% PackProData.class%]</td>
-			<td>[% PackProData.decval%]</td>
-			<td>[% PackProData.frtins%]</td>
-		</tr>
+		<li class="ui-state-package ui-state-fixed">
+			<table>
+				<tr>
+					<td style="width: 04%">
+						<input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" value="[% PackProData.quantity %]" readonly/>
+					</td>
+					<td style="width: 04%">
+						<input  type="text" class="sku_id" name="sku_1" id="sku_1" value = "[% PackProData.partnumber %]" readonly/>
+					</td>
+					<td style="width: 11%">
+						<input  type="text" class="broad-text" name="description_1" id="description_1"  value = "[% PackProData.description %]" readonly/>
+					</td>
+					<td style="width: 10%">
+						<select name="unittype_1" id="unittype_1" ><option  SELECTED value="[% PackProData.unittype.unittypename %]">[% PackProData.unittype.unittypename %]</option></select>
+					</td>
+					<td style="width: 07%">
+						<input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"  value = "[% PackProData.weight%]" readonly/>
+					</td>
+					<td style="width: 07%">
+						<input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"  value = "[% PackProData.dimweight%]" readonly/>
+					</td>
+					<td style="width: 05%">
+						<input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"  value = "[% PackProData.dimlength%]" readonly/>
+					</td>
+					<td style="width: 05%">
+						<input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"  value = "[% PackProData.dimwidth%]" readonly/>
+					</td>
+					<td style="width: 05%">
+						<input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"  value = "[% PackProData.dimheight%]" readonly/>
+					</td>
+					<td style="width: 07%">
+						<input  type="text" name="density_1" id="density_1"  value = "[% PackProData.density%]" readonly/>
+					</td>
+					<td style="width: 05%">
+						<input  type="text" name="nmfc_1" id="nmfc_1"  value = "[% PackProData.nmfc%]" readonly/>
+					</td>
+					<td style="width: 05%">
+						<input  type="text" name="class_1" id="class_1"  value = "[% PackProData.class%]" readonly/>
+					</td>
+					<td style="width: 07%">
+						<input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00"  value = "[% PackProData.decval%]" readonly/>
+					</td>
+					<td style="width: 07%">
+						<input  type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1"  value="[% PackProData.frtins%]" readonly/>
+					</td>
+				</tr>
+			</table>
+		</li>
 		[% END %]
-		<tr>
-			<td>&nbsp;</td><td>&nbsp;</td>
-		</tr>
-	</table>
+	</ul>
 </div>

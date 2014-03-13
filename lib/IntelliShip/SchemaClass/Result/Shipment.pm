@@ -949,6 +949,15 @@ sub total_weight
 	return $total_weight;
 	}
 
+sub total_quantity
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_quantity = 0;
+	$total_quantity += $_->quantity foreach @packages;
+	return $total_quantity;
+	}
+
 sub total_charge
 	{
 	my $self = shift;

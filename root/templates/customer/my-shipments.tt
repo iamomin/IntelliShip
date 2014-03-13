@@ -124,7 +124,7 @@
 				<td>[% item.carrier %]</td>
 				<td>[% item.mode %]</td>
 				<td class="center">
-					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track" name="track">TRACK</a>&nbsp;&nbsp;<a href="/customer/myshipments/reprintlabel?shipmentid=[% item.shipmentid %]&ajax=1" target="_blank" class="reprint" name="reprint">REPRINT</a>&nbsp;&nbsp;<a class="void" name="void" href="javascript:void(0);" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
+					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:ReprintLabel('[% item.shipmentid %]');" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
 				</td>
 			</tr>
 			[% END %]
@@ -187,17 +187,31 @@
 			$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
 			}
 
-		//$(document).on("click","a[name='reprint']", function (e) {
-		//	var query_param = "&tracking_id=" + $(this).closest('tr').children('td:eq(2)').text() + "&shipment_action=" + "reprint";
-		//	send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
-		//	});
+		function ReprintLabel(shipmentid) {
+
+			$('#dialog-message').dialog( {
+				autoOpen: false,
+				title: 'Reprint Label',
+				width : '1000px',
+				buttons: {
+					Close: function() {
+						$( this ).dialog( "close" );
+						}
+					}
+				});
+
+			var query_param = "shipmentid=" + shipmentid;
+			send_ajax_request('dialog-message', 'HTML', 'myshipments', 'reprint_label', query_param, function () {
+				$( "#dialog-message" ).dialog("open");
+				});
+			}
 
 		function showShipmentDetails(shipmentid) {
 
 			$('#dialog-message').dialog( {
 				autoOpen: false,
 				title: 'Shipment Summary',
-				width : '90%',
+				width : '1000px',
 				buttons: {
 					Close: function() {
 						$( this ).dialog( "close" );

@@ -226,7 +226,7 @@ sub application_root
 	my $application_root = '';
 	if (getDomain() eq &TEST)
 		{
-		$application_root = '/var/intelliship/git/IntelliShip/';
+		$application_root = '/var/intelliship/git/IntelliShip';
 		}
 	else
 		{
@@ -304,7 +304,7 @@ sub image_file_directory
 sub label_file_directory
 	{
 	my $self = shift;
-	return '/opt/engage/intelliship/html/print/label';
+	return $self->application_root . '/root/label';
 	}
 
 sub label_image_directory

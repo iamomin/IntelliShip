@@ -46,9 +46,11 @@
 			return false;
 			}
 
+		[% UNLESS REPRINT_LABEL %]
 		MarkShipmentAsPrinted(function() {
 			window.location.href = window.location.href;
 			});
+		[% END %]
 		}
 
 [% ELSE %]
@@ -66,9 +68,11 @@
 				printWin.document.write(lbl);
 				printWin.document.close();
 
+				[% UNLESS REPRINT_LABEL %]
 				MarkShipmentAsPrinted(function() {
 					window.location.href = window.location.href;
 					});
+				[% END %]
 				}
 			}
 
@@ -85,9 +89,11 @@
 				printWin.document.close();
 				printWin.focus();
 
+				[% UNLESS REPRINT_LABEL %]
 				MarkShipmentAsPrinted(function() {
 					window.location.href = window.location.href;
 					});
+				[% END %]
 				}
 			}
 

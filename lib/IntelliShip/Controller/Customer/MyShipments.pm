@@ -5,7 +5,7 @@ use IntelliShip::Utils;
 use namespace::autoclean;
 use IntelliShip::Carrier::Constants;
 
-BEGIN { extends 'IntelliShip::Controller::Customer'; }
+BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
 =head1 NAME
 
@@ -76,9 +76,6 @@ sub get_JSON_DATA :Private
 		{
 		#$operation_sql = "AND s.tracking1 = '$row_data'";
 		}
-	elsif ($action eq 'reprint')
-		{
-		}
 
 	$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
@@ -97,13 +94,17 @@ sub get_HTML :Private
 		{
 		$self->populate_my_shipment_list;
 		}
-	elsif( $action eq 'show_shipment_summary' )
+	elsif ( $action eq 'show_shipment_summary' )
 		{
 		$self->show_shipment_summary;
 		}
+	elsif ( $action eq 'reprint_label' )
+		{
+		$self->reprint_label;
+		}
 
-		$c->stash($params);
-		$c->stash(template => "templates/customer/my-shipments.tt") unless $c->stash->{template};
+	$c->stash($params);
+	$c->stash(template => "templates/customer/my-shipments.tt") unless $c->stash->{template};
 	}
 
 my $TITLE ;
@@ -113,34 +114,44 @@ my $TITLE_DATE = {
 	'this_month'  => 'This Month',
 	};
 
-sub reprintlabel :Local
+sub reprint_label :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$params->{'shipmentid'} . '.jpg';
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+
+	return unless $Shipment;
+
+	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
+	   $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$Shipment->shipmentid . '.jpg' unless -e $label_file;
+
+	$c->log->debug("... shipment found, label_file: " . $label_file);
 
 	my $HTML;
-	if (stat $label_file)
+	if ($label_file =~ /JPG/i)
 		{
-		$HTML = '<center><img id="lblimg" src="/label/' . $params->{'shipmentid'} . '.jpg"></center><script>window.print();</script>';
+		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
 	else
 		{
-		$label_file = IntelliShip::MyConfig->label_image_directory.'/'.$params->{'shipmentid'};
-		if (stat $label_file)
+		my $FILE = new IO::File;
+		unless (open ($FILE,$label_file))
 			{
-			$HTML = '';
+			$c->log->debug("*** Label String Save Error: " . $!);
+			return;
 			}
-		else
-			{
-			$HTML = '<h3>Lable print information not found</h3>';
-			}
+		my @lines = <$FILE>;
+		close $FILE;
+
+		my $PrinterString = join("\n",@lines);
+
+		$self->setup_raw_label($Shipment, $PrinterString);
 		}
 
-	$c->res->header('Content-Type' => 'text/html');
-	$c->response->body($HTML);
+	$c->stash->{REPRINT_LABEL} = 1;
+	$c->stash(template => "templates/customer/order-label.tt");
 	}
 
 sub populate_my_shipment_list :Private

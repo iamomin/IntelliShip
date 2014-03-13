@@ -1653,7 +1653,6 @@ sub SHIP_ORDER :Private
 		# GENERATE LABEL TO PRINT
 		#############################################
 		$self->generate_label($Shipment, $Service, $PrinterString);
-		$c->stash(template => "templates/customer/order-label.tt");
 		}
 	}
 
@@ -1696,16 +1695,14 @@ sub generate_label :Private
 		$params->{'refnumber'} .= " - $params->{'custnum'}";
 		}
 
-	## Save EPL Print String On Server
-	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
-
 	my $CustomerLabelType = $self->contact->label_type;
 	$CustomerLabelType = $self->customer->label_type unless $CustomerLabelType;
 	$CustomerLabelType = 'JPG' unless $CustomerLabelType;
 
 	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
 
-	$c->stash($Shipment->{_column_data});
+	## Save EPL Print String On Server
+	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
 
 	if ($CustomerLabelType =~ /JPG/i)
 		{
@@ -1724,35 +1721,49 @@ sub generate_label :Private
 		}
 	else
 		{
-		$c->stash($params);
-		$c->stash->{fromAddress}   = $Shipment->origin_address;
-		$c->stash->{toAddress}     = $Shipment->destination_address;
-		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
-		$c->stash->{tracking1}     = $Shipment->tracking1;
-		$c->stash->{custnum}       = $Shipment->custnum;
-
-		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
-		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
-		$c->stash->{enteredweight} = $CO->total_weight;
-		$c->stash->{ponumber}      = $Shipment->ponumber;
-		$c->stash->{tracking1}     = $Shipment->tracking1;
-		$c->stash->{service}       = uc($Service->{'servicename'});
-		$c->stash->{totalquantity} = $CO->total_quantity;
-		$c->stash->{refnumber}     = $params->{'refnumber'};
-
-		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+		if ($CustomerLabelType =~ /^zpl$/i)
 			{
-			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+			require IntelliShip::EPL2TOZPL2;
+			my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
+			$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
 			}
 
-		$self->ProcessPrinterStream($Shipment, $PrinterString);
-
-		my $template = $params->{'carrier'} || 'default';
-		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+		$self->setup_raw_label($Shipment, $PrinterString);
 		}
 
-	$c->stash(MEDIA_PRINT => 1);
+	$c->stash(template => "templates/customer/order-label.tt");
+	}
+
+sub setup_raw_label
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $PrinterString = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
 	$c->stash($params);
+	$c->stash($Shipment->{_column_data});
+	$c->stash->{fromAddress}   = $Shipment->origin_address;
+	$c->stash->{toAddress}     = $Shipment->destination_address;
+	$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
+	$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
+	$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+	$c->stash->{enteredweight} = $Shipment->total_weight;
+	$c->stash->{totalquantity} = $Shipment->total_quantity;
+	$c->stash->{refnumber}     = $params->{'refnumber'};
+
+	if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+		{
+		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+		}
+
+	$self->ProcessPrinterStream($Shipment, $PrinterString);
+
+	my $template = $Shipment->carrier || $params->{'carrier'};
+	   $template = 'default' unless $template;
+	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 	}
 
 sub ProcessPrinterStream
@@ -1765,12 +1776,12 @@ sub ProcessPrinterStream
 	my $Contact = $self->contact;
 
 	# Label stub
-	if ( my $StubTemplate = $Contact->get_contact_data_value('labelstub') )
-		{
+	#if ( my $StubTemplate = $Contact->get_contact_data_value('labelstub') )
+		#{
 		#$CgiRef->{'truncd_custnum'} = TruncString($CgiRef->{'custnum'},16);
 		#$CgiRef->{'truncd_addressname'} = TruncString($CgiRef->{'addressname'},16);
 		#$PrinterString = $self->InsertLabelStubStream($PrinterString,$StubTemplate,$CgiRef);
-		}
+		#}
 
 	#if ( $CgiRef->{'dhl_intl_labels'} )
 	#	{
@@ -1778,25 +1789,15 @@ sub ProcessPrinterStream
 	#	}
 
 	# UCC 128 label handling
-	if ($Contact->get_contact_data_value('checkucc128'))
-		{
+	#if ($Contact->get_contact_data_value('checkucc128'))
+		#{
 		#my $UCC128 = new UCC128($self->{'dbref'}->{'aos'}, $self->{'customer'});
 		#if ( my $UCC128ID = $UCC128->GetUCC128ID($CgiRef->{'addressname'},$CgiRef->{'department'},$CgiRef->{'custnum'},$CgiRef->{'externalpk'}) )
 		#	{
 		#	$UCC128->Load($UCC128ID);
 		#	$PrinterString .= $self->BuildUCC128Label;
 		#	}
-		}
-
-	# Label stub
-	my $CustomerLabelType = $c->stash->{label_type};
-
-	if ($CustomerLabelType =~ /^zpl$/i)
-		{
-		require IntelliShip::EPL2TOZPL2;
-		my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
-		$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
-		}
+		#}
 
 	## Set Printer String Loop
 	my @PSLINES = split(/\n/,$PrinterString);
@@ -1804,6 +1805,7 @@ sub ProcessPrinterStream
 	my $printerstring_loop = [];
 	foreach my $line (@PSLINES)
 		{
+		next unless $line;
 		$line =~ s/"/\\"/sg;
 		$line =~ s/'//g;
 		push @$printerstring_loop, $line;
@@ -1832,6 +1834,7 @@ sub SaveStringToFile
 		warn "\nLabel String Save Error: " . $!;
 		return;
 		}
+
 	print $FILE $FileString;
 	close $FILE;
 	}

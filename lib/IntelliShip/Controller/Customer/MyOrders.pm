@@ -480,7 +480,7 @@ sub load_order :Private
 	my $params = $c->req->params;
 	$c->stash->{parent} = 'myorders';
 	$params->{do} = undef;
-	$self->setup_one_page;
+	$self->quickship;
 	}
 
 =encoding utf8
