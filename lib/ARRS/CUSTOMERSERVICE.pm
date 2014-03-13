@@ -981,7 +981,10 @@ sub GetCSShippingValues
 
 		# FSC is in assessorials now...needs to be grabbed from there
 		#(undef,undef,undef,undef,undef,$ShipmentValueRef->{'fscrate'}) = $self->GetAssData('ar','fscrate',$Ref->{'dateshipped'});
-		($ShipmentValueRef->{'fscrate'}) = $self->GetAssValue('ar','fscrate',undef,undef,undef,undef,undef,$Ref->{'customerid'});
+                if($self->IsInitialized())
+                {
+                    ($ShipmentValueRef->{'fscrate'}) = $self->GetAssValue('ar','fscrate',undef,undef,undef,undef,undef,$Ref->{'customerid'});
+                }
 		$ShipmentValueRef->{'fscrate'} = $ShipmentValueRef->{'fscrate'} ? $ShipmentValueRef->{'fscrate'} : 0;
 		#WarnHashRefValues($ShipmentValueRef) if $CSID eq 'TOTALTRANSPO1';
 		return $ShipmentValueRef;
@@ -1696,7 +1699,7 @@ sub GetAssMarkup
 		$STH->execute($customerid)
 			or die "Cannot execute sql statement";
 
-		my ($markupamt,$markuppercent) = $STH->fetchrow_array();
+		my ($markupamt, $markuppercent) = $STH->fetchrow_array();
 
 		$STH->finish();
 
@@ -2495,7 +2498,7 @@ sub GetAssData
 		}
 
 		chop $SQL;
-		#warn $SQL;
+		#warn " ########## Big SQL". $SQL;
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
 			or die "Could not prepare SQL statement";
