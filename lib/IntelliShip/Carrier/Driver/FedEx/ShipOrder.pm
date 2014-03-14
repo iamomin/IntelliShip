@@ -321,7 +321,7 @@ sub process_request
 		my $ErrorCode = $1 if $ShipmentReturn =~ /"2,"(\w+?)"/;
 		my $ErrorMessage = $1 if $ShipmentReturn =~ /"3,"(.*?)"/;
 
-		$shipmentData->{'errorstring'} = "Error - " . $ErrorCode . ": " . $ErrorMessage;
+		$shipmentData->{'errorstring'} = "Carrier Response Error: " . $ErrorCode . " : " . $ErrorMessage;
 
 		if (   $ErrorCode eq 'F010' 
 			or $ErrorCode eq '1237'
@@ -337,20 +337,17 @@ sub process_request
 			}
 
 		$self->add_error($shipmentData->{'errorstring'});
-		print STDERR "\n... Error: " . $shipmentData->{'errorstring'};
 		return $shipmentData;
 		}
 	elsif ($ShipmentReturn =~ /ERROR:(.*)\n/)
 		{
 		$self->add_error($1);
-		print STDERR "\n... Error: " . $1;
 		return $shipmentData;
 		}
 
 	unless ($ShipmentReturn)
 		{
 		$self->add_error("No response received from FedEx");
-		print STDERR "\n... Warning: No response received from FedEx";
 		return $shipmentData;
 		}
 

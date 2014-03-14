@@ -77,8 +77,9 @@ sub get_EPL
 	return unless $carrier;
 
 	my $EPL_TEMPLATES = {
-		USPSF   => 'get_USPS_EPL_1',
-		USTPO   => 'get_USPS_EPL_2',
+		USPSF     => 'get_USPS_EPL_1',
+		USTPO     => 'get_USPS_EPL_2',
+		UPRIORITY => 'get_USPS_EPL_3',
 		};
 
 	my $method = $EPL_TEMPLATES->{$DATA->{'servicecode'}};
