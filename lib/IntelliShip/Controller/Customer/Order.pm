@@ -1320,7 +1320,6 @@ sub SHIP_ORDER :Private
 	#$c->log->debug("API ServiceTypeID: " . Dumper $ServiceTypeID);
 
 	$params->{'new_shipmentid'} = $self->get_token_id;
-	$c->log->debug("___ Generate New Shipment ID: " . $params->{'new_shipmentid'});
 
 	## 'OTHER' carriers
 	if ($params->{'customerserviceid'} =~ m/OTHER_/)
@@ -1706,14 +1705,17 @@ sub generate_label :Private
 	if ($CustomerLabelType =~ /JPG/i)
 		{
 		## Generate JPEG label image ##
-		system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 270";
+		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
+		system($cmdGenerageLabel);
 
-		my $out_file = $Shipment->shipmentid . '.jpg';
-		my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
-		$c->log->debug("copyImgCommand: " . $copyImgCommand);
+		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+		#my $out_file = $Shipment->shipmentid . '.jpg';
+		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
+		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
 
 		## Copy to Apache context path ##
-		system($copyImgCommand);
+		#system($copyImgCommand);
 
 		$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
 		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';

@@ -313,6 +313,12 @@ sub label_image_directory
 	return $self->application_root . '/root/label';
 	}
 
+sub script_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/script';
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
