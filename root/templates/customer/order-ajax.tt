@@ -276,9 +276,9 @@
 			[% IF IS_PREPAID %]
 			<th>TRANSIT DAYS</th>
 			<th>EST. DELIVERY</th>
-			<th>EST. COST</th>
-			<th>DECLD. VAL/INSUR</th>
-			<th style="width:161px;">EST. TOTAL COST</th>
+			<th>EST. FREIGHT CHARGE</th>
+			<th>EST. OTHER CHARGES</th>
+			<th style="width:161px;">EST. TOTAL CHARGE</th>
 			<th style="width:10px;"></th>
 			[% END %]
 		</tr>
@@ -293,8 +293,8 @@
 			[% IF IS_PREPAID %]
 			<td valign="top">[% item.days %]</td>
 			<td valign="top" [% IF item.no_on_time %]style="color: #D44444;"[% END %]>[% item.delivery %]</td>
-			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
-			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.shipment_charge %]</td>
+			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.freight_charge %]</td>
+			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.other_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 10px;"><green>[% item.shipment_charge %]&nbsp;&nbsp;</green>
 				<div class="charge-details" style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table style="font-size: 11px;float:right;">

@@ -999,7 +999,7 @@ sub GetCarrierHandler
 		$HandlerName =~ s/\.pl//;
 		$HandlerName = "ARRS::$HandlerName";
 
-		print STDERR "\n[GetCarrierHandler] HandlerName: $HandlerName";
+		#warn "\n[GetCarrierHandler] HandlerName: $HandlerName";
 		eval "use $HandlerName;";
 
 		if ($@)
