@@ -715,7 +715,7 @@
         function getTariff()
 		{
 		var params = 'customerid='+$("#customerid").val();
-		send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', null, params);
+		send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_carrier_service_list', params);
 		}
         [% END %]
 	</script>

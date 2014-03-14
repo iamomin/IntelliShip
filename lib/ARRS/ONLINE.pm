@@ -844,7 +844,7 @@ warn "undef etadate";
 		";
 
 
-                warn "######### \$SQLString $SQLString";
+                #warn "######### \$SQLString $SQLString";
 		my $sth = $self->{'dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
 
@@ -856,7 +856,7 @@ warn "undef etadate";
 		my $ReturnRef = {};
 		while ( my ($csid, $cid, $carriername, $sid, $servicename, $exclude) = $sth->fetchrow_array() )
 		{
-                        warn "######### 3";
+                        #warn "######### 3";
 			if($exclude){next;}
 
                         my $carrier = $ReturnRef->{$cid};
@@ -879,10 +879,129 @@ warn "undef etadate";
 
 		$sth->finish();
 
-                warn "########## ReturnRef: " . Dumper($ReturnRef);
+                #warn "########## ReturnRef: " . Dumper($ReturnRef);
 		return $ReturnRef;
 	}
 
+        sub GetServiceTariff 
+        {
+            warn "########## 5";
+            my $self = shift;
+            my ($csid) = @_;
+
+            warn "########## GetServiceTariff " . $csid;
+
+            my $ReturnRef = {};
+            my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
+            $CS->Load($csid);
+            warn "########## 5.1";
+
+            #Get all distinct zones for the CS
+            my $zontypeid = $CS->GetValueHashRef()->{'zonetypeid'};
+            warn "########## 5.2 : $zontypeid";
+            my $SQLString = "select distinct zonenumber from zone where typeid = '$zontypeid' order by zonenumber";
+
+            warn "########## 5.3 : $SQLString";
+            my $sth = $self->{'dbref'}->prepare($SQLString)
+                    or die "Could not prepare SQL statement";
+
+
+            $sth->execute()
+                    or die "Cannot execute carrier/service sql statement";
+
+            warn "########## 5.4";
+
+            my @arr = ();
+            while ( my ($zonenumber) = $sth->fetchrow_array() )
+            {
+                push(@arr, $zonenumber);
+            }
+
+            $sth->finish();
+            $ReturnRef->{'zonenumbers'} = \@arr;
+            warn "########## 5.5: " . Dumper(@arr);
+
+            #Get rates for the zones
+            my $ratetypeid = $CS->GetValueHashRef()->{'ratetypeid'};
+
+            warn "########## 5.6: $ratetypeid";
+
+            $SQLString = "select
+                            rateid,
+                            unitsstart, 
+                            unitsstop,
+                            zonenumber,
+                            arcost, 
+                            arcostmin,
+                            arcostperwt,
+                            arcostpermile,
+                            arcostperunit, 
+                            unittype
+                          from rate 
+                          where typeid = '$ratetypeid' 
+                          and zonenumber in 
+                          (
+                            select distinct zonenumber 
+                            from zone 
+                            where typeid = '$zontypeid'
+                            order by zonenumber
+                          ) 
+                          order by unitsstart, unitsstop, zonenumber";
+
+
+            warn "######### \$SQLString $SQLString";
+            my $sth2 = $self->{'dbref'}->prepare($SQLString)
+                    or die "Could not prepare SQL statement";
+
+
+            $sth2->execute()
+                    or die "Cannot execute carrier/service sql statement";
+
+
+            my @ratearray = ();
+            while ( my ($rateid, $unitsstart, $unitsstop, 
+                        $zonenumber, $arcost, $arcostmin, 
+                        $arcostperwt, $arcostpermile, 
+                        $arcostperunit, $unittype) = $sth2->fetchrow_array() )
+            {
+                    my $rate = {};                    
+                    $rate->{'unitsstart'} = $unitsstart;
+                    $rate->{'unitsstop'} = $unitsstop;
+                    $rate->{'zonenumber'} = $zonenumber;
+                    $rate->{'arcostmin'} = $arcostmin;
+                    $rate->{'unittype'} = $unittype;
+
+                    if($arcost)
+                    {    
+                        $rate->{'actualcost'} = $arcost;
+                        $rate->{'costfield'} = 'arcost';
+                    }
+                    elsif($arcostperwt)
+                    {    
+                        $rate->{'actualcost'} = $arcostperwt;
+                        $rate->{'costfield'} = 'arcostperwt';
+                    }
+                    elsif($arcostpermile)
+                    {    
+                        $rate->{'actualcost'} = $arcostpermile;
+                        $rate->{'costfield'} = 'arcostpermile';
+                    }
+                    elsif($arcostperunit)
+                    {    
+                        $rate->{'actualcost'} = $arcostperunit;
+                        $rate->{'costfield'} = 'arcostperunit';
+                    }
+                    
+                    push(@ratearray, $rate);                    
+            }
+
+            $sth2->finish();
+            $ReturnRef->{'ratearray'} = \@ratearray;
+
+            #warn "########## ReturnRef: " . Dumper($ReturnRef);
+            return $ReturnRef;
+        }
+        
 	sub OkToShipOnShipDate
 	{
 		my $self = shift;
