@@ -809,7 +809,6 @@ input.delete {
 }
 
 .gray-backward input {
-    min-width: 118px;
     position: relative;
     display: inline-block;
     margin-left: 32px;
