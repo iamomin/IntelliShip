@@ -622,7 +622,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 
 		if (length $HandlerName)
 		{
-		warn "passed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
+		#warn "passed require of $config->{BASE_PATH}/lib/ARRS/$HandlerName";
 		$HandlerName =~ s/\.pl//;
 		$HandlerName = "ARRS::$HandlerName";
 
@@ -639,7 +639,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		}
 		else
 		{
-warn "HANDLERNAME: use CARRIERHANLDER";
+		warn "HANDLERNAME: use CARRIERHANLDER";
    		use ARRS::CARRIERHANDLER;
 		$Handler = new ARRS::CARRIERHANDLER($self->{'dbref'},$self->{'contact'});
 		}
