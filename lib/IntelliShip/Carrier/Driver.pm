@@ -84,7 +84,7 @@ sub get_EPL
 	my $method = $EPL_TEMPLATES->{$DATA->{'servicecode'}};
 	$method = 'get_' . uc($carrier) . '_EPL' unless $method;
 
-	$self->log("... $method: " . Dumper $DATA);
+	#$self->log("... $method, DATA: " . Dumper $DATA);
 
 	my $EPL = '';
 	#eval {

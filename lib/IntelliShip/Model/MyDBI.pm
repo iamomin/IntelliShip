@@ -8,7 +8,7 @@ use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(
     schema_class => 'IntelliShip::SchemaClass',
-    
+
     connect_info => {
            dsn      => 'dbi:Pg:dbname=aos_intelliship;host=' . IntelliShip::MyConfig->getDatabaseHost . ';port=5432;',
 #          dsn      => 'dbi:Pg:dbname=aos_intelliship;host=localhost;port=5432;',
@@ -25,7 +25,7 @@ sub query_data { my $self = shift; if (@_) { $self->{TABLE_ARRAY} = shift }; ret
 sub query_field_number { my $self = shift; if (@_) { $self->{QUERY_FIELD_NUMBER} = shift }; return $self->{QUERY_FIELD_NUMBER}; }
 sub dbh { my $self = shift; return $self->storage->dbh; }
 
-sub select 
+sub select
 	{
 	my $self = shift;
 	my $sql = shift;
@@ -96,6 +96,15 @@ sub get_token_id
 	## Convert our 20 digit token to a 13 digit token
 	my $BaseCalc = new Math::BaseCalc(digits => [0..9,'A'..'H','J'..'N','P'..'Z']);
 	my $SeqID = $BaseCalc->to_base($RawToken);
+	return $SeqID;
+	}
+
+sub sequence_number
+	{
+	my $self = shift;
+	my $SeqName = shift;
+	my $sth = $self->select("SELECT nextval('$SeqName')");
+	my $SeqID = $sth->fetchrow(0)->{'nextval'};
 	return $SeqID;
 	}
 

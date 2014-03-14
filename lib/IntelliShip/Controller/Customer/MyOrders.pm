@@ -106,9 +106,20 @@ sub populate_my_order_list :Private
 	#$c->log->debug("TOTAL ORDERS FOUND: " . $sth->numrows);
 
 	my $myorder_list = [];
+
+	my $arrSearchByColumn = [];
+	foreach my $filter (keys %$params)
+		{
+		next unless $filter =~ /filter_(.+)$/;
+		push(@$arrSearchByColumn,$1);
+		}
+
 	for (my $row=0; $row < $sth->numrows; $row++)
 		{
 		my $row_data = $sth->fetchrow($row);
+
+		next if $self->invalid_match_pattern($row_data,$arrSearchByColumn);
+
 		($row_data->{'a_class'}, $row_data->{'a_text'}) = IntelliShip::Utils->get_status_ui_info(0,$row_data->{'condition'});
 		push(@$myorder_list, $row_data);
 		}
@@ -124,8 +135,32 @@ sub populate_my_order_list :Private
 
 	$c->stash($params);
 	$c->stash->{MY_ORDERS} = 1;
-	$c->stash->{refresh_interval_sec} = 60;
+	#$c->stash->{refresh_interval_sec} = 60;
 	$c->stash->{list_title} = $TITLE->{$params->{'view'}} if $params->{'view'};
+	}
+
+sub invalid_match_pattern
+	{
+	my $self = shift;
+	my $row_data = shift;
+	my $arrSearchByColumn = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	return 0 unless $params->{'filter'};
+	my @filterData = split(' ',$params->{'filter'});
+
+	#$c->log->debug(".........filterData: " . Dumper @filterData);
+	#$c->log->debug(".........row_data: " . Dumper $row_data);
+	#$c->log->debug(".........arrSearchByColumn: " . Dumper $arrSearchByColumn);
+
+	foreach my $term (@filterData)
+		{
+		return 0 if grep { $row_data->{$_} && $row_data->{$_} =~ /$term/i } @$arrSearchByColumn;
+		}
+
+	return 1;
 	}
 
 sub get_not_shipped_sql :Private

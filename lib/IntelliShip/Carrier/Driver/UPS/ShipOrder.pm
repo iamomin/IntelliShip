@@ -27,7 +27,7 @@ sub process_request
 		{
 		$shipmentData->{'dateshipped'} = $shipmentData->{'datetoship'};
 		}
-    #
+
 	#if (!defined($shipmentData->{'webaccount'}) or $shipmentData->{'webaccount'} eq '')
 	#	{
 	#	return (undef,'Missing Account Number');
@@ -87,44 +87,6 @@ sub process_request
 		# $CgiRef->{$key} = DefaultTo($CgiRef->{$key}, '');
 		# }
 
-	my $numericaccount;
-	my $CustomerService = $self->customerservice;
-
-	if (defined($shipmentData->{'billingaccount'}) and $shipmentData->{'billingaccount'} ne '')
-		{
-		$shipmentData->{'billingaccount'} = uc($shipmentData->{'billingaccount'});
-		$numericaccount = $self->convert_string($shipmentData->{'billingaccount'});
-		}
-	elsif ($CustomerService->{'webaccount'})
-		{
-		$shipmentData->{'webaccount'} = uc($CustomerService->{'webaccount'});
-		$numericaccount = $self->convert_string($shipmentData->{'webaccount'});
-		}
-
-	my $numericservice = $self->convert_string($ServiceCode);
-	my $referencenumber = '99999';# $self->{'dbref'}->seqnumber('ups_refnum_seq');
-	while (length($referencenumber) < 7)
-		{
-		$referencenumber = "0".$referencenumber;
-		}
-
-	my $checkvar = $numericaccount.$numericservice.$referencenumber;
-	my ($o1,$e1,$o2,$e2,$o3,$e3,$o4,$e4,$o5,$e5,$o6,$e6,$o7,$e7,$o8) = split("",$checkvar);
-
-	#Create check digit
-	my $oddtotal = ($o1 + $o2 + $o3 + $o4 + $o5 + $o6 + $o7 + $o8);
-	my $evens = ($e1 + $e2 + $e3 + $e4 + $e5 + $e6 + $e7);
-	my $eventotal = $evens * 2;
-
-	my $total = $oddtotal + $eventotal;
-	my $a = $total + 9;
-	my $b = $a/10;
-	$b = int($b);
-	my $next = $b * 10;
-
-	my $check_digit = ($next - $total);
-	if ($check_digit == 10){ $check_digit = 0; }
-
 	if ($shipmentData->{'tracking1'})
 		{
 		# this is a manually entered trackingnumber
@@ -133,28 +95,23 @@ sub process_request
 		# validate it's length
 		if (length($shipmentData->{'tracking1'}) != 11 and length($shipmentData->{'tracking1'}) != 18)
 			{
-			return (undef,"Invalid UPS Tracking Number (" . $shipmentData->{'tracking1'} . ")");
+			$self->add_error("Invalid UPS Tracking Number (" . $shipmentData->{'tracking1'} . ")");
+			return;
 			}
 
 		# validate the checksum on the manually entered trakcing number
 		if (length($shipmentData->{'tracking1'}) == 18 and !$self->validate_check_digit($shipmentData->{'tracking1'}))
 			{
-			return (undef,"Tracking Number Failed Check Digit Validation (" . $shipmentData->{'tracking1'} . ")");
+			$self->add_error("Tracking Number Failed Check Digit Validation (" . $shipmentData->{'tracking1'} . ")");
+			return;
 			}
 		}
 	else
 		{
-		if ($shipmentData->{'billingaccount'})
-			{
-			$shipmentData->{'tracking1'} = "1Z".$shipmentData->{'billingaccount'}.$ServiceCode.$referencenumber.$check_digit;
-			}
-		elsif ($CustomerService->{'webaccount'})
-			{
-			$shipmentData->{'tracking1'} = "1Z".$CustomerService->{'webaccount'}.$ServiceCode.$referencenumber.$check_digit;
-			}
+		$shipmentData->{'tracking1'} = $self->generate_tracking_number;
 		}
 
-	$self->log("___ tracking1: " . $shipmentData->{'tracking1'});
+	$self->log("___ TRACKING1: " . $shipmentData->{'tracking1'});
 
 	$shipmentData->{'weight'} = $shipmentData->{'enteredweight'};
 
@@ -208,6 +165,64 @@ sub process_request
 	$self->response->printer_string($PrinterString);
 	}
 
+sub generate_tracking_number
+	{
+	my $self = shift;
+
+	my $shipmentData    = $self->data;
+	my $CustomerService = $self->customerservice;
+	my $ServiceCode     = $self->service->{'servicecode'};
+
+	my $numericaccount;
+	if ($shipmentData->{'billingaccount'})
+		{
+		$shipmentData->{'billingaccount'} = uc($shipmentData->{'billingaccount'});
+		$numericaccount = $self->convert_string($shipmentData->{'billingaccount'});
+		}
+	elsif ($CustomerService->{'webaccount'})
+		{
+		$shipmentData->{'webaccount'} = uc($CustomerService->{'webaccount'});
+		$numericaccount = $self->convert_string($shipmentData->{'webaccount'});
+		}
+
+	my $numericservice = $self->convert_string($ServiceCode);
+
+	my $referencenumber = $self->myDBI->sequence_number('ups_refnum_seq');
+	while (length($referencenumber) < 7)
+		{
+		$referencenumber = "0" . $referencenumber;
+		}
+
+	my $checkvar = $numericaccount . $numericservice . $referencenumber;
+	my ($o1,$e1,$o2,$e2,$o3,$e3,$o4,$e4,$o5,$e5,$o6,$e6,$o7,$e7,$o8) = split("",$checkvar);
+
+	#Create check digit
+	my $oddtotal  = ($o1 + $o2 + $o3 + $o4 + $o5 + $o6 + $o7 + $o8);
+	my $evens     = ($e1 + $e2 + $e3 + $e4 + $e5 + $e6 + $e7);
+	my $eventotal = $evens * 2;
+
+	my $total = $oddtotal + $eventotal;
+	my $a = $total + 9;
+	my $b = $a/10;
+	$b = int($b);
+	my $next = $b * 10;
+
+	my $check_digit = ($next - $total);
+	$check_digit = 0 if $check_digit == 10;
+
+	my $tracking1;
+	if ($shipmentData->{'billingaccount'})
+		{
+		$tracking1 = "1Z" . $shipmentData->{'billingaccount'} . $ServiceCode . $referencenumber . $check_digit;
+		}
+	elsif ($CustomerService->{'webaccount'})
+		{
+		$tracking1 = "1Z" . $CustomerService->{'webaccount'} . $ServiceCode . $referencenumber . $check_digit;
+		}
+
+	return $tracking1;
+	}
+
 sub CalculateShipmentNumber
 	{
 	my $self = shift;
@@ -217,7 +232,7 @@ sub CalculateShipmentNumber
 	my $acct_split1 = substr($trackingnumber,2,4);
 	my $acct_split2 = substr($trackingnumber,6,2);
 
-	$self->log("Base: $base\tAcct Num: $acct_split1 $acct_split2");
+	#$self->log("Base: $base\tAcct Num: $acct_split1 $acct_split2");
 
 	my $calc1 = floor($base / 26**4);
 	my $calc2 = ($base - (9 * 26**4)) / 26**3;
@@ -229,7 +244,7 @@ sub CalculateShipmentNumber
 	my $calc5 = $base - (9 * 26**4) - (16 * 26**3) - (8 * 26**2) - (22*26);
 	$calc5 = floor($calc5);
 
-	$self->log("calcs|$calc1|$calc2|$calc3|$calc4|$calc5|");
+	#$self->log("calcs|$calc1|$calc2|$calc3|$calc4|$calc5|");
 
 	my $value1 = $self->ConvertForBase26($calc1);
 	my $value2 = $self->ConvertForBase26($calc2);
@@ -373,10 +388,12 @@ sub BuildPrinterString
 
 	$CgiRef->{'maxicity'} = $CgiRef->{'addresscity'};
 	$CgiRef->{'maxiaddress'} = $CgiRef->{'address1'};
+
 	if ($CgiRef->{'address2'})
 		{
 		$CgiRef->{'maxiaddress'} .= " ".$CgiRef->{'address2'};
 		}
+
 	$CgiRef->{'maxiaddress'} = substr($CgiRef->{'maxiaddress'},0,35);
 
 	# Prepare information for the postal code bar code
@@ -392,56 +409,30 @@ sub BuildPrinterString
 		{
 		$CgiRef->{'barcodezip'} = "421";
 		}
+
 	$CgiRef->{'barcodezip'} .= $barcodezip;
 
-
-	#need 5 digit zip for lookups
+	## need 5 digit zip for lookups
 	my $lookup_zip = substr($CgiRef->{'addresszip'},0,5);
 
-	# Get Routing (URSA) Code
-	my $SQL = "
-		SELECT
-            urc
-         FROM
-            upsroutingcode
-         WHERE
-			'$lookup_zip' between postalcodelow and postalcodehigh	
-			AND countrycode = '" . $CgiRef->{'addresscountry'} . "'
-		";
-
-	my $STH = $self->myDBI->select($SQL);
-	my $DATA = $STH->fetchrow(0);
+	## Get Routing (URSA) Code
+	my $SQL = "SELECT urc FROM upsroutingcode WHERE '$lookup_zip' BETWEEN postalcodelow AND postalcodehigh AND countrycode = '" . $CgiRef->{'addresscountry'} . "'";
+	my $URSA_STH = $self->myDBI->select($SQL);
+	my $DATA = $URSA_STH->fetchrow(0);
 	$CgiRef->{'routingcode'} = $DATA->{urc};
-	
-	$self->log("************ routingcode: " . $CgiRef->{'routingcode'});
-	
-	 # Convert ISO2 country to ISO number
-     my $SQLISO = "
-         SELECT
-            countryid
-         FROM
-            country
-         WHERE
-            countryiso2 = '" . $CgiRef->{'addresscountry'} . "'
-		";
-	my $STH = $self->myDBI->select($SQLISO);
-	my $ISODATA = $STH->fetchrow(0);
+
+	## Convert ISO2 country to ISO number
+	my $SQLISO = "SELECT countryid FROM country WHERE countryiso2 = '" . $CgiRef->{'addresscountry'} . "'";
+	my $ISO_STH = $self->myDBI->select($SQLISO);
+	my $ISODATA = $ISO_STH->fetchrow(0);
+
 	$CgiRef->{'isocountry'} = $ISODATA->{countryid};
-      
+
 	#States needs to be ISO2 format
 	my $State_length = length($CgiRef->{'addressstate'});
 	if ( $State_length ne 2 )
 		{
-		my $SQL_ISO2 = "
-			SELECT
-				province
-			FROM
-				postalcode
-			WHERE
-				postalcode = '$lookup_zip'
-			LIMIT 1
-		";
-
+		my $SQL_ISO2 = " SELECT province FROM postalcode WHERE postalcode = '$lookup_zip' LIMIT 1";
 		my $STH  = $self->myDBI->select($SQL_ISO2);
 		my $ISO2DATA = $STH->fetchrow(0);
 		$CgiRef->{'iso2state'} = $ISO2DATA->{province};
@@ -452,7 +443,8 @@ sub BuildPrinterString
 		}
 
 	$CgiRef->{'servicecode'} = $self->customerservice->{servicecode};
-	# Prepare information for maxicode
+
+	## Prepare information for maxicode
 	my $barcodezip5 = substr($barcodezip,0,5);
 	my $barcodezip4 = substr($barcodezip,5,4);
 	if (!defined($barcodezip4) || length($barcodezip4) < 4)
@@ -489,8 +481,6 @@ sub BuildPrinterString
 	my $ref2    = substr($CgiRef->{'tracking1'},14,4);
 
 	$CgiRef->{'spacedtracking1'} = $qual." ".$acct1." ".$acct2." ".$service." ".$ref1." ".$ref2;
-	
-	$self->log("____ spacedtracking1: " . $CgiRef->{'tracking1'});
 
 	if ( $CgiRef->{'totalquantity'} >= $CgiRef->{'quantity'} )
 		{
@@ -503,7 +493,7 @@ sub BuildPrinterString
 		}
 
 	# calculate shipment number.  presumably only needed for international but calcing for all
-	# a multi piece shipment uses a single shipment number 
+	# a multi piece shipment uses a single shipment number
 	if ( $CgiRef->{'currentpiece'} == 1 )
 		{
 		($CgiRef->{'shipmentnumber'}) = $self->CalculateShipmentNumber($CgiRef->{'tracking1'});
@@ -515,10 +505,10 @@ sub BuildPrinterString
 	$CgiRef->{'comments'} = $CgiRef->{'description'};
 
 	# Build dim string
-	$CgiRef->{'dims'} = $CgiRef->{'dimlength'};
+	$CgiRef->{'dims'}  = $CgiRef->{'dimlength'};
 	$CgiRef->{'dims'} .= 'x' . $CgiRef->{'dimwidth'} if $CgiRef->{'dims'} and $CgiRef->{'dimwidth'};
 	$CgiRef->{'dims'} .= 'x' . $CgiRef->{'dimheight'} if $CgiRef->{'dims'} and $CgiRef->{'dimheight'};
-	$CgiRef->{'dims'} = '' unless $CgiRef->{'dims'};
+	$CgiRef->{'dims'}  = '' unless $CgiRef->{'dims'};
 
 	##################################################################
 	## Build EPL
@@ -557,7 +547,7 @@ sub BuildPrinterString
 		}
 	else
 		{
-		$CgiRef->{'displayweight'} = $CgiRef->{'enteredweight'}. "  LBS";
+		$CgiRef->{'displayweight'} = $CgiRef->{'enteredweight'} . "  LBS";
 		$CgiRef->{'maxi_weight'} = $CgiRef->{'enteredweight'};
 		}
 

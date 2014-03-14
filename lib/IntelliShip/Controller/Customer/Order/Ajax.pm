@@ -453,6 +453,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->mark_shipment_as_printed;
 		}
+	elsif ($action eq 'search_ordernumber')
+		{
+		$dataHash = $self->search_ordernumber;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -610,6 +614,24 @@ sub mark_shipment_as_printed
 
 	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
 	return { UPDATED => 1};
+	}
+
+sub search_ordernumber :Private
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my @cos = $c->model('MyDBI::Co')->search({ ordernumber => $params->{'ordernumber'}, coid => { '!=' => $params->{'coid'} }});
+	my $CO = $cos[0] if @cos;
+	my $resDS = { ORDER_FOUND => 0 };
+	if ($CO)
+		{
+		$resDS->{ORDER_FOUND} = 1;
+		$resDS->{COID} = $CO->coid;
+		}
+	return $resDS;
 	}
 
 =as

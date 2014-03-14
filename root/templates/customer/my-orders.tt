@@ -35,43 +35,42 @@
 		</table>
 	</h2>
 
+	<table class="shipment-filter">
+		<tr>
+			<td style="width: 05%">Show Filters</td>
+			<td style="width: 02%">
+				&nbsp;<a id="instant-filter-columns" style="font-size:14px;" href="javascript:void(0);">+</a>&nbsp;
+			</td>
+			<td style="width: 75%">
+			<div id="filter-checkbox" style="display: none;">
+				<table class="css3-checkboxes">
+					<tr>
+						<td><label><input type="checkbox" name="filter_ordernumber" value="1" checked/><span></span>ORDER</label></td>
+						<td><label><input type="checkbox" name="filter_customername" value="1" checked/><span></span>CUSTOMER</label></td>
+						<td><label><input type="checkbox" name="filter_origin" value="1" checked/><span></span>ORIGIN</label></td>
+						<td><label><input type="checkbox" name="filter_destin" value="1" checked/><span></span>DESTINATION</label></td>
+						<td><label><input type="checkbox" name="filter_date" value="1" checked/><span></span>DATE</label></td>
+					</tr>
+					<tr>
+						<td><label><input type="checkbox" name="filter_duedate" value="1" checked/><span></span>DUE DATE</label></td>
+						<td><label><input type="checkbox" name="filter_carrier" value="1" checked/><span></span>CARRIER</label></td>
+						<td><label><input type="checkbox" name="filter_service" value="1" checked/><span></span>SERVICE</label></td>
+						<td><label><input type="checkbox" name="filter_mode" value="1" checked/><span></span>MODE</label></td>
+						<td>&nbsp;</td>
+					</tr>
+				</table>
+			</div>
+			</td>
+			<td style="width: 05%"><label for="filter">Instant Filter</label>:&nbsp;</td>
+			<td style="width: 13%"><input type="text" placeholder="Search orders..." id="filter" name="filter"/></td>
+		</tr>
+	</table>
+
 	[% IF refresh_interval_sec %]
 	<div class="notice">Order list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
 	[% END %]
 
-<!--
-		<table>
-		<tr>
-			<td><input type="submit" class="button" id="new_order" value="Add" onclick="$('#frm_my_ordres').attr('action', '/customer/order/new');"/></td>
-			<td><input type="submit" class="button" id="quick_ship" value="Quick Ship" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"/></td>
-			<td width="65%">&nbsp;</td>
-			<td><label class="float-right" for="view">Type:</td>
-			<td><select name="view" id="view" onChange="refreshMyOrders()">
-					[% FOREACH item IN view_list %]
-					<option [% IF view == item.value %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>
-					[% END %]
-			</select></td>
-			<td><input type="submit" class="button" id="refresh" value="Refresh"/></td>
-			<td><input type="button" class="button" id="back" value="Back" onclick="javascript:history.back();"/></td><td><label class="float-right" for="records_per_page">Records Per Page:</td>
-				<td>
-					<select name="records_per_page" id="records_per_page">
-					[% FOREACH item IN recordsperpage_list %]
-						<option value="[% item.value %]" [% IF records_per_page == item.value %]SELECTED[% END %]>[% item.name %]</option>
-					[% END %]
-					</select>
-				</td>
-				<td>
-					<select name="coids" id="coids">
-					[% FOREACH ids IN myorder_batches %]
-						<option value="[% FOREACH id IN ids %][% id %],[% END %]">Page [% loop.count %]</option>
-					[% END %]
-					[% IF no_batches %]<option value='0'>Page 1<option>[% END %]
-					</select>
-				</td>
-		</tr></table>
--->
-
-	<div id="myOrders">
+ <div id="myOrders">
 	[% END %]
 
 		<table>
@@ -108,19 +107,52 @@
 
 	[% UNLESS ajax %]
 	</div>
+
 	<table>
 		<tr>
 		<td style="width: 90%">&nbsp;</td>
-		<td><input type="submit" class="gray" id="new_order" value="ADD SHIPMENT" onclick="$('#frm_my_ordres').attr('action', '/customer/order/onepage');"/></td>
-		<td><button type="submit" id="quick_ship" class="quick-ship" onclick="$('#frm_my_ordres').attr('action', '/customer/order/quickship');"><label></label><span>QUICK SHIP</span></button>
+		<td><input type="button" class="gray" id="new_order" value="ADD SHIPMENT"></td>
+		<td><button type="button" id="quick_ship" class="quick-ship"><label></label><span>QUICK SHIP</span></button></td>
 		</tr>
 	</table>
 	</form>
+
+
 	[% END %]
 
 	<script>
 
 	[% UNLESS ajax %]
+
+	$("#quick_ship").click(function() {
+		$('#frm_my_ordres').attr('action', '/customer/order/quickship');
+		$('#frm_my_ordres').submit();
+		});
+
+	$("#new_order").click(function() {
+		$('#frm_my_ordres').attr('action', '/customer/order/onepage');
+
+		$('#frm_my_ordres').submit();
+		});
+
+	$('#filter').keyup(function(event) {
+		var keycode = (event.keyCode ? event.keyCode : event.which);
+		if(keycode == '13') {
+			send_ajax_request('myOrders', 'HTML', 'myorders', '', $("#frm_my_ordres").find("input[type='checkbox'], #filter, #view").serialize());
+			}
+		});
+
+	$("#instant-filter-columns").click(function() {
+		var linkObject = $(this);
+		if (linkObject.text() == "+") {
+			$("#filter-checkbox").slideDown('slow');
+			linkObject.html("&#8211");
+			} else {
+			$("#filter-checkbox").slideUp('slow');
+			linkObject.text("+");
+			}
+		});
+
 	function loadOrder(coid) {
 		$("#do").val("load");
 		$("#coid").val(coid);
@@ -132,13 +164,16 @@
 		}
 	[% END %]
 
-	var refresh_interval_sec = [% refresh_interval_sec ? refresh_interval_sec : 60 %];
+	var refresh_interval_sec = [% refresh_interval_sec ? refresh_interval_sec : 0 %];
+
 	$(document).ready(function(){
 
 		$("#myorder_count").text('[% myorder_list_count %]');
 
-		$("#refresh_interval").text(refresh_interval_sec);
-		setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
+		if (refresh_interval_sec > 0) {
+			$("#refresh_interval").text(refresh_interval_sec);
+			setInterval("refreshMyOrders()", refresh_interval_sec * 1000);
+			}
 
 		$("#records_per_page").change(function () {
 			$('#frm_my_ordres').submit();

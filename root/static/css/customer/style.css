@@ -88,7 +88,7 @@ img { border: none; vertical-align: middle }
     width: 120px;
 }
 
-#header input[type=submit] {
+#header input[type=button] {
     background: url("/static/images/search.png") no-repeat center center;
     width: 24px;
     height:24px;

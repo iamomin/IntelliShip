@@ -1278,11 +1278,10 @@ sub SHIP_ORDER :Private
 	my $CO = $self->get_order;
 
 	$params->{'carrier'} = $CO->extcarrier if $CO->extcarrier and !$params->{'carrier'};
+	$params->{'service'} = $CO->extservice if $CO->extservice and !$params->{'service'};
 
-	$c->log->debug("CO->extcarrier      : " . $CO->extcarrier);
-	$c->log->debug("params->{'carrier'} : " . $params->{'carrier'}) if $params->{'carrier'};
-	$c->log->debug("CO->extservice      : " . $CO->extservice);
-	$c->log->debug("params->{'service'} : " . $params->{'service'}) if $params->{'service'};
+	$c->log->debug("Carrier: " . $params->{'carrier'}) if $params->{'carrier'};
+	$c->log->debug("Service: " . $params->{'service'}) if $params->{'service'};
 
 	if (length $CO->extcarrier == 0 or length $params->{'carrier'} == 0)
 		{
@@ -1469,6 +1468,7 @@ sub SHIP_ORDER :Private
 
 	foreach my $key (%$Service)
 		{
+		next if !$key or !$Service->{$key};
 		$ShipmentData->{$key} = $Service->{$key};
 		}
 
@@ -1586,9 +1586,8 @@ sub SHIP_ORDER :Private
 		chop($params->{'assessorial_values'}) if $params->{'assessorial_values'};
 		}
 
-	$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
+	#$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
 
-	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
 	# Save out shipment assessorials
 	#$self->SaveAssessorials($params,$params->{'shipmentid'},2000);
 
@@ -1811,7 +1810,8 @@ sub ProcessPrinterStream
 		push @$printerstring_loop, $line;
 		}
 
-	$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
+	#$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
+
 	$c->stash->{printerstring_loop} = $printerstring_loop;
 	$c->stash->{label_port} = 'LPT1';
 	}

@@ -43,6 +43,21 @@
 		requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
 
+	$("#ordernumber").change(function() {
+
+		if ($(this).val().length == 0) return;
+
+		var query_param = "coid=" + $("#coid").val() + "&ordernumber=" + $("#ordernumber").val();
+
+		send_ajax_request('', 'JSON', 'order', 'search_ordernumber', query_param, function () {
+			if ( JSON_data.ORDER_FOUND == 0 ) return;
+			requiredFieldHash = {},
+			$("#coid").val(JSON_data.COID);
+			$("#do").val('');
+			$('#frm_order').submit();
+			});
+		});
+
 	$("#tocountry").change(function() {
 		checkInternationalSection();
 		});
