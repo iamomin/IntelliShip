@@ -409,14 +409,30 @@ function populateSpecialServiceList() {
 		});
 	}
 
+function setCustomsCommodityValue()
+	{
+	var insurance = $("#insurance").val();
+	var freightinsurance = $("#freightinsurance").val();
+	var customscommodityvalue = (insurance > freightinsurance ? insurance : freightinsurance);
+	$("#customscommodityvalue").val(customscommodityvalue);
+	}
+
 function checkInternationalSection() {
-	if($("#tocountry").val() != $("#fromcountry").val()) {
+
+	if ($("#tocountry").val() != $("#fromcountry").val()) {
+
+		if ($('#intlCommoditySec').html().length > 0) {
+			$("#intlCommoditySec").slideDown(1000, setCustomsCommodityValue);
+			return;
+			}
 		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){
-			$("#intlCommoditySec").slideDown(1000);
+			$("#intlCommoditySec").slideDown(1000, setCustomsCommodityValue);
+			$("#insurance").change(setCustomsCommodityValue);
+			$("#freightinsurance").change(setCustomsCommodityValue);
 			});
 		} else {
 		$("#intlCommoditySec").slideUp("slow");
-		$("#intlCommoditySec").empty();
+		//$("#intlCommoditySec").empty();
 		}
 	}
 

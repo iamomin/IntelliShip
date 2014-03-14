@@ -87,7 +87,7 @@
 		</tr>
 		<tr>
 			<td><label for="customscommodityvalue">Customs Value:</label><br/>
-			<input type="text" name="customscommodityvalue" id="customscommodityvalue"/>
+			<input type="text" name="customscommodityvalue" id="customscommodityvalue" value="0.00"/>
 			</td>
 			<td><label for="currencytype">Currency Type:</label><br/>
 			<select name="currencytype" id="currencytype">
@@ -102,7 +102,6 @@
 	</td>
 	</tr>
 	</table>
-
 [% END %]
 
 [% IF PKG_DETAIL_ROW %]
