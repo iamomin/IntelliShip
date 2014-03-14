@@ -1,6 +1,3 @@
-[% #---------------------------------------------------------- %]
-[% # DISPLAY MY SHIPMENT - START %]
-[% #---------------------------------------------------------- %]
 [% IF MY_SHIPMENTS %]
 	[% UNLESS ajax %]
 
@@ -112,7 +109,7 @@
 			</tr>
 			[% FOREACH item IN myshipment_list %]
 			<tr>
-				<td><label><input type="checkbox" id="[% item.shipmentid %] " name="shipmentid" value="[% item.carrier _ '-' _ item.tracking %]" class="items"/><span></span></label></td>
+				<td><label><input type="checkbox" id="[% item.shipmentid %] " name="shipment" value="[% item.shipmentid _ '-' _ item.carrier _ '-' _ item.tracking %]" class="items"/><span></span></label></td>
 				<td><a class="[% item.a_class %]" href="javascript:showShipmentDetails('[% item.shipmentid %]');"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
@@ -225,11 +222,81 @@
 				});
 			}
 
-		function voidShipment(ShipmentArr)
+		var trackURLHash = {};
+		[% FOREACH item IN trackurl_list %]
+			trackURLHash['[% item.name %]']='[% item.value %]';
+		[% END %]
+
+		function BatchTrackShipment(ShipmentArr)
 			{
 			if (ShipmentArr == "") return;
+			var shipmentList = {};
+			var dilimeter = '';
+			var count = 1;
+			for (var i in ShipmentArr){
+				var ShipmentParts = ShipmentArr[i].split("-");
+				var shipmentid = ShipmentParts[0];
+				var carrier = ShipmentParts[1];
+				var tracking_number = ShipmentParts[2];
 
-			var query_param = "shipmentids=" + ShipmentArr;
+				if(carrier == 'UPS'){
+					count += 1;
+					dilimeter = '&InquiryNumber'+count+'=';
+					}
+				else
+					dilimeter = ',';
+
+				shipmentList[carrier] = shipmentList[carrier] ? (shipmentList[carrier] + tracking_number + dilimeter) : (tracking_number + dilimeter);
+				}
+
+			Object.keys(shipmentList).forEach(function (key) {
+				trackingURL = trackURLHash[key].replace("XXXX",shipmentList[key]);
+				window.open(trackingURL + '&ref=' + jQuery.now());
+				})
+			}
+
+		function BatchReprintShipment(ShipmentArr)
+			{
+			if (ShipmentArr == undefined) return;
+
+			var ShipmentIds = [];
+			jQuery.each(ShipmentArr, function(index, value) {
+				var ShipmentParts = ShipmentArr[index].split("-");
+				ShipmentIds.push(ShipmentParts[0]);
+				});
+
+			$('#dialog-message').dialog( {
+				autoOpen: false,
+				title: 'Reprint Label',
+				width : '1000px',
+				modal: true,
+				buttons: {
+					Close: function() {
+						$( this ).dialog( "close" );
+						}
+					}
+				});
+
+			//$('#dialog-message').css('height','600px');
+			//$('#dialog-message').css('overflow','scroll');
+
+			var query_param = "shipmentid=" + ShipmentIds;
+			send_ajax_request('dialog-message', 'HTML', 'myshipments', 'reprint_label', query_param, function () {
+				$( "#dialog-message" ).dialog("open");
+				});
+			}
+
+		function BatchVoidShipment(ShipmentArr)
+			{
+			if (ShipmentArr == undefined) return;
+
+			var ShipmentIds = [];
+			jQuery.each(ShipmentArr, function(index, value) {
+				var ShipmentParts = ShipmentArr[index].split("-");
+				ShipmentIds.push(ShipmentParts[0]);
+				});
+
+			var query_param = "shipmentids=" + ShipmentIds;
 
 			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
 				if ( JSON_data.is_success ) {
@@ -248,36 +315,6 @@
 					showMessage("Shipment void operation failed...", "Void Shipment");
 					}
 				});
-			}
-
-		var trackURLHash = {};
-		[% FOREACH item IN trackurl_list %]
-			trackURLHash['[% item.name %]']='[% item.value %]';
-		[% END %]
-
-		function trackShipment(ShipmentArr)
-			{
-			if (ShipmentArr == "") return;
-			var shipmentList = {};
-			var dilimeter = '';
-			var count = 1;
-			for (var i in ShipmentArr){
-				var ShipmentParts = ShipmentArr[i].split("-");
-
-				if(ShipmentParts[0] == 'UPS'){
-					count += 1;
-					dilimeter = '&InquiryNumber'+count+'=';
-					}
-				else
-					dilimeter = ',';
-
-				shipmentList[ShipmentParts[0]] = shipmentList[ShipmentParts[0]] ? shipmentList[ShipmentParts[0]] + ShipmentParts[1] + dilimeter : ShipmentParts[1] + dilimeter;
-				}
-
-			Object.keys(shipmentList).forEach(function (key) {
-				trackingURL = trackURLHash[key].replace("XXXX",shipmentList[key]);
-				window.open(trackingURL + '&ref=' + jQuery.now());
-				})
 			}
 
 		var clickCount = 0;
@@ -311,21 +348,19 @@
 		$("#btn_submit").click(function() {
 			var action = $("input:radio[name=batch_action]:checked").val();
 
+			var arrShipment = [];
+			$("input:checkbox[name=shipment]:checked").each(function() {
+				arrShipment.push($(this).val());
+				});
+
 			if (action == 'void') {
-				var arrShipment = [];
-				$("input:checkbox[name=shipmentid]:checked").each(function() {
-					arrShipment.push($(this).val());
-					});
-				voidShipment(arrShipment);
+				BatchVoidShipment(arrShipment);
 				}
 			if (action == 'track') {
-				var arrShipment = [];
-				$("input:checkbox[name=shipmentid]:checked").each(function() {
-					arrShipment.push($(this).val());
-					});
-				trackShipment(arrShipment);
+				BatchTrackShipment(arrShipment);
 				}
 			if (action == 'reprint') {
+				BatchReprintShipment(arrShipment);
 				}
 			});
 
@@ -354,6 +389,8 @@
 	</script>
 
 [% END %]
-[% #---------------------------------------------------------- %]
-[% #  DISPLAY MY ORDERS - END %]
-[% #---------------------------------------------------------- %]
+
+[% IF REPRINT_LABEL && LABEL_LIST %]
+	[% FOREACH label IN LABEL_LIST %][% label%]
+	<br><hr><br>[% END %]
+[% END %]

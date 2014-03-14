@@ -121,38 +121,54 @@ sub reprint_label :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my $ShipmentIds = (ref $params->{'shipmentid'} eq 'ARRAY' ? $params->{'shipmentid'} : [$params->{'shipmentid'}]);
+	$ShipmentIds    = [split /\,/, $params->{'shipmentid'}] if $params->{'shipmentid'} =~ /\,/;
 
-	return unless $Shipment;
-
-	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
-	   $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$Shipment->shipmentid . '.jpg' unless -e $label_file;
-
-	$c->log->debug("... shipment found, label_file: " . $label_file);
-
-	my $HTML;
-	if ($label_file =~ /JPG/i)
+	my $LABEL_ARR = [];
+	foreach my $shipmentid (@$ShipmentIds)
 		{
-		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
-		}
-	else
-		{
-		my $FILE = new IO::File;
-		unless (open ($FILE,$label_file))
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
+
+		next unless $Shipment;
+
+		$c->log->debug("... generate label for shipment ID: " . $shipmentid);
+
+		my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
+		   $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$Shipment->shipmentid . '.jpg' unless -e $label_file;
+
+		unless (-e $label_file)
 			{
-			$c->log->debug("*** Label String Save Error: " . $!);
-			return;
+			$c->log->debug("... shipment not found for ID: " . $shipmentid);
+			next;
 			}
-		my @lines = <$FILE>;
-		close $FILE;
 
-		my $PrinterString = join("\n",@lines);
+		my $HTML;
+		if ($label_file =~ /JPG/i)
+			{
+			$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
+			}
+		else
+			{
+			my $FILE = new IO::File;
+			unless (open ($FILE,$label_file))
+				{
+				$c->log->debug("*** Label String Save Error: " . $!);
+				next;
+				}
+			my @lines = <$FILE>;
+			close $FILE;
 
-		$self->setup_raw_label($Shipment, $PrinterString);
+			my $PrinterString = join("\n",@lines);
+
+			$self->setup_raw_label($Shipment, $PrinterString);
+
+			$c->stash->{REPRINT_LABEL} = 1;
+			push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
+			}
 		}
 
-	$c->stash->{REPRINT_LABEL} = 1;
-	$c->stash(template => "templates/customer/order-label.tt");
+	#$c->log->debug("LABEL_LIST: " . Dumper $LABEL_ARR);
+	$c->stash->{LABEL_LIST} = $LABEL_ARR;
 	}
 
 sub populate_my_shipment_list :Private
