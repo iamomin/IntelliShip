@@ -99,6 +99,7 @@ sub generate_shipment_report
 	my $and_carrier_sql = $self->get_carrier_sql;
 
 	my $and_username_sql = '';
+	my $and_contactid_sql = "AND sh.contactid = '". $Contact->contactid ."'" if $Contact->is_myonly;
 	unless ($Customer->superuser)
 		{
 		$and_username_sql .= " AND c.username = '" . $Customer->username . "'";
@@ -234,7 +235,8 @@ sub generate_shipment_report
 				$and_username_sql .
 				$and_co_type_id_sql .
 				$and_allowed_extcustnum_sql .
-				$and_carrier_sql;
+				$and_carrier_sql.
+				$and_contactid_sql;
 
 		$WHERE =~ s/^\ *AND//;
 		$WHERE = " WHERE " . $WHERE if $WHERE;
@@ -285,7 +287,8 @@ sub generate_shipment_report
 				$and_datatypeid_sql .
 				$and_username_sql .
 				$and_other_name_in_sql .
-				$and_allowed_extcustnum_sql;
+				$and_allowed_extcustnum_sql.
+				$and_contactid_sql;
 
 		$WHERE =~ s/^\ *AND//;
 		$WHERE = " WHERE " . $WHERE if $WHERE;
@@ -584,12 +587,14 @@ sub generate_summary_service_report
 	my $and_customerid_sql = " AND co.customerid = '" . $Customer->customerid . "'";
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
+	my $and_contactid_sql = "AND sh.contactid = '". $Contact->contactid ."'" if $Contact->is_myonly;
 
 	my $and_status_id_sql = $self->get_co_status_sql;
 	my $and_carrier_sql = $self->get_carrier_sql;
 
 	my $WHERE =
 			$and_customerid_sql .
+			$and_contactid_sql .
 			$and_start_date_sql .
 			$and_stop_date_sql .
 			$and_status_id_sql .

@@ -214,7 +214,8 @@ sub insert_shipment
 			'datepacked' => $shipmentData->{'datepacked'},
 			'unitquantity' => $shipmentData->{'unitquantity'},
 			'ipaddress' => $shipmentData->{'ipaddress'},
-			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'}
+			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'},
+			'contactid' =>	$shipmentData->{'contactid'},
 		};
 
 	my $orignAddress = {

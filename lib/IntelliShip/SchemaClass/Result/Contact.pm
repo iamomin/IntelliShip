@@ -289,6 +289,12 @@ sub get_contact_data_value
 	return $contact_data_value;
 	}
 
+sub show_only_my_items
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('myonly') || 0;
+	}
+
 sub login_level
 	{
 	my $self = shift;

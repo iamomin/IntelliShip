@@ -276,6 +276,7 @@ sub get_shipped_sql :Private
 
 
 	my $and_search_by_term_sql = $self->get_search_by_term_sql;
+	my $and_contactid_sql = "AND s.contactid = '" . $Contact->contactid ."'" if $Contact->show_only_my_items;
 
 	my $and_date_shipped_sql = '';
 	if ($params->{'date_apply'})
@@ -341,6 +342,7 @@ sub get_shipped_sql :Private
 			$and_shipment_in_sql
 			$and_date_shipped_sql
 			$and_search_by_term_sql
+			$and_contactid_sql
 			AND s.datedelivered IS NULL
 		ORDER BY
 			dateshipped DESC, customername ASC

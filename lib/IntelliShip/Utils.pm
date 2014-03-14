@@ -454,6 +454,7 @@ my $CUSTOMER_CONTACT_RULES = [
    	{ name => 'HALO URL' ,                                      value => 'halourl' ,						type => 'INPUT',    datatypeid => 2 , ownertype => ['CONTACT']},
    	{ name => 'Label Type' ,                                    value => 'labeltype' ,						type => 'RADIO',    datatypeid => 2 , ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Auto Select-Multiply Qty X Weight' ,             value => 'auto_select_quantity_x_weight' ,  type => 'CHECKBOX', datatypeid => 1 , ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Only Show My Items' ,                            value => 'myonly' ,							type => 'CHECKBOX', datatypeid => 1 , ownertype => ['CUSTOMER', 'CONTACT']},
 	];
 
 sub get_rules
