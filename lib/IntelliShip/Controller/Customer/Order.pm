@@ -63,7 +63,8 @@ sub setup_one_page :Private
 	my $c = $self->context;
 
 	my $CO = $self->get_order;
-	if ($CO->can_autoship and $self->customer->get_contact_data_value('autoprocess'))
+
+	if ($self->order_can_auto_process)
 		{
 		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
 		return $self->SHIP_ORDER;
@@ -84,6 +85,17 @@ sub setup_one_page :Private
 	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
 
 	$c->stash(template => "templates/customer/order-one-page.tt");
+	}
+
+sub order_can_auto_process
+	{
+	my $self = shift;
+
+	my $c      = $self->context;
+	my $params = $c->req->params;
+	my $CO     = $self->get_order;
+
+	return ($CO->can_autoship and !$params->{'force_edit'} and ($c->stash->{AUTO_PROCESS} == 1 or $self->customer->get_contact_data_value('autoprocess')));
 	}
 
 sub setup_address :Private
@@ -193,7 +205,8 @@ sub setup_carrier_service :Private
 	my $c = $self->context;
 
 	my $Customer = $self->customer;
-	my $Contact = $self->contact;
+	my $Contact  = $self->contact;
+	my $CO       = $self->get_order;
 
 	$c->stash->{review_order} = 1;
 	$c->stash->{customer} = $Contact;
@@ -213,8 +226,10 @@ sub setup_carrier_service :Private
 		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
 		}
 
-	unless ($c->stash->{one_page})
+	if ($CO->has_carrier_service_details)
 		{
+		$c->log->debug("CO has carrier service details, populate details...");
+
 		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
 		$CA->customer($Customer);
 		$CA->contact($Contact);
@@ -264,6 +279,22 @@ sub save_CO_details :Private
 	my $CO = $self->get_order;
 
 	my $coData = { keep => '0' };
+
+	##########################################################
+	##  FLUSH OLD DETAILS IF ANY FOR MATCHING ORDERNUMBER   ##
+	##########################################################
+	if ($params->{'ordernumber'})
+		{
+		if (my @DuplicateCOs = $c->model('MyDBI::CO')->search({ ordernumber => $params->{'ordernumber'}, coid => { '!=' => $CO->coid} }))
+			{
+			$c->log->debug("*** ".@DuplicateCOs." DUPLICATE order found for order number '$params->{'ordernumber'}', delete old details...");
+			foreach my $DuplicateCO (@DuplicateCOs)
+				{
+				$DuplicateCO->delete_all_package_details;
+				$DuplicateCO->delete;
+				}
+			}
+		}
 
 	$coData->{'isdropship'} = $params->{'isdropship'} || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
@@ -809,8 +840,12 @@ sub get_order :Private
 		else
 			{
 			$c->log->debug("######## NO CO FOUND ########");
+			my $COID = $self->get_token_id;
+			my $OrderNumber = $self->get_auto_order_number($params->{'ordernumber'});
+			$OrderNumber = $COID unless $OrderNumber;
+
 			my $coData = {
-				ordernumber       => $self->get_auto_order_number($params->{'ordernumber'}),
+				ordernumber       => $OrderNumber,
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
@@ -822,7 +857,7 @@ sub get_order :Private
 				};
 
 			$CO = $c->model('MyDBI::Co')->new($coData);
-			$CO->coid($self->get_token_id);
+			$CO->coid($COID);
 			$CO->insert;
 
 			$c->log->debug("New CO Inserted, ID: " . $CO->coid);
@@ -1036,8 +1071,9 @@ sub add_detail_row :Private
 
 	$c->stash->{PKG_DETAIL_ROW} = 1;
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-
-	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{PKG_DETAIL_ROW} = 0;
+	return $HTML;
 	}
 
 sub get_tooltips :Private
@@ -1424,12 +1460,12 @@ sub SHIP_ORDER :Private
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
 	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
 
-	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $self->customer, $CO) unless $params->{'customerserviceid'};
+	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $Customer, $CO) unless $params->{'customerserviceid'};
 
 	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
 	#$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
 
-	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$self->customer->customerid);
+	my $ShippingData = $self->API->get_CS_shipping_values($params->{'customerserviceid'},$Customer->customerid);
 	#$c->log->debug("get_CS_shipping_values\n RESPONSE: " . Dumper $ShippingData);
 
 	if ($ShippingData->{'decvalinsrate'})
