@@ -8,7 +8,7 @@
     <td style="height: 100%; width: 20%; border: solid gray 1px; vertical-align: top">
     [% IF SERVICE_LIST %]
         <div id="services_tree"></div>
-        <script>    
+        <script>        
         var data = [];
         var obj = null;
         [% FOREACH cid IN SERVICE_LIST.keys %]
@@ -40,8 +40,23 @@
 
         $('#services_tree').tree({
             data: data,
-            autoOpen: true
-        });    
+            autoOpen: 1
+        }); 
+
+        $('#services_tree').bind(
+        'tree.click',
+        function(e) {
+            alert(e.node);
+            // Disable single selection
+            event.preventDefault();
+
+            var selected_node = e.node;
+
+            alert(selected_node.id);
+            alert(selected_node.sid);
+            alert(selected_node.csid);
+        }
+    );
         </script>
     [% END %]
     </td>
