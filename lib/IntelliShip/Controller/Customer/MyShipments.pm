@@ -124,6 +124,8 @@ sub reprint_label :Private
 	my $ShipmentIds = (ref $params->{'shipmentid'} eq 'ARRAY' ? $params->{'shipmentid'} : [$params->{'shipmentid'}]);
 	$ShipmentIds    = [split /\,/, $params->{'shipmentid'}] if $params->{'shipmentid'} =~ /\,/;
 
+	$c->stash->{REPRINT_LABEL} = 1;
+
 	my $LABEL_ARR = [];
 	foreach my $shipmentid (@$ShipmentIds)
 		{
@@ -161,10 +163,9 @@ sub reprint_label :Private
 			my $PrinterString = join("\n",@lines);
 
 			$self->setup_raw_label($Shipment, $PrinterString);
-
-			$c->stash->{REPRINT_LABEL} = 1;
-			push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
 			}
+
+		push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
 		}
 
 	#$c->log->debug("LABEL_LIST: " . Dumper $LABEL_ARR);
