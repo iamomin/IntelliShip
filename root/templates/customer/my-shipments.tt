@@ -133,7 +133,7 @@
 
 	<script>
 		$('.items').change(function(){
-			$("#count").html($("input:checkbox[name=shipment]:checked").length);	
+			$("#count").html($("input:checkbox[name=shipment]:checked").length);
 			});
 	</script>
 
@@ -266,7 +266,7 @@
 
 		function BatchReprintShipment(ShipmentArr)
 			{
-			if (ShipmentArr == undefined || ShipmentArr.length > 0) return;
+			if (ShipmentArr == undefined) return;
 
 			var ShipmentIds = [];
 			jQuery.each(ShipmentArr, function(index, value) {
@@ -306,12 +306,14 @@
 					var vDate = $("#view_date").val();
 					var query_param = "view_date=" + vDate;
 					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+					$("#count").html('0');
 					}
 				else if( JSON_data.voided.length > 0 ) {
 					showMessage("Shipments partially voided...", "Void Shipment");
 					var vDate = $("#view_date").val();
 					var query_param = "&view_date=" + vDate;
-					send_ajax_request('myShipments', 'HTML', 'myshipments', '', query_param);
+					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+					$("#count").html('0');
 					}
 				else {
 					showMessage("Shipment void operation failed...", "Void Shipment");
