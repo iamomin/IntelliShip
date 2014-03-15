@@ -133,8 +133,8 @@ sub reprint_label :Private
 
 		$c->log->debug("... generate label for shipment ID: " . $shipmentid);
 
-		my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
-		   $label_file = IntelliShip::MyConfig->label_image_directory . '/'.$Shipment->shipmentid . '.jpg' unless -e $label_file;
+		my $label_file = IntelliShip::MyConfig->label_image_directory . '/' . $Shipment->shipmentid . '.jpg';
+		   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
 
 		unless (-e $label_file)
 			{
