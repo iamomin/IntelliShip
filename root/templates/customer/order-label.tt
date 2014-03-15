@@ -46,8 +46,10 @@
 
 		catch(err)
 			{
+			[% UNLESS REPRINT_LABEL %]
 			var messageStr="<div class='error'>Sorry, this browser won't support EPL label print</div>";
 			showMessage(messageStr, "Label Print Error");
+			[% END %]
 			return false;
 			}
 
