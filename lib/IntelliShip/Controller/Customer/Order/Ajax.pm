@@ -203,8 +203,10 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
-			$detail_hash->{'freight_charge'} = $freightcharges || '0';
-			$detail_hash->{'other_charge'} = ($fuelcharges+$DVI_Charge+$FI_Charge) || '0';
+			#$detail_hash->{'freight_charge'} = $freightcharges || '0';
+			$detail_hash->{'freight_charge'} = sprintf("%.2f",($freightcharges || '0'));
+			#$detail_hash->{'other_charge'} = ($fuelcharges+$DVI_Charge+$FI_Charge) || '0';
+			$detail_hash->{'other_charge'} = sprintf("%.2f",(($fuelcharges+$DVI_Charge+$FI_Charge) || '0'));
 
 			#if ($detail_hash->{'shipment_charge'} =~ /Quote/)
 			#	{

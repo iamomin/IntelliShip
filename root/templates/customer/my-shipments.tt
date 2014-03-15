@@ -130,6 +130,13 @@
 			[% END %]
 		</table>
 
+
+	<script>
+		$('.items').change(function(){
+			$("#count").html($("input:checkbox[name=shipment]:checked").length);	
+			});
+	</script>
+
 	[% UNLESS ajax %]
 	</div>
 	</form>
@@ -162,26 +169,22 @@
 
 		$("#datefrom").datepicker({ maxDate: '0d' });
 		$("#dateto").datepicker({ maxDate: '2w' });
-
-		$('.items').change(function(){
-			$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
-			});
-
+		
 		function check_uncheck_all() {
 			if($("#checkAll").is(':checked'))
 				{
-				$("input:checkbox[name=shipmentid]").each(function() {
+				$("input:checkbox[name=shipment]").each(function() {
 					$(this).prop( "checked", true );
 					});
 				}
 			else
 				{
-				$("input:checkbox[name=shipmentid]").each(function() {
+				$("input:checkbox[name=shipment]").each(function() {
 					$(this).prop( "checked", false );
 					});
 				}
 
-			$("#count").html($("input:checkbox[name=shipmentid]:checked").length);
+			$("#count").html($("input:checkbox[name=shipment]:checked").length);
 			}
 
 		function ReprintLabel(shipmentid) {
@@ -202,6 +205,12 @@
 				$( "#dialog-message" ).dialog("open");
 				});
 			}
+			
+		function voidShipment(shipmentId){
+		
+			var ShipmentIds = [shipmentId];
+			BatchVoidShipment(ShipmentIds);
+		}
 
 		function showShipmentDetails(shipmentid) {
 
@@ -257,7 +266,7 @@
 
 		function BatchReprintShipment(ShipmentArr)
 			{
-			if (ShipmentArr == undefined) return;
+			if (ShipmentArr == undefined || ShipmentArr.length > 0) return;
 
 			var ShipmentIds = [];
 			jQuery.each(ShipmentArr, function(index, value) {
@@ -286,16 +295,9 @@
 				});
 			}
 
-		function BatchVoidShipment(ShipmentArr)
+		function BatchVoidShipment(ShipmentIds)
 			{
-			if (ShipmentArr == undefined) return;
-
-			var ShipmentIds = [];
-			jQuery.each(ShipmentArr, function(index, value) {
-				var ShipmentParts = ShipmentArr[index].split("-");
-				ShipmentIds.push(ShipmentParts[0]);
-				});
-
+			if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
 			var query_param = "shipmentids=" + ShipmentIds;
 
 			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
@@ -354,7 +356,12 @@
 				});
 
 			if (action == 'void') {
-				BatchVoidShipment(arrShipment);
+				var ShipmentIds = [];
+				jQuery.each(arrShipment, function(index, value) {
+					var ShipmentParts = arrShipment[index].split("-");
+					ShipmentIds.push(ShipmentParts[0]);
+					});
+				BatchVoidShipment(ShipmentIds);
 				}
 			if (action == 'track') {
 				BatchTrackShipment(arrShipment);
