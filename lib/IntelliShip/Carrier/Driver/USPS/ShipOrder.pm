@@ -39,6 +39,11 @@ sub process_request
 		$XML_request = $self->get_PriorityMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
+		elsif ($shipmentData->{'servicecode'} eq 'USPSMM')
+		{
+		$XML_request = $self->get_MediaMail_xml_request;
+		$API_name = 'DeliveryConfirmationV4';
+		}
 	elsif ($shipmentData->{'servicecode'} eq 'UPME')
 		{
 		$XML_request = $self->get_PriorityMailExpress_xml_request;
@@ -321,6 +326,78 @@ END
 
 	return $XML_request;
 	}
+
+sub get_MediaMail_xml_request
+	{
+	my $self = shift;
+	my $shipmentData = $self->data;
+	my $CO = $self->CO;
+	my $Contact = $CO->contact;
+
+	$self->log("### Get XML Request for Priority Mail ###: " );
+	#$self->log("### Get XML Request ###: " . Dumper $shipmentData);
+
+	$shipmentData->{serviceType} = 'Media Mail';
+
+	#$self->log("### Service Type" .$shipmentData->{serviceType} );
+
+	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
+	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
+	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$self->log("Senders Name ". $shipmentData->{FromName});
+
+	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+		{
+		$shipmentData->{'packagesize'} = 'LARGE';
+		}
+	else
+		{
+		$shipmentData->{'packagesize'} = 'REGULAR';
+		}
+
+	my $XML_request = <<END;
+<?xml version="1.0" encoding="UTF-8" ?>
+<DeliveryConfirmationV4.0Request USERID="667ENGAG1719" PASSWORD="044BD12WF954">
+<Revision>2</Revision>
+<ImageParameters/>
+<FromName>$shipmentData->{FromName}</FromName>
+<FromFirm>$shipmentData->{'customername'}</FromFirm>
+<FromAddress1>$shipmentData->{'branchaddress2'}</FromAddress1>
+<FromAddress2>$shipmentData->{'branchaddress1'}</FromAddress2>
+<FromCity>$shipmentData->{'branchaddresscity'}</FromCity>
+<FromState>$shipmentData->{'branchaddressstate'}</FromState>
+<FromZip5>$shipmentData->{'branchaddresszip'}</FromZip5>
+<FromZip4/>
+<ToName>$shipmentData->{'contactname'}</ToName>
+<ToFirm>$shipmentData->{'addressname'}</ToFirm>
+<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToCity>$shipmentData->{'addresscity'}</ToCity>
+<ToState>$shipmentData->{'addressstate'}</ToState>
+<ToZip5>$shipmentData->{'addresszip'}</ToZip5>
+<ToZip4/>
+<WeightInOunces>$shipmentData->{'weightinounces'}</WeightInOunces>
+<ServiceType>$shipmentData->{serviceType}</ServiceType>
+<SeparateReceiptPage>True</SeparateReceiptPage>
+<ImageType>TIF</ImageType>
+<AddressServiceRequested>False</AddressServiceRequested>
+<HoldForManifest>N</HoldForManifest>
+<Size>$shipmentData->{'packagesize'}</Size>
+<Width>$shipmentData->{'dimheight'}</Width>
+<Length>$shipmentData->{'dimwidth'}</Length>
+<Height>$shipmentData->{'dimlength'}</Height>
+<ReturnCommitments>true</ReturnCommitments>
+</DeliveryConfirmationV4.0Request>
+END
+
+	$self->log("... XML Request Data:  " . $XML_request);
+
+	return $XML_request;
+	}
+
 
 __PACKAGE__->meta()->make_immutable();
 
