@@ -455,6 +455,16 @@ function setCityAndState()
 		}
 	}
 
+function updateStateList(control)
+	{
+	var tocountry = $("#tocountry").val();
+	if (tocountry.length == 0) return;
+
+	var query_param = "country=" + tocountry + '&control=' + control;
+
+	send_ajax_request('toStateDiv', 'HTML', 'order', 'get_country_states', query_param);
+	}
+
 function validate_package_details()
 	{
 	var boolInvalidData=false;

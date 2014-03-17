@@ -61,6 +61,10 @@ sub get_HTML :Private
 		{
 		$self->get_third_party_delivery;
 		}
+	elsif ($c->req->param('action') eq 'get_country_states')
+		{
+		$self->get_country_states;
+		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt");
 	}
@@ -316,6 +320,17 @@ sub get_third_party_delivery :Private
 	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{THIRD_PARTY_DELIVERY} = 1;
+	}
+
+sub get_country_states :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $params->{'country'} });
+	$c->stash->{control_name}   = $params->{'control'};
+	$c->stash->{COUNTRY_STATES} = 1;
 	}
 
 sub get_estimated_quantity_and_weight

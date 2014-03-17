@@ -339,6 +339,7 @@ sub get_select_list
 	{
 	my $self = shift;
 	my $list_name = shift;
+	my $optional_hash = shift;
 
 	my $c = $self->context;
 
@@ -436,6 +437,19 @@ sub get_select_list
 			{
 			next unless $Country->countryiso2;
 			push(@$list, { name => $Country->countryname, value => $Country->countryiso2});
+			}
+		}
+	elsif ($list_name eq 'STATE')
+		{
+		my $country = $optional_hash->{'country'} || '';
+		my @records;
+		eval { @records = $c->model('MyDBI::State')->search({ countryiso2 => $country }) };
+
+		push(@$list, { name => '', value => ''});
+		foreach my $State (@records)
+			{
+			next unless $State->stateiso2;
+			push(@$list, { name => $State->statename, value => $State->stateiso2});
 			}
 		}
 	elsif ($list_name eq 'UNIT_TYPE')
