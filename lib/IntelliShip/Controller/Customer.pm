@@ -442,14 +442,15 @@ sub get_select_list
 	elsif ($list_name eq 'STATE')
 		{
 		my $country = $optional_hash->{'country'} || '';
-		my @records;
-		eval { @records = $c->model('MyDBI::State')->search({ countryiso2 => $country }) };
+		my $myDBI = $self->context->model('MyDBI');
+		my $sth = $myDBI->select("SELECT statename, stateiso2 FROM statelist WHERE counrtyiso2 = '$country' ORDER BY statename");
 
 		push(@$list, { name => '', value => ''});
-		foreach my $State (@records)
+		for (my $row=0; $row < $sth->numrows; $row++)
 			{
-			next unless $State->stateiso2;
-			push(@$list, { name => $State->statename, value => $State->stateiso2});
+			my $data = $sth->fetchrow($row);
+			next unless $data->{stateiso2};
+			push(@$list, { name => $data->{statename}, value => $data->{stateiso2}});
 			}
 		}
 	elsif ($list_name eq 'UNIT_TYPE')
