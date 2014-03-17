@@ -247,13 +247,16 @@ sub get_carrier_service_list
 		my @sortByDays = sort { $a->{days} <=> $b->{days} || $a->{shipment_charge} <=> $b->{shipment_charge} } @$CS_list_1;
 		my @sortByCharge = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
 
+		$c->stash->{TAB} = 'r';
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
 		$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP}->[0]->{checked} = 0;
 
+		$c->stash->{TAB} = 't';
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
 		$c->stash->{transitdayscarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 
+		$c->stash->{TAB} = 'v';
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByCharge, @$CS_list_2];
 		$c->stash->{viewallcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		}
