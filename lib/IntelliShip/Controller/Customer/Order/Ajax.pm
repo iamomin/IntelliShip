@@ -328,7 +328,8 @@ sub get_country_states :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $params->{'country'} });
+	my $statelist_loop = $self->get_select_list('STATE', { country => $params->{'country'} });
+	$c->stash->{statelist_loop} = $statelist_loop if @$statelist_loop > 1;
 	$c->stash->{control_name}   = $params->{'control'};
 	$c->stash->{COUNTRY_STATES} = 1;
 	}
