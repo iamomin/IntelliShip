@@ -739,7 +739,7 @@ function CalculateDimentionalWeight(customerserviceid)
 		var query_param = '&row=' + package_row + '&CSID=' + customerserviceid + '&dimlength=' + $("#dimlength_" + package_row).val() + '&dimwidth=' + $("#dimwidth_" + package_row).val() + '&dimheight=' + $("#dimheight_" + package_row).val();
 
 		send_ajax_request('', 'JSON', 'order', 'get_dim_weight', query_param, function() {
-			if (JSON_data.dimweight > 0) $("#dimweight_" + JSON_data.row).val(JSON_data.dimweight);
+			$("#dimweight_" + JSON_data.row).val(JSON_data.dimweight);
 			});
 		}
 	}
