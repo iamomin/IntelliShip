@@ -49,7 +49,8 @@ sub get_dim_weight
 		dimheight => $dimheight,
 		};
 
-		return $http_request;
+	my $dataHash = $self->APIRequest($http_request);
+	return $dataHash->{'dimweight'};
 	}
 
 sub get_sop_asslisting

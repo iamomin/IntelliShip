@@ -481,6 +481,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->search_ordernumber;
 		}
+	elsif ($action eq 'get_dim_weight')
+		{
+		$dataHash = $self->get_dim_weight;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -656,6 +660,24 @@ sub search_ordernumber :Private
 		$resDS->{COID} = $CO->coid;
 		}
 	return $resDS;
+	}
+
+sub get_dim_weight
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $csid      = $params->{CSID};
+	my $dimlength = $params->{dimlength};
+	my $dimwidth  = $params->{dimwidth};
+	my $dimheight = $params->{dimheight};
+
+	my $dimWeight = $self->API->get_dim_weight($csid, $dimlength, $dimwidth, $dimheight);
+
+	$c->log->debug("... DIM WEIGHT: " . $dimWeight);
+
+	return { dimweight => $dimWeight, row => $params->{'row'} };
 	}
 
 =as

@@ -301,6 +301,9 @@
 		});
 
 	$("#add_package_product").click(function() {
+
+		resetCSList();
+
 		var type='';
 		$('#package-detail-list input:checkbox:checked').each(function(){
 			if (type == 'package' || type == 'product') return;
@@ -311,6 +314,8 @@
 		});
 
 	$("#delete_package_product").click(function() {
+
+		resetCSList();
 
 		$('#package-detail-list input:checkbox:checked').each(function(){
 			var row_id = this.id.split('_')[1];

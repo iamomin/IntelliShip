@@ -728,6 +728,22 @@ function MarkShipmentAsPrinted(callback_function)
 	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, callback_function);
 	}
 
+function CalculateDimentionalWeight(customerserviceid)
+	{
+	if ($("#dimweight_1").val() == undefined) return;
+
+	update_package_product_sequence();
+	var total_package_rows = $("#pkg_detail_row_count").val();
+	for(var package_row=1; package_row <= total_package_rows; package_row++)
+		{
+		var query_param = '&row=' + package_row + '&CSID=' + customerserviceid + '&dimlength=' + $("#dimlength_" + package_row).val() + '&dimwidth=' + $("#dimwidth_" + package_row).val() + '&dimheight=' + $("#dimheight_" + package_row).val();
+
+		send_ajax_request('', 'JSON', 'order', 'get_dim_weight', query_param, function() {
+			if (JSON_data.dimweight > 0) $("#dimweight_" + JSON_data.row).val(JSON_data.dimweight);
+			});
+		}
+	}
+
 function CSSelectFunctions()
 	{
 	var value ;
