@@ -226,9 +226,6 @@
 
 [% UNLESS one_page %]
 	$(document).ready(function(){
-
-		$('#carrier-service-list').tabs();
-
 		[% IF tooltips %]
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();

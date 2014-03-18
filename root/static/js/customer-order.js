@@ -636,18 +636,7 @@ function get_customer_service_list(params)
 	$("#route").attr("disabled",true);
 	$("#route").val("Please Wait...");
 
-	//$('#carrier-service-list').tabs('destroy').tabs();
-
 	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
-
-		$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
-				var panelID = $(ui.newPanel).prop('id');
-				var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
-				$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
-					if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
-					});
-				}
-			});
 
 		$("#route").attr("disabled",false);
 		$("#route").val(origVal);

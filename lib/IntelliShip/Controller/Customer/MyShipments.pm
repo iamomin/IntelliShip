@@ -135,35 +135,7 @@ sub reprint_label :Private
 
 		$c->log->debug("... generate label for shipment ID: " . $shipmentid);
 
-		my $label_file = IntelliShip::MyConfig->label_image_directory . '/' . $Shipment->shipmentid . '.jpg';
-		   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
-
-		unless (-e $label_file)
-			{
-			$c->log->debug("... shipment not found for ID: " . $shipmentid);
-			next;
-			}
-
-		my $HTML;
-		if ($label_file =~ /JPG/i)
-			{
-			$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
-			}
-		else
-			{
-			my $FILE = new IO::File;
-			unless (open ($FILE,$label_file))
-				{
-				$c->log->debug("*** Label String Save Error: " . $!);
-				next;
-				}
-			my @lines = <$FILE>;
-			close $FILE;
-
-			my $PrinterString = join("\n",@lines);
-
-			$self->setup_raw_label($Shipment, $PrinterString);
-			}
+		$self->setup_label_to_print($Shipment);
 
 		push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
 		}
@@ -277,7 +249,8 @@ sub get_shipped_sql :Private
 
 
 	my $and_search_by_term_sql = $self->get_search_by_term_sql;
-	my $and_contactid_sql = "AND s.contactid = '" . $Contact->contactid ."'" if $Contact->show_only_my_items;
+	my $and_contactid_sql = '';
+	   $and_contactid_sql = "AND s.contactid = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
 
 	my $and_date_shipped_sql = '';
 	if ($params->{'date_apply'})

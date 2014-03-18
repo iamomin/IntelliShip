@@ -620,19 +620,19 @@ sub contactinformation :Local
 
 		if ($Contact)
 			{
-			$c->stash->{contactInfo}			 = $Contact;
-			$c->stash->{password}			 	 = $Contact->password;
-			$c->stash->{contactAddress}			 = $Contact->address;
-			$c->stash->{location}				 = $Contact->get_contact_data_value('location');
-			$c->stash->{ownerid}				 = $Contact->get_contact_data_value('ownerid');
-			$c->stash->{origdate}				 = $Contact->get_contact_data_value('origdate');
-			$c->stash->{sourcedate}				 = $Contact->get_contact_data_value('sourcedate');
-			$c->stash->{disabledate}			 = $Contact->get_contact_data_value('disabledate');
+			$c->stash->{contactInfo}	= $Contact;
+			$c->stash->{password}		= $Contact->password;
+			$c->stash->{contactAddress}	= $Contact->address;
+			$c->stash->{location}		= $Contact->get_contact_data_value('location');
+			$c->stash->{ownerid}		= $Contact->get_contact_data_value('ownerid');
+			$c->stash->{origdate}		= $Contact->get_contact_data_value('origdate');
+			$c->stash->{sourcedate}		= $Contact->get_contact_data_value('sourcedate');
+			$c->stash->{disabledate}	= $Contact->get_contact_data_value('disabledate');
 			}
 
-		$c->stash->{password} 				= $self->get_token_id unless $c->stash->{password};
-		$c->stash->{statelist_loop}			 = $self->get_select_list('US_STATES');
-		$c->stash->{countrylist_loop}		 = $self->get_select_list('COUNTRY');
+		$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
+		$c->stash->{statelist_loop}          = $self->get_select_list('US_STATES');
+		$c->stash->{countrylist_loop}        = $self->get_select_list('COUNTRY');
 
 		$c->stash->{capability_loop}         = $self->get_select_list('CAPABILITY_LIST');
 		$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
@@ -661,7 +661,7 @@ sub set_required_fields :Private
 	my $Contact = $self->contact;
 	my $c = $self->context;
 
-	
+
 	my $requiredList = [];
 
 	unless ($Contact->is_superuser)
@@ -681,7 +681,7 @@ sub set_required_fields :Private
 	$c->log->debug("requiredfield_list: " . Dumper $requiredList);
 	$c->stash->{requiredfield_list} = $requiredList;
 	}
-	
+
 sub get_customer_contacts :Private
 	{
 	my $self = shift;
@@ -706,7 +706,7 @@ sub get_customer_contacts :Private
 		$WHERE->{contactid} = $contact_batches->[0] if $contact_batches;
 		}
 	$c->stash->{SHOW_PAGINATION} = 1 unless $params->{'contact_ids'};
-	
+
 	#$c->log->debug("WHERE: " . Dumper $WHERE);
 
 	my @contacts = $self->context->model('MyDBI::Contact')->search($WHERE, {

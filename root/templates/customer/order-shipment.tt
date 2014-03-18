@@ -72,7 +72,9 @@
 			<td><input type="button" id="add_package_product" class="add" value="ADD"/></td>
 			<td><input type="button" id="delete_package_product" class="delete" value="DELETE"/></td>
 			<td><label><input type="checkbox" name="quantityxweight" id="quantityxweight" value="1" [% IF AUTO_QUANTITYxWEIGHT_SELECT %] CHECKED [% END %]/><span><label for="quantityxweight">Multiply Qty*Weight</label></span></label></td>
-			<td><label><input type="checkbox" name="printpackinglist" id="printpackinglist"/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
+			[% IF default_packing_list %]
+			<td><label><input type="checkbox" name="printpackinglist" id="printpackinglist" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
+			[% END %]
 			<td><label>Total Weight:</label></td>
 			<td><input type="text" class="bold-text" style="border: none; width: 40px;" id="totalweight" name="totalweight" value="0.00" readonly /></td>
 			<td><label>Total Packages:</label></td>

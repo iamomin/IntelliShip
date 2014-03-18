@@ -80,7 +80,7 @@ sub get_EPL
 		USPSF     => 'get_USPS_EPL_1',
 		USTPO     => 'get_USPS_EPL_2',
 		UPRIORITY => 'get_USPS_EPL_3',
-		USPSMM => 'get_USPS_EPL_4',
+		USPSMM    => 'get_USPS_EPL_4',
 		};
 
 	my $method = $EPL_TEMPLATES->{$DATA->{'servicecode'}};
@@ -97,7 +97,7 @@ sub get_EPL
 	#	{
 	#	$self->log("EPLTemplates: $method Errors : " . $!);
 	#	}
-	$self->log("EPL : " . $EPL);
+
 	return $EPL;
 	}
 

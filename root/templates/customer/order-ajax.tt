@@ -236,6 +236,7 @@
 [% END %]
 
 [% IF COUNTRY_STATES %]
+	[% IF statelist_loop %]
 	<label>
 	<select name="[% control_name %]" id="[% control_name %]" style="width: 45px;">
 		[% FOREACH item IN statelist_loop %]
@@ -243,6 +244,9 @@
 		[% END %]
 	</select>
 	</label>
+	[% ELSE %]
+	<input type="text" name="[% control_name %]" id="[% control_name %]" style="width: 30px;"/>
+	[% END %]
 [% END %]
 
 [% IF SPECIAL_SERVICE %]
@@ -381,6 +385,16 @@
 			});
 
 		$(document).ready(function() {
+
+			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+					var panelID = $(ui.newPanel).prop('id');
+					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
+					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
+						if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
+						});
+					}
+				});
+
 			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();
 			});
 	</script>

@@ -333,6 +333,24 @@ sub label_type
 	return $self->get_contact_data_value('labeltype');
 	}
 
+sub label_port
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('labelport');
+	}
+
+sub default_packing_list
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('defaultpackinglist');
+	}
+
+sub default_thermal_count
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('defaultthermalcount') || 1;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

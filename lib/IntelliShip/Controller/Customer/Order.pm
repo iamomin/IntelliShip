@@ -122,7 +122,9 @@ sub setup_address :Private
 	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
-	$c->stash->{statelist_loop} = $self->get_select_list('US_STATES');
+
+	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
+	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
 
 	if ($c->stash->{one_page})
 		{
@@ -186,11 +188,12 @@ sub setup_shipment_information :Private
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 		}
 
+	$c->stash->{default_packing_list} = $Contact->default_packing_list;
 	$c->stash->{default_package_type} = $Contact->default_package_type;
 	$c->stash->{default_product_type} = $Contact->default_product_type;
 
 	$c->stash->{AUTO_QUANTITYxWEIGHT_SELECT} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
-	
+
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 
@@ -303,7 +306,7 @@ sub save_CO_details :Private
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
 	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'}) if $params->{'datetoship'};
 	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'}) if $params->{'dateneeded'};
-	
+
 	$coData->{'ponumber'} = $params->{'ponumber'} if $params->{'ponumber'};
 	$coData->{'extid'} = $params->{'extid'} if $params->{'extid'};
 	$coData->{'custref2'} = $params->{'custref2'} if $params->{'custref2'};
@@ -906,7 +909,7 @@ sub populate_order :Private
 	$c->stash->{extid} = $CO->extid;
 	$c->stash->{custref2} = $CO->custref2;
 	$c->stash->{custref3} = $CO->custref3;
-	
+
 	## Address and Shipment Information
 	if (!$populate or $populate eq 'address' or $populate eq 'summary')
 		{
@@ -1687,6 +1690,7 @@ sub SHIP_ORDER :Private
 		# GENERATE LABEL TO PRINT
 		#############################################
 		$self->generate_label($Shipment, $Service, $PrinterString);
+		$c->stash(template => "templates/customer/order-label.tt");
 		}
 	}
 
@@ -1752,9 +1756,6 @@ sub generate_label :Private
 
 		## Copy to Apache context path ##
 		#system($copyImgCommand);
-		$c->stash->{shipmentid} = $Shipment->shipmentid;
-		$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
-		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
 		}
 	else
 		{
@@ -1764,43 +1765,65 @@ sub generate_label :Private
 			my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
 			$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
 			}
-
-		$self->setup_raw_label($Shipment, $PrinterString);
 		}
+
+	$self->setup_label_to_print($Shipment, $PrinterString, $CustomerLabelType);
 
 	$c->stash(template => "templates/customer/order-label.tt");
 	}
 
-sub setup_raw_label
+sub setup_label_to_print
 	{
 	my $self = shift;
 	my $Shipment = shift;
 	my $PrinterString = shift;
+	my $CustomerLabelType = shift;
 
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->stash($params);
-	$c->stash($Shipment->{_column_data});
-	$c->stash->{fromAddress}   = $Shipment->origin_address;
-	$c->stash->{toAddress}     = $Shipment->destination_address;
-	$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
-	$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
-	$c->stash->{dimweight}     = $Shipment->dimweight || 0;
-	$c->stash->{enteredweight} = $Shipment->total_weight;
-	$c->stash->{totalquantity} = $Shipment->total_quantity;
-	$c->stash->{refnumber}     = $params->{'refnumber'};
+	my $label_file = IntelliShip::MyConfig->label_image_directory . '/' . $Shipment->shipmentid . '.jpg';
+	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
 
-	if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+	$c->stash($Shipment->{_column_data});
+	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
+
+	unless (-e $label_file)
 		{
-		$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+		$c->log->debug("... label details not found for shipment ID: " . $Shipment->shipmentid);
+		$c->stash->{MESSAGE} = 'We are sorry, label information not found.';
+		return;
 		}
 
-	$self->ProcessPrinterStream($Shipment, $PrinterString);
+	if ($label_file =~ /JPG/i)
+		{
+		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
+		}
+	else
+		{
+		$c->stash($params);
+		$c->stash->{fromAddress}   = $Shipment->origin_address;
+		$c->stash->{toAddress}     = $Shipment->destination_address;
+		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
+		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
+		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+		$c->stash->{enteredweight} = $Shipment->total_weight;
+		$c->stash->{totalquantity} = $Shipment->total_quantity;
+		$c->stash->{refnumber}     = $params->{'refnumber'};
 
-	my $template = $Shipment->carrier || $params->{'carrier'};
-	   $template = 'default' unless $template;
-	$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+			{
+			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+			}
+
+		$self->ProcessPrinterStream($Shipment, $PrinterString);
+
+		my $template = $Shipment->carrier || $params->{'carrier'};
+		   $template = 'default' unless $template;
+		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+		}
+
+	$c->stash->{AUTO_PRINT}        = $self->contact->get_contact_data_value('autoprint');
 	}
 
 sub ProcessPrinterStream
@@ -1837,11 +1860,31 @@ sub ProcessPrinterStream
 		#}
 
 	## Set Printer String Loop
-	my @PSLINES = split(/\n/,$PrinterString);
+	my @PSLINES;
+	if ($PrinterString)
+		{
+		@PSLINES = split(/\n/,$PrinterString);
+		}
+	else
+		{
+		my $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid;
+
+		my $FILE = new IO::File;
+		unless (open ($FILE,$label_file))
+			{
+			$c->log->debug("*** Label File Error: " . $!);
+			return;
+			}
+
+		@PSLINES = <$FILE>;
+
+		close $FILE;
+		}
 
 	my $printerstring_loop = [];
 	foreach my $line (@PSLINES)
 		{
+		chomp $line;
 		next unless $line;
 		$line =~ s/"/\\"/sg;
 		$line =~ s/'//g;
@@ -1851,7 +1894,7 @@ sub ProcessPrinterStream
 	#$c->log->debug("printerstring_loop: " . Dumper $printerstring_loop);
 
 	$c->stash->{printerstring_loop} = $printerstring_loop;
-	$c->stash->{label_port} = 'LPT1';
+	$c->stash->{label_port}         = $Contact->label_port || 'LPT1';
 	}
 
 sub SaveStringToFile
@@ -2285,7 +2328,7 @@ sub CheckIfShipmentModified
 
 	my $OriginalAddress = $CO->to_address;
 
-	if (   $OriginalAddress->addressname ne $ShipmentData->{'addressname'} 
+	if (   $OriginalAddress->addressname ne $ShipmentData->{'addressname'}
 		or $OriginalAddress->address1 ne $ShipmentData->{'address1'}
 		or $OriginalAddress->address2 ne $ShipmentData->{'address2'}
 		or $OriginalAddress->city ne $ShipmentData->{'addresscity'}
