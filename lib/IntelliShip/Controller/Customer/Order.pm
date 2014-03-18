@@ -52,8 +52,9 @@ sub quickship :Local
 		}
 	else
 		{
-		$self->setup_one_page;
 		$c->stash->{quickship} = 1;
+		$self->setup_one_page;
+		$c->log->debug("quickship : " . $c->stash->{quickship});
 		}
 	}
 
@@ -126,6 +127,8 @@ sub setup_address :Private
 	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
 	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
 
+	$c->stash->{shipmenttype_loop} = $self->get_select_list('SHIPMENT_TYPE');
+	$c->stash->{shipmenttype} = 'outbound';
 	if ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';

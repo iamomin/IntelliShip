@@ -932,6 +932,14 @@ sub get_select_list
 			{ name => 'USPS'	, value => IntelliShip::Utils->get_tracking_URL('USPS', 'XXXX') },
 			];
 		}
+	elsif ($list_name eq 'SHIPMENT_TYPE')
+		{
+		$list = [
+			{ name => 'Inbound',  value => 'inbound' },
+			{ name => 'Outbound', value => 'outbound' },
+			{ name => 'Dropship', value => 'dropship' },
+			];
+		}
 
 	return $list;
 	}
