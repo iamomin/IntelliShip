@@ -628,30 +628,35 @@ function checkDeliveryMethodSection()
 	}
 
 var has_FC=false;
-function get_customer_service_list(params)
+function get_customer_service_list(form_name)
 	{
-	$("#service-level-summary").slideUp(1000);
+	$("#service-level-summary").slideUp(1000, function() {
 
-	var origVal = $("#route").val();
-	$("#route").attr("disabled",true);
-	$("#route").val("Please Wait...");
+		$('#service-level-summary').empty();
 
-	send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
+		var params = $("#"+form_name).serialize();
 
-		$("#route").attr("disabled",false);
-		$("#route").val(origVal);
-		has_FC=true;
+		var origVal = $("#route").val();
+		$("#route").attr("disabled",true);
+		$("#route").val("Please Wait...");
 
-		$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
-				var panelID = $(ui.newPanel).prop('id');
-				var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
-				$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
-					if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
-					});
-				}
+		send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
+
+			$("#route").attr("disabled",false);
+			$("#route").val(origVal);
+			has_FC=true;
+
+			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+					var panelID = $(ui.newPanel).prop('id');
+					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
+					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
+						if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
+						});
+					}
+				});
+
+			$("#service-level-summary").slideDown(1000);
 			});
-
-		$("#service-level-summary").slideDown(1000);
 		});
 	}
 

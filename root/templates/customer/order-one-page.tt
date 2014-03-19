@@ -64,7 +64,7 @@
 
 	$("#route").click(function() {
 		update_package_product_sequence();
-		get_customer_service_list($("#frm_order").serialize());
+		get_customer_service_list('frm_order');
 		});
 
 	$('#save').click(function() {

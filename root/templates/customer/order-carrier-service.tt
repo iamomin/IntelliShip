@@ -199,7 +199,7 @@
 		});
 
 	$("#route").click(function() {
-		get_customer_service_list($("#frm_order_sumary").serialize());
+		get_customer_service_list('frm_order_sumary');
 		});
 
 	$("#cancel").click(function() {
