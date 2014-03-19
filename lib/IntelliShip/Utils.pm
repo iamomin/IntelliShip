@@ -483,6 +483,27 @@ sub get_tracking_URL
 	return $tracking_url;
 	}
 
+sub get_bill_to_name
+	{
+	my $self = shift;
+	my ($webaccount, $customername) = @_;
+
+	my $billtoname = '';
+
+	if ($webaccount && $webaccount ne 'Collect')
+		{
+		my @holder = split(" ",$customername);
+		$customername = shift(@holder);
+		$billtoname = $webaccount . " (" . $customername . ")";
+		}
+	else
+		{
+		$billtoname = $customername;
+		}
+
+	return $billtoname;
+	}
+
 1;
 
 __END__

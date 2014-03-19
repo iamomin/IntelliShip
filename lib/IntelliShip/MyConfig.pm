@@ -301,6 +301,12 @@ sub image_file_directory
 	return $self->application_root . '/root/static/images';
 	}
 
+sub print_file_directory
+	{
+	my $self = shift;
+	return $self->application_root . '/root/print';
+	}
+
 sub label_file_directory
 	{
 	my $self = shift;

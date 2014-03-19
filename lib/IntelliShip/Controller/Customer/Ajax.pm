@@ -112,11 +112,17 @@ sub get_city_state :Private
 	my $params = $c->req->params;
 
 	my $address = $params->{'zipcode'};
+	   $address .= ',' . $params->{'city'} if $params->{'city'};
+	   $address .= ',' . $params->{'state'} if $params->{'state'};
+	   $address .= ',' . $params->{'country'} if $params->{'country'};
+
+	my $URI = 'address=' . $address . '&sensor=true&eventtime=' . IntelliShip::DateUtils->timestamp;
+	#$c->log->debug("URI: " . $URI);
 
 	my $HTTP = IntelliShip::HTTP->new;
 	$HTTP->method('GET');
 	$HTTP->host_production('maps.googleapis.com/maps/api/geocode/xml');
-	$HTTP->uri_production('address=' . $address . '&sensor=true');
+	$HTTP->uri_production($URI);
 	$HTTP->timeout('30');
 
 	my $result = $HTTP->send;
@@ -128,19 +134,25 @@ sub get_city_state :Private
 	if ($responseDS->{'GeocodeResponse'}->{'status'} eq 'OK')
 		{
 		my $geocodeResponse = $responseDS->{'GeocodeResponse'}->{'result'};
-		my $formatted_address = $geocodeResponse->{'formatted_address'};
-		my $address_components = $geocodeResponse->{'address_component'};
-
-		foreach my $component (@$address_components)
+		my $GeoCodes     = (ref $geocodeResponse eq 'ARRAY' ? $geocodeResponse : [$geocodeResponse]);
+		foreach my $GeoCode (@$GeoCodes)
 			{
-			#$c->log->debug("ref component->{type}: " . ref $component->{type});
-			$component->{type} = join(' | ', @{$component->{type}}) if (ref $component->{type}) =~ /array/gi;
-			#$c->log->debug("component->{type}: " . $component->{type});
+			my $formatted_address = $GeoCode->{'formatted_address'};
+			my $address_components = $geocodeResponse->{'address_component'};
 
-			$city = $component->{short_name} if $component->{type} =~ /locality/;
-			$state = $component->{short_name} if $component->{type} =~ /administrative_area_level_1/;
-			$zip = $component->{short_name} if $component->{type} =~ /postal_code/;
-			$country = $component->{short_name} if $component->{type} =~ /country/;
+			foreach my $component (@$address_components)
+				{
+				#$c->log->debug("ref component->{type}: " . ref $component->{type});
+				$component->{type} = join(' | ', @{$component->{type}}) if (ref $component->{type}) =~ /array/gi;
+				#$c->log->debug("component->{type}: " . $component->{type});
+
+				$city = $component->{short_name} if $component->{type} =~ /locality/;
+				$state = $component->{short_name} if $component->{type} =~ /administrative_area_level_1/;
+				$zip = $component->{short_name} if $component->{type} =~ /postal_code/;
+				$country = $component->{short_name} if $component->{type} =~ /country/;
+				}
+
+			last if $zip == $params->{'zipcode'};
 			}
 		}
 

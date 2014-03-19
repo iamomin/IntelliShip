@@ -5,7 +5,7 @@ use DBI;
 use Math::BigInt;
 use ARRS::COMMON;
 use ARRS::BaseCalc;
-
+use IntelliShip::MyConfig;
 
 #####################################################################
 ##
@@ -33,6 +33,8 @@ sub connect
 		$Hash{'autocommit'},
 		$Hash{'printerror'},
 	);
+
+	$dbhost = IntelliShip::MyConfig->getArrsDatabaseHost;
 
 	$autocommit = defined($autocommit) ? $autocommit : 1;
 	$printerror = defined($printerror) ? $printerror : 1;

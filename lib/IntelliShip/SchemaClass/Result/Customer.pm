@@ -631,6 +631,12 @@ __PACKAGE__->has_many(
 		{ "foreign.companyid" => "self.customerid" },
 	);
 
+__PACKAGE__->has_many(
+	altsop =>
+		'IntelliShip::SchemaClass::Result::Altsop',
+		{ "foreign.companyid" => "self.customerid" },
+	);
+
 sub settings
 	{
 	my $self = shift;
@@ -720,6 +726,14 @@ sub label_type
 	{
 	my $self = shift;
 	return $self->get_contact_data_value('labeltype');
+	}
+
+sub get_alt_sopid
+	{
+	my $self = shift;
+	my $key = shift;
+	my $value = shift;
+	return $self->altsop->select({ key => $key, value => $value });
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

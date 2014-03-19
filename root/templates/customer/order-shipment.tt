@@ -73,7 +73,7 @@
 			<td><input type="button" id="delete_package_product" class="delete" value="DELETE"/></td>
 			<td><label><input type="checkbox" name="quantityxweight" id="quantityxweight" value="1" [% IF AUTO_QUANTITYxWEIGHT_SELECT %] CHECKED [% END %]/><span><label for="quantityxweight">Multiply Qty*Weight</label></span></label></td>
 			[% IF default_packing_list %]
-			<td><label><input type="checkbox" name="printpackinglist" id="printpackinglist" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
+			<td><label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
 			[% END %]
 			<td><label>Total Weight:</label></td>
 			<td><input type="text" class="bold-text" style="border: none; width: 40px;" id="totalweight" name="totalweight" value="0.00" readonly /></td>
@@ -195,7 +195,7 @@
 				<td><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" style="width: 50px;"/></td>
 				<td><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" style="width: 50px;"/></td>
 				<td><input  type="text" name="density_1" id="density_1" value="0.00" style="width: 100px;"/></td>
-				<td><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00" style="width: 100px;" onchange="$('#customscommodityvalue').val(this.value);"/></td>
 			</tr>
 		[% END %]
 		</table>

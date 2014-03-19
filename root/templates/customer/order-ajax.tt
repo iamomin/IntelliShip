@@ -370,8 +370,10 @@
 			});
 
 		$(document).ready(function() {
+			CalculateDimentionalWeight($('input:radio[name=customerserviceid]:checked').val());
 			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();
 			});
+
 	</script>
   [% END %]
 [% END %]

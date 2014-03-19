@@ -3,8 +3,6 @@
 <h2 class="DoNotPrint">SHIP A PACKAGE</h2>
 [% END %]
 
-<script src="/static/js/customer-order.js"></script>
-
 [% IF MESSAGE %]
 <div class="notice">[% MESSAGE %]</div>
 [% END %]
@@ -12,6 +10,8 @@
 <form id="frm_label" name="frm_label" action="/customer/dashboard">
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
+	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
+
 	<div id='wbdiv' style='display:none'>
 		<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>
 	</div>
@@ -31,10 +31,29 @@
 		</tr>
 	</table>
 	[% END %]
-
 </form>
 
+<div id="packing-list" style="display: none;"></div>
+
 <script>
+
+function MarkShipmentAsPrinted(shipmentid,callback_function)
+	{
+	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + shipmentid;
+	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, callback_function);
+	}
+
+function GeneratePrintPackingList(shipmentid,callback_function)
+	{
+	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + shipmentid;
+	send_ajax_request('packing-list', 'HTML', 'order', 'generate_print_packing_list', query_param, function() {
+		var packingListWin = window.open('', '', 'left=0,top=0,width=800,height=900,status=0');
+		packingListWin.document.write($("#packing-list").html());
+		packingListWin.document.close();
+		if (callback_function != null) callback_function();
+		});
+	}
+
 [% IF printerstring_loop %]
 
 	function PrintEplLabel_[% shipmentid %]()
@@ -57,11 +76,7 @@
 			return false;
 			}
 
-		[% UNLESS REPRINT_LABEL %]
-		MarkShipmentAsPrinted(function() {
-			window.location.href = window.location.href;
-			});
-		[% END %]
+		CheckAfterLabelPrintActivities_[% shipmentid %]();
 		}
 
 [% END %]
@@ -80,11 +95,7 @@
 			printWin.document.write(lbl);
 			printWin.document.close();
 
-			[% UNLESS REPRINT_LABEL %]
-			MarkShipmentAsPrinted(function() {
-				window.location.href = window.location.href;
-				});
-			[% END %]
+			CheckAfterLabelPrintActivities_[% shipmentid %]();
 			}
 		}
 
@@ -101,11 +112,7 @@
 			printWin.document.close();
 			printWin.focus();
 
-			[% UNLESS REPRINT_LABEL %]
-			MarkShipmentAsPrinted(function() {
-				window.location.href = window.location.href;
-				});
-			[% END %]
+			CheckAfterLabelPrintActivities_[% shipmentid %]();
 			}
 		}
 	[% END %]
@@ -113,25 +120,43 @@
 
 function PrintThermalLabel_[% shipmentid %]()
 	{
-	[% IF printerstring_loop %]
+	var label_print_count = [% label_print_count ? label_print_count : 0 %];
+
+	for (var count=0; count < label_print_count; ++count)
+		{
+		[% IF printerstring_loop %]
 		PrintEplLabel_[% shipmentid %]();
-	[% END %]
-	[% IF LABEL_IMG %]
-		[% IF AUTO_PRINT %]
-			AutoPrintImageLabel_[% shipmentid %]();
-		[% ELSE %]
-			PrintImageLabel_[% shipmentid %]();
 		[% END %]
-	[% END %]
+		[% IF LABEL_IMG %]
+			[% IF AUTO_PRINT %]
+				AutoPrintImageLabel_[% shipmentid %]();
+			[% ELSE %]
+				PrintImageLabel_[% shipmentid %]();
+			[% END %]
+		[% END %]
+		}
+	}
+
+function CheckAfterLabelPrintActivities_[% shipmentid %]()
+	{
+	if ($('#printpackinglist').val() == 1)
+		{
+		GeneratePrintPackingList('[% shipmentid %]', function() {
+			window.location.href = window.location.href;
+			});
+		}
+	else
+		{
+		[% UNLESS REPRINT_LABEL %]
+		MarkShipmentAsPrinted('[% shipmentid %]', function() {
+			window.location.href = window.location.href;
+			});
+		[% END %]
+		}
 	}
 
 $(document).ready(function() {
-	[% IF label_print_count %]
-	for (var count=0; count < [%label_print_count%]; ++count)
-		{
-		PrintThermalLabel_[% shipmentid %]();
-		}
-	[% END %]
+	PrintThermalLabel_[% shipmentid %]();
 	});
 
 </script>

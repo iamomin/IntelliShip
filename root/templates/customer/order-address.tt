@@ -114,7 +114,7 @@
 				<tr>
 					<td><label for="tocountry" class="float-right require">Country:</label></td><td>
 					<label>
-					<select name="tocountry" id="tocountry" style="width: 220px;" onchange="updateStateList('tostate');">
+					<select name="tocountry" id="tocountry" style="width: 220px;" onchange="updateStateList('to');">
 						[% FOREACH item IN countrylist_loop %]
 							<option value="[% item.value %]" [% (toAddress.country and item.value == toAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
@@ -244,19 +244,19 @@ $("#dateneeded").datepicker({
 		});
 [% END %]
 
-var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %]:[% item.city %]:[% item.state %]:[% item.address1 %]",[% END %]];
-var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]'[% item.company_name %]': '[% item.reference_id %]',[% END %]};
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.address1 %]",[% END %]];
+var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]": "[% item.reference_id %]",[% END %]};
 
 $("#toname").autocomplete({
 	source: availableCustomers,
 	select: function( event, ui ) {
 		var SelectedCompany = ui.item.value
-		var AddrParts = SelectedCompany.split(":");
+		var AddrParts = SelectedCompany.split(" | ");
 		var Company = AddrParts[0];
 		var RefID = hashCompanyRef[Company];
 		if (RefID == undefined) return;
 		ui.item.value = Company;
-		populate_ship_to_address(RefID);
+		populateShipToAddress(RefID);
 		}
 	});
 

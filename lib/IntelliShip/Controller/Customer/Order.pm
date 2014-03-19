@@ -1740,7 +1740,8 @@ sub generate_label :Private
 	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
 
 	## Save EPL Print String On Server
-	$self->SaveStringToFile($Shipment->shipmentid, $PrinterString);
+	my $FileName = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
+	$self->SaveStringToFile($FileName, $PrinterString);
 
 	if ($CustomerLabelType =~ /JPG/i)
 		{
@@ -1785,6 +1786,7 @@ sub setup_label_to_print
 	my $label_file = IntelliShip::MyConfig->label_image_directory . '/' . $Shipment->shipmentid . '.jpg';
 	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
 
+	$c->stash($params);
 	$c->stash($Shipment->{_column_data});
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
 
@@ -1801,7 +1803,6 @@ sub setup_label_to_print
 		}
 	else
 		{
-		$c->stash($params);
 		$c->stash->{fromAddress}   = $Shipment->origin_address;
 		$c->stash->{toAddress}     = $Shipment->destination_address;
 		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
@@ -1895,29 +1896,6 @@ sub ProcessPrinterStream
 
 	$c->stash->{printerstring_loop} = $printerstring_loop;
 	$c->stash->{label_port}         = $Contact->label_port || 'LPT1';
-	}
-
-sub SaveStringToFile
-	{
-	my $self = shift;
-	my $FileName = shift;
-	my $FileString = shift;
-
-	return unless $FileName;
-	return unless $FileString;
-
-	$FileName = IntelliShip::MyConfig->label_file_directory . '/' . $FileName;
-	$self->context->log->debug("EPL File: " . $FileName);
-
-	my $FILE = new IO::File;
-	unless (open ($FILE,">$FileName"))
-		{
-		warn "\nLabel String Save Error: " . $!;
-		return;
-		}
-
-	print $FILE $FileString;
-	close $FILE;
 	}
 
 # Push all shipment charges onto a simple delimited string, for passing back so that all
@@ -2511,6 +2489,301 @@ sub get_auto_order_number :Private
 	#$c->log->debug("HasAutoOrderNumber=$HasAutoOrderNumber, OUT ordernumber=$OrderNumber");
 
 	return $OrderNumber;
+	}
+
+sub generate_packing_list
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ generate_packing_list ___");
+
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my $CO       = $Shipment->CO;
+	my $Customer = $CO->customer;
+
+	# Set global packing list values
+	$c->stash($Shipment->{_column_data});
+	$c->stash->{'oacontactname'}  = $Customer->contact;
+	$c->stash->{'contactname'}    = $CO->contactname;
+	$c->stash->{'ordernumber'}    = $CO->ordernumber;
+	$c->stash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+	$c->stash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
+	$c->stash->{'totalpages'}     = 1;
+	$c->stash->{'currentpage'}    = 1;
+
+
+	# Origin Address
+	if (my $OAAddress = $Shipment->origin_address)
+		{
+		my $shipper_address = $OAAddress->{'addressname'};
+		$shipper_address .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
+		$shipper_address .= " " . $OAAddress->address2    if $OAAddress->address2;
+		$shipper_address .= "<br>" . $OAAddress->city     if $OAAddress->city;
+		$shipper_address .= ", " . $OAAddress->state      if $OAAddress->state;
+		$shipper_address .= "  " . $OAAddress->zip        if $OAAddress->zip;
+		$shipper_address .= "<br>" . $OAAddress->country  if $OAAddress->country;
+
+		$shipper_address .= "<br>" . $Shipment->oacontactphone       if $Shipment->oacontactphone;
+		$shipper_address .= "<br>" . $Shipment->deliverynotification if $Shipment->deliverynotification;
+
+		$c->stash->{'shipperaddress'} = $shipper_address;
+		}
+
+	# Destination Address
+	if (my $DAAddress = $Shipment->destination_address)
+		{
+		my $consignee_address = $DAAddress->addressname;
+		$consignee_address .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
+		$consignee_address .= " " . $DAAddress->address2    if $DAAddress->address2;
+		$consignee_address .= "<br>" . $DAAddress->city     if $DAAddress->city;
+		$consignee_address .= ", " . $DAAddress->state      if $DAAddress->state;
+		$consignee_address .= "  " . $DAAddress->zip        if $DAAddress->zip;
+		$consignee_address .= "<br>" . $DAAddress->country  if $DAAddress->country;
+
+		$consignee_address .= "<br>" . $Shipment->contactphone         if $Shipment->contactphone;
+		$consignee_address .= "<br>" . $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+
+		$c->stash->{'consigneeaddress'} = $consignee_address;
+		}
+
+	# # Billing Address
+	my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
+
+	my $webaccount;
+	if ( $CSValueRef->{'webaccount'} )
+		{
+		$webaccount = $CSValueRef->{'webaccount'};
+		}
+
+	my $BillingAddressInfo = $self->GetBillingAddressInfo(
+			$Shipment->customerserviceid,
+			$webaccount,
+			$Customer->customername,
+			$Customer->customerid,
+			$Shipment->billingaccount,
+			$Shipment->freightcharges,
+			$Shipment->addressiddestin,
+			undef,
+			$CSValueRef->{'baaddressid'}
+			);
+
+	if ( $BillingAddressInfo )
+		{
+		my $billingaddress = $BillingAddressInfo->{'addressname'};
+		$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
+		$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
+		$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
+		$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
+		$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
+		$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
+
+		$c->stash->{'billingaddress'} = $billingaddress;
+		$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
+		}
+
+	##########################
+	## Set line item values ##
+	##########################
+	my @packpros = $Shipment->package_details;
+
+	my ($gross_weight,$quantity,$product_statusid) = (0,0,0);
+
+	my $packinglist_loop = [];
+	foreach my $PackProData (@packpros)
+		{
+		# Use shipment package data for # of packages, weights, and the like
+		my $weight = ($PackProData->dimweight > $PackProData->weight ? $PackProData->dimweight : $PackProData->weight);
+
+		$gross_weight += $weight;
+		$quantity     += $PackProData->quantity;
+
+		(my $shipment_section_ref,$product_statusid) = $self->GetLineItems($PackProData);
+
+		foreach my $key (sort { $a <=> $b } keys %$shipment_section_ref)
+			{
+			push(@$packinglist_loop, $shipment_section_ref->{$key});
+			}
+		}
+
+	my $items = (14 - @$packinglist_loop);
+	if ($items > 0)
+		{
+		push(@$packinglist_loop, {}) while $items--;
+		}
+
+	$c->stash->{packinglist_loop} = $packinglist_loop;
+	$c->stash->{grossweight}      = $gross_weight;
+	$c->stash->{quantity}         = $quantity;
+
+	if ( $product_statusid == 2 )
+		{
+		$c->stash->{datefullfilled} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+		}
+
+	# Save packinglist invoice to File
+	my $PackListHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packinglist.tt" ]);
+	my $PackListFileName = IntelliShip::MyConfig->print_file_directory . "/packinglist/" . $Shipment->shipmentid;
+
+	$self->SaveStringToFile($PackListFileName, $PackListHTML);
+
+	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+
+	$c->stash(template => "templates/customer/order-packinglist.tt");
+	}
+
+sub GetLineItems
+	{
+	my $self = shift;
+	my $PackProData = shift;
+
+	my $package_id  = $PackProData->packprodataid;
+	my $shipment_id = $PackProData->ownerid;
+
+	# First check order-centric/pick & pack data
+	my ($product_ref,$product_statusid) = $self->GetOrderProductData($package_id,$shipment_id);
+
+	# Then check shipment products
+	if ( !exists($product_ref->{0}) )
+		{
+		($product_ref,$product_statusid) = $self->GetShipmentProductData($package_id,$shipment_id);
+		}
+
+	# Finish off with shipment package
+	if ( !exists($product_ref->{0}) )
+		{
+		$product_ref->{0} = {
+			partnumber			=> $PackProData->partnumber,
+			orderedqty			=> $PackProData->quantity,
+			shippedqty			=> $PackProData->quantity,
+			remainingqty		=> 0,
+			productdescription	=> $PackProData->description,
+			nmfc				=> $PackProData->nmfc,
+			unittypeid			=> $PackProData->unittypeid,
+			decval				=> $PackProData->decval,
+			};
+
+		$product_ref->{0} = $self->GetComInvPackData($product_ref->{0},$shipment_id);
+
+		$product_statusid = 2;
+		}
+
+	return ($product_ref,$product_statusid);
+	}
+
+sub GetOrderProductData
+	{
+	my $self = shift;
+	my $shippack_id = shift;
+	my $shipment_id = shift;
+
+	my $sql = "
+		SELECT
+			(p2.quantity + p1.shippedqty) as orderedqty,
+			p1.shippedqty as shippedqty,
+			p2.quantity as remainingqty,
+			p1.description as productdescription,
+			p1.partnumber,
+			p2.statusid,
+			p1.unittypeid,
+			p1.partnumber,
+			p1.nmfc,
+			p1.decval
+		FROM
+			packprodata p1
+			INNER JOIN packprodata p2 ON p2.packprodataid = p1.poppdid
+		WHERE
+			p1.ownerid = '$shippack_id'
+			AND p2.statusid in (1,2)
+		ORDER BY
+			p2.datecreated
+	";
+
+	my $STH = $self->myDBI->select($sql);
+
+	my $product_ref = {};
+	my $product_statusid = 2;
+	for (my $row=0; $row < $STH->numrows; $row++)
+		{
+		my $product_data = $STH->fetchrow($row);
+		$product_data = $self->GetComInvPackData($product_data,$shipment_id);
+
+		$product_statusid    = 1 if $product_data->{'statusid'} < 2;
+		$product_ref->{$row} = $product_data;
+		}
+
+	return ($product_ref,$product_statusid);
+	}
+
+sub GetShipmentProductData
+	{
+	my $self = shift;
+	my $shippack_id = shift;
+	my $shipment_id = shift;
+
+	my $sql = "
+		SELECT
+			shippedqty as orderedqty,
+			shippedqty as shippedqty,
+			0 as remainingqty,
+			description as productdescription,
+			partnumber,
+			2 as statusid,
+			unittypeid,
+			partnumber,
+			nmfc,
+			decval
+		FROM
+			packprodata
+		WHERE
+			ownerid = '$shippack_id'
+		ORDER BY
+			datecreated
+	";
+
+	my $STH = $self->myDBI->select($sql);
+
+	my $product_ref = {};
+	my $product_statusid = 2;
+	for (my $row=0; $row < $STH->numrows; $row++)
+		{
+		my $product_data = $STH->fetchrow($row);
+		$product_data = $self->GetComInvPackData($product_data,$shipment_id);
+
+		$product_statusid    = 1 if $product_data->{'statusid'} < 2;
+		$product_ref->{$row} = $product_data;
+		}
+
+	return ($product_ref,$product_statusid);
+	}
+
+sub GetComInvPackData
+	{
+	my $self = shift;
+	my $product_data = shift;
+	my $shipment_id = shift;
+
+	# Additions to handle commercial invoice side of things
+	my $STH = $self->myDBI->select("SELECT manufacturecountry FROM shipment WHERE shipmentid = '$shipment_id'");
+	my $ManufactureCountry = ($STH->numrows ? $STH->fetchrow(0)->{'manufacturecountry'} : '');
+
+	$product_data->{'packagedescription'}  = $product_data->{'productdescription'};
+	$product_data->{'packagedescription'} .= ", $product_data->{'partnumber'}" if $product_data->{'partnumber'};
+	$product_data->{'packagedescription'} .= ", $product_data->{'nmfc'}" if $product_data->{'nmfc'};
+	$product_data->{'packagedescription'} .= ", " . $ManufactureCountry if $ManufactureCountry;
+
+	$STH = $self->myDBI->select("SELECT unittypename FROM unittype WHERE unittypeid = '$product_data->{'unittypeid'}'");
+	my $UnitTypeName = ($STH->numrows ? $STH->fetchrow(0)->{'unittypename'} : '');
+
+	$product_data->{'packagequantity'}  = $product_data->{'shippedqty'};
+	$product_data->{'packagequantity'} .= " " . $UnitTypeName;
+	$product_data->{'packagequantity'} .= "e" if $product_data->{'unittypeid'} == 3; # Eaches needs the 'e' for plural
+	$product_data->{'packagequantity'} .= "s" if $product_data->{'shippedqty'} > 1;
+
+	$product_data->{'goodscost'} = $product_data->{'decval'};
+
+	return $product_data;
 	}
 
 __PACKAGE__->meta->make_immutable;

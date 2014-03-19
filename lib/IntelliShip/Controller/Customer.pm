@@ -12,12 +12,20 @@ BEGIN {
 	extends 'IntelliShip::Errors';
 	extends 'Catalyst::Controller';
 
-	has 'context' => ( is => 'rw' );
-	has 'token' => ( is => 'rw' );
-	has 'contact' => ( is => 'rw' );
-	has 'customer' => ( is => 'rw' );
+	has 'context'          => ( is => 'rw' );
+	has 'token'            => ( is => 'rw' );
+	has 'contact'          => ( is => 'rw' );
+	has 'customer'         => ( is => 'rw' );
 	has 'arrs_api_context' => ( is => 'rw' );
+	has 'DB_ref'           => ( is => 'rw' );
 
+	}
+
+sub myDBI
+	{
+	my $self = shift;
+	$self->DB_ref($self->context->model('MyDBI')) unless $self->DB_ref;
+	return $self->DB_ref if $self->DB_ref;
 	}
 
 sub API
@@ -418,6 +426,7 @@ sub get_select_list
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
+			next unless $data->{addressname};
 			push(@$list, {
 					company_name => $data->{addressname},
 					reference_id => $data->{referenceid},
@@ -1054,6 +1063,175 @@ sub process_pagination
 	$c->stash->{no_batches} = @$records_batch == 0;
 
 	return $records_batch;
+	}
+
+sub SaveStringToFile
+	{
+	my $self = shift;
+	my $FileName = shift;
+	my $FileString = shift;
+
+	return unless $FileName;
+	return unless $FileString;
+
+	$self->context->log->debug("SaveStringToFile File: " . $FileName);
+
+	my $FILE = new IO::File;
+	unless (open ($FILE,">$FileName"))
+		{
+		warn "\nLabel String Save Error: " . $!;
+		return;
+		}
+
+	print $FILE $FileString;
+	close $FILE;
+	}
+
+sub GetBillingAddressInfo
+	{
+	my $self = shift;
+	my ($CSID, $webaccount, $customername, $customerid, $billingaccount, $chargetype, $addressiddestin, $custnum, $baaddressid) = @_;
+
+	my $BillingAddressInfo;
+
+	# if it's third party see if there is an address in the thirdpartyacct table
+	if ( $chargetype eq '1' || $chargetype eq '2' )
+		{
+		$BillingAddressInfo = $self->GetCollectThirdPartyAddress($billingaccount, $customerid, $chargetype, $addressiddestin);
+
+		if ( defined($BillingAddressInfo) && $BillingAddressInfo ne '' && $billingaccount ne 'Collect' && $billingaccount ne '')
+			{
+			$BillingAddressInfo->{'addressname'} .= " (" . $billingaccount . ")";
+			}
+		}
+
+	unless ($BillingAddressInfo)
+		{
+		my @arr = $self->context->model('MyDBI::Altsop')->search({ key => 'extcustnum', value => $custnum, customerid => $customerid });
+		my $AltSOP = $arr[0] if @arr;
+		if ($AltSOP)
+			{
+			my $AltSOPID = $AltSOP->altsopid;
+			my $SQL = "
+				SELECT
+					addressname, address1, address2, city, state, zip, country
+				FROM
+					altsop asp INNER JOIN address a ON asp.billingaddressid = a.addressid
+				WHERE
+					asp.altsopid = '$AltSOPID' AND
+				";
+
+			my $STH = $self->myDBI->select($SQL);
+			if ($STH->numrows)
+				{
+				$BillingAddressInfo = $STH->fetchrow(0);
+				if ($billingaccount)
+					{
+					$BillingAddressInfo->{'addressname'} .= " (" . $billingaccount . ")";
+					}
+				if ( $AltSOP->sibling )
+					{
+					$BillingAddressInfo = $self->BillToEngage($webaccount, $BillingAddressInfo->{'addressname'});
+					}
+				}
+			else
+				{
+				if ($billingaccount)
+					{
+					$BillingAddressInfo->{'addressname'} = $billingaccount;
+					}
+				else
+					{
+					$BillingAddressInfo = $self->BillToEngage($webaccount, $customername);
+					}
+				}
+			}
+		else
+			{
+			if ($baaddressid)
+				{
+				my $Address = $self->context->model('MyDBI::Address')->find({ addressid => $baaddressid });
+				$BillingAddressInfo = $Address->{_column_data};
+				}
+			else
+				{
+				$BillingAddressInfo = $self->BillToEngage($webaccount, $customername, $self->customer->addressid);
+				}
+			}
+		}
+
+	return $BillingAddressInfo;
+	}
+
+sub GetCollectThirdPartyAddress
+	{
+	my $self = shift;
+	my ($accountnumber,$customerid,$chargetype,$addressiddestin) = @_;
+
+	my $AddressInfo;
+	if ( $chargetype eq '1' && ($accountnumber eq '' || $accountnumber eq 'Collect') && $addressiddestin )
+		{
+		my $Address = $self->context->model('MyDBI::Address')->find({ addressid => $addressiddestin });
+		$AddressInfo = $Address->{_column_data} if $Address;
+		}
+	else
+		{
+		my $SQLString = "
+			SELECT
+				tpcompanyname as addressname,
+				tpaddress1 as address1,
+				tpaddress2 as address2,
+				tpcity as city,
+				tpstate as state,
+				tpzip as zip,
+				tpcountry as country
+			FROM
+				thirdpartyacct
+			 WHERE
+				customerid = '$customerid' AND
+				upper(tpacctnumber) = upper('$accountnumber')
+			LIMIT 1
+			";
+
+		my $sth = $self->myDBI->select($SQLString);
+
+		$AddressInfo = $sth->fetchrow(0) if $sth->numrows;
+		}
+
+	if ( $chargetype eq '2' && $accountnumber eq '' && $AddressInfo )
+		{
+		# set something so that it doesn't fall into the
+		#altsop address section in GetBillingAddressInfo()
+		$AddressInfo->{'addressname'} = '' if $AddressInfo;
+		}
+
+	return $AddressInfo;
+	}
+
+sub BillToEngage
+	{
+	my $self = shift;
+	my ($webaccount, $customername, $addressid) = @_;
+
+	if ( $addressid )
+		{
+		if (my $Address = $self->context->model('MyDBI::Address')->find({ addressid => $addressid }))
+			{
+			return $Address->{_column_data};
+			}
+		}
+	else
+		{
+		return {
+			addressname	=> IntelliShip::Utils->get_bill_to_name($webaccount,$customername),
+			address1	=> 'PO Box 4157',
+			city		=> 'Costa Mesa',
+			state		=> 'CA',
+			zip			=> '92628',
+			country		=> 'US',
+			careof		=> 'c/o Engage TMS',
+			};
+		}
 	}
 
 =encoding utf8

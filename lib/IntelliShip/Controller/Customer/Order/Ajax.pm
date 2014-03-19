@@ -65,8 +65,12 @@ sub get_HTML :Private
 		{
 		$self->get_country_states;
 		}
+	elsif ($c->req->param('action') eq 'generate_print_packing_list')
+		{
+		$self->generate_packing_list;
+		}
 
-	$c->stash(template => "templates/customer/order-ajax.tt");
+	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
 
 sub set_international_details

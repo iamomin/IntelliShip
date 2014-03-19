@@ -411,10 +411,10 @@ function populateSpecialServiceList() {
 
 function setCustomsCommodityValue()
 	{
-	var insurance = $("#insurance").val();
-	var freightinsurance = $("#freightinsurance").val();
+	var insurance = parseFloat($("#insurance").val());
+	var freightinsurance = parseFloat($("#freightinsurance").val());
 	var customscommodityvalue = (insurance > freightinsurance ? insurance : freightinsurance);
-	$("#customscommodityvalue").val(customscommodityvalue);
+	$("#customscommodityvalue").val(customscommodityvalue.toFixed(2));
 	}
 
 function checkInternationalSection() {
@@ -441,11 +441,11 @@ function setCityAndState()
 	var tozip = $("#tozip").val();
 	if (tozip.length < 5) return;
 
-	$("#tocity").val('');
-	$("#tostate").val('');
-	$("#tocountry").val('');
+	//$("#tocity").val('');
+	//$("#tostate").val('');
+	//$("#tocountry").val('');
 
-	var query_param = "&zipcode=" + tozip;
+	var query_param = "&zipcode=" + tozip + '&city=' + $("#tocity").val() + '&state=' + $("#tostate").val() + '&country=' + $("#tocountry").val();
 	if($("#tozip").val() != "") {
 		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
 			$("#tocity").val(JSON_data.city);
@@ -455,14 +455,18 @@ function setCityAndState()
 		}
 	}
 
-function updateStateList(control)
+function updateStateList(type,call_back_fn)
 	{
-	var tocountry = $("#tocountry").val();
-	if (tocountry.length == 0) return;
+	$("#tocity").val('');
+	$("#tostate").val('');
+	$("#tozip").val('');
 
-	var query_param = "country=" + tocountry + '&control=' + control;
+	var country = $("#"+type+"country").val();
+	if (country.length == 0) return;
 
-	send_ajax_request('toStateDiv', 'HTML', 'order', 'get_country_states', query_param);
+	var query_param = "country=" + country + '&control=' + type + 'state';
+
+	send_ajax_request('toStateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
 	}
 
 function validate_package_details()
@@ -630,15 +634,15 @@ function checkDeliveryMethodSection()
 var has_FC=false;
 function get_customer_service_list(form_name)
 	{
+	var origVal = $("#route").val();
+	$("#route").attr("disabled",true);
+	$("#route").val("Please Wait...");
+
 	$("#service-level-summary").slideUp(1000, function() {
 
 		$('#service-level-summary').empty();
 
 		var params = $("#"+form_name).serialize();
-
-		var origVal = $("#route").val();
-		$("#route").attr("disabled",true);
-		$("#route").val("Please Wait...");
 
 		send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
 
@@ -710,7 +714,7 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
-function populate_ship_to_address(referenceid)
+function populateShipToAddress(referenceid)
 	{
 	if (referenceid == undefined) return;
 
@@ -720,26 +724,26 @@ function populate_ship_to_address(referenceid)
 		resetCSList();
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
 			if (JSON_data.addressname) {
-				$("#toname").val(JSON_data.addressname);
-				$("#toaddress1").val(JSON_data.address1);
-				$("#toaddress2").val(JSON_data.address2);
-				$("#tocity").val(JSON_data.city);
-				$("#tostate").val(JSON_data.state);
-				$("#tozip").val(JSON_data.zip);
-				$("#tocountry").val(JSON_data.country);
-				$("#tocontact").val(JSON_data.contactname);
-				$("#tophone").val(JSON_data.contactphone);
-				$("#tocustomernumber").val(JSON_data.extcustnum);
-				$("#toemail").val(JSON_data.shipmentnotification);
+				var ADDRESS_data = JSON_data;
+				$("#tocountry").val(ADDRESS_data.country);
+				checkInternationalSection();
+
+				updateStateList('to', function() {
+					$("#toname").val(ADDRESS_data.addressname);
+					$("#toaddress1").val(ADDRESS_data.address1);
+					$("#toaddress2").val(ADDRESS_data.address2);
+					$("#tocity").val(ADDRESS_data.city);
+					$("#tostate").val(ADDRESS_data.state);
+					$("#tozip").val(ADDRESS_data.zip);
+					$("#tocontact").val(ADDRESS_data.contactname);
+					$("#tophone").val(ADDRESS_data.contactphone);
+					$("#tocustomernumber").val(ADDRESS_data.extcustnum);
+					$("#toemail").val(ADDRESS_data.shipmentnotification);
+					});
+
 				}
 			});
 		}
-	}
-
-function MarkShipmentAsPrinted(callback_function)
-	{
-	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + $("#shipmentid").val();
-	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, callback_function);
 	}
 
 function CalculateDimentionalWeight(customerserviceid)
