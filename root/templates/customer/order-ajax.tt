@@ -357,44 +357,19 @@
 				resizable  : false,
 				title      : "Estimated Shipment Charges"
 				});
-		/*
-		$(".sc-hover").mouseover(function() {
-			$("#SC-DLG").html($("#SC-" + $(this).parent('tr').attr('id')).html());
-			shipmentChargeDlg.dialog("open");
-			}).mousemove(function(event) {
-				shipmentChargeDlg.dialog("option", "position", {
-					my: "left top+20",
-					at: "right bottom",
-					of: event,
-					offset: "20 20",
-					collision: "flipfit"
-					});
-				}).mouseout(function() {
-					shipmentChargeDlg.dialog("close");
-					});
-		*/
 
-			$(".show-hide-link").click(function showDetails(){
-				var linkObject = $(this);
-				linkObject.closest('tr').find('div.charge-details').slideToggle("slow", function(){
-						if (linkObject.text() == "+")
-							linkObject.html("&#8211");
-						else
-							linkObject.text("+");
+
+		$(".show-hide-link").click(function showDetails(){
+			var linkObject = $(this);
+			linkObject.closest('tr').find('div.charge-details').slideToggle("slow", function(){
+					if (linkObject.text() == "+")
+						linkObject.html("&#8211");
+					else
+						linkObject.text("+");
 				});
 			});
 
 		$(document).ready(function() {
-
-			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
-					var panelID = $(ui.newPanel).prop('id');
-					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
-					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
-						if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
-						});
-					}
-				});
-
 			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();
 			});
 	</script>

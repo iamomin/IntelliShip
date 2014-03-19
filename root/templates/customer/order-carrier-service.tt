@@ -225,7 +225,17 @@
 [% END %]
 
 [% UNLESS one_page %]
-	$(document).ready(function(){
+	$(document).ready(function() {
+
+		$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+				var panelID = $(ui.newPanel).prop('id');
+				var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
+				$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
+					if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
+					});
+				}
+			});
+
 		[% IF tooltips %]
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();
