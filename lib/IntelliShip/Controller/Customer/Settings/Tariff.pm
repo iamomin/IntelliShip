@@ -5,8 +5,11 @@ use Data::Dumper;
 use IntelliShip::Utils;
 use namespace::autoclean;
 use IntelliShip::Arrs::API;
+use IntelliShip::Controller::Customer::Settings::JSONUtil;
 
 BEGIN { extends 'IntelliShip::Controller::Customer::Settings'; }
+
+our $JSONUTIL = IntelliShip::Controller::Customer::Settings::JSONUtil->new();  
 
 sub ajax :Local
     {
@@ -25,6 +28,17 @@ sub ajax :Local
             warn "########## 1";
             $self->get_service_tariff($c, $params->{'csid'});
         }
+
+        if($params->{'action'} eq 'get_template' )
+        {
+            $self->get_template($c);
+        }
+    }
+
+sub get_template :Local
+    {
+        my ( $self, $c) = @_;
+        $c->stash(template => "templates/customer/settings-tariff.tt"); 
     }
 
 sub get_carrier_service_list :Local
@@ -34,8 +48,8 @@ sub get_carrier_service_list :Local
 
         #warn "########## servicelist in Tariff.pm". Dumper($servicelist);
         
-        $c->stash->{'SERVICE_LIST'} = $servicelist;
-        $c->stash(template => "templates/customer/settings-tariff.tt"); 
+        $c->stash->{'JSON'} = $JSONUTIL->services_to_json($servicelist);
+        $c->stash(template => "templates/customer/json.tt"); 
     }
 
 sub get_service_tariff :Local

@@ -705,17 +705,19 @@
 		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
 		}
         [% IF NOT READONLY %]
-        $("#tariff-pricing-tab").click(function() {
+        $("#tariff-pricing-tab").click(function() {            
+               
 		if($("#tariff-pricing").html().length == 0){
 			$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
 			getTariff();
 			}
+                        
 		});
 
         function getTariff()
 		{
 		var params = 'customerid='+$("#customerid").val();
-		send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_carrier_service_list', params);
+		send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
 		}
         [% END %]
 	</script>
