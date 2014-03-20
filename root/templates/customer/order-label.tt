@@ -33,8 +33,6 @@
 	[% END %]
 </form>
 
-<div id="packing-list" style="display: none;"></div>
-
 <script>
 
 function MarkShipmentAsPrinted(shipmentid,callback_function)
@@ -46,10 +44,9 @@ function MarkShipmentAsPrinted(shipmentid,callback_function)
 function GeneratePrintPackingList(shipmentid,callback_function)
 	{
 	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + shipmentid;
-	send_ajax_request('packing-list', 'HTML', 'order', 'generate_print_packing_list', query_param, function() {
+	send_ajax_request('', 'JSON', 'order', 'generate_packing_list', query_param, function() {
 		var packingListWin = window.open('', '', 'left=0,top=0,width=800,height=900,status=0');
-		packingListWin.document.write($("#packing-list").html());
-		packingListWin.document.close();
+		packingListWin.document.write(JSON_data.PACKING_LIST);
 		if (callback_function != null) callback_function();
 		});
 	}
@@ -142,7 +139,9 @@ function CheckAfterLabelPrintActivities_[% shipmentid %]()
 	if ($('#printpackinglist').val() == 1)
 		{
 		GeneratePrintPackingList('[% shipmentid %]', function() {
-			window.location.href = window.location.href;
+			MarkShipmentAsPrinted('[% shipmentid %]', function() {
+				window.location.href = window.location.href;
+				});
 			});
 		}
 	else

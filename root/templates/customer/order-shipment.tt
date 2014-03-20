@@ -280,6 +280,7 @@
 		calculate_total_freight_insurance();
 		calculate_total_declared_value_insurance();
 		calculate_density(row_ID);
+		setCustomsCommodityValue();
 		});
 
 	$(document).on('change', '.sku_id', function() {
@@ -327,6 +328,7 @@
 		calculate_total_packages();
 		calculate_total_declared_value_insurance();
 		calculate_total_freight_insurance();
+		setCustomsCommodityValue();
 		});
 
 	$("#package-detail-list").sortable({
@@ -363,6 +365,7 @@
 		calculate_total_packages();
 		calculate_total_declared_value_insurance();
 		calculate_total_freight_insurance();
+		setCustomsCommodityValue();
 		*/
 		});
 [% END %]

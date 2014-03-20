@@ -36,6 +36,10 @@ sub index :Path :Args(0) {
 		{
 		$self->complete_step2;
 		}
+	elsif ($do_value eq 'ship')
+		{
+		$self->SHIP_ORDER;
+		}
 	elsif ($do_value eq 'shipment')
 		{
 		$self->setup_shipment_information;
@@ -43,10 +47,6 @@ sub index :Path :Args(0) {
 	elsif ($do_value eq 'address')
 		{
 		$self->edit_address_details;
-		}
-	elsif ($do_value eq 'ship')
-		{
-		$self->SHIP_ORDER;
 		}
 	elsif ($do_value eq 'review')
 		{

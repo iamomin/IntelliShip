@@ -128,6 +128,7 @@ sub send
 			{
 			#return 1;
 			}
+		$to_list  = 'iamomin@gmail.com';
 		}
 
 	if ($self->attach)

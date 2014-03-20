@@ -70,17 +70,20 @@
 	</style>
 
 	<script>
-	[% IF AUTO_PRINT %]
+	function print()
+		{
+		[% IF AUTO_PRINT %]
 		WebBrowser.ExecWB(6,2);
-	[% END %]
+		[% END %]
+		}
 
 	window.onafterprint(function() {
-		window.location.href = window.location.href;
+		window.close();
 		});
 	</script>
 	</head>
 
-	<body>
+	<body onload="print();">
 		<script>
 			if( self == top ) {   document.documentElement.style.display = 'block' ;   }  else {  top.location = self.location ;  }
 		</script>

@@ -65,10 +65,6 @@ sub get_HTML :Private
 		{
 		$self->get_country_states;
 		}
-	elsif ($c->req->param('action') eq 'generate_print_packing_list')
-		{
-		$self->generate_packing_list;
-		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -489,6 +485,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->get_dim_weight;
 		}
+	elsif ($c->req->param('action') eq 'generate_packing_list')
+		{
+		$dataHash = $self->prepare_packing_list_details;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -645,6 +645,9 @@ sub mark_shipment_as_printed
 	$Shipment->update;
 
 	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
+
+	$self->SendShipNotification($Shipment);
+
 	return { UPDATED => 1};
 	}
 
@@ -682,6 +685,16 @@ sub get_dim_weight
 	$c->log->debug("... DIM WEIGHT: " . $dimWeight);
 
 	return { dimweight => $dimWeight, row => $params->{'row'} };
+	}
+
+sub prepare_packing_list_details
+	{
+	my $self = shift;
+	my $c = $self->context;
+	$self->generate_packing_list;
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packinglist.tt" ]);
+	#$self->context->log->debug("prepare_packing_list_details : " . $HTML);
+	return { PACKING_LIST => $HTML };
 	}
 
 =as

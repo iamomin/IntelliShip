@@ -1695,6 +1695,92 @@ sub SHIP_ORDER :Private
 		}
 	}
 
+sub GetNotificationShipments
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	my $c = $self->context;
+	my $shipment_id = $Shipment->shipmentid;
+
+	my $sql = "
+		SELECT
+			s.shipmentid,
+			to_char(s.dateshipped,'MM/DD/YYYY') as dateshipped,
+			to_char(s.datecreated,'MM/DD/YYYY') as datecreated,
+			s.tracking1,
+			s.carrier,
+			s.service,
+			to_char(s.datedue,'MM/DD/YYYY') as datedue,
+			s.shipmentnotification,
+			a.addressname as toname,
+			a.city as tocity,
+			a.state as tostate,
+			p.description as description
+		FROM
+			shipment s
+			INNER JOIN co ON co.coid = s.coid
+			INNER JOIN address a ON s.addressiddestin = a.addressid
+			INNER JOIN packprodata p ON s.shipmentid = p.ownerid
+		WHERE
+			s.shipmentid = '$shipment_id'
+			AND date(s.dateshipped) = date(timestamp 'now')
+			AND s.statusid = '4'
+			AND p.datatypeid = 1000
+			AND p.ownertypeid = 2000
+			AND s.shipmentnotification IS NOT NULL";
+
+	my $sth = $self->myDBI->select($sql);
+
+	my $shipments = [];
+	for (my $row=0; $row < $sth->numrows; $row++)
+		{
+		my $data = $sth->fetchrow($row);
+		push(@$shipments,$data);
+		}
+
+	return $shipments;
+	}
+
+sub SendShipNotification
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	return unless $Shipment->shipmentnotification or $Shipment->deliverynotification;
+
+	my $c = $self->context;
+	my $Customer = $self->customer;
+
+	my $emails = $Shipment->shipmentnotification . ', ' . $Shipment->deliverynotification;
+	if ($self->contact->get_contact_data_value('combineemail'))
+		{
+		}
+
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+
+	$Email->add_to($Shipment->shipmentnotification);
+	$Email->add_to($Shipment->deliverynotification);
+
+	$Email->subject("NOTICE: Shipment Prepared (" .$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
+
+	#$Email->attach($c->stash->{FILE}) if $c->stash->{FILE};
+	$Email->add_line('<br>');
+	$Email->add_line('<p>Shipment notification</p>');
+	$Email->add_line('<br>');
+
+	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
+	$Email->body($c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
+
+	if ($Email->send)
+		{
+		$c->log->debug("Email successfully sent to " . $emails);
+		}
+	}
+
 sub generate_label :Private
 	{
 	my $self = shift;
@@ -2515,7 +2601,6 @@ sub generate_packing_list
 	$c->stash->{'totalpages'}     = 1;
 	$c->stash->{'currentpage'}    = 1;
 
-
 	# Origin Address
 	if (my $OAAddress = $Shipment->origin_address)
 		{
@@ -2631,8 +2716,6 @@ sub generate_packing_list
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
 	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
-
-	$c->stash(template => "templates/customer/order-packinglist.tt");
 	}
 
 sub GetLineItems

@@ -1,0 +1,38 @@
+<h2>SHIPMENT-NOTIFICATION</h2>
+
+<div id="notification">
+
+	<div class="notice">Your shipment has been prepared and is ready for to pick-up</div>
+
+	<table class="content-wrap" border="1px">
+		<tr>
+			<th>SHIPMENT</th>
+			<th>TRACKING#</th>
+			<th>CUSTOMER</th>
+			<th>DESTINATION</th>
+			<th>CARRIER</th>
+			<th>SERVICE</th>
+			<th>DATE SHIPPED</th>
+			<th>DATE CREATED</th>
+			<th>DUE DATE</th>
+			<th>DESCRIPTION</th>
+		</tr>
+		[% FOREACH item IN notification_list %]
+		<tr>
+			<td>[% item.shipmentid %]</td>
+			<td>[% item.tracking1 %]</td>
+			<td>[% item.toaddress %]</td>
+			<td>[% item.tocity %], [% item.tostate %]</td>
+			<td>[% item.carrier %]</td>
+			<td>[% item.service %]</td>
+			<td>[% item.dateshipped %]</td>
+			<td>[% item.datecreated %]</td>
+			<td>[% item.datedue %]</td>
+			<td>[% item.description %]</td>
+		</tr>
+		[% END %]
+	</table>
+
+<div>
+
+<div class="notice">If you have any questions about your shipment, please contact<br>the shipping carrier or your company representative.</div>
