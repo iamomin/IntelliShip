@@ -899,8 +899,8 @@ warn "undef etadate";
             #Get all distinct zones for the CS
             my $zontypeid = $CS->GetValueHashRef()->{'zonetypeid'};
             warn "########## 5.2 : $zontypeid";
-            my $SQLString = "select distinct zonenumber from zone where typeid = '$zontypeid' order by zonenumber";
-
+            my $SQLString = "select distinct zonenumber, char_length(zonenumber) || zonenumber as a from zone where typeid = '$zontypeid' order by a";
+            
             warn "########## 5.3 : $SQLString";
             my $sth = $self->{'dbref'}->prepare($SQLString)
                     or die "Could not prepare SQL statement";
@@ -970,6 +970,7 @@ warn "undef etadate";
                     $rate->{'zonenumber'} = $zonenumber;
                     $rate->{'arcostmin'} = $arcostmin;
                     $rate->{'unittype'} = $unittype;
+                    $rate->{'rateid'} = $rateid;
 
                     if($arcost)
                     {    
