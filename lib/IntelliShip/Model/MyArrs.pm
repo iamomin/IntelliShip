@@ -7,7 +7,7 @@ __PACKAGE__->config(
     schema_class => 'IntelliShip::ArrsClass',
     
     connect_info => {
-           dsn => 'dbi:Pg:dbname=arrs;host=dintelliship.engagetechnology.com;port=5432;',
+           dsn => 'dbi:Pg:dbname=arrs;host=localhost;port=5432;',
            user     => 'webuser',
            password => 'Byt#Yu2e',
            disable_sth_caching => 1,
