@@ -205,12 +205,10 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
-[% UNLESS one_page %]
 	[% IF INTERNATIONAL_AND_COMMODITY %]
 		[% INTERNATIONAL_AND_COMMODITY %]
 		<div style="clear: both;">&nbsp;</div>
 	[% END %]
-[% END %]
 
 	<div id="selected-special-requirements" style="display: [% selected_special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes">
 		<h2>Special Services Requested</h2>
