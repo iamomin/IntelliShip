@@ -3,6 +3,7 @@ use Moose;
 use IO::File;
 use Data::Dumper;
 use POSIX qw(ceil);
+use IntelliShip::Email;
 use IntelliShip::Utils;
 use IntelliShip::MyConfig;
 use IntelliShip::Carrier::Handler;
@@ -1726,7 +1727,7 @@ sub GetNotificationShipments
 		WHERE
 			s.shipmentid = '$shipment_id'
 			AND date(s.dateshipped) = date(timestamp 'now')
-			AND s.statusid = '4'
+			AND s.statusid = '100'
 			AND p.datatypeid = 1000
 			AND p.ownertypeid = 2000
 			AND s.shipmentnotification IS NOT NULL";
@@ -1748,33 +1749,36 @@ sub SendShipNotification
 	my $self = shift;
 	my $Shipment = shift;
 
+	return unless $self->contact->get_contact_data_value('aosnotifications');
+
 	return unless $Shipment->shipmentnotification or $Shipment->deliverynotification;
 
 	my $c = $self->context;
 	my $Customer = $self->customer;
 
-	my $emails = $Shipment->shipmentnotification . ', ' . $Shipment->deliverynotification;
-	if ($self->contact->get_contact_data_value('combineemail'))
-		{
-		}
-
 	my $Email = IntelliShip::Email->new;
 
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
-
-	$Email->add_to($Shipment->shipmentnotification);
-	$Email->add_to($Shipment->deliverynotification);
-
 	$Email->subject("NOTICE: Shipment Prepared (" .$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
 
-	#$Email->attach($c->stash->{FILE}) if $c->stash->{FILE};
+	$Email->add_to($Shipment->shipmentnotification);
+
+	my $emails = $Shipment->shipmentnotification;
+	if ($Shipment->deliverynotification and $self->contact->get_contact_data_value('combineemail'))
+		{
+		$emails .= ', ' . $Shipment->deliverynotification;
+		$Email->add_to($Shipment->deliverynotification);
+		}
+
 	$Email->add_line('<br>');
 	$Email->add_line('<p>Shipment notification</p>');
 	$Email->add_line('<br>');
 
 	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
-	$Email->body($c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
+
+	#$Email->attach($c->stash->{FILE}) if $c->stash->{FILE};
 
 	if ($Email->send)
 		{
