@@ -408,7 +408,7 @@ sub get_select_list
 =cut
 		my $SQL = "
 		SELECT
-			address1, city, state, MAX( co.coid ) referenceid, MAX( addressname ) addressname
+			MAX( co.coid ) coid
 		FROM
 			co INNER JOIN address ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
 		WHERE
@@ -417,23 +417,24 @@ sub get_select_list
 			AND co.cotypeid in (1,2,10)
 			AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
 		GROUP BY
-			address1, city, state";
+			country, state, city, zip, address1";
 
 		#$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
 
-		my $myDBI = $c->model('MyDBI');
-		my $sth = $myDBI->select($SQL);
+		my $sth = $self->myDBI->select($SQL);
 
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			next unless $data->{addressname};
+			my $sth1 = $self->myDBI->select("SELECT addressid FROM co WHERE coid = '$data->{'coid'}'");
+			my $address_data = $sth1->fetchrow(0);
+			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
 			push(@$list, {
-					company_name => $data->{addressname},
-					reference_id => $data->{referenceid},
-					address1     => $data->{address1},
-					city         => $data->{city},
-					state        => $data->{state}
+					company_name => $Address->addressname,
+					reference_id => $data->{'coid'},
+					address1     => $Address->address1,
+					city         => $Address->city,
+					state        => $Address->state,
 				});
 			}
 		}

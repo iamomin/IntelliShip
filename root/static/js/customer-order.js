@@ -419,6 +419,8 @@ function setCustomsCommodityValue()
 
 function checkInternationalSection() {
 
+	if ($('#intlCommoditySec').length == 0) return;
+
 	if ($("#tocountry").val() != $("#fromcountry").val()) {
 
 		if ($('#intlCommoditySec').html().length > 0) {
