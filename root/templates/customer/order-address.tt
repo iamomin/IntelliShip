@@ -245,7 +245,7 @@ $("#dateneeded").datepicker({
 [% END %]
 
 var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.address1 %]",[% END %]];
-var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]": "[% item.reference_id %]",[% END %]};
+var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
 
 $("#toname").autocomplete({
 	source: availableCustomers,
@@ -253,7 +253,8 @@ $("#toname").autocomplete({
 		var SelectedCompany = ui.item.value
 		var AddrParts = SelectedCompany.split(" | ");
 		var Company = AddrParts[0];
-		var RefID = hashCompanyRef[Company];
+		var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3];
+		var RefID = hashCompanyRef[Key];
 		if (RefID == undefined) return;
 		ui.item.value = Company;
 		populateShipToAddress(RefID);

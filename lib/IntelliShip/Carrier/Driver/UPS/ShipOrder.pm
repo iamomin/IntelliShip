@@ -17,6 +17,7 @@ sub process_request
 	my $c = $self->context;
 	my $Customer = $CO->customer;
 	my $shipmentData = $self->data;
+	my $CustomerService = $self->customerservice;
 
 	if ($shipmentData->{'addresscountry'} eq 'USA')
 		{
@@ -28,22 +29,17 @@ sub process_request
 		$shipmentData->{'dateshipped'} = $shipmentData->{'datetoship'};
 		}
 
-	#if (!defined($shipmentData->{'webaccount'}) or $shipmentData->{'webaccount'} eq '')
-	#	{
-	#	return (undef,'Missing Account Number');
-	#	}
-	#if (!defined($shipmentData->{'addresscity'}) or $shipmentData->{'addresscity'} eq '')
-	#	{
-	#	return (undef,'UPS Local: Unable To Ship Without A Destination City');
-	#	}
-	#if (!defined($shipmentData->{'addresszip'}) or $shipmentData->{'addresszip'} eq '')
-	#	{
-	#	return (undef,'UPS Local: Unable To Ship Without A Destination Zip Code');
-	#	}
-	#if (defined($shipmentData->{'insurance'}) and $shipmentData->{'insurance'} > 1000)
-	#	{
-	#	return (undef,'UPS Local: Unable To Ship With Declared Value Greater Than $1,000');
-	#	}
+	unless ($CustomerService->{'webaccount'})
+		{
+		$self->add_error("Missing Account Number");
+		return;
+		}
+
+	if ($shipmentData->{'insurance'} and $shipmentData->{'insurance'} > 1000)
+		{
+		$self->add_error('UPS Local: Unable To Ship With Declared Value Greater Than $1,000');
+		return;
+		}
 	#if ($shipmentData->{'addresscountry'} eq 'US')
 	#	{
 	#	if ((!defined($shipmentData->{'address1'}) or $shipmentData->{'address1'} eq '') and (!defined($shipmentData->{'address2'}) or $shipmentData->{'address2'} eq ''))

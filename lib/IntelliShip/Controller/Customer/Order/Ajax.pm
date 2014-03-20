@@ -236,7 +236,7 @@ sub get_carrier_service_list
 	$c->stash->{ONLY_TABLE} = 1;
 
 	#$c->log->debug("CS_list_1: ". Dumper($CS_list_1));
-	if ($CO->has_carrier_service_details)
+	if ($CO->has_carrier_service_details and $params->{'action'} ne 'get_carrier_service_list')
 		{
 		my @selected_carrier_service = grep { uc($_->{carrier}) eq uc($CO->extcarrier) and uc($_->{service}) eq uc($CO->extservice) } @$CS_list_1;
 		$selected_carrier_service[0]->{checked} = 1 if @selected_carrier_service;

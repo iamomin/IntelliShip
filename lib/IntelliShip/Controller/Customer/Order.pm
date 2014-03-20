@@ -362,11 +362,11 @@ sub save_CO_details :Private
 
 	$coData->{'extcarrier'} = $params->{'carrier'} if $params->{'carrier'};
 
-	## Sort out 'Other' carrier nonsense
 	if ($params->{'customerserviceid'})
 		{
 		if ($params->{'customerserviceid'} =~ /^OTHER_(\w{13})/)
 			{
+			## Sort out 'Other' carrier nonsense
 			my $Other = $c->model('MyDBI::Other')->find({ customerid => $self->customer->customerid, otherid => $1 });
 			$coData->{'extcarrier'} = 'Other - ' . $Other->othername if $Other;
 			}
@@ -375,6 +375,7 @@ sub save_CO_details :Private
 			my ($CarrierName,$ServiceName) = $self->API->get_carrier_service_name($params->{'customerserviceid'});
 			$coData->{'extcarrier'} = $CarrierName if !$coData->{'extcarrier'} and $CarrierName;
 			$coData->{'extservice'} = $ServiceName if $ServiceName;
+			$c->log->debug("... CarrierName: $CarrierName,  ServiceName: $ServiceName");
 			}
 		}
 
@@ -2244,8 +2245,8 @@ sub BuildShipmentInfo
 	if ($params->{'customerserviceid'} and !$params->{'billingaccount'})
 		{
 		my $Key = 'extcustnum';
-		my $Value = $params->{'custnum'};
-		my $CarrierID = $self->API->get_carrier_ID($params->{'customerserviceid'});
+		my $Value = $params->{'custnum'} || '';
+		my $CarrierID = $self->API->get_carrier_ID($params->{'customerserviceid'}) || '';
 
 		# Get alternate billing account
 		my $sth = $myDBI->select("SELECT billingaccount FROM altbilling WHERE key = '$Key' AND upper(value) = upper('$Value') AND carrierid = '$CarrierID' LIMIT 1");

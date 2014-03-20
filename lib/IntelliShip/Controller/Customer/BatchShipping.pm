@@ -313,6 +313,7 @@ sub batch_ship :Private
 	$params->{'coids'} = $COIDList;
 
 	$c->stash->{CONSOLIDATE} = 1;
+	$c->stash->{ONLY_SHIP}   = 1;
 
 	$params->{do} = undef;
 	$params->{coid} = $COIDList->[0];

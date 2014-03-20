@@ -206,6 +206,7 @@ sub load_order :Private
 
 	$c->stash->{CONSOLIDATE}  = 1;
 	$c->stash->{AUTO_PROCESS} = 1;
+	$c->stash->{ONLY_SHIP}    = 1;
 
 	$self->quickship;
 

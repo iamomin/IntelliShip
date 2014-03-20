@@ -513,7 +513,8 @@ sub load_order :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	$c->stash->{parent} = 'myorders';
+	$c->stash->{parent}    = 'myorders';
+	$c->stash->{ONLY_SHIP} = 1;
 	$params->{do} = undef;
 	$self->quickship;
 	}

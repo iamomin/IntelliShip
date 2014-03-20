@@ -412,7 +412,8 @@ sub get_select_list
 		FROM
 			co INNER JOIN address ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
 		WHERE
-			address1 <> ''
+			address.addressname  <> ''
+			AND address.address1 <> ''
 			AND co.cotypeid in (1,2,10)
 			AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
 		GROUP BY

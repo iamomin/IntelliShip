@@ -370,6 +370,16 @@
 			});
 
 		$(document).ready(function() {
+
+			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+					var panelID = $(ui.newPanel).prop('id');
+					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
+					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
+						if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
+						});
+					}
+				});
+
 			CalculateDimentionalWeight($('input:radio[name=customerserviceid]:checked').val());
 			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();
 			});
