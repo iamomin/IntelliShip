@@ -49,7 +49,39 @@ sub services_to_json
 
 sub tariff_to_json
 {
-   # my ( $self, $tariff) = @_;
+    warn "########## tariff_to_json";    
+    my ( $self, $tariff) = @_;
+
+    my $json = {};
+    $json->{'headers'} = $tariff->{'zonenumbers'};
+    $arr = $tariff->{'ratearray'};
+    @ratearray = @$arr;
+    
+    my $prevunitsstart = 0;
+    my @data = ();
+    my $d = {};
+    my $meta = {};
+    foreach (@ratearray)
+    {
+        $record = $_;
+        my $unitsstart = $record->{'unitsstart'};
+        if($prevunitsstart != $unitsstart) {
+            push(@data, $d);
+            push(@data, $meta);
+            $d = {};
+            $meta = {};
+            $d->{'wtmin'} = $unitsstart;
+            $d->{'wtmax'} = $record->{'unitsstop'};
+            $d->{'mincost'} = $record->{'arcostmin'};                        
+            $d->{'rateid'} = $record->{'rateid'};
+        }
+
+        $d->{$record->{'zonenumber'}} = $record->{'actualcost'};        
+        $prevunitsstart = $unitsstart;
+    }
+
+    $json->{'rows'} = \@data;
+    return encode_json($json); 
 }
 
 1;

@@ -57,8 +57,18 @@ sub get_service_tariff :Local
         warn "########## 2";
         my ( $self, $c, $csid ) = @_;
         my $tariff = $self->API->get_service_tariff($csid);
-        $c->stash->{'TARIFF'} = $tariff;
-        $c->stash(template => "templates/customer/tariff.tt"); 
+
+        #warn "########## servicelist in Tariff.pm". Dumper($tariff);
+        
+        $c->stash->{'JSON'} = $JSONUTIL->tariff_to_json($tariff);
+        $c->stash(template => "templates/customer/json.tt"); 
+    }
+
+sub save :Local
+    {
+        warn "########## 2";
+        my ( $self, $c, $data ) = @_;
+        warn "########## data: $data";
     }
 
 1;
