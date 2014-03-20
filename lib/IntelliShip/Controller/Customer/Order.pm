@@ -180,6 +180,7 @@ sub setup_shipment_information :Private
 		$CA->context($c);
 		$CA->set_international_details;
 		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		$c->stash->{INTERNATIONAL} = 0;
 		}
 
 	unless ($c->stash->{one_page})
