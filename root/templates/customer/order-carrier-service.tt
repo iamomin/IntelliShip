@@ -22,7 +22,7 @@
 <form id="frm_order_sumary" name="frm_order_sumary" method="post" action="/customer/order/multipage">
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" id="do" name="do" value="step3"/>
+	<input type="hidden" id="do" name="do" value="ship"/>
 
 	<div id="equal">
 		<div id="row">

@@ -2458,6 +2458,7 @@ sub display_error_details :Private
 
 	my $c = $self->context;
 
+	$c->stash($c->req->params);
 	$c->stash(MESSAGE => $msg);
 	$c->stash(template => "templates/customer/order-error.tt");
 	}

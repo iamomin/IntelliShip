@@ -27,7 +27,7 @@
 	[% UNLESS REPRINT_LABEL %]
 	<table class="center DoNotPrint">
 		<tr>
-			<td><input type="button" class="blue" value="PRINT" onclick="[% IF printerstring_loop %]PrintEplLabel();[% ELSE %]PrintImageLabel();[% END %]"/></td>
+			<td><input type="button" class="blue" value="PRINT" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
 		</tr>
 	</table>
 	[% END %]

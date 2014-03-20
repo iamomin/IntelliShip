@@ -36,10 +36,6 @@ sub index :Path :Args(0) {
 		{
 		$self->complete_step2;
 		}
-	elsif ($do_value eq 'step3')
-		{
-		$self->complete_step3;
-		}
 	elsif ($do_value eq 'shipment')
 		{
 		$self->setup_shipment_information;
@@ -81,15 +77,6 @@ sub complete_step2
 	$self->save_CO_details;
 	$self->save_special_services;
 	$self->setup_carrier_service;
-	}
-
-sub complete_step3
-	{
-	my $self = shift;
-	$self->save_CO_details;
-	$self->SHIP_ORDER;
-	$self->clear_CO_details;
-	$self->setup_address;
 	}
 
 sub edit_address_details

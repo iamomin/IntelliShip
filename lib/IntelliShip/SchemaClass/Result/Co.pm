@@ -975,22 +975,23 @@ sub delete_all_package_details
 	{
 	my $self = shift;
 	my @arr = $self->package_details;
-	foreach my $PackPro (@arr)
-		{
-		$PackPro->delete;
-		}
+	$_->delete foreach @arr;
 	}
 
 sub can_autoship
 	{
 	my $self = shift;
-	return ($self->extcarrier ne '' and $self->extservice ne '' and $self->total_weight > 0);
+	my $carrier = $self->extcarrier || '';
+	my $service = $self->extservice || '';
+	return ($carrier ne '' and $service ne '' and $self->total_weight > 0);
 	}
 
 sub has_carrier_service_details
 	{
 	my $self = shift;
-	return ($self->extcarrier ne '' and $self->extservice ne '');
+	my $carrier = $self->extcarrier || '';
+	my $service = $self->extservice || '';
+	return ($carrier ne '' and $service ne '');
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
