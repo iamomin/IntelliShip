@@ -297,6 +297,80 @@ END
 	return $EPL;
 	}
 
+sub get_BOL_EPL
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $EPL = <<END;
+.
+
+OD
+JF
+Q1370,24
+q812
+R5,140
+S8
+D15
+N
+ZB
+A0,20,0,3,3,3,R,"  BILL OF LADING   "
+LO0,80,1000,2
+A25,100,0,3,1,1,N,"From:"
+A150,100,0,2,1,1,N,"$DATA->{shipasname}"
+A150,125,0,2,1,1,N,"$DATA->{branchaddress1}"
+A150,150,0,2,1,1,N,"$DATA->{branchaddress2}"
+A150,175,0,2,1,1,N,"$DATA->{branchaddresscity}, $DATA->{branchaddressstate  $DATA->{branchaddresszip}"
+A150,200,0,2,1,1,N,"$DATA->{branchaddresscountry}"
+A550,100,0,2,1,1,N,"$DATA->{branchcontact}"
+A550,125,0,2,1,1,N,"$DATA->{branchphone}"
+A550,150,0,2,1,1,N,"Ref: $DATA->{refnumber}"
+A550,175,0,2,1,1,N,"Ship Date: $DATA->{shipdate}"
+A550,200,0,2,1,1,N,"Airport Code: $DATA->{branchairportcode}"
+LO0,230,1000,2
+A25,250,0,3,1,1,N,"To:"
+A150,250,0,2,1,1,N,"$DATA->{addressname}"
+A150,275,0,2,1,1,N,"$DATA->{address1}"
+A150,300,0,2,1,1,N,"$DATA->{address2}"
+A150,325,0,2,1,1,N,"$DATA->{addresscity}, $DATA->{addressstate}  $DATA->{addresszip}"
+A150,350,0,2,1,1,N,"$DATA->{addresscountry}"
+A550,250,0,2,1,1,N,"$DATA->{contactname}"
+A550,275,0,2,1,1,N,"$DATA->{contactphone}"
+A550,300,0,2,1,1,N,"PO: $DATA->{ponumber}"
+A550,325,0,2,1,1,N,"ETA: $DATA->{etadate}"
+A550,350,0,2,1,1,N,"Airport Code: $DATA->{airportcode}"
+LO0,380,1000,2
+A25,400,0,3,1,1,N,"Bill To:"
+A150,400,0,2,1,1,N,""
+A150,425,0,2,1,1,N,"$DATA->{billingname}"
+A150,450,0,2,1,1,N,"$DATA->{billingaddress1}"
+A150,475,0,2,1,1,N,"$DATA->{billingcity}, $DATA->{billingstate} $DATA->{billingzip}"
+A150,500,0,2,1,1,N,"US"
+A150,525,0,2,1,1,N,"$DATA->{billingphone}"
+A550,400,0,2,1,1,N,"Weight: $DATA->{aggregateweight} Lbs"
+A550,425,0,2,1,1,N,"$DATA->{dimweightdisplay}"
+A550,450,0,2,1,1,N,"$DATA->{dimsdisplay}"
+A550,475,0,2,1,1,N,"$DATA->{densitydisplay}"
+A550,500,0,2,1,1,N,"Packages: $DATA->{totalquantity}"
+A550,525,0,2,1,1,N,"Zone: $DATA->{zonenumber}"
+A550,550,0,2,1,1,N,"Tracking: $DATA->{tracking1}"
+LO0,580,1000,2
+A25,600,0,3,1,1,N,"Description:"
+A215,600,0,2,1,1,N,"$DATA->{extcd}"
+A25,640,0,3,1,1,N,"Comments:"
+A215,640,0,2,1,1,N,"$DATA->{description}"
+LO0,670,1000,2
+A25,690,0,3,2,2,R,"$DATA->{carrier}"
+A25,750,0,3,2,2,R,"$DATA->{service}"
+A25,1015,0,3,1,1,R,"$DATA->{labelbanner}"
+P1
+R0,0
+.
+END
+
+	return $EPL;
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
