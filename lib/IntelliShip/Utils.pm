@@ -505,6 +505,25 @@ sub get_bill_to_name
 	return $billtoname;
 	}
 
+sub get_BOL_bill_to_name
+	{
+	my $self = shift;
+	my $csid = shift;
+
+	if ( $csid eq 'MOSEFL0000001' )
+		{
+		return 'Engage';
+		}
+	elsif ( $csid eq 'ECONOYELLOW01' )
+		{
+		return 'Catapult';
+		}
+	else
+		{
+		return undef;
+		}
+	}
+
 1;
 
 __END__

@@ -77,9 +77,9 @@
 		[% END %]
 		}
 
-	window.onafterprint(function() {
+	window.onafterprint = function() {
 		window.close();
-		});
+		};
 	</script>
 	</head>
 
@@ -89,10 +89,10 @@
 		</script>
 
 		<!-- Vendor Data -->
-		<div class="addressfieldname" style="top: .25in; left: .25in; width: 1.5in; height: .25in;">
+		<div class="addressfieldname" style="top: .25in; left: .25in; width: 1.5in; height: .20in;">
 			Vendor Name:
 		</div>
-		<div class="addressfield" style="top: .5in; left: .25in; width: 3.3125in; height: 1.25in;">
+		<div class="addressfield" style="top: .5in; left: .25in; width: 3.3125in; height: 1.20in;">
 			[% shipperaddress %]
 		</div>
 
@@ -122,7 +122,7 @@
 		</table>
 
 		<!-- Bill To Data -->
-		<div class="addressfieldname" style="top: 2in; left: .25in; width: 1.5in; height: .25in;">
+		<div class="addressfieldname" style="top: 2in; left: .25in; width: 1.5in; height: .20in;">
 			Bill To:
 		</div>
 		<div class="addressfield" style="top: 2.25in; left: .25in; width: 3.3125in; height: 1.25in;">
@@ -130,7 +130,7 @@
 		</div>
 
 		<!-- Ship To Data -->
-		<div class="addressfieldname" style="top: 2in; left: 4.4375in; width: 1.5in; height: .25in;">
+		<div class="addressfieldname" style="top: 2in; left: 4.4375in; width: 1.5in; height: .20in;">
 			Ship To:
 		</div>
 		<div class="addressfield" style="top: 2.25in; left: 4.4375in; width: 3.3125in; height: 1.25in;">
@@ -138,27 +138,27 @@
 		</div>
 
 		<!-- Middle Four Fields -->
-		<div class="fieldname" style="top: 3.875in; left: .5in; width: 1.375in; height: .25in;">
+		<div class="fieldname" style="top: 3.875in; left: .5in; width: 1.375in; height: .20in;">
 			Order Number
 		</div>
 		<div class="field" style="top: 4.125in; left: .5in; width: 1.375in; height: .25in;">
 			[% ordernumber %]
 		</div>
 
-		<div class="fieldname" style="top: 3.875in; left: 2in; width: 1.5in; height: .25in;">
+		<div class="fieldname" style="top: 3.875in; left: 2in; width: 1.5in; height: .20in;">
 			Sales Rep
 		</div>
 		<div class="field" style="top: 4.125in; left: 2in; width: 1.5in; height: .25in;">
 		</div>
 
-		<div class="fieldname" style="top: 3.875in; left: 3.625in; width: 2in; height: .25in;">
+		<div class="fieldname" style="top: 3.875in; left: 3.625in; width: 2in; height: .20in;">
 			Ship Via
 		</div>
 		<div class="field" style="top: 4.125in; left: 3.625in; width: 2in; height: .25in;">
 			[% carrierservice %]
 		</div>
 
-		<div class="fieldname" style="top: 3.875in; left: 5.75in; width: 1.875in; height: .25in;">
+		<div class="fieldname" style="top: 3.875in; left: 5.75in; width: 1.875in; height: .20in;">
 			Tracking Number
 		</div>
 		<div class="field" style="top: 4.125in; left: 5.75in; width: 1.875in; height: .25in;">
@@ -204,35 +204,35 @@
 		</table>
 
 		<!-- Bottom Fields -->
-		<div class="fieldname" style="top: 7.875in; left: .5in; width: 1.875in; height: .25in;">
+		<div class="fieldname" style="top: 7.875in; left: .5in; width: 1.875in; height: .20in;">
 			Shipped By
 		</div>
 		<div class="field" style="top: 8.125in; left: .5in; width: 1.875in; height: .25in;">
 			[% oacontactname %]
 		</div>
 
-		<div class="fieldname" style="top: 8.5625in; left: .5in; width: 1.875in; height: .25in;">
+		<div class="fieldname" style="top: 8.5625in; left: .5in; width: 1.875in; height: .20in;">
 			Number of Packages
 		</div>
 		<div class="field" style="top: 8.8125in; left: .5in; width: 1.875in; height: .25in;">
 			[% quantity %]
 		</div>
 
-		<div class="fieldname" style="top: 9.25in; left: .5in; width: 1.875in; height: .25in;">
+		<div class="fieldname" style="top: 9.25in; left: .5in; width: 1.875in; height: .20in;">
 			Total Weight
 		</div>
 		<div class="field" style="top: 9.5in; left: .5in; width: 1.875in; height: .25in;">
 			[% grossweight %]
 		</div>
 
-		<div class="fieldname" style="top: 7.875in; left: 2.5in; width: 1.875in; height: .25in;">
+		<div class="fieldname" style="top: 7.875in; left: 2.5in; width: 1.875in; height: .20in;">
 			Received By
 		</div>
 		<div class="field" style="top: 8.125in; left: 2.5in; width: 1.875in; height: .25in;">
 			[% contactname %]
 		</div>
 
-		<div class="fieldname" style="top: 8.5625in; left: 2.5in; width: 1.875in; height: .25in;">
+		<div class="fieldname" style="top: 8.5625in; left: 2.5in; width: 1.875in; height: .20in;">
 			Order Complete
 		</div>
 		<div class="field" style="top: 8.8125in; left: 2.5in; width: 1.875in; height: .25in;">

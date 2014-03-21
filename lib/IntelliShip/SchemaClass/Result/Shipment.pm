@@ -850,6 +850,12 @@ __PACKAGE__->has_many(
 	{ "foreign.ownerid" => "self.shipmentid" }
 	);
 
+__PACKAGE__->has_many(
+	assdata =>
+	"IntelliShip::SchemaClass::Result::Assdata",
+	{ "foreign.ownerid" => "self.shipmentid" }
+	);
+
 # OwnerTypeID:
 # 1000 = order (CO)
 # 2000 = shipment
@@ -866,7 +872,7 @@ sub packages
 	return $self->packprodata($WHERE);
 	}
 
-sub shipment_products
+sub products
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '2000', datatypeid => '2000' };
@@ -894,13 +900,22 @@ sub package_details
 		}
 
 	# Step 3: Find product belog to Order
-	my @shipment_products = $self->shipment_products;
-	foreach my $Product (@shipment_products)
+	my @products = $self->products;
+	foreach my $Product (@products)
 		{
 		push (@packageArr, $Product);
 		}
 
 	return @packageArr;
+	}
+
+# Assdata OwnerTypeID:
+# 1000 = CO
+# 2000 = shipment
+sub assessorials
+	{
+	my $self = shift;
+	return $self->assdata({ ownertypeid => '2000' });
 	}
 
 sub get_assessorial_charges

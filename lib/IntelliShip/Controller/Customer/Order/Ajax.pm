@@ -489,6 +489,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->prepare_packing_list_details;
 		}
+	elsif ($c->req->param('action') eq 'generate_bill_of_lading')
+		{
+		$dataHash = $self->prepare_BOL;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -680,7 +684,7 @@ sub get_dim_weight
 	my $dimwidth  = $params->{dimwidth};
 	my $dimheight = $params->{dimheight};
 
-	my $dimWeight = $self->API->get_dim_weight($csid, $dimlength, $dimwidth, $dimheight);
+	my $dimWeight = $self->API->get_dim_weight($csid, $dimlength, $dimwidth, $dimheight) || 0;
 
 	$c->log->debug("... DIM WEIGHT: " . $dimWeight);
 
@@ -691,10 +695,18 @@ sub prepare_packing_list_details
 	{
 	my $self = shift;
 	my $c = $self->context;
-	$self->generate_packing_list;
-	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packinglist.tt" ]);
-	#$self->context->log->debug("prepare_packing_list_details : " . $HTML);
+	my $HTML = $self->generate_packing_list;
+	#$self->context->log->debug("Ajax.pm generate_packing_list : " . $HTML);
 	return { PACKING_LIST => $HTML };
+	}
+
+sub prepare_BOL
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $HTML = $self->generate_bill_of_lading;
+	#$self->context->log->debug("Ajax.pm generate_bill_of_lading : " . $HTML);
+	return { BOL => $HTML };
 	}
 
 =as

@@ -411,6 +411,8 @@ function populateSpecialServiceList() {
 
 function setCustomsCommodityValue()
 	{
+	if ($("#insurance").length == 0 && $("#freightinsurance").length == 0) return;
+
 	var insurance = parseFloat($("#insurance").val());
 	var freightinsurance = parseFloat($("#freightinsurance").val());
 	var customscommodityvalue = (insurance > freightinsurance ? insurance : freightinsurance);
@@ -750,7 +752,7 @@ function populateShipToAddress(referenceid)
 
 function CalculateDimentionalWeight(customerserviceid)
 	{
-	if ($("#dimweight_1").val() == undefined) return;
+	if ($("#dimweight_1").val() == undefined || customerserviceid == undefined || customerserviceid.length == 0) return;
 
 	update_package_product_sequence();
 	var total_package_rows = $("#pkg_detail_row_count").val();

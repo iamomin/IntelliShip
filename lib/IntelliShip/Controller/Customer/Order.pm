@@ -621,12 +621,9 @@ sub save_package_product_details :Private
 
 		$c->log->debug("PackageIndex: " . $PackageIndex);
 
-		my $ownerid = $CO->coid;
-		$ownerid = $last_package_id if ($params->{'type_' . $PackageIndex } eq 'product');
-		my $datatypeid = "1000";
-		$datatypeid = "2000" if ($params->{'type_' . $PackageIndex } eq 'product');
-		my $ownertypeid = 1000;
-		$ownertypeid = 3000 if ($params->{'type_' . $PackageIndex } eq 'product');
+		my $ownerid     = ($params->{'type_' . $PackageIndex } eq 'product' ? $last_package_id : $CO->coid);
+		my $datatypeid  = ($params->{'type_' . $PackageIndex } eq 'product' ? '2000' : '1000');
+		my $ownertypeid = ($params->{'type_' . $PackageIndex } eq 'product' ? '3000' : '1000');
 
 		my $quantity  = $params->{'quantity_' . $PackageIndex} || 0;
 		my $weight    = $params->{'weight_'.$PackageIndex}     || 0;
@@ -1406,7 +1403,7 @@ sub SHIP_ORDER :Private
 			foreach my $Package (@packages)
 				{
 				my $ShipmentPackage = $c->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
-				$ShipmentPackage->ownertypeid(2000); # Shipment
+				$ShipmentPackage->ownertypeid(2000); # 2000 = shipment
 				$ShipmentPackage->ownerid($params->{'new_shipmentid'});
 				$ShipmentPackage->packprodataid($self->get_token_id);
 				$ShipmentPackage->insert;
@@ -1417,13 +1414,23 @@ sub SHIP_ORDER :Private
 				foreach my $Product (@products)
 					{
 					my $ShipmentProduct = $c->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
-					$ShipmentProduct->ownertypeid(3000); # Product (for Packages)
+					$ShipmentProduct->ownertypeid(3000); # 3000 = Product (for Packages)
 					$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
 					$ShipmentProduct->packprodataid($self->get_token_id);
 					$ShipmentProduct->insert;
 
 					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
 					}
+				}
+
+			my @special_services = $CO->assessorials;
+			foreach my $AssData (@special_services)
+				{
+				my $AssData = $c->model('MyDBI::AssData')->new($AssData->{'_column_data'});
+				$AssData->ownertypeid(2000); # 2000 = shipment
+				$AssData->ownerid($params->{'new_shipmentid'});
+				$AssData->assdataid($self->get_token_id);
+				$AssData->insert;
 				}
 
 			# Push all shipmentcharges onto a list for use by all shipments
@@ -1610,21 +1617,6 @@ sub SHIP_ORDER :Private
 
 		$c->model('MyDBI::Shipmentcharge')->new($scData)->insert;
 		$c->log->debug("___ NEW SHIPMENTCHARGE INSERTED< ID: " . $scData->{shipmentchargeid});
-		}
-
-	# Build up data for use in BOL assessorial display
-	my $ass_names = $params->{'assessorial_names'};
-	if ($ass_names)
-		{
-		$ass_names =~ s/'//g;
-
-		foreach my $ass_name (split(/,/,$ass_names))
-			{
-			my $ass_value = $params->{$ass_name} || '';
-			$params->{'assessorial_values'} .= "'$ass_value',";
-			}
-
-		chop($params->{'assessorial_values'}) if $params->{'assessorial_values'};
 		}
 
 	#$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
@@ -1881,6 +1873,8 @@ sub setup_label_to_print
 	$c->stash($params);
 	$c->stash($Shipment->{_column_data});
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
+	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcountthermal');
+	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcount8_5x11');
 
 	unless (-e $label_file)
 		{
@@ -2721,6 +2715,8 @@ sub generate_packing_list
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
 	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+
+	return $PackListHTML;
 	}
 
 sub GetLineItems
@@ -2874,6 +2870,322 @@ sub GetComInvPackData
 	$product_data->{'goodscost'} = $product_data->{'decval'};
 
 	return $product_data;
+	}
+
+sub generate_bill_of_lading
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ generate_bill_of_lading ___");
+
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my $CO       = $Shipment->CO;
+	my $Customer = $CO->customer;
+
+	# Set global packing list values
+	my $dataHash = $Shipment->{_column_data};
+	$dataHash->{'oacontactname'}  = $Customer->contact;
+	$dataHash->{'contactname'}    = $CO->contactname;
+	$dataHash->{'ordernumber'}    = $CO->ordernumber;
+	$dataHash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+	$dataHash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
+	$dataHash->{'totalpages'}     = 1;
+	$dataHash->{'currentpage'}    = 1;
+
+	# Destination Address
+	if (my $DestinationAddress = $Shipment->destination_address)
+		{
+		$dataHash->{'addressname'}    = $DestinationAddress->addressname;
+		$dataHash->{'address1'}       = $DestinationAddress->address1;
+		$dataHash->{'address2'}       = $DestinationAddress->address2;
+		$dataHash->{'addresscity'}    = $DestinationAddress->city;
+		$dataHash->{'addressstate'}   = $DestinationAddress->state;
+		$dataHash->{'addresszip'}     = $DestinationAddress->zip;
+		$dataHash->{'addresscountry'} = $DestinationAddress->country;
+		}
+
+	# Origin Address
+	if (my $OriginatingAddress = $Shipment->origin_address)
+		{
+		$dataHash->{'branchaddress1'}       = $OriginatingAddress->address1;
+		$dataHash->{'branchaddress2'}       = $OriginatingAddress->address2;
+		$dataHash->{'branchaddresscity'}    = $OriginatingAddress->city;
+		$dataHash->{'branchaddressstate'}   = $OriginatingAddress->state;
+		$dataHash->{'branchaddresszip'}     = $OriginatingAddress->zip;
+		$dataHash->{'branchaddresscountry'} = $OriginatingAddress->country;
+		}
+
+
+	# # Billing Address
+	if ($Shipment->freightcharges == 1 or $Shipment->freightcharges == 2)
+		{
+		my $BillingAddressInfo = $self->GetBillingAddressInfo(
+				$Shipment->customerserviceid,
+				undef,
+				undef,
+				$Customer->custmerid,
+				$Shipment->billingaccount,
+				$Shipment->freightcharges,
+				$Shipment->addressiddestin
+				);
+
+		if ($BillingAddressInfo)
+			{
+			$dataHash->{'billingname'}     = $BillingAddressInfo->{'addressname'};
+			$dataHash->{'billingaddress1'} = $BillingAddressInfo->{'address1'};
+			$dataHash->{'billingaddress2'} = $BillingAddressInfo->{'address2'};
+			$dataHash->{'billingcity'}     = $BillingAddressInfo->{'city'};
+			$dataHash->{'billingstate'}    = $BillingAddressInfo->{'state'};
+			$dataHash->{'billingzip'}      = $BillingAddressInfo->{'zip'};
+			}
+
+		if ($Shipment->billingaccount)
+			{
+			$dataHash->{'addressname'} .= " (" . $Shipment->billingaccount . ")";
+			}
+		}
+	elsif ($CO->usealtsop and $CO->usealtsop == 1)
+		{
+		my $BillingAddressInfo = $self->GetBillingAddressInfo(
+				$Shipment->customerserviceid,
+				undef,
+				undef,
+				undef,
+				undef,
+				undef,
+				undef,
+				$Shipment->custnum
+				);
+
+		if ( $BillingAddressInfo )
+			{
+			$dataHash->{'billingname'} = $BillingAddressInfo->{'addressname'};
+
+			if ($params->{'sibling'})
+				{
+				$dataHash->{'billingaddress1'} = 'c/o Engage Technology';
+				$dataHash->{'billingaddress2'} = '3400 Players Club Parkway, Suite 150';
+				$dataHash->{'billingcity'}     = 'Memphis';
+				$dataHash->{'billingstate'}    = 'TN';
+				$dataHash->{'billingzip'}      = '38125';
+				}
+			else
+				{
+				$dataHash->{'billingaddress1'} = $BillingAddressInfo->{'address1'};
+				$dataHash->{'billingaddress2'} = $BillingAddressInfo->{'address2'};
+				$dataHash->{'billingcity'}     = $BillingAddressInfo->{'city'};
+				$dataHash->{'billingstate'}    = $BillingAddressInfo->{'state'};
+				$dataHash->{'billingzip'}      = $BillingAddressInfo->{'zip'};
+				}
+			}
+		}
+ 	else
+		{
+		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
+
+		my $webaccount = $CSValueRef->{'webaccount'};
+
+		$dataHash->{'billingname'}     = IntelliShip::Utils->get_bill_to_name($webaccount, $self->customer->customername);
+		$dataHash->{'billingaddress1'} = 'c/o Engage Technology';
+		$dataHash->{'billingaddress2'} = '3400 Players Club Parkway, Suite 150';
+		$dataHash->{'billingcity'}     = 'Memphis';
+		$dataHash->{'billingstate'}    = 'TN';
+		$dataHash->{'billingzip'}      = '38125';
+		}
+
+	################################################
+	## Sort out kooky cs specific 'Bill To' names ##
+	################################################
+	if (my $hack_bill_to_name = IntelliShip::Utils->get_BOL_bill_to_name($Shipment->customerserviceid))
+		{
+		$dataHash->{'billtoname'} = $hack_bill_to_name;
+		}
+
+	## Global Order Info
+	$dataHash->{'branchphone'}   = $CO->dropphone ? $CO->dropphone : $Customer->phone;
+	$dataHash->{'branchcontact'} = $CO->dropcontact ? $CO->dropcontact : $Customer->contact;
+	$dataHash->{'extcustnum'}    = $CO->extcustnum if $CO->extcustnum;
+
+	#$dataHash->{'dateshipped'} =~ s/(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}:\d{2}.*/$2\/$3\/$1/;
+	$dataHash->{'dateshipped'}   = IntelliShip::DateUtils->american_date($dataHash->{'dateshipped'});
+
+	####################################################
+	## Build up data for use in BOL assessorial display
+	####################################################
+	my ($selectedSpecialServices, $SpecialServiceList) = ({},[]);
+
+	my @assessorials = $Shipment->assessorials;
+	$selectedSpecialServices->{$_->assname} = 1 foreach @assessorials;
+
+	my $AssRef = $self->API->get_sop_asslisting($Customer->get_sop_id);
+	my @ass_names = split(/\t/,$AssRef->{'assessorial_names'});
+	my @ass_displays = split(/\t/,$AssRef->{'assessorial_display'});
+
+	for (my $row = 0; $row < scalar @ass_names; $row++)
+		{
+		my $ass_name = $ass_names[$row];
+		my $ass_data = { name => $ass_name, displayname => $ass_displays[$row] };
+		$ass_data->{checked} = 1 if $selectedSpecialServices->{$ass_name};
+
+		push @$SpecialServiceList, $ass_data;
+		}
+
+	$dataHash->{assessorial_loop} = $SpecialServiceList;
+
+	$dataHash->{bol_packagelist_loop} = $self->GetBOLorPOPPD($Shipment, $dataHash);
+
+	unless ($Shipment->tracking1)
+		{
+		$dataHash->{'tracking1'} = 'PLACE PRO LABEL HERE';
+		}
+	else
+		{
+		my $barcode_image = IntelliShip::MyConfig->barcode_directory . '/' . $Shipment->tracking1 . '.png';
+		$dataHash->{'barcode_image'} = '/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+		}
+
+	my @LTLAccessorials = qw( codfee collectfreightcharge podservice singleshipment );
+
+	foreach my $LTLAccessorial (@LTLAccessorials)
+		{
+		if ($dataHash->{$LTLAccessorial} && $dataHash->{$LTLAccessorial} =~ /,/)
+			{
+			undef $dataHash->{$LTLAccessorial};
+			}
+		}
+
+	# Customer specific bol settings
+	my $BASE_DOMAIN = IntelliShip::MyConfig->getBaseDomain;
+	my $customer_bol_logo   = '';#$self->customer->bol_logo;
+	my $customer_bol_width  = '';#$self->customer->bol_logo_width;
+	my $customer_bol_height = '';#$self->customer->bol_logo_height;
+
+	$dataHash->{'bol_image'}       = '/static/images/bol.jpg';
+	$dataHash->{'bol_logo'}        = $customer_bol_logo   ? $customer_bol_logo : 'intelliship_logo.png';
+	$dataHash->{'bol_logo_width'}  = $customer_bol_width  ? $customer_bol_width : '190';
+	$dataHash->{'bol_logo_height'} = $customer_bol_height ? $customer_bol_height : '31';
+	$dataHash->{'bol_url_phone'}   = $customer_bol_logo   ? '' : '<br><font color="#000000" size="1" face="Arial, Helvetica, sans-serif"><b>&nbsp;&nbsp;&nbsp;&nbsp;WWW.' . uc($BASE_DOMAIN) . '&nbsp;&nbsp;901.620.6788</b></font></td>';
+
+	$c->stash($dataHash);
+
+	## Save BOL to File
+	my $BOL_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-bol.tt" ]);
+
+	my $BOLFileName = IntelliShip::MyConfig->BOL_file_directory . '/' . $Shipment->shipmentid;
+
+	$self->SaveStringToFile($BOLFileName, $BOL_HTML);
+
+	if ($params->{'fromscreen'} && $params->{'fromscreen'} eq 'web_api')
+		{
+		$dataHash->{'bolstring'} = $BOL_HTML;
+		}
+
+	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+
+	return $BOL_HTML;
+	}
+
+sub GetBOLorPOPPD
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $dataHash = shift;
+
+	my $PackageProductList = [];
+
+	# Does the shipment have packges?
+	$dataHash->{'packagetotaldescription'} = '';
+	$dataHash->{'boldetail'} = $self->contact->get_contact_data_value('boldetail');
+
+	my $CO = $Shipment->CO;
+	my @packages = $Shipment->packages;
+
+	$self->context->log->debug("Total Packages: " . @packages);
+
+	foreach my $Package (@packages)
+		{
+		## Dimension display
+		my $packageData = $Package->{_column_data};
+		if ($Package->dimlength && $Package->dimwidth  && $Package->dimheight)
+			{
+			$packageData->{'dims'} = $Package->dimlength . 'x' . $Package->dimwidth . 'x' . $Package->dimheight;
+			}
+
+		# Unit display
+		if ($Package->unittypeid)
+			{
+			my $unit_type = $Package->unittype->unittypename;
+			$packageData->{'unittype'} = $unit_type;
+			unless ($dataHash->{'packagetotalunittype'})
+				{
+				$dataHash->{'packagetotalunittype'} = $unit_type;
+				}
+			elsif ($dataHash->{'packagetotalunittype'} ne $unit_type)
+				{
+				$dataHash->{'packagetotalunittype'} = 'Multiple';
+				}
+			}
+
+		## Hazard check
+		if ($CO->hazardous)
+			{
+			$dataHash->{'hazardcheck'} = 'Checked';
+			$dataHash->{'packagetotalhazardcheck'} = 'Checked';
+			}
+
+		if ($Package->class)
+			{
+			$dataHash->{'freightclass'} = $Package->class;
+			}
+		else
+			{
+			$dataHash->{'freightclass'} = $dataHash->{'service'};
+			}
+
+		## Figure package total weight
+		if ($dataHash->{'quantityxweight'})
+			{
+			$dataHash->{'packagetotalweight'} += $Package->weight * $Package->quantity;
+			}
+		else
+			{
+			$dataHash->{'packagetotalweight'} += $Package->weight;
+			}
+
+		$dataHash->{'packagetotalquantity'} += $Package->quantity;
+		$dataHash->{'packagetotaldims'}      = '';
+
+		## Add packages to display list if 'summary' bol detail needed
+		if ($dataHash->{'boldetail'} == 2 || $dataHash->{'boldetail'} == 3)
+			{
+			push(@$PackageProductList, $packageData);
+			}
+
+		# Get products - only if sku level detail needed
+		if ($dataHash->{'boldetail'} == 1 || $dataHash->{'boldetail'} == 2)
+			{
+			my @products = $Package->products;
+
+			foreach my $Product (@products)
+				{
+				# Unit display
+				my $productData = $Product->{_column_data};
+				$productData->{'unittype'} = $Product->unittype->unittypename if $Package->unittypeid;
+				if ($Product->dimlength and $Product->dimwidth and $Product->dimheight)
+					{
+					$productData->{'dims'} = $Product->dimlength . 'x' . $Product->dimwidth . 'x' . $Product->dimheight;
+					}
+
+				push(@$PackageProductList, $productData);
+				}
+			}
+		}
+
+	$self->context->log->debug("PackageProductList Count: " . @$PackageProductList);
+
+	return $PackageProductList;
 	}
 
 __PACKAGE__->meta->make_immutable;
