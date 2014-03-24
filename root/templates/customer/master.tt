@@ -4,8 +4,6 @@
 		<title>Engage Technology IntelliShip</title>
 
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-		<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9"/>
-		<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE11"/>
 
 		[% IF MEDIA_PRINT %]
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/print.css" media="print"/>
