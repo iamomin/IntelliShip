@@ -161,6 +161,7 @@ sub check_css_overrides :Private
 	my $self = shift;
 	my $context = shift;
 	my $Controller = $context->controller;
+	return unless $Controller->contact;
 	my $CustomerCss = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->customerid . '.css';
 	my $ContactCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->contactid . '.css';
 	$context->stash->{CUSTOMER_OVERRIDE} = (-e $CustomerCss);
