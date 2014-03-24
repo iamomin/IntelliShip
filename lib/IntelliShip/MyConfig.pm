@@ -316,6 +316,12 @@ sub print_file_directory
 	return $self->application_root . '/root/print';
 	}
 
+sub label_file_directory
+	{
+	my $self = shift;
+	return $self->print_file_directory . '/label';
+	}
+
 sub packing_list_directory
 	{
 	my $self = shift;
@@ -332,18 +338,6 @@ sub commercial_invoice_directory
 	{
 	my $self = shift;
 	return $self->print_file_directory . '/cominv';
-	}
-
-sub label_file_directory
-	{
-	my $self = shift;
-	return $self->application_root . '/root/label';
-	}
-
-sub label_image_directory
-	{
-	my $self = shift;
-	return $self->application_root . '/root/label';
 	}
 
 sub barcode_directory

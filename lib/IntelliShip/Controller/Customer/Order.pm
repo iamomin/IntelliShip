@@ -1836,7 +1836,7 @@ sub generate_label :Private
 
 		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
 		#my $out_file = $Shipment->shipmentid . '.jpg';
-		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_image_directory.'/'.$out_file;
+		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file;
 		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
 
 		## Copy to Apache context path ##
@@ -1867,7 +1867,7 @@ sub setup_label_to_print
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $label_file = IntelliShip::MyConfig->label_image_directory . '/' . $Shipment->shipmentid . '.jpg';
+	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
 
 	$c->stash($params);
@@ -1886,7 +1886,7 @@ sub setup_label_to_print
 
 	if ($label_file =~ /JPG/i)
 		{
-		$c->stash->{LABEL_IMG} = '/label/' . $Shipment->shipmentid . '.jpg';
+		$c->stash->{LABEL_IMG} = '/print/label/' . $Shipment->shipmentid . '.jpg';
 		}
 	else
 		{
