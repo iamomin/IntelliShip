@@ -191,7 +191,7 @@
 						<table cellpadding=0 cellspacing=0 width="100%">
 							<tr>
 								<td><![endif]>
-									<img src="/static/images/[% branding_id %]/company-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
+									<img src="/static/branding/[% branding_id %]/images/header/company-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
 									<![if !mso]></td>
 							</tr>
 						</table>
@@ -250,7 +250,7 @@
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Exporter/Shipper (Name and physical address)<o:p></o:p></span></b></p>
 		  <p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p>[% shipperaddress %]</o:p></span></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;[% shipperphone %]&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'>                     </span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;[% shipperemail %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;[% shipperphone %]&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'></span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;[% shipperemail %]<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=384 colspan=4 valign=top style='width:4.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -259,7 +259,7 @@
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Importer/Consignee (Name and physical address)<o:p></o:p></span></b></p>
 		  <p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p>[% consigneeaddress %]</o:p></span></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;[% consigneephone %]&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'>                     </span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;[% consigneeemail %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;[% consigneephone %]&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'></span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;[% consigneeemail %]<o:p></o:p></span></b></p>
 		  </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:3;height:55.5pt'>
@@ -279,8 +279,8 @@
 		  style='font-size:8.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></b></p>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Tel:<span
-		  style='mso-spacerun:yes'>                        </span>Fax:<span
-		  style='mso-spacerun:yes'>                     </span>Email:<o:p></o:p></span></b></p>
+		  style='mso-spacerun:yes'></span>Fax:<span
+		  style='mso-spacerun:yes'></span>Email:<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=384 colspan=4 valign=top style='width:4.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -299,8 +299,8 @@
 		  style='font-size:8.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></b></p>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Tel:<span
-		  style='mso-spacerun:yes'>                        </span>Fax:<span
-		  style='mso-spacerun:yes'>                     </span>Email:<o:p></o:p></span></b></p>
+		  style='mso-spacerun:yes'></span>Fax:<span
+		  style='mso-spacerun:yes'></span>Email:<o:p></o:p></span></b></p>
 		  </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:4;height:55.5pt'>
@@ -320,8 +320,8 @@
 		  style='font-size:8.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></b></p>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Tel:<span
-		  style='mso-spacerun:yes'>                        </span>Fax:<span
-		  style='mso-spacerun:yes'>                     </span>Email:<o:p></o:p></span></b></p>
+		  style='mso-spacerun:yes'></span>Fax:<span
+		  style='mso-spacerun:yes'></span>Email:<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=384 colspan=4 valign=top style='width:4.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;

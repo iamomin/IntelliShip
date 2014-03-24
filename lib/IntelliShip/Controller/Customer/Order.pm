@@ -2887,7 +2887,7 @@ sub generate_bill_of_lading
 	my $CO       = $Shipment->CO;
 	my $Customer = $CO->customer;
 
-	# Set global packing list values
+	## Set global packing list values
 	my $dataHash = $Shipment->{_column_data};
 	$dataHash->{'oacontactname'}  = $Customer->contact;
 	$dataHash->{'contactname'}    = $CO->contactname;
@@ -2897,7 +2897,7 @@ sub generate_bill_of_lading
 	$dataHash->{'totalpages'}     = 1;
 	$dataHash->{'currentpage'}    = 1;
 
-	# Destination Address
+	## Destination Address
 	if (my $DestinationAddress = $Shipment->destination_address)
 		{
 		$dataHash->{'addressname'}    = $DestinationAddress->addressname;
@@ -2909,7 +2909,7 @@ sub generate_bill_of_lading
 		$dataHash->{'addresscountry'} = $DestinationAddress->country;
 		}
 
-	# Origin Address
+	## Origin Address
 	if (my $OriginatingAddress = $Shipment->origin_address)
 		{
 		$dataHash->{'branchaddress1'}       = $OriginatingAddress->address1;
@@ -2920,8 +2920,7 @@ sub generate_bill_of_lading
 		$dataHash->{'branchaddresscountry'} = $OriginatingAddress->country;
 		}
 
-
-	# # Billing Address
+	## Billing Address
 	if ($Shipment->freightcharges == 1 or $Shipment->freightcharges == 2)
 		{
 		my $BillingAddressInfo = $self->GetBillingAddressInfo(
@@ -3059,7 +3058,7 @@ sub generate_bill_of_lading
 			}
 		}
 
-	# Customer specific bol settings
+	## Customer specific bol settings
 	my $BASE_DOMAIN = IntelliShip::MyConfig->getBaseDomain;
 	my $customer_bol_logo   = '';#$self->customer->bol_logo;
 	my $customer_bol_width  = '';#$self->customer->bol_logo_width;
@@ -3072,6 +3071,7 @@ sub generate_bill_of_lading
 	$dataHash->{'bol_url_phone'}   = $customer_bol_logo   ? '' : '<br><font color="#000000" size="1" face="Arial, Helvetica, sans-serif"><b>&nbsp;&nbsp;&nbsp;&nbsp;WWW.' . uc($BASE_DOMAIN) . '&nbsp;&nbsp;901.620.6788</b></font></td>';
 
 	$c->stash($dataHash);
+	$self->get_branding_id;
 
 	## Render BOL HTML
 	my $BOL_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-bol.tt" ]);
@@ -3204,7 +3204,7 @@ sub generate_commercial_invoice
 	my $CO       = $Shipment->CO;
 	my $Customer = $CO->customer;
 
-	# Set global packing list values
+	## Set global packing list values
 	my $dataHash = $Shipment->{_column_data};
 
 	$dataHash->{'dateshipped'} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
@@ -3330,6 +3330,7 @@ sub generate_commercial_invoice
 	$dataHash->{'grandtotal'} = sprintf("%.2f", $grandtotal);
 
 	$c->stash($dataHash);
+	$self->get_branding_id;
 
 	## Render Commercial Invoice HTML
 	my $ComInvHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-commercial-invoice.tt" ]);
@@ -3338,6 +3339,8 @@ sub generate_commercial_invoice
 
 	## Save commercial invoice to File
 	$self->SaveStringToFile($ComInvFileName, $ComInvHTML);
+
+	$c->stash(template => "templates/customer/order-commercial-invoice.tt");
 
 	return $ComInvHTML;
 	}

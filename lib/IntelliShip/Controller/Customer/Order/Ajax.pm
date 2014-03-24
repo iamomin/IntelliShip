@@ -65,6 +65,10 @@ sub get_HTML :Private
 		{
 		$self->get_country_states;
 		}
+	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
+		{
+		$self->generate_commercial_invoice;
+		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -698,7 +702,6 @@ sub get_dim_weight
 sub prepare_packing_list_details
 	{
 	my $self = shift;
-	my $c = $self->context;
 	my $HTML = $self->generate_packing_list;
 	#$self->context->log->debug("Ajax.pm generate_packing_list : " . $HTML);
 	return { PACKING_LIST => $HTML };
@@ -707,7 +710,6 @@ sub prepare_packing_list_details
 sub prepare_BOL
 	{
 	my $self = shift;
-	my $c = $self->context;
 	my $HTML = $self->generate_bill_of_lading;
 	#$self->context->log->debug("Ajax.pm generate_bill_of_lading : " . $HTML);
 	return { BOL => $HTML };
@@ -716,204 +718,10 @@ sub prepare_BOL
 sub prepare_com_inv
 	{
 	my $self = shift;
-	my $c = $self->context;
 	my $HTML = $self->generate_commercial_invoice;
-	#$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
+	$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
 	return { ComInv => $HTML };
 	}
-
-=as
-sub search_address_details
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-	my $Customer = $self->customer;
-
-	my $LookupValue = $params=>{term} || '';
-	my $Direction = $params=>{direction} || 'to';
-
-	my $CustomerID = $Customer->customerid;
-	my $smart_address_book = $Customer->smartaddressbook || 0; # 0 = keep only 1,2,3 etc is interval
-
-	my $smart_address_book_sql = '( keep = 1 )';
-	if ($smart_address_book > 0)
-		{
-		$smart_address_book_sql = "( keep = 1 OR date(datecreated) > date(timestamp 'now' + '- $smart_address_book days'))";
-		}
-
-	# join to addresses table on either addressid or dropaddressid to split into origin/destination
-	#my $AddressJoin;
-	#if ($Direction eq 'from')
-	#	{
-	#	$AddressJoin = "co.dropaddressid = address.addressid";
-	#	}
-	#else
-	#	{
-	#	$AddressJoin = "co.addressid = address.addressid";
-	#	}
-
-	my $LookupSQL = '';
-	if (length $LookupValue)
-		{
-		$LookupSQL = " addressname ~* '^$LookupValue' AND ";
-		}
-
-	my $extcustnum_field = '';
-	$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
-
-	my $OrderBy;
-	if ($CustomerID =~ /VOUGHT/)
-		{
-		$OrderBy = "extcustnum, addressname, address1, address2, city";
-		}
-	else
-		{
-		$OrderBy = "addressname, address1, address2, city";
-		}
-
-	my $SQL = "
-	SELECT
-		DISTINCT ON (addressname)
-		address.addressid
-	FROM
-		co
-		INNER JOIN
-		address
-		ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
-	WHERE
-		co.cotypeid in (1,2,10) AND
-		address.addressname <> '' AND
-		$smart_address_book_sql
-	ORDER BY
-		$OrderBy
-	";
-	$c->log->debug("SEARCH_ADDRESS_DETAILS: " . $SQL);
-	my $sth = $self->model->('MyDBI')->select($SQL);
-	my $arr = [];
-	push(@$arr, $_->[0]) foreach @{$sth->query_data};
-	#$c->log->debug("jsonify: " . IntelliShip::Utils->jsonify($arr));
-	$c->response->body(IntelliShip::Utils->jsonify($arr));
-
-	my $SQL2 = "SELECT
-		DISTINCT ON ($extcustnum_field, addressname, address1, address2, city, state, zip, country)
-		coid as addressid,
-		addressname,
-		address1,
-		address2,
-		city,
-		state,
-		zip,
-		country,
-		contactname,
-		contactphone,
-		extcustnum,
-		shipmentnotification,
-		deliverynotification
-	FROM
-		co
-		INNER JOIN
-		address a
-		ON co.addressid = a.addressid AND co.customerid = '$CustomerID'
-	WHERE
-		co.cotypeid in (1,2,10) AND
-		$WHERE
-		$OrderBy
-	";
-
-	$ReturnRef->{'hash_addressid'} = $self->{'dbref'}->{'aos'}->getdropdownref($SQL);
-	my $OptionString = '<option value=\"0\">Select One</option>';
-
-	my $STH = $self->model->('MyDBI')->select($SQL);
-	my $AddressCount = 0;
-	while ( my ($AddressID,$AddressValue) = $STH->fetchrow_array() )
-		{
-		$AddressCount++;
-		$AddressValue = $self->JSEscape($AddressValue);
-
-		$OptionString .= '<option value="' . $AddressID . '">' . $AddressValue . '</option>';
-		}
-
-	$STH->finish();
-
-	# If there were no addresses set to reflect no results
-	if ( $AddressCount == 0 )
-		{
-		$OptionString = '<option value="0">No Results</option>';
-		}
-
-	my $STH2 = $self->{'dbref'}->{'aos'}->prepare($SQL2)
-	or &TraceBack("Could not prepare sql statement", 1);
-
-	$STH2->execute()
-	or &TraceBack("Could not prepare sql statement", 1);
-
-	my @AddressID = ();
-	my @Company = ();
-	my @Contact = ();
-	my @Phone = ();
-	my @Address1 = ();
-	my @Address2 = ();
-	my @City = ();
-	my @Province = ();
-	my @PostalCode = ();
-	my @Country = ();
-	my @CustNum = ();
-	my @ShipNotify = ();
-	my @DeliverNotify = ();
-
-	while ( my $AddressRef = $STH2->fetchrow_hashref )
-		{
-		foreach my $key(keys(%$AddressRef))
-			{
-			$AddressRef->{$key} = $self->JSEscape($AddressRef->{$key});
-
-			if ($AddressRef->{'country'} eq 'US' and $AddressRef->{'state'} =~ /^\w{2}$/)
-				{
-				$AddressRef->{'state'} = uc($AddressRef->{'state'});
-				}
-			}
-
-		# Turn off local warnings...who cares if we're missing 'address2', for instance
-		local $^W = 0;
-		push(@AddressID, $AddressRef->{'addressid'});
-		push(@Company, $AddressRef->{'addressname'});
-		push(@Contact, $AddressRef->{'contactname'});
-		push(@Phone, $AddressRef->{'contactphone'});
-		push(@Address1, $AddressRef->{'address1'});
-		push(@Address2, $AddressRef->{'address2'});
-		push(@City, $AddressRef->{'city'});
-		push(@Province, $AddressRef->{'state'});
-		push(@PostalCode, $AddressRef->{'zip'});
-		push(@Country, $AddressRef->{'country'});
-		push(@CustNum, $AddressRef->{'extcustnum'});
-		push(@ShipNotify, $AddressRef->{'shipmentnotification'});
-		push(@DeliverNotify, $AddressRef->{'deliverynotification'});
-		local $^W = 1;
-		}
-
-	$STH2->finish();
-
-	local $^W = 0;
-	$ReturnRef->{'addressvaluelist'} = join( '^', @AddressID);
-	$ReturnRef->{'companylist'} = join( '^', @Company);
-	$ReturnRef->{'contactlist'} = join( '^', @Contact);
-	$ReturnRef->{'phonelist'} = join( '^', @Phone);
-	$ReturnRef->{'address1list'} = join( '^', @Address1);
-	$ReturnRef->{'address2list'} = join( '^', @Address2);
-	$ReturnRef->{'citylist'} = join( '^', @City);
-	$ReturnRef->{'provincelist'} = join( '^', @Province);
-	$ReturnRef->{'postalcodelist'} = join( '^', @PostalCode);
-	$ReturnRef->{'countrylist'} = join( '^', @Country);
-	$ReturnRef->{'custnumlist'} = join( '^', @CustNum);
-	$ReturnRef->{'shipnotifylist'} = join( '^', @ShipNotify);
-	$ReturnRef->{'delivernotifylist'} = join( '^', @DeliverNotify);
-	local $^W = 1;
-
-	return $OptionString."\t".$ReturnRef->{'addressvaluelist'}."\t".$ReturnRef->{'companylist'}."\t".$ReturnRef->{'contactlist'}."\t".$ReturnRef->{'phonelist'}."\t".$ReturnRef->{'address1list'}."\t".$ReturnRef->{'address2list'}."\t".$ReturnRef->{'citylist'}."\t".$ReturnRef->{'provincelist'}."\t".$ReturnRef->{'postalcodelist'}."\t".$ReturnRef->{'countrylist'}."\t".$ReturnRef->{'custnumlist'}."\t".$ReturnRef->{'shipnotifylist'}."\t".$ReturnRef->{'delivernotifylist'};
-
-	}
-=cut
 
 =encoding utf8
 

@@ -153,6 +153,7 @@ sub insert_shipment
 
 	my $shipmentObj = {
 			'department' => $shipmentData->{'department'},
+			'customerserviceid' => $shipmentData->{'customerserviceid'},
 			'coid' => $shipmentData->{'coid'},
 			'dateshipped' => $date_shipped,
 			'quantityxweight' => $shipmentData->{'quantityxweight'},

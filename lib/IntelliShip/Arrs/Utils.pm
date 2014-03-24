@@ -2,6 +2,7 @@ package IntelliShip::Arrs::Utils;
 
 use Moose;
 use ARRS;
+use Data::Dumper;
 use LWP::UserAgent;
 use HTTP::Request::Common;
 
@@ -28,6 +29,8 @@ sub APIRequest
 	{
 	my $self = shift;
 	my $request = shift;
+
+	#print STDERR "\n... APIRequest: " . Dumper $request;
 
 	my $ARRS = new ARRS();
 	return $ARRS->APICall($request);

@@ -9,7 +9,7 @@
 	<form name=bol action="index.cgi" method="post">
 	<table width="660" border="0" height="99" cellpadding="0" cellspacing="0">
 	  <tr>
-		<td width="220" height="86" valign="top"><img src="/static/images/[% branding_id %]/bol-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
+		<td width="220" height="86" valign="top"><img src="/static/branding/[% branding_id %]/images/header/bol-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
 		<td width="220" height="86" valign=top>
 		  <div align="center"> <font face="Arial, Helvetica, sans-serif" size="3">
 			<b><font size="2">PRO NUMBER</font></b></font><br>
