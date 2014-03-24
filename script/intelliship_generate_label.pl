@@ -11,8 +11,8 @@ my $Debug = 0;
 my $rootDir = '/opt/engage/intelliship2/IntelliShip';
 
 ############ Input and Output directories ###############
-my $inpdir = $rootDir . '/root/label';
-my $outdir = $rootDir . '/root/label';
+my $inpdir = $rootDir . '/root/print/label';
+my $outdir = $rootDir . '/root/print/label';
 
 ########## Filename without directory structure passed as first argument ########
 my $EPLfile=$ARGV[0];
