@@ -36,17 +36,9 @@
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.dialog.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.effect.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.tooltip.js"></script>
-		<!--
-		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.effect-blind.js"></script>
-		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.effect-explode.js"></script>
-		-->
 
 		<!-- The jQuery Mask Plugin v 1.3.1 -->
 		<script src="/static/jquery/jquery.mask.min.js"></script>
-
-		<!-- The jQuery Validation Plugin v 1.11.1
-		<script src="/static/jquery/jquery.validate.min.js"></script>
-		 -->
 
 		 <!-- Customer Portal Javascript -->
 		<script src="/static/js/Chart.min.js"></script>
@@ -55,9 +47,14 @@
 		<script src="/static/js/customer.js"></script>
 
 		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
-		<link rel="stylesheet" type="text/css" href="/static/css/customer/style.css"/>
-		<link rel="stylesheet" type="text/css" href="/static/css/customer/menu.css"/>
-
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/style.css"/>
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/menu.css"/>
+		[% IF CUSTOMER_OVERRIDE %]
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contact.customerid %].css"/>
+		[% END %]
+		[% IF CONTACT_OVERRIDE %]
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contact.contactid %].css"/>
+		[% END %]
 		<script>
 			$(document).ready(function() {
 				var link = $("#[% selected_mnu %]");
@@ -76,7 +73,7 @@
 		<div id="wrapper">
 
 		<!-- ajax loader -->
-		<div id="preload"><img src="/static/images/ajax-loader-dots.gif"/></div>
+		<div id="preload"><img src="/static/branding/[% branding_id %]/images/header/ajax-loader.gif"/></div>
 		<!-- ajax loader -->
 
 		<!-- start Dialog -->
@@ -88,10 +85,10 @@
 		<!-- start header -->
 		<div id="header">
 			<div id="content">
-				<a href="[% landing_page %]"><img src="/static/images/[% branding_id %]/company-logo.png"/></a>
+				<a href="[% landing_page %]"><img src="/static/branding/[% branding_id %]/images/header/company-logo.png"/></a>
 				<nav>
 					<ul>
-					<li><a href="#" id="settings"><img src="/static/images/settings.png"/><span>[% login_username %]</span></a>
+					<li><a href="#" id="settings"><img src="/static/branding/[% branding_id %]/images/header/settings.png"/><span>[% contact.full_name %]</span></a>
 							<ul>
 								<li><a href="/customer/settings">ACCOUNT SETTINGS</a></li>
 								<li><hr></li>
@@ -113,31 +110,31 @@
 			<div id="content">
 				<ul>
 					[% IF DISPLAY_DASHBOARD %]
-					<li><a id="mnu_dashboard" href="/customer/dashboard"><img src="/static/images/menu/dashboard-grayed.png"/><span>DASHBOARD</span></a></li>
+					<li><a id="mnu_dashboard" href="/customer/dashboard"><img src="/static/branding/[% branding_id %]/images/menu/dashboard-grayed.png"/><span>DASHBOARD</span></a></li>
 					[% END %]
 					[% IF DISPLAY_MYORDERS %]
-					<li><a id="mnu_myorders" href="/customer/myorders"><img src="/static/images/menu/order-management-grayed.png"/><span>ORDER MANAGEMENT</span></a></li>
+					<li><a id="mnu_myorders" href="/customer/myorders"><img src="/static/branding/[% branding_id %]/images/menu/order-management-grayed.png"/><span>ORDER MANAGEMENT</span></a></li>
 					[% END %]
 					[% IF DISPLAY_SHIPMENT_MAINTENANCE %]
-					<li><a id="mnu_myshipments" href="/customer/myshipments"><img src="/static/images/menu/my-shipments-grayed.png"/><span>MY SHIPMENTS</span></a></li>
+					<li><a id="mnu_myshipments" href="/customer/myshipments"><img src="/static/branding/[% branding_id %]/images/menu/my-shipments-grayed.png"/><span>MY SHIPMENTS</span></a></li>
 					[% END %]
 					[% IF DISPLAY_NEW_ORDER %]
-					<li><a id="mnu_onepage" href="/customer/order/onepage"><img src="/static/images/menu/new-order-grayed.png"/><span>NEW ORDER</span></a></li>
+					<li><a id="mnu_onepage" href="/customer/order/onepage"><img src="/static/branding/[% branding_id %]/images/menu/new-order-grayed.png"/><span>NEW ORDER</span></a></li>
 					[% END %]
-					<li><a id="mnu_multipage" href="/customer/order/multipage"><img src="/static/images/menu/new-order-grayed.png"/><span>SHIP A PACKAGE</span></a></li>
+					<li><a id="mnu_multipage" href="/customer/order/multipage"><img src="/static/branding/[% branding_id %]/images/menu/new-order-grayed.png"/><span>SHIP A PACKAGE</span></a></li>
 					[% IF DISPLAY_QUICKSHIP %]
-					<li><a id="mnu_quickship" href="/customer/order/quickship"><img src="/static/images/menu/quick-ship-grayed.png"/><span>QUICK SHIP</span></a></li>
+					<li><a id="mnu_quickship" href="/customer/order/quickship"><img src="/static/branding/[% branding_id %]/images/menu/quick-ship-grayed.png"/><span>QUICK SHIP</span></a></li>
 					[% END %]
 					[% IF DISPLAY_SHIP_PACKAGE %]
-					<li><a id="mnu_shippackages" href="/customer/shippackages"><img src="/static/images/menu/scan-automation-grayed.png"/><span>SCAN AUTOMATION</span></a></li>
+					<li><a id="mnu_shippackages" href="/customer/shippackages"><img src="/static/branding/[% branding_id %]/images/menu/scan-automation-grayed.png"/><span>SCAN AUTOMATION</span></a></li>
 					[% END %]
 					[%IF DISPLAY_BATCH_SHIPPING %]
-					<li><a id="mnu_batchshipping" href="/customer/batchshipping"><img src="/static/images/menu/batch-shipping-grayed.png"/><span>BATCH SHIPPING</span></a></li>
+					<li><a id="mnu_batchshipping" href="/customer/batchshipping"><img src="/static/branding/[% branding_id %]/images/menu/batch-shipping-grayed.png"/><span>BATCH SHIPPING</span></a></li>
 					[% END %]
 					[% IF DISPLAY_UPLOAD_FILE %]
-					<li><a id="mnu_uploadfile" href="/customer/uploadfile"><img src="/static/images/menu/upload-grayed.png"/><span>UPLOAD FILE</span></a></li>
+					<li><a id="mnu_uploadfile" href="/customer/uploadfile"><img src="/static/branding/[% branding_id %]/images/menu/upload-grayed.png"/><span>UPLOAD FILE</span></a></li>
 					[% END %]
-					<li><a id="mnu_report" href="/customer/report"><img src="/static/images/menu/reports-grayed.png"/><span>REPORTS</span></a></li>
+					<li><a id="mnu_report" href="/customer/report"><img src="/static/branding/[% branding_id %]/images/menu/reports-grayed.png"/><span>REPORTS</span></a></li>
 				</ul>
 			</div>
 		</div> <!-- end menu -->
@@ -162,7 +159,7 @@
 		<div id="footer">
 			<div id="content">
 				<ul>
-					<li><img src="/static/images/footer/engage-logo.gif" class="logo"/></li>
+					<li><img src="/static/branding/[% branding_id %]/images/footer/logo.gif" class="logo"/></li>
 					<li>Copyright &copy; 2000-2014 Engage Technology, LLC.</li>
 					<li>|</li>
 					<li><a href="#">Privacy</a></li>
@@ -170,8 +167,8 @@
 					<li><a href="#">Legal</a></li>
 				</ul>
 				<ul class="links">
-					<li><a href="/customer/help" id="help"><img src="/static/images/footer/help.png"/><span>HELP</span></a></li>
-					<li><a href="/customer/logout" id="logout"><img src="/static/images/footer/signout.png"/><span>SIGN OUT</span></a></li>
+					<li><a href="/customer/help" id="help"><img src="/static/branding/[% branding_id %]/images/footer/help.png"/><span>HELP</span></a></li>
+					<li><a href="/customer/logout" id="logout"><img src="/static/branding/[% branding_id %]/images/footer/signout.png"/><span>SIGN OUT</span></a></li>
 				</ul>
 			</div
 		</div>

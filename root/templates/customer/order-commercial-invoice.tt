@@ -2,19 +2,6 @@
 	<head>
 	<title>Engage TMS - Commercial Invoice</title>
 
-	<script>
-	function autoprint()
-		{
-		var WebBrowser = document.getElementById('WebBrowser');
-		WebBrowser.ExecWB(6,2);
-		}
-
-	function window.onafterprint()
-		{
-		window.close();
-		}
-	</script>
-
 	<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
 	<meta name=ProgId content=Word.Document>
 	<meta name=Generator content="Microsoft Word 10">
@@ -188,8 +175,8 @@
 	 </o:shapelayout></xml><![endif]-->
 	</head>
 
-	<body lang=EN-US style='tab-interval:.5in' onload="autoprint()">
-	<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
+	<body lang=EN-US style='tab-interval:.5in'>
+		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
 
 		<p class=MsoNormal>
 		<![if !vml]>
@@ -668,4 +655,10 @@
 
 	</body>
 
+	<script>
+		var WebBrowser = document.getElementById('WebBrowser');
+		WebBrowser.ExecWB(6,2);
+		window.onafterprint = function() { window.close(); };
+		//window.close();
+	</script>
 </html>

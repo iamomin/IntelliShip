@@ -1,0 +1,838 @@
+@charset "utf-8";
+
+* {
+    margin:0;
+    padding:0;
+}
+
+html {
+    font-size: 62.5%; /* Corrects text resizing oddly in IE6/7 when body font-size is set using em units */
+    overflow-y: scroll; /* Keeps page centred in all browsers regardless of content height */
+    -webkit-text-size-adjust: 100%; /* Prevents iOS text size adjust after orientation change, without disabling user zoom */
+    -ms-text-size-adjust: 100%; /* www.456bereastreet.com/archive/201012/controlling_text_size_in_safari_for_ios_without_disabling_user_zoom/ */
+}
+
+body {
+    font: 12px Verdana, Arial, sans-serif, Helvetica;
+    color: #4B4B4B;
+}
+
+a {
+    text-decoration: none;
+    color: #1875BA;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #555;
+}
+
+a:active { /* Improves readability when focused and also mouse hovered in all browsers people.opera.com/patrickl/experiments/keyboard/test */
+    outline: 0;
+}
+
+img { border: none; vertical-align: middle }
+
+#wrapper {
+}
+
+#preload {
+    top: 0%;
+    left: 50%;
+    width:100%;
+    height:100%;
+    margin-left: -64px; /* image width / 2 */
+    margin-top:   0px;  /* image height / 2 */
+    cursor: wait;
+    display: none;
+    z-index: 999;
+    position: fixed;
+}
+
+:required {
+    background-color: #FCF8E8;
+}
+
+.require {
+    color: #A22827;
+}
+
+/* Centered 1000 pixel content of all section body */
+#content {
+    width: 1000px;
+    margin: 0 auto;
+}
+
+/* Header */
+
+#header {
+    height: 50px;
+    margin: 0 auto;
+    padding: 10px 50px;
+    background-color: #1875BA;
+    border: none;
+}
+
+#header img {
+    max-height: 50px;
+    max-width: 450px;
+    vertical-align: middle; 
+}
+
+#header input[type=text] {
+    margin: 0;
+    padding: 0;
+    height: 24px;
+    border: none;
+    color: #98A7AF;
+    width: 120px;
+}
+
+#header input[type=button] {
+    background: url("/static/branding/engage/images/header/search.png") no-repeat center center;
+    width: 24px;
+    height:24px;
+    border: none;
+    color: transparent;
+    font-size: 0;
+    cursor: pointer;
+    background-color: #98A7AF;
+    position:absolute;
+}
+
+/* Menu */
+
+#menu {
+    height: 32px;
+    margin: 0 auto;
+    color: #9BA7AF;
+    background-color: #F5F5F5;
+    font: bold 11px Arial, Helvetica;
+    border-bottom: solid 1px #DDD;
+}
+
+#menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: center;
+    white-space: nowrap;
+}
+
+#menu li {
+    display: inline;
+}
+
+#menu li :hover {
+    background-color: #E2E2E2;
+}
+
+#menu a {
+    float: left;
+    color: #9AA4AD;
+    padding-right: 5px;
+    text-decoration: none;
+    border-right: 1px solid #DDD;
+}
+
+#menu img {
+    vertical-align: middle;
+}
+
+#menu a.selected {
+    color: #FFF;
+    cursor: default;
+    background-color: #98A7AF;
+}
+
+#menu a.selected :hover {
+    background-color: #98A7AF;
+}
+
+/* Page */
+
+#page {
+    padding: 10px;
+    margin-left:  auto;
+    margin-right: auto;
+}
+
+/* Post */
+
+#post {
+    margin: 0 auto;
+    width: auto;
+}
+
+#post select {
+    border: 1px solid #98A7AF;
+}
+
+#label {
+    width: 400px;
+    margin: 0 auto;
+}
+
+/* Footer */
+
+#footer {
+    height: 100px;
+    margin-top: 10px;
+    background-color: #F5F5F5;
+    border: solid 1px #ddd;
+}
+
+#footer ul {
+    padding: 10px 0;
+    list-style: none;
+    float: left;
+    color: #9BA7AF;
+}
+
+#footer li {
+    display: inline;
+    padding: 0 5px;
+}
+
+#footer img.logo {
+    width: 97px;
+    height: 37px;
+    margin-right: 30px;
+}
+
+#footer a {
+    color: #9BA7AF;
+}
+
+#footer a:hover {
+    color: #1875BA;
+    text-decoration: underline;
+}
+
+#footer ul.links {
+    float: right;
+    margin: 20px 0;
+    font-weight: bold;
+    color: #9BA7AF;
+}
+
+#footer a span {
+    vertical-align: middle;
+    padding-left: 5px;
+    cursor: pointer;
+}
+
+/* Dashboard */
+
+#dashboard {
+    width: auto;
+    height: auto;
+}
+
+h1, h2, h3 {
+    white-space: nowrap;
+    font-weight: bold;
+    color: #1875BA;
+    margin: 10px 0;
+    clear: both;
+}
+
+h1 {
+    color: #FFF;
+    padding: 10px;
+    font-size: 20px;
+    text-transform: uppercase;
+    background-color: #1875BA;
+}
+
+h2 {
+    padding: 5px;
+    font-size: 16px;
+    text-transform: uppercase;
+    border-bottom: solid 1px;
+}
+
+h3 {
+    font-size: 14px;
+}
+
+label {
+    white-space: nowrap;
+}
+
+#equal {display: table; width: 100%}
+#row {display: table-row; width: 100%}
+#row table {min-height: 100px}
+#row div {display: table-cell; padding: 0 10px;vertical-align: top; height: 100%}
+#row div.add-summary {display: table-cell; padding: 0px 22px 0px 0px; vertical-align: top; width: 655px}
+#row div.sd-summary {display: table-cell; padding: 0px; vertical-align: top; width: 322px}
+#row div.ship-from {display: table-cell; padding-right: 10px;vertical-align: top}
+#row div.ship-to {display: table-cell; padding: 0 10px;vertical-align: top}
+#row div.ship-info {display: table-cell; padding-left: 10px;vertical-align: top}
+
+table { margin: 0; padding: 0; border-spacing: 0px; }
+table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
+table td { padding: 3px; }
+table a { text-align: center; }
+
+#package-detail-list table {padding: 10px 0;border-spacing: 0px; text-align: center}
+#package-detail-list table th {color: #FFF; background: #9BA7AF; text-transform: uppercase; white-space: nowrap}
+#package-detail-list table td {padding: 0; text-align: center}
+
+table.center { width: auto; padding: 10px; margin: 10px auto; text-align: center; }
+
+table.order-nav { width: 100%;  text-align: center }
+table.order-nav td { width: 33%; margin: 0; padding: 10px 0px; }
+table.order-nav td.L { padding: 5px 10px 5px  0px; }
+table.order-nav td.C { padding: 5px 10px 5px 10px; }
+table.order-nav td.R { padding: 5px  0px 5px 10px; }
+
+table.gray-app {
+    margin: 10px 0;
+    padding: 10px;
+    background: #F0F0F0;
+    border: solid 1px #ccc;
+}
+
+table.gray-app caption {
+    color: #FFF;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: left;
+    background: #9BA7AF;
+    text-transform: uppercase;
+}
+
+table.gray-app th {
+    padding: 5px;
+    background: #9BA7AF;
+}
+
+table.gray-app td {
+    padding: 5px;
+}
+
+table.summary-app {
+    width: 100%;
+    margin: 10px 0;
+    padding-bottom: 5px;
+    background: #F0F0F0;
+    border: solid 1px #ccc;
+}
+
+table.summary-app caption {
+    color: #FFF;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: left;
+    background: #1875BA;
+    text-transform: uppercase;
+}
+
+table.summary-app th {
+    padding: 5px;
+    color: #9BA7AF;
+    font-weight: bold;
+    background: #F0F0F0;
+    text-align: right;
+}
+
+table.summary-app td {
+    padding: 2px;
+    color: #9BA7AF;
+}
+
+table.summary-app a {
+    color: #9BA7AF;
+    text-transform: lowercase;
+}
+
+table.summary-app a:hover {
+    color: #FFF;
+    text-decoration: underline;
+}
+
+table.app {
+    width: 100%;
+    background: #F5F5F5;
+    border: solid 1px #ccc;
+    height: 85%;
+}
+
+table.app caption {
+    color: #FFF;
+    padding: 10px;
+    font-weight: bold;
+    background: #1875BA;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+table.app th {
+    padding: 10px;
+}
+
+table.app caption a {
+    color: #FFF;
+    text-align: center;
+    text-transform: lowercase;
+}
+
+table.app td green {
+    color: green;
+    font-weight: bold;
+}
+
+table.app input[type="text"].labellike {
+    background-color: transparent;
+    font-weight: bold;
+    color: #4B4B4B;
+    border: none;
+    width: 100%;
+}
+
+table.app b {
+    font-weight: bold;
+    padding: 10px 5px;
+}
+
+table.single-row {
+    width: 100%;
+}
+
+table.single-row td{
+    padding: 0;
+    vertical-align: top;
+}
+
+td.twocolumns {
+    height: 340px;
+    width: 50%;
+    padding: 0px;
+}
+
+td.threecolumns {
+    height: 310px;
+    width: 33%;
+    padding: 0px;
+}
+
+table.center-app {
+    width: 100%;
+    padding: 10px;
+    margin: 10px auto;
+    background: #F5F5F5;
+    text-align: left;
+    border: solid 1px #CCC;
+}
+
+div.notice {
+    position: relative;
+    margin: 10px 0px;
+    padding: 15px;
+    border: 1px solid #97C1DA;
+    color: #264C72;
+    background-color: #D0E3EF;
+    text-align: left;
+}
+
+div.error {
+    position: relative;
+    margin: 10px 0px;
+    padding: 15px;
+    border: 1px solid #811;
+    color: #911;
+    background-color: #efd0d0;
+    text-align: left;
+}
+
+.active {
+    width: 100%;
+    padding: 5px 20px;
+    color: #FFF;
+    font-size: 14px;
+    font-weight: bold;
+    background: #1875BA;
+    text-align: center;
+    border: 1px solid #1875BA;
+    cursor: pointer;
+}
+
+.inactive {
+    width: 100%;
+    padding: 5px 0px;
+    color: #FFF;
+    font-size: 14px;
+    font-weight: bold;
+    background: #9BA7AF;
+    text-align: center;
+    border: 1px solid #9BA7AF;
+    cursor: pointer;
+}
+
+.bold-text {
+    font-weight: bold;
+}
+
+.text-align-right {
+    text-align: right;
+}
+
+.solid-line {
+    top: 10px;
+    height: 8px;
+    width: 100%;
+    z-index: -1;
+    border: none;
+    margin: 0px 0px;
+    background-color: #1875BA;
+    position: absolute;
+}
+
+#list ul { position: relative; margin: 10px 20px; list-style: none; list-style-type: square; }
+#list li { padding: 5px; }
+
+/* My Shipment styling START */
+
+table.shipment-date-range { margin: 10px 0; font-size: 11px; background-color: #E4E5E7; text-align: center; border: 1px solid #A2A1A6; }
+table.shipment-date-range th { padding: 5px; background-color: #FFF; }
+table.shipment-date-range td { padding: 5px; }
+table.shipment-date-range label { position: relative; color:#AAACAB; font-size: x-small; margin: 5px; }
+table.shipment-date-range input[type=text]  { border: 1px solid #AFAFAF; padding: 1px 3px; vertical-align: inherit; width: 80px; }
+
+button.quick-ship {
+    color: #FFF;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px 15px;
+    white-space: nowrap;
+    background-color: #58B94E;
+}
+
+button.quick-ship label {
+    width: 24px;
+    height: 24px;
+    padding-right: 5px;
+    color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    background: url("/static/branding/engage/images/open-box-white.png") no-repeat center center;
+}
+
+table.shipment-filter { width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
+table.shipment-filter td { padding: 10px 0; color: #1875BA; font-weight: bold; white-space: nowrap; }
+table.shipment-filter input[type=text] { width: 200px; }
+table.shipment-filter td div table td { padding: 0px 10px; text-align: left; font-weight: normal; }
+table.shipment-filter a { font-weight: bold; }
+table.shipment-filter a:hover { text-decoration: none; }
+
+input.apply-filter {
+    position: relative;
+    display: inline-block;
+    padding: 2px 2px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #9BA7AF;
+    border: 1px solid #9BA7AF;
+    vertical-align: middle;
+    min-width: 80px;
+    cursor: pointer;
+}
+
+table.batch-option  {width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
+table.batch-option th { padding: 10px; color: #FFF; background-color: #98A4B0; font-weight: bold; white-space: nowrap; }
+table.batch-option td { padding: 10px; background-color: #E4E5E7; white-space: nowrap; text-align: left; }
+table.batch-option  input[type=button] {
+    position: relative;
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #1875BA;
+    border: 1px solid #27A9DE;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+label.track {font-size: 13px; font-weight: bold; white-space: nowrap; color: #1875BA;}
+label.reprint {font-size: 13px; font-weight: bold; white-space: nowrap; color: #59B850;}
+label.void {font-size: 13px; font-weight: bold; white-space: nowrap; color: #A25454;}
+
+#myShipments table  {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+#myShipments table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+#myShipments table tr:nth-child(even) {color: #000; background: #E4E5E7 }
+#myShipments table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
+#myShipments table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap;}
+#myShipments table td.center {text-align: center;}
+
+#myShipments a.red {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #D44444; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #D44444 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D44444), color-stop(100%,#D44444)); /* webkit */
+}
+
+#myShipments a.green {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #398525; /* old browsers */
+    background: -moz-linear-gradient(top, #8DD297 0%, #398525 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8DD297), color-stop(100%,#398525)); /* webkit */
+}
+
+#myShipments a.black {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #9B9B9B; /* old browsers */
+    background: -moz-linear-gradient(top, #ccc 0%, #000 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ccc), color-stop(100%,#000)); /* webkit */
+}
+
+#myShipments a.blue {
+    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
+    background: #0F9BF2; /* old browsers */
+    background: -moz-linear-gradient(top, #0F9BF2 0%, #F20C0C 100%); /* firefox */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0F9BF2), color-stop(100%,#0F9BF2)); /* webkit */
+}
+
+#myShipments a.track {color: #1875BA;}
+#myShipments a.reprint {color: #59B850;}
+#myShipments a.void {color: #A25454;}
+
+/* My Shipment styling END */
+
+ul.sortable {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    cursor: -webkit-grabbing;
+}
+
+input {
+    padding: 1px 3px;
+    border: solid 1px #AFAFAF;
+    vertical-align: inherit;
+}
+
+input.text {
+    width: 160px;
+}
+
+input.broad-text {
+    width: 210px;
+}
+
+input.invisible {
+    border: none;
+}
+
+/* Buttons */
+
+input.button {
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+    background-color: #EAEAEA;
+    white-space: nowrap;
+    border: 1px solid #DDD;
+    vertical-align: middle;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+input.green {
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #5DBD53;
+    border: 1px solid #5DBD53;
+    vertical-align: middle;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+input.blue {
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #1875BA;
+    border: 1px solid #1875BA;
+    vertical-align: middle;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+input.gray {
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #9BA7AF;
+    border: 1px solid #9BA7AF;
+    vertical-align: middle;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+input.add {
+    position: relative;
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #27A9DE;
+    border: 1px solid #27A9DE;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+input.delete {
+    position: relative;
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #ED1D24;
+    border: 1px solid #ED1D24;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.green-forward {
+    min-width: 150px;
+    height: 32px;
+    overflow: hidden;
+    background: url("/static/branding/engage/images/green-arrowhead-right.png") no-repeat right;
+    color: transparent;
+}
+
+.green-forward input {
+    min-width: 118px;
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #5DBD53;
+    border: 1px solid #5DBD53;
+    vertical-align: middle;
+    cursor: pointer;
+    float: left;
+}
+
+.gray-backward {
+    height: 32px;
+    overflow: hidden;
+    background: url("/static/branding/engage/images/gray-arrowhead-left.png") no-repeat left;
+    color: transparent;
+}
+
+.gray-backward input {
+    position: relative;
+    display: inline-block;
+    margin-left: 32px;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #9BA7AF;
+    border: 1px solid #9BA7AF;
+    vertical-align: middle;
+    cursor: pointer;
+    float: right;
+}
+
+input.package {
+    width: auto;
+    position: relative;
+    display: inline-block;
+    padding: 3px 10px;
+    color: #333;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: #FBF9EE;
+    border: 1px solid #FCEFA1;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+input.orange  {
+    height: 32px;
+    min-width: 118px;
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #FAA226;
+    border: 1px solid #FAA226;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.ui-state-package {border: 1px solid #EEE;background-color: #F0F0F0;}
+.ui-state-package input[type="text"] {width: 80%;}
+.ui-state-package select {width: 80%;}
+
+.ui-state-product {border: 1px solid #EEE;background-color: #FFF;}
+.ui-state-product input[type="text"] {width: 80%;}
+.ui-state-product select {width: 80%;}
+
+.ui-corner-all { border-radius: 0 }
+.ui-corner-top { border-radius: 0 }
+
+#carrier-service-list table { text-align: center; }
+#carrier-service-list ul li { width: 33%; margin-right: 1px; padding: 0; }
+#carrier-service-list ul li a { width: 92%; text-align: center; }
+#carrier-service-list li.ui-tabs-active a { background-color: #5DBD53; color: #FFF; }
+
+#carrier-service-list.ui-tabs { margin: 0; padding: 0; }
+#carrier-service-list.ui-tabs-nav { margin: 0; padding: 0; }
+#carrier-service-list.ui-widget-header { background-color: #FFF; border: none; }
+
+.float-right {float: right;}
+.float-left {float: left;}
+
+/* jQuery autocomplete scrollable results */
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
+
+ /* IE 6 doesn't support max-height
+  * we use height instead, but this forces the menu to always be this tall
+  */
+ * html .ui-autocomplete {
+    height: 300px;
+}

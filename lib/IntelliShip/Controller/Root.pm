@@ -128,6 +128,7 @@ sub end : Private {
 	$c->response->body($c->stash->{template});
 
 	$self->set_selected_menu($c);
+	$self->check_css_overrides($c);
 	$c->stash->{landing_page} = '/customer/order/multipage';
 
 	my $Controller = $c->controller;
@@ -146,7 +147,7 @@ sub end : Private {
 	elsif ($Token)
 		{
 		$Controller->set_navigation_rules;
-		$c->stash->{login_username} = $Controller->contact->full_name;
+		$c->stash->{contact} = $Controller->contact;
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else
@@ -154,6 +155,17 @@ sub end : Private {
 		$c->forward($c->view('Login'));
 		}
 }
+
+sub check_css_overrides :Private
+	{
+	my $self = shift;
+	my $context = shift;
+	my $Controller = $context->controller;
+	my $CustomerCss = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->customerid . '.css';
+	my $ContactCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->contactid . '.css';
+	$context->stash->{CUSTOMER_OVERRIDE} = (-e $CustomerCss);
+	$context->stash->{CONTACT_OVERRIDE}  = (-e $ContactCss);
+	}
 
 my $DEFAULT_MENU_SELECTED = {
 	login => 'dashboard',

@@ -1,0 +1,118 @@
+@charset "utf-8";
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: "";
+}
+
+blockquote, q {
+    quotes: "" "";
+}
+
+a:focus {
+    outline: thin dotted;
+}
+
+a:hover,
+a:active { /* Improves readability when focused and also mouse hovered in all browsers people.opera.com/patrickl/experiments/keyboard/test */
+    outline: 0;
+}
+
+#clear {
+    clear:both;
+}
+
+.site-branding {
+    display:none;
+}
+
+/* MENU STYLE */
+
+a { /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
+-webkit-transition: all 0.3s ease-in; 
+-moz-transition: all 0.3s ease-in;
+-o-transition: all 0.3s ease-in; 
+}
+
+nav {
+    margin: 15px 25px;
+    max-width: 500px;
+    float: right;
+}
+
+nav ul ul {
+    display: none;
+    background-color: #FFF;
+}
+
+nav ul li:hover > ul {
+    display: block;
+}
+
+nav a {
+    display: block;
+    color: #1875BA;
+    font: bold 10px Arial;
+    text-decoration: none;
+}
+
+nav a span {
+    font: bold 12px Arial;
+    padding: 0 10px; 
+    color: #FFF;
+}
+
+nav a:hover {
+    text-decoration: none;
+}
+
+nav ul {
+    position: relative;
+    display: inline-table;
+}
+
+nav ul:after {
+    content: ""; clear: both; display: block;
+}
+
+nav ul li {
+    float: left;
+}
+
+nav ul li a {
+    padding-bottom: 10px 30px 10px 10px;
+}
+
+nav ul ul {
+    border: 1px solid #1875BA;
+    position: absolute;
+    top: 100%;
+}
+
+nav ul ul li {
+    float: none;
+    position: relative;
+}
+
+nav ul ul li a {
+    padding: 10px 20px;
+}
+
+nav ul ul li a:hover {
+    color: #9AA4AD;
+    background: #F5F5F5;
+}
+
+nav ul ul li hr {
+    margin: 0 auto;
+    color: #CCC;
+    width: 90%;
+}
+
+nav ul ul ul {
+    position: absolute; left: 100%; top:0;
+}

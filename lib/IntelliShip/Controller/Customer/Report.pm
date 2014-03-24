@@ -151,7 +151,7 @@ sub format_CSV
 
 	# Add Company Logo
 	my $BrandingID = $self->get_branding_id;
-	my $image_path = IntelliShip::MyConfig->image_file_directory . "/$BrandingID/report-logo.png";
+	my $image_path = IntelliShip::MyConfig->branding_file_directory . "/$BrandingID/images/header/report-logo.png";
 
 	$worksheet->insert_image(1, 0, $image_path, 16, 9) if ( -r $image_path);
 
