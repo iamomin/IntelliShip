@@ -12,6 +12,7 @@
 	<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
 	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
 	<input type="hidden" id="billoflading" name="billoflading" value="[% billoflading %]"/>
+	<input type="hidden" id="defaultcomminv" name="defaultcomminv" value="[% defaultcomminv %]"/>
 
 	<div id='wbdiv' style='display:none'>
 		<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>
@@ -24,6 +25,8 @@
 		[% LABEL %]
 	[% END %]
 	</div>
+	<iframe src="#" id="packingList" frameborder=0></iframe>
+	<iframe src="#" id="BOL" frameborder=0></iframe>
 
 	[% UNLESS REPRINT_LABEL %]
 	<table class="center DoNotPrint">
@@ -36,32 +39,63 @@
 
 <script>
 
-var ShipmentMarkedAsPrinted=false;
-function MarkShipmentAsPrinted(shipmentid,callback_function)
+var PrintFormSequence_[% shipmentid %] = new Array();
+
+var ShipmentMarkedAsPrinted=[% REPRINT_LABEL ? 'true' : 'false' %];
+function MarkShipmentAsPrinted(coid, shipmentid, callback_function)
 	{
 	if (ShipmentMarkedAsPrinted) return;
 	ShipmentMarkedAsPrinted=true;
-	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + shipmentid;
+	var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
 	send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, callback_function);
 	}
 
-function GeneratePrintPackingList(shipmentid,callback_function)
+function GeneratePrintPackingList(coid, shipmentid)
 	{
-	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + shipmentid;
+	var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
 	send_ajax_request('', 'JSON', 'order', 'generate_packing_list', query_param, function() {
 		var packingListWin = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
 		packingListWin.document.write(JSON_data.PACKING_LIST);
-		if (callback_function != null) callback_function();
+
+		if (PrintFormSequence_[% shipmentid %].length == 0) return;
+
+		var functionPointer = PrintFormSequence_[% shipmentid %].shift();
+		if (functionPointer != null) functionPointer(coid, shipmentid);
 		});
 	}
 
-function GenerateBillOfLading(shipmentid,callback_function)
+function GenerateBillOfLading(coid, shipmentid, callback_function)
 	{
-	var query_param = 'coid='+$("#coid").val() + '&shipmentid=' + shipmentid;
+	var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
 	send_ajax_request('', 'JSON', 'order', 'generate_bill_of_lading', query_param, function() {
-		var packingListWin = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		packingListWin.document.write(JSON_data.BOL);
-		if (callback_function != null) callback_function();
+		var BOL_window = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
+		BOL_window.document.write(JSON_data.BOL);
+
+		if (PrintFormSequence_[% shipmentid %].length == 0) return;
+
+		var functionPointer = PrintFormSequence_[% shipmentid %].shift();
+		if (functionPointer != null) functionPointer(coid, shipmentid);
+		});
+	}
+
+function GenerateCommercialInvoice(coid, shipmentid, callback_function)
+	{
+	var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
+	send_ajax_request('', 'JSON', 'order', 'generate_commercial_invoice', query_param, function() {
+		var ComInv = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
+		ComInv.document.write(JSON_data.ComInv);
+
+		if (PrintFormSequence_[% shipmentid %].length == 0) return;
+
+		var functionPointer = PrintFormSequence_[% shipmentid %].shift();
+		if (functionPointer != null) functionPointer(coid, shipmentid);
+		});
+	}
+
+function ResetForNewOrder(coid, shipmentid)
+	{
+	MarkShipmentAsPrinted(coid, shipmentid, function() {
+		window.location.href = window.location.href;
 		});
 	}
 
@@ -150,41 +184,14 @@ function PrintThermalLabel_[% shipmentid %]()
 
 function CheckAfterLabelPrintActivities_[% shipmentid %]()
 	{
-	if ($('#printpackinglist').val() == 1)
-		{
-		GeneratePrintPackingList('[% shipmentid %]', function() {
-			if ($('#billoflading').val() == 1)
-				{
-				GenerateBillOfLading('[% shipmentid %]', function() {
-					MarkShipmentAsPrinted('[% shipmentid %]', function() {
-						window.location.href = window.location.href;
-						});
-					});
-				}
-			else
-				{
-				MarkShipmentAsPrinted('[% shipmentid %]', function() {
-					window.location.href = window.location.href;
-					});
-				}
-			});
-		}
-	else if ($('#billoflading').val() == 1)
-		{
-		GenerateBillOfLading('[% shipmentid %]', function() {
-			MarkShipmentAsPrinted('[% shipmentid %]', function() {
-				window.location.href = window.location.href;
-				});
-			});
-		}
-	else
-		{
-		[% UNLESS REPRINT_LABEL %]
-		MarkShipmentAsPrinted('[% shipmentid %]', function() {
-			window.location.href = window.location.href;
-			});
-		[% END %]
-		}
+	if ($('#printpackinglist').val() == 1) PrintFormSequence_[% shipmentid %].push(GeneratePrintPackingList);
+	if ($('#billoflading').val() == 1)     PrintFormSequence_[% shipmentid %].push(GenerateBillOfLading);
+	if ($('#defaultcomminv').val() == 1)   PrintFormSequence_[% shipmentid %].push(GenerateCommercialInvoice);
+
+	PrintFormSequence_[% shipmentid %].push(ResetForNewOrder);
+
+	var functionPointer = PrintFormSequence_[% shipmentid %].shift();
+	functionPointer('[% coid %]', '[% shipmentid %]');
 	}
 
 $(document).ready(function() {

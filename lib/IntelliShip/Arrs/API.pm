@@ -18,6 +18,23 @@ sub process_request
 	return $response;
 	}
 
+sub get_mode
+	{
+	my $self = shift;
+	my $carrier = shift;
+	my $service = shift;
+
+	my $http_request = {
+		action      => 'GetMode',
+		carriername => $carrier,
+		servicename => $service
+		};
+
+	my $response = $self->APIRequest($http_request);
+
+	return $response->{'modetype'};
+	}
+
 sub get_carrier_service_name
 	{
 	my $self = shift;
@@ -26,7 +43,7 @@ sub get_carrier_service_name
 	my $http_request = {
 		action	=> 'GetCarrierServiceName',
 		csid	=> $CSID,
-	};
+		};
 
 	my $response = $self->APIRequest($http_request);
 

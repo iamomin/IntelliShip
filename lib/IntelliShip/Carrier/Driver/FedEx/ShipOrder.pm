@@ -269,7 +269,7 @@ sub process_request
 		$shipmentData->{'rtphone'} =~ s/\(//g;
 		$shipmentData->{'rtphone'} =~ s/ //g;
 
-		if (my $rtAddress = $CO->rt_address)
+		if (my $rtAddress = $CO->route_to_address)
 			{
 			$ShipData{'1586'} = "Y",
 			$ShipData{'1485'} = $shipmentData->{'rtcontact'},

@@ -493,6 +493,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->prepare_BOL;
 		}
+	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
+		{
+		$dataHash = $self->prepare_com_inv;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -707,6 +711,15 @@ sub prepare_BOL
 	my $HTML = $self->generate_bill_of_lading;
 	#$self->context->log->debug("Ajax.pm generate_bill_of_lading : " . $HTML);
 	return { BOL => $HTML };
+	}
+
+sub prepare_com_inv
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $HTML = $self->generate_commercial_invoice;
+	#$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
+	return { ComInv => $HTML };
 	}
 
 =as

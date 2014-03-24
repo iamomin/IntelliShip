@@ -808,7 +808,7 @@ __PACKAGE__->belongs_to(
 	);
 
 __PACKAGE__->belongs_to(
-	rt_address => 
+	route_to_address => 
 	"IntelliShip::SchemaClass::Result::Address",
 	"rtaddressid"
 	);

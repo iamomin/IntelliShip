@@ -204,7 +204,7 @@
 						<table cellpadding=0 cellspacing=0 width="100%">
 							<tr>
 								<td><![endif]>
-									<img src="/static/images/[% branding_id %]/company-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
+									<img src="/static/images/engage/company-logo.png"  valign=top>
 									<![if !mso]></td>
 							</tr>
 						</table>
@@ -239,14 +239,14 @@
 		  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
 		  padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Exporter reference no.<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% ordernumber %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>8EY46PM4XSXXV<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=288 colspan=3 valign=top style='width:3.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Importer purchase/order/reference no.<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% ponumber %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br><o:p></o:p></span></b></p>
 		  </td>
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -262,8 +262,8 @@
 		  padding:0in 5.4pt 0in 5.4pt;height:55.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Exporter/Shipper (Name and physical address)<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p>[% shipperaddress %]</o:p></span></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;[% shipperphone %]&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'>                     </span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;[% shipperemail %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p><br>3750 Hacks Cross Rd Ste 102-302<br>Memphis, TN  38125<br>US</o:p></span></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;302-584-1393&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'>                     </span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;imranm@alohatechnology.com<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=384 colspan=4 valign=top style='width:4.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -271,8 +271,8 @@
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:55.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Importer/Consignee (Name and physical address)<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p>[% consigneeaddress %]</o:p></span></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;[% consigneephone %]&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'>                     </span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;[% consigneeemail %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p>Jacob Mayer Pvt Ltd<br>37 Woodlea<br>IRVINE, CA  92614<br>US</o:p></span></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Tel:</b><span style='mso-spacerun:yes'>&nbsp;1212121212&nbsp;</span><b style='mso-bidi-font-weight:normal'>Fax:</b><span style='mso-spacerun:yes'>                     </span><b style='mso-bidi-font-weight:normal'>Email:</b>&nbsp;patil.suresh11@gmail.com<o:p></o:p></span></b></p>
 		  </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:3;height:55.5pt'>
@@ -352,8 +352,8 @@
 		  font-family:Wingdings;mso-fareast-font-family:Wingdings;mso-bidi-font-family:
 		  Wingdings'><span style='mso-list:Ignore'>§<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		  </span></span></span><![endif]><b style='mso-bidi-font-weight:normal'><span
-		  style='font-size:8.0pt;font-family:Arial'>Freight (please mark): Prepaid <u>[% prepaid %]</u>
-		  Collect <u>[% collect %]</u><o:p></o:p></span></b></p>
+		  style='font-size:8.0pt;font-family:Arial'>Freight (please mark): Prepaid <u>&nbsp;&nbsp;X&nbsp;&nbsp;</u>
+		  Collect <u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u><o:p></o:p></span></b></p>
 		  <p class=MsoNormal style='margin-left:.25in;text-indent:-.25in;mso-list:l1 level1 lfo2;
 		  tab-stops:list .25in'><![if !supportLists]><span style='font-size:10.0pt;
 		  font-family:Wingdings;mso-fareast-font-family:Wingdings;mso-bidi-font-family:
@@ -380,14 +380,14 @@
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Total number of packages<o:p></o:p></span></b></p>
-		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% quantity %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>1<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Total gross weight (kg)<o:p></o:p></span></b></p>
-		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% grossweight %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>34<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -417,14 +417,14 @@
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Total net weight (kg)<o:p></o:p></span></b></p>
-		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% netweight %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br><o:p></o:p></span></b></p>
 		  </td>
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Currency of sale<o:p></o:p></span></b></p>
-		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% currencytype %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br><o:p></o:p></span></b></p>
 		  </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:7;height:41.5pt'>
@@ -432,14 +432,14 @@
 		  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
 		  padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Final destination<o:p></o:p></span></b></p>
-		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% destinationcountry %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br><o:p></o:p></span></b></p>
 		  </td>
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>BOL/AWB No.<o:p></o:p></span></b></p>
-		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% tracking1 %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>1Z4878WX0300126882<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
@@ -447,7 +447,7 @@
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Transportation method:<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>[% mode %]<br>&nbsp;<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>Small Package<br>&nbsp;<o:p></o:p></span></b></p>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Vessel/flight no.<o:p></o:p></span></b></p>
 		  </td>
@@ -456,7 +456,7 @@
 		  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:8.0pt;font-family:Arial'>Date of shipment:<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>[% dateshipped %]<br>&nbsp;<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>03/25/2014<br>&nbsp;<o:p></o:p></span></b></p>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>L/C No.<o:p></o:p></span></b></p>
 		  </td>
@@ -500,14 +500,14 @@
 		 </tr>
 
 		<!-- Start package line item section -->
-		[% FOREACH item IN packinglist_loop %]
+		
 		<tr style='mso-yfti-irow:8'>
-		  <td width=475 colspan=4 valign=top style='width:4.95in; border-left:solid windowtext 1.0pt; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'><p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'>[% item.description %]<o:p></o:p></span></b></p> </td>
-		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% item.quantity %]<o:p></o:p></span></b></p></td>
+		  <td width=475 colspan=4 valign=top style='width:4.95in; border-left:solid windowtext 1.0pt; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'><p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'><o:p></o:p></span></b></p> </td>
+		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'><o:p></o:p></span></b></p></td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'><o:p></o:p></span></b></p> </td>
-		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% item.decval %]<o:p></o:p></span></b></p> </td>
+		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>0<o:p></o:p></span></b></p> </td>
 		</tr>
-		[% END %]
+		
 		<!-- Stop package line item section -->
 
 		 <tr style='mso-yfti-irow:8'>
@@ -541,7 +541,7 @@
 		  </td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>&nbsp;<o:p></o:p></span></b></p></td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>&nbsp;<o:p></o:p></span></b></p> </td>
-		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% freightcharge %]<o:p></o:p></span></b></p> </td>
+		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>0.00<o:p></o:p></span></b></p> </td>
 		 </tr>
 
 		 <tr style='mso-yfti-irow:8'>
@@ -554,7 +554,7 @@
 		  </td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>&nbsp;<o:p></o:p></span></b></p></td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>&nbsp;<o:p></o:p></span></b></p> </td>
-		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% othercharge %]<o:p></o:p></span></b></p> </td>
+		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>0.00<o:p></o:p></span></b></p> </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:8'>
 		  <td width=475 colspan=4 valign=top style='width:4.95in; border-left:solid windowtext 1.0pt; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'>
@@ -578,7 +578,7 @@
 		  </td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>&nbsp;<o:p></o:p></span></b></p></td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>&nbsp;<o:p></o:p></span></b></p> </td>
-		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% insurancecharge %]<o:p></o:p></span></b></p> </td>
+		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>0.00<o:p></o:p></span></b></p> </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:8'>
 		  <td width=475 colspan=4 valign=top style='width:4.95in; border-left:solid windowtext 1.0pt; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'>
@@ -622,7 +622,7 @@
 		  <td width=192 colspan=2 valign=top style='width:2.0in;border-top:solid windowtext 1.0pt; border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt; mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt; mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=right style='text-align:right'><b style='mso-bidi-font-weight: normal'><span style='font-size:8.0pt;font-family:Arial'>Grand Total<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=96 valign=top style='width:1.0in;border-top:solid windowtext 1.0pt;border-left:none; border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt; mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt; mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
-		  <p class=MsoNormal align=center><span style='font-size:8.0pt;font-family:Arial'><o:p>[% grandtotal %]</o:p></span></p>
+		  <p class=MsoNormal align=center><span style='font-size:8.0pt;font-family:Arial'><o:p>0.00</o:p></span></p>
 		  </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:11;mso-yfti-lastrow:yes;height:41.5pt'>
@@ -639,7 +639,7 @@
 		  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:41.5pt'>
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Date<o:p></o:p></span></b></p>
-		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% today %]<o:p></o:p></span></b></p>
+		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>03/24/2014<o:p></o:p></span></b></p>
 		  </td>
 		  <td width=288 colspan=3 valign=top style='width:3.0in;border-top:none;
 		  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;

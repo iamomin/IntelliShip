@@ -89,10 +89,10 @@ sub american_date_time
 
 =head2 current_date
 
-	my $date = IntelliShip::DateUtils->current_date;
+	my $date = IntelliShip::DateUtils->current_date('/');
 	print $date; $ 2008/12/31
 
-	my $date = IntelliShip::DateUtils->current_date('-');
+	my $date = IntelliShip::DateUtils->current_date;
 	print $date; $ 2008-12-31
 
 =cut
@@ -102,7 +102,7 @@ sub current_date
 	my $self = shift;
 	my $separator = shift;
 
-	$separator = "/" if (!$separator);
+	$separator = '-' unless $separator;
 
 	my @tm = localtime;
 	my ($tm, $date);

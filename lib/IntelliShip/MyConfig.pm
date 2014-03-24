@@ -316,10 +316,22 @@ sub print_file_directory
 	return $self->application_root . '/root/print';
 	}
 
+sub packing_list_directory
+	{
+	my $self = shift;
+	return $self->print_file_directory . '/packinglist';
+	}
+
 sub BOL_file_directory
 	{
 	my $self = shift;
 	return $self->print_file_directory . '/bol';
+	}
+
+sub commercial_invoice_directory
+	{
+	my $self = shift;
+	return $self->print_file_directory . '/cominv';
 	}
 
 sub label_file_directory

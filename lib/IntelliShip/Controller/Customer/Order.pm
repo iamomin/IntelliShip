@@ -1873,8 +1873,9 @@ sub setup_label_to_print
 	$c->stash($params);
 	$c->stash($Shipment->{_column_data});
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
-	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcountthermal');
-	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{defaultcomminv}    = $self->contact->get_contact_data_value('defaultcomminv');
 
 	unless (-e $label_file)
 		{
@@ -2708,9 +2709,11 @@ sub generate_packing_list
 		$c->stash->{datefullfilled} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
 		}
 
-	# Save packinglist invoice to File
-	my $PackListHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packinglist.tt" ]);
-	my $PackListFileName = IntelliShip::MyConfig->print_file_directory . "/packinglist/" . $Shipment->shipmentid;
+	## Render Packing List HTML
+	my $PackListHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packing-list.tt" ]);
+
+	## Save packinglist invoice to File
+	my $PackListFileName = IntelliShip::MyConfig->packing_list_directory . '/' . $Shipment->shipmentid;
 
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
@@ -3070,9 +3073,10 @@ sub generate_bill_of_lading
 
 	$c->stash($dataHash);
 
-	## Save BOL to File
+	## Render BOL HTML
 	my $BOL_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-bol.tt" ]);
 
+	## Save BOL to File
 	my $BOLFileName = IntelliShip::MyConfig->BOL_file_directory . '/' . $Shipment->shipmentid;
 
 	$self->SaveStringToFile($BOLFileName, $BOL_HTML);
@@ -3186,6 +3190,156 @@ sub GetBOLorPOPPD
 	$self->context->log->debug("PackageProductList Count: " . @$PackageProductList);
 
 	return $PackageProductList;
+	}
+
+sub generate_commercial_invoice
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ generate_bill_of_lading ___");
+
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my $CO       = $Shipment->CO;
+	my $Customer = $CO->customer;
+
+	# Set global packing list values
+	my $dataHash = $Shipment->{_column_data};
+
+	$dataHash->{'dateshipped'} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+
+	$dataHash->{'mode'} = $self->API->get_mode($Shipment->carrier, $Shipment->service);
+
+	$dataHash->{'today'} = IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date);
+
+	$dataHash->{'prepaid'} = $Shipment->freightcharges ? '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' : '&nbsp;&nbsp;X&nbsp;&nbsp;';
+	$dataHash->{'collect'} = $Shipment->freightcharges ? '&nbsp;&nbsp;X&nbsp;&nbsp;'      : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
+	$dataHash->{'ordernumber'} = $CO->ordernumber;
+
+	###########################################################
+	## Shipment Address
+	###########################################################
+	my $OAAddress;
+	if ($OAAddress = $CO->route_to_address)
+		{
+		my $shipper_address = $OAAddress->{'addressname'};
+		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
+		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
+		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
+		$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
+		$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
+		$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
+
+		$dataHash->{'shipperaddress'}  = $shipper_address;
+
+		$dataHash->{'rtcontact'} = $CO->rtcontact;
+		$dataHash->{'rtphone'}   = $CO->rtphone;
+
+		if ($OAAddress->rtphone)
+			{
+			$dataHash->{'shipperphone'} .= $OAAddress->rtcontact . ' ' . $OAAddress->rtphone;
+			}
+		else
+			{
+			$dataHash->{'shipperphone'} .= "&nbsp;" . $Customer->contact . ' ' . $Customer->phone;
+			}
+		}
+	elsif ($OAAddress = $Shipment->origin_address)
+		{
+		my $shipper_address = $OAAddress->{'addressname'};
+		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
+		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
+		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
+		$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
+		$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
+		$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
+
+		$dataHash->{'shipperaddress'} = $shipper_address;
+		$dataHash->{'shipperphone'}   = $Shipment->oacontactphone       if $Shipment->oacontactphone;
+		$dataHash->{'shipperemail'}   = $Shipment->deliverynotification if $Shipment->deliverynotification;
+		}
+
+	if (my $DAAddress = $Shipment->destination_address)
+		{
+		my $consignee_address = $DAAddress->addressname;
+		$consignee_address   .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
+		$consignee_address   .= " " . $DAAddress->address2    if $DAAddress->address2;
+		$consignee_address   .= "<br>" . $DAAddress->city     if $DAAddress->city;
+		$consignee_address   .= ", " . $DAAddress->state      if $DAAddress->state;
+		$consignee_address   .= "  " . $DAAddress->zip        if $DAAddress->zip;
+		$consignee_address   .= "<br>" . $DAAddress->country  if $DAAddress->country;
+
+		$dataHash->{'consigneeaddress'} = $consignee_address;
+
+		$dataHash->{'consigneephone'} = $Shipment->contactphone;
+		$dataHash->{'consigneeemail'} = $Shipment->shipmentnotification;
+		}
+
+	## Set line item values
+	my @SC = $Shipment->shipment_charges;
+	my ($freightcharge,$insurancecharge,$othercharge,$grandtotal) = (0,0,0,0);
+	foreach my $ShipmentCharge (@SC)
+		{
+		next unless $ShipmentCharge->chargeamount;
+
+		if ($ShipmentCharge->chargename =~ /Freight Charge/i)
+			{
+			$freightcharge += $ShipmentCharge->chargeamount;
+			}
+		elsif ($ShipmentCharge->chargename =~ /Insurance/i)
+			{
+			$insurancecharge += $ShipmentCharge->chargeamount;
+			}
+		else
+			{
+			$othercharge += $ShipmentCharge->chargeamount;
+			}
+
+		$grandtotal += $ShipmentCharge->chargeamount;
+		}
+
+	$dataHash->{'freightcharge'}   = sprintf("%.2f", $freightcharge);
+	$dataHash->{'insurancecharge'} = sprintf("%.2f", $insurancecharge);
+	$dataHash->{'othercharge'}     = sprintf("%.2f", $othercharge);
+
+	my @packages = $Shipment->packages;
+
+	my ($gross_weight,$quantity,$packinglist_loop)=(0,0,[]);
+	foreach my $Package (@packages)
+		{
+		## Use shipment package data for # of packages, weights, and the like
+		my $weight = ($Package->dimweight > $Package->weight ? $Package->dimweight : $Package->weight);
+		$gross_weight += $weight;
+		$quantity     += $Package->quantity;
+
+		my($shipment_section_ref,$product_statusid) = $self->GetLineItems($Package);
+
+		foreach my $key (sort { $a <=> $b } keys %$shipment_section_ref)
+			{
+			push(@$packinglist_loop, $shipment_section_ref->{$key});
+			}
+		}
+
+	$dataHash->{'packinglist_loop'} = $packinglist_loop;
+	$dataHash->{'grossweight'}      = $gross_weight;
+	$dataHash->{'quantity'}         = $quantity;
+
+	## Set Grand Total
+	$dataHash->{'grandtotal'} = sprintf("%.2f", $grandtotal);
+
+	$c->stash($dataHash);
+
+	## Render Commercial Invoice HTML
+	my $ComInvHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-commercial-invoice.tt" ]);
+
+	my $ComInvFileName = IntelliShip::MyConfig->commercial_invoice_directory . '/' . $Shipment->shipmentid;
+
+	## Save commercial invoice to File
+	$self->SaveStringToFile($ComInvFileName, $ComInvHTML);
+
+	return $ComInvHTML;
 	}
 
 __PACKAGE__->meta->make_immutable;

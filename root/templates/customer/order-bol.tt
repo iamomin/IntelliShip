@@ -1,28 +1,11 @@
 <html>
 	<head>
 		<title>Bill Of Lading</title>
-
-		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
-
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-
-		<script>
-		function autoprint()
-			{
-			[% IF AUTO_PRINT %]
-			WebBrowser.ExecWB(6,2);
-			[% END %]
-			}
-
-		function window.onafterprint()
-			{
-			window.close();
-			}
-
-		</script>
 	</head>
 
-	<body bgcolor="#FFFFFF" text="#000000" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onload="autoprint();">
+	<body bgcolor="#FFFFFF" text="#000000" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+	<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
 	<form name=bol action="index.cgi" method="post">
 	<table width="660" border="0" height="99" cellpadding="0" cellspacing="0">
 	  <tr>
@@ -57,7 +40,6 @@
 		  <b>&nbsp;<font face="Arial, Helvetica, sans-serif" size="1" color="#FFFFFF">
 			Customer Reference: [% custnum %]&nbsp;
 			</font></b></td>
-
 	  </tr>
 	  <tr>
 		<td height="8" colspan="2" bgcolor="#000000" bordercolor="#000000">
@@ -462,4 +444,10 @@
 	<p align="left"></p>
 	</form>
 	</body>
+	<script>
+		var WebBrowser = document.getElementById('WebBrowser');
+		WebBrowser.ExecWB(6,2);
+		window.onafterprint = function() { window.close(); };
+		//window.close();
+	</script>
 </html>
