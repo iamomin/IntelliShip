@@ -6,7 +6,7 @@
 	</head>
 
 	<body bgcolor="#FFFFFF" text="#000000" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-	<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
+	<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" width=0 height=0></OBJECT>
 
 	<table width="660" border="0" height="99" cellpadding="0" cellspacing="0">
 	  <tr>

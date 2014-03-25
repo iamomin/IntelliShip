@@ -177,7 +177,7 @@
 	</head>
 
 	<body lang=EN-US style='tab-interval:.5in'>
-		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
+		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" width=0 height=0></OBJECT>
 
 		<p class=MsoNormal>
 		<![if !vml]>
@@ -192,7 +192,7 @@
 						<table cellpadding=0 cellspacing=0 width="100%">
 							<tr>
 								<td><![endif]>
-									<img src="/static/branding/[% branding_id %]/images/header/company-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
+									<img src="/static/branding/[% branding_id %]/images/header/report-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
 									<![if !mso]></td>
 							</tr>
 						</table>
