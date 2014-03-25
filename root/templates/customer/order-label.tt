@@ -7,7 +7,7 @@
 <div class="notice">[% MESSAGE %]</div>
 [% END %]
 
-<form id="frm_label" name="frm_label" action="/customer/dashboard">
+<form id="frm_label" name="frm_label" action="/customer/order/quickship">
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
 	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
