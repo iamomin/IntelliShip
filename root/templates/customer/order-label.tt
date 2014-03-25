@@ -18,6 +18,18 @@
 		<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>
 	</div>
 
+	[% UNLESS REPRINT_LABEL %]
+	<table class="center DoNotPrint">
+		<tr>
+			<td><input type="button" class="green" value="PRINT" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
+			<td><input type="button" class="red" value="CANCEL" onclick="void_order('[% shipmentid %]');"/></td>
+			
+			<td><input type="button" class="blue" value="DOWNLOAD" id="download" onclick="triggerDownload();"/></td>
+			
+			<td><input type="button" class="blue" value="EMAIL" id="email" onclick="" /></td>
+			</tr>
+	</table>
+	[% END %]
 	<div id="label" class="Print">
 	[% IF LABEL_IMG %]
 		<center><img id="lblimg" src="[% LABEL_IMG %]"></center>
@@ -29,17 +41,30 @@
 	<iframe src="#" id="packingList" frameborder=0></iframe>
 	<iframe src="#" id="BOL" frameborder=0></iframe>
 	-->
-
-	[% UNLESS REPRINT_LABEL %]
-	<table class="center DoNotPrint">
-		<tr>
-			<td><input type="button" class="blue" value="PRINT" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-		</tr>
-	</table>
-	[% END %]
 </form>
 
 <script>
+
+function void_order(shipmentid) {
+	alert("shipmentid"+shipmentid);
+			BatchVoidShipment(shipmentid);
+		}
+function BatchVoidShipment(ShipmentIds)
+			{
+			if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
+			var query_param = "shipmentids=" + ShipmentIds;
+
+			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
+				if ( JSON_data.is_success ) {
+					showMessage("Shipment voided successfully...", "Void Shipment");
+					var vDate = $("#coid").val();
+					send_ajax_request('', 'HTML', 'order', 'call_onepage', '');
+					}
+				else {
+					showMessage("Shipment void operation failed...", "Void Shipment");
+					}
+				});
+			}
 
 var PrintFormSequence_[% shipmentid %] = new Array();
 
@@ -132,6 +157,14 @@ function ResetForNewOrder(coid, shipmentid)
 		}
 
 [% END %]
+
+	function triggerDownload(){
+		var img = document.getElementById('lblimg');
+		if(img){
+			var url = img.src.replace("/static", "/download");			
+			window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
+		}
+	}
 
 [% IF LABEL_IMG %]
 	[% IF AUTO_PRINT %]
