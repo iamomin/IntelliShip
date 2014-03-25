@@ -161,7 +161,7 @@ function ResetForNewOrder(coid, shipmentid)
 	function triggerDownload(){
 		var img = document.getElementById('lblimg');
 		if(img){
-			var url = img.src.replace("/static", "/download");			
+			var url = img.src.replace("/print", "/download");			
 			window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
 		}
 	}
