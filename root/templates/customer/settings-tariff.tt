@@ -75,7 +75,8 @@ function loadGrid(){
         editable: true,        
         enableCellNavigation: true,
         asyncEditorLoading: false,
-        autoEdit: false
+        autoEdit: false,
+		dataItemColumnValueExtractor: getItemColumnValue
       };
     
     var columns = [];
@@ -83,11 +84,11 @@ function loadGrid(){
     var headers = JSON_data['headers'];
     var colWidth = 750 / headers.length + 3;
 
-    columns.push({id: "title_wtmin", name: "wtmin", field: "wtmin", width: colWidth, cssClass: "cell-title", editor: Slick.Editors.Text});
-    columns.push({id: "title_wtmax", name: "wtmax", field: "wtmax", width: colWidth, cssClass: "cell-title", editor: Slick.Editors.Text});
-    columns.push({id: "title_mincost", name: "mincost", field: "mincost", width: colWidth, cssClass: "cell-title", editor: Slick.Editors.Text});
+    columns.push({id: "title_wtrange", name: "Wt. Range", field: "wtrange", width: colWidth * 2, cssClass: "cell-title", editor: NumericRangeEditor, formatter: NumericRangeFormatter});    
+    columns.push({id: "title_mincost", name: "mincost", field: "mincost", width: colWidth, cssClass: "cell-title", editor: RealNumberEditor});
+	
     headers.forEach(function(entry){
-        columns.push({id: "header_" + entry, name: "" + entry, field: "" + entry, width: colWidth, cssClass: "cell-title", editor: Slick.Editors.Text, sortable: false});
+        columns.push({id: "header_" + entry, name: "" + entry, field: "" + entry, width: colWidth, cssClass: "cell-title", editor: RealNumberEditor, sortable: false});
     });
 
     var data = JSON_data['rows'];
@@ -109,5 +110,152 @@ function extractAndSubmit(form){
     $('#data').val(JSON.stringify(d));
     form.submit();
 }
+
+// Get the item column value using a custom 'fieldIdx' column param
+  function getItemColumnValue(item, column) {
+    var values = item[column.field];
+	if( values !== null && typeof values === 'object' && values.hasOwnProperty('actualcost')){
+		return values.actualcost;
+	}else {		
+		return values;
+    }
+  }
+
+/**
+	RealNumberEditor
+*/
+
+function RealNumberEditor(args) {
+	var $numVal;
+	var scope = this;
+
+	this.init = function () {
+	  $numVal = $("<INPUT type=text style='width:40px' />")
+		  .appendTo(args.container)
+		  .bind("keydown", scope.handleKeyDown);
+	  scope.focus();
+	};
+
+	this.handleKeyDown = function (e) {
+	  if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+		e.stopImmediatePropagation();
+	  }
+	};
+
+	this.destroy = function () {
+	  $(args.container).empty();
+	};
+
+	this.focus = function () {
+	  $numVal.focus();
+	};
+
+	this.serializeValue = function () {
+		alert("serializeValue");
+		return parseFloat($numVal.val(), 10);
+	};
+
+	this.applyValue = function (item, state) {
+		alert("applyValue " + args.column.field);					  
+		item[args.column.field].actualcost = state;
+	};
+
+	this.loadValue = function (item) {		
+		$numVal.val(item[args.column.field].actualcost);	  
+	};
+
+	this.isValueChanged = function () {
+	  return args.item.actualcost != parseFloat($numVal.val(), 10);
+	};
+
+	this.validate = function () {
+	  if($numVal.val().trim()){
+		  if (isNaN(parseFloat($numVal.val(), 10))) {
+			return {valid: false, msg: "Please type in valid numbers."};
+		  }
+	  }
+	  return {valid: true, msg: null};
+	};
+
+	this.init();
+}
+
+/**
+	NumericRangeEditor
+*/
+
+function NumericRangeEditor(args) {
+	var $from, $to;
+	var scope = this;
+
+	this.init = function () {
+	  $from = $("<INPUT type=text style='width:40px' />")
+		  .appendTo(args.container)
+		  .bind("keydown", scope.handleKeyDown);
+
+	  $(args.container).append("&nbsp; to &nbsp;");
+
+	  $to = $("<INPUT type=text style='width:40px' />")
+		  .appendTo(args.container)
+		  .bind("keydown", scope.handleKeyDown);
+
+	  scope.focus();
+	};
+
+	this.handleKeyDown = function (e) {
+	  if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+		e.stopImmediatePropagation();
+	  }
+	};
+
+	this.destroy = function () {
+	  $(args.container).empty();
+	};
+
+	this.focus = function () {
+	  $from.focus();
+	};
+
+	this.serializeValue = function () {
+	  return {from: parseInt($from.val(), 10), to: parseInt($to.val(), 10)};
+	};
+
+	this.applyValue = function (item, state) {
+	  item.wtmin = state.from;
+	  item.wtmax = state.to;
+	};
+
+	this.loadValue = function (item) {
+	  $from.val(item.wtmin);
+	  $to.val(item.wtmax);
+	};
+
+	this.isValueChanged = function () {
+	  return args.item.wtmin != parseInt($from.val(), 10) || args.item.wtmax != parseInt($from.val(), 10);
+	};
+
+	this.validate = function () {
+	  if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
+		return {valid: false, msg: "Please type in valid numbers."};
+	  }
+
+	  if (parseInt($from.val(), 10) > parseInt($to.val(), 10)) {
+		return {valid: false, msg: "'from' cannot be greater than 'to'"};
+	  }
+
+	  return {valid: true, msg: null};
+	};
+
+	this.init();
+}
+
+
+/**
+	NumericRangeFormatter
+*/
+function NumericRangeFormatter(row, cell, value, columnDef, dataContext) {
+    return dataContext.wtmin + " - " + dataContext.wtmax;
+}
+
 </script>
 
