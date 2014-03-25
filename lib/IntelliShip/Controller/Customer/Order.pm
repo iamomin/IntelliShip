@@ -2673,7 +2673,7 @@ sub generate_packing_list
 	##########################
 	## Set line item values ##
 	##########################
-	my @packpros = $Shipment->package_details;
+	my @packpros = $Shipment->packages;
 
 	my ($gross_weight,$quantity,$product_statusid) = (0,0,0);
 
@@ -2784,7 +2784,7 @@ sub GetOrderProductData
 			INNER JOIN packprodata p2 ON p2.packprodataid = p1.poppdid
 		WHERE
 			p1.ownerid = '$shippack_id'
-			AND p2.statusid in (1,2)
+			AND p2.statusid IN (1,2)
 		ORDER BY
 			p2.datecreated
 	";
