@@ -244,8 +244,8 @@ $("#dateneeded").datepicker({
 		});
 [% END %]
 
-var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.address1 %]",[% END %]];
-var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.zip %] | [% item.address1 %]",[% END %]];
+var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
 
 $("#toname").autocomplete({
 	source: availableCustomers,
@@ -253,7 +253,7 @@ $("#toname").autocomplete({
 		var SelectedCompany = ui.item.value
 		var AddrParts = SelectedCompany.split(" | ");
 		var Company = AddrParts[0];
-		var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3];
+		var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
 		var RefID = hashCompanyRef[Key];
 		if (RefID == undefined) return;
 		ui.item.value = Company;

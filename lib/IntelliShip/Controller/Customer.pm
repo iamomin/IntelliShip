@@ -412,13 +412,13 @@ sub get_select_list
 		FROM
 			co INNER JOIN address ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
 		WHERE
-			address.addressname  <> ''
-			AND address.address1 <> ''
-			AND address.state    <> ''
-			AND address.city     <> ''
-			AND address.zip      <> ''
+			( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
 			AND co.cotypeid in (1,2,10)
-			AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
+			AND address.addressname <> ''
+			AND address.address1 <> ''
+			AND address.state <> ''
+			AND address.city <> ''
+			AND address.zip <> ''
 		GROUP BY
 			country, state, city, zip, address1";
 
@@ -438,6 +438,7 @@ sub get_select_list
 					address1     => $Address->address1,
 					city         => $Address->city,
 					state        => $Address->state,
+					zip          => $Address->zip,
 				});
 			}
 		}
