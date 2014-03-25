@@ -109,16 +109,15 @@ $( "#dialog-message" ).dialog({
 	}
 	});
 
-function showMessage( dialogMessage, dialogTitle ) {
+function showMessage( dialogMessage, dialogTitle, ok_button_callback ) {
 	if (dialogTitle == undefined) dialogTitle = "Message";
+	if (ok_button_callback == null) ok_button_callback = function() { $('#dialog-message').dialog( "close" ) };
 
 	$('#dialog-message').dialog( {
 		title: dialogTitle,
 		width: '400px',
 		buttons: {
-			Ok: function() {
-				$( this ).dialog( "close" );
-				}
+			Ok: ok_button_callback
 			}
 		});
 

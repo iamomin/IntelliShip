@@ -22,7 +22,7 @@
 	<table class="center DoNotPrint">
 		<tr>
 			<td><input type="button" class="green" value="PRINT" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-			<td><input type="button" class="red"   value="CANCEL" onclick="void_order('[% shipmentid %]');"/></td>
+			<td><input type="button" class="red"   value="CANCEL" onclick="void_order();"/></td>
 			<td><input type="button" class="blue"  value="DOWNLOAD" id="download" onclick="triggerDownload();"/></td>
 			<td><input type="button" class="blue"  value="EMAIL" id="email" onclick="" /></td>
 		</tr>
@@ -40,6 +40,26 @@
 </form>
 
 <script>
+function void_order() {
+	var shipmentid=$("#shipmentid").val();
+	BatchVoidShipment(shipmentid);
+	}
+	
+function BatchVoidShipment(ShipmentIds)
+	{
+	if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
+	var query_param = "shipmentids=" + ShipmentIds;
+	send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
+	if ( JSON_data.is_success ) {
+		showMessage("Shipment voided please wait ...", "Void Shipment", function() {
+		$("#do").val('');
+		$("#force_edit").val('1');
+		$('#frm_label').submit();
+		});
+	}else{
+	showMessage("Shipment void operation failed...", "Void Shipment");}
+	});
+	}
 
 var PrintFormSequence_[% shipmentid %] = new Array();
 

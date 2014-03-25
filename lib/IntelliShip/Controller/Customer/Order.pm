@@ -96,6 +96,7 @@ sub order_can_auto_process
 	my $params = $c->req->params;
 	my $CO     = $self->get_order;
 
+	return if $CO->statusid == 200; ## Not Void Status
 	return ($CO->can_autoship and !$params->{'force_edit'} and ($c->stash->{AUTO_PROCESS} == 1 or $self->customer->get_contact_data_value('autoprocess')));
 	}
 
