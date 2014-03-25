@@ -6,6 +6,7 @@
 	<meta name=ProgId content=Word.Document>
 	<meta name=Generator content="Microsoft Word 10">
 	<meta name=Originator content="Microsoft Word 10">
+	<script src="/static/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
 	<link rel=File-List href="commercial_invoice_files/filelist.xml">
 	<link rel=Edit-Time-Data href="commercial_invoice_files/editdata.mso">
 	<!--[if !mso]>
@@ -656,9 +657,16 @@
 	</body>
 
 	<script>
-		var WebBrowser = document.getElementById('WebBrowser');
-		WebBrowser.ExecWB(6,2);
-		window.onafterprint = function() { window.close(); };
-		//window.close();
+		window.onload = function () {
+			//alert("I am here on load : com inv");
+			//window.onunload = function() { alert("Unloading child"); };
+			//window.onbeforeunload = function (event) { alert("I am here on before unload"); };
+			var WebBrowser = document.getElementById('WebBrowser');
+			WebBrowser.ExecWB(6,2);
+			};
+		window.onafterprint = function() {
+			//alert("I am here on after print : com inv");
+			window.close();
+			};
 	</script>
 </html>

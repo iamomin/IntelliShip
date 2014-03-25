@@ -3,8 +3,10 @@ package IntelliShip::Utils;
 use strict;
 use Switch;
 #use bignum;
+use IO::File;
 use XML::Simple;
 use Email::Valid;
+use IntelliShip::MyConfig;
 use IntelliShip::Carrier::Constants;
 
 =pod
@@ -523,6 +525,65 @@ sub get_BOL_bill_to_name
 		return undef;
 		}
 	}
+
+sub generate_UCC_128_barcode
+	{
+	my $self = shift;
+	my $Data = shift;
+
+	my $BarcodeFile = IntelliShip::MyConfig->barcode_directory . '/' . $Data . '.png';
+
+	my $BARCODE = new IO::File;
+
+	unless (open($BARCODE, ">$BarcodeFile"))
+		{
+		warn "Could not open $BarcodeFile: $!";
+		return
+		}
+
+	binmode($BARCODE);
+
+	# create a png barcode to include on the bol
+	eval {
+	use Barcode::Code128;
+	my $code = new Barcode::Code128;
+	#$code->option("border", 0, "show_text", 0, "padding", 0);
+	$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", 200, "height", 95);
+
+	print $BARCODE $code->png($Data);
+
+	close $BARCODE;
+	};
+
+	return $BarcodeFile;
+	}
+=as
+sub generate_barcode
+	{
+	my $self = shift;
+	my ($symbology,$data,$options,$resolution,$filename) = @_;
+
+	my $File = IntelliShip::MyConfig->barcode_directory . '/' . $filename;
+	my $BarcodeFile = IntelliShip::MyConfig->barcode_directory . '/' . $filename . '.png';
+	my $BARCODE = new IO::File;
+
+	unless (open($BARCODE, ">$File"))
+		{
+		warn "Could not open $File: $!";
+		return
+		}
+
+	print $BARCODE "0 700 moveto ($data) ($options) $symbology\nshowpage\n";
+
+	close $BARCODE;
+
+	$resolution = $resolution ? "-r$resolution " : '';
+
+	system("cat $config->{BASE_PATH}/html/barcode.ps $File | /usr/bin/gs -dQUIET -dNOPAUSE -dBATCH -dSAFER -sDEVICE=png16m -dGraphicsAlphaBits=4 ${resolution}-sOutputFile=$BarcodeFile -");
+
+	return $BarcodeFile;
+	}
+=cut
 
 1;
 

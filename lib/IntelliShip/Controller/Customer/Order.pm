@@ -2717,7 +2717,11 @@ sub generate_packing_list
 
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
-	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{defaultcomminv}    = $self->contact->get_contact_data_value('defaultcomminv');
+
+	$c->stash(template => "templates/customer/order-packing-list.tt");
 
 	return $PackListHTML;
 	}
@@ -3044,8 +3048,8 @@ sub generate_bill_of_lading
 		}
 	else
 		{
-		my $barcode_image = IntelliShip::MyConfig->barcode_directory . '/' . $Shipment->tracking1 . '.png';
-		$dataHash->{'barcode_image'} = '/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+		my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+		$dataHash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
 		}
 
 	my @LTLAccessorials = qw( codfee collectfreightcharge podservice singleshipment );
@@ -3068,7 +3072,7 @@ sub generate_bill_of_lading
 	$dataHash->{'bol_logo'}        = $customer_bol_logo   ? $customer_bol_logo : 'intelliship_logo.png';
 	$dataHash->{'bol_logo_width'}  = $customer_bol_width  ? $customer_bol_width : '190';
 	$dataHash->{'bol_logo_height'} = $customer_bol_height ? $customer_bol_height : '31';
-	$dataHash->{'bol_url_phone'}   = $customer_bol_logo   ? '' : '<br><font color="#000000" size="1" face="Arial, Helvetica, sans-serif"><b>&nbsp;&nbsp;&nbsp;&nbsp;WWW.' . uc($BASE_DOMAIN) . '&nbsp;&nbsp;901.620.6788</b></font></td>';
+	$dataHash->{'bol_url_phone'}   = $customer_bol_logo   ? '' : '<br><font color="#000000" size="1" face="Arial, Helvetica, sans-serif"><b>&nbsp;&nbsp;&nbsp;&nbsp;WWW.' . uc($BASE_DOMAIN) . '.COM&nbsp;&nbsp;901.620.6788</b></font></td>';
 
 	$c->stash($dataHash);
 	$self->get_branding_id;
@@ -3086,7 +3090,9 @@ sub generate_bill_of_lading
 		$dataHash->{'bolstring'} = $BOL_HTML;
 		}
 
-	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+	$c->stash->{defaultcomminv} = $self->contact->get_contact_data_value('defaultcomminv');
+
+	$c->stash(template => "templates/customer/order-bol.tt");
 
 	return $BOL_HTML;
 	}

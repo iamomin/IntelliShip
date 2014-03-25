@@ -225,7 +225,7 @@ sub getBaseDomain
 
 	# Determine what machine we are running on...
 	my $hostname = uc $ENV{'HOSTNAME'};
-	return 'dintelliship2';
+	return 'engagetechnology';
 	}
 
 sub application_root
@@ -343,7 +343,7 @@ sub commercial_invoice_directory
 sub barcode_directory
 	{
 	my $self = shift;
-	return $self->application_root . '/root/barcode';
+	return $self->print_file_directory . '/barcode';
 	}
 
 sub script_directory

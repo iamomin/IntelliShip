@@ -2,11 +2,12 @@
 	<head>
 		<title>Bill Of Lading</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<script src="/static/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
 	</head>
 
 	<body bgcolor="#FFFFFF" text="#000000" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 	<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
-	<form name=bol action="index.cgi" method="post">
+
 	<table width="660" border="0" height="99" cellpadding="0" cellspacing="0">
 	  <tr>
 		<td width="220" height="86" valign="top"><img src="/static/branding/[% branding_id %]/images/header/bol-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
@@ -442,12 +443,29 @@
 	  </tr>
 	</table>
 	<p align="left"></p>
-	</form>
+
+		<form id="frm_next" action="/customer/order/ajax" method="post">
+			<input type="hidden" name="ajax" value="1"/>
+			<input type="hidden" name="type" value="HTML"/>
+			[% IF defaultcomminv %]<input type="hidden" name="action" value="generate_commercial_invoice"/>[% END %]
+
+			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
+		</form>
 	</body>
+
 	<script>
-		var WebBrowser = document.getElementById('WebBrowser');
-		WebBrowser.ExecWB(6,2);
-		window.onafterprint = function() { window.close(); };
-		//window.close();
+		window.onload = function () {
+			//window.onunload = function() { alert("Unloading child"); };
+			var WebBrowser = document.getElementById('WebBrowser');
+			WebBrowser.ExecWB(6,2);
+			};
+		window.onafterprint = function() {
+			//alert("I am here on after print : bol");
+			if ($('input[name=action]').length > 0)
+				document.getElementById('frm_next').submit();
+			else
+				window.close();
+			};
 	</script>
 </html>

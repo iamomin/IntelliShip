@@ -65,6 +65,14 @@ sub get_HTML :Private
 		{
 		$self->get_country_states;
 		}
+	elsif ($c->req->param('action') eq 'generate_packing_list')
+		{
+		$self->generate_packing_list;
+		}
+	elsif ($c->req->param('action') eq 'generate_bill_of_lading')
+		{
+		$self->generate_bill_of_lading;
+		}
 	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
 		{
 		$self->generate_commercial_invoice;
