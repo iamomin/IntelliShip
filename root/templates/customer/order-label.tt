@@ -22,9 +22,9 @@
 	<table class="center DoNotPrint">
 		<tr>
 			<td><input type="button" class="green" value="PRINT" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-			<td><input type="button" class="red" value="CANCEL" onclick="void_order('[% shipmentid %]');"/></td>
-			<td><input type="button" class="blue" value="DOWNLOAD" id="download" onclick="triggerDownload();"/></td>
-			<td><input type="button" class="blue" value="EMAIL" id="email" onclick="" /></td>
+			<td><input type="button" class="red"   value="CANCEL" onclick="void_order('[% shipmentid %]');"/></td>
+			<td><input type="button" class="blue"  value="DOWNLOAD" id="download" onclick="triggerDownload();"/></td>
+			<td><input type="button" class="blue"  value="EMAIL" id="email" onclick="" /></td>
 		</tr>
 	</table>
 	[% END %]

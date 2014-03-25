@@ -494,62 +494,6 @@ div.error {
 #list ul { position: relative; margin: 10px 20px; list-style: none; list-style-type: square; }
 #list li { padding: 5px; }
 
-#myOrders table  {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
-#myOrders table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
-#myOrders table tr:nth-child(even) {color: #000; background: #E4E5E7 }
-#myOrders table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
-#myOrders table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap;}
-#myOrders table td.center {text-align: center;}
-
-#myOrders a.red {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #D44444; /* old browsers */
-    background: -moz-linear-gradient(top, #8DD297 0%, #D44444 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D44444), color-stop(100%,#D44444)); /* webkit */
-}
-
-#myOrders a.orange {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #E3831F; /* old browsers */
-    background: -moz-linear-gradient(top, #8DD297 0%, #E3831F 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#E3831F), color-stop(100%,#E3831F)); /* webkit */
-}
-
-#myOrders a.green {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #398525; /* old browsers */
-    background: -moz-linear-gradient(top, #8DD297 0%, #398525 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#8DD297), color-stop(100%,#398525)); /* webkit */
-}
-
-#myOrders a.blue {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #0F9BF2; /* old browsers */
-    background: -moz-linear-gradient(top, #0F9BF2 0%, #F20C0C 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0F9BF2), color-stop(100%,#0F9BF2)); /* webkit */
-}
-
-#myOrders a.yellow {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #B89400; /* old browsers */
-    background: -moz-linear-gradient(top, #B89400 0%, #F20C0C 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#B89400), color-stop(100%,#B89400)); /* webkit */
-}
-
-#myOrders a.black {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #9B9B9B; /* old browsers */
-    background: -moz-linear-gradient(top, #9B9B9B 0%, #F20C0C 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9B9B9B), color-stop(100%,#9B9B9B)); /* webkit */
-}
-
-#myOrders a.pink {
-    display: block; width: 12px; height: 12px; padding: 1px; margin: 0 auto;
-    background: #FFA9D6; /* old browsers */
-    background: -moz-linear-gradient(top, #FFA9D6 0%, #F20C0C 100%); /* firefox */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFA9D6), color-stop(100%,#FFA9D6)); /* webkit */
-}
-
 /* My Shipment styling START */
 
 table.shipment-date-range { margin: 10px 0; font-size: 11px; background-color: #E4E5E7; text-align: center; border: 1px solid #A2A1A6; }
@@ -575,7 +519,7 @@ button.quick-ship label {
     color: transparent;
     display: inline-block;
     vertical-align: middle;
-    background: url(/static/images/open-box-white.png) no-repeat center center;
+    background: url("/static/images/open-box-white.png") no-repeat center center;
 }
 
 table.shipment-filter { width: 100%; margin: 10px 0; background: #E4E5E7; border-spacing: 0px; text-align: center;}
@@ -749,6 +693,21 @@ input.gray {
     cursor: pointer;
 }
 
+input.red {
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #ED1D24;
+    border: 1px solid #ED1D24;
+    vertical-align: middle;
+    min-width: 100px;
+    cursor: pointer;
+}
+
 input.add {
     position: relative;
     display: inline-block;
@@ -781,7 +740,7 @@ input.delete {
     min-width: 150px;
     height: 32px;
     overflow: hidden;
-    background: url(/static/images/green-arrowhead-right.png) no-repeat right;
+    background: url("/static/images/green-arrowhead-right.png") no-repeat right;
     color: transparent;
 }
 
@@ -804,7 +763,7 @@ input.delete {
 .gray-backward {
     height: 32px;
     overflow: hidden;
-    background: url(/static/images/gray-arrowhead-left.png) no-repeat left;
+    background: url("/static/images/gray-arrowhead-left.png") no-repeat left;
     color: transparent;
 }
 

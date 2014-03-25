@@ -693,6 +693,21 @@ input.gray {
     cursor: pointer;
 }
 
+input.red {
+    position: relative;
+    display: inline-block;
+    padding: 7px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFF;
+    white-space: nowrap;
+    background-color: #ED1D24;
+    border: 1px solid #ED1D24;
+    vertical-align: middle;
+    min-width: 100px;
+    cursor: pointer;
+}
+
 input.add {
     position: relative;
     display: inline-block;
