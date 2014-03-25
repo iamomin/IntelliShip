@@ -1006,11 +1006,11 @@ warn "undef etadate";
 		
 	sub SaveTariff
 		{
-			warn "########## 5";
+			warn "########## SaveTariff";
             my $self = shift;
             my ($tariff) = @_;
 
-			my statement = 'update rate set ';
+			my $statement = 'update rate set ';
 			foreach my $record (@$tariff)
 			{
 				
