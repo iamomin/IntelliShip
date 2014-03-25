@@ -168,7 +168,7 @@
 					<li><a href="/customer/help" id="help"><img src="/static/branding/[% branding_id %]/images/footer/help.png"/><span>HELP</span></a></li>
 					<li><a href="/customer/logout" id="logout"><img src="/static/branding/[% branding_id %]/images/footer/signout.png"/><span>SIGN OUT</span></a></li>
 				</ul>
-			</div
+			</div>
 		</div>
 		<!-- end footer -->
 

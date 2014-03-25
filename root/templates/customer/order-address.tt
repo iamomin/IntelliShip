@@ -61,7 +61,7 @@
 					<td><label class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address2 %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
+					<td><label class="float-right">City, State, Zip:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
 				</tr>
 				<tr>
 					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
@@ -70,12 +70,12 @@
 				<tr>
 					<td><label class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromcontact %]'/></td>
 				</tr>
-				</tr>
+				<tr>
 					<td><label class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromphone %]'/></td>
-				<tr>
 				</tr>
-					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
 				<tr>
+					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
+				</tr>
 				<tr>
 					<td><label for="fromemail" class="float-right">Email:</label></td><td><input type="text" class="broad-text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
 				</tr>
