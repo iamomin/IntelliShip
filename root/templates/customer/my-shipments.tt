@@ -31,7 +31,7 @@
 					</table>
 					</td>
 					<td>
-						<input type="button" class="apply-filter" id="date_apply" name="date_apply "value="Apply"/>
+						<input type="button" class="apply-filter" id="date_apply" name="date_apply" value="Apply"/>
 					</td>
 					</tr>
 				</table>
@@ -83,7 +83,7 @@
 			<td><label><input type="radio" id="track"   name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
 			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
 			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
-			<td><label><input type="button" id="btn_submit" value="SUBMIT"></td>
+			<td><input type="button" id="btn_submit" value="SUBMIT"></td>
 			<td width="510px"> Batch tracking limited to 25 shipments</td>
 		</tr>
 	</table>
@@ -139,7 +139,6 @@
 
 	[% UNLESS ajax %]
 	</div>
-	</form>
 
 	<script>
 
