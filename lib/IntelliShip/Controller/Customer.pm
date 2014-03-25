@@ -414,6 +414,9 @@ sub get_select_list
 		WHERE
 			address.addressname  <> ''
 			AND address.address1 <> ''
+			AND address.state    <> ''
+			AND address.city     <> ''
+			AND address.zip      <> ''
 			AND co.cotypeid in (1,2,10)
 			AND ( keep = 1 OR date(datecreated) > date(timestamp 'now' + '-365 days') )
 		GROUP BY
