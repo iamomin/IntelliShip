@@ -13,19 +13,19 @@
 <script src="/static/js/slick/plugins/slick.cellrangeselector.js"></script>
 <script src="/static/js/slick/plugins/slick.cellselectionmodel.js"></script>
 
-<form id="frm" action="/customer/settings/tariff/save" onsubmit="extractAndSubmit(this);">
+<form id="frm" action="/customer/settings/tariff/save" onsubmit="extractAndSubmit(this);" method="POST">
 <input type="hidden" name="data" id="data"/>
 <table style="border: solid gray 1px; width: 100%; height: 400px">
 <tr>
-    <td colspan="2">Breadcrumb goes here </td>
+    <td>Breadcrumb goes here </td>
+	<td><input type="submit" value="Update"/> </td>
 </tr>
 <tr>
     <td style="height: 100%; width: 20%; border: solid gray 1px; vertical-align: top">            
         <div id="services_tree"></div>            
     </td>
-    <td style="height: 100%; width: 80%; border: solid gray 1px; vertical-align: top"
-        <div id="myGrid" style="width:700px; height:400px;"></div><br>
-        <input id="submit" type="submit"/>
+    <td style="height: 100%; width: 80%; border: solid gray 1px; vertical-align: top">
+        <div id="myGrid" style="width:700px; height:400px;"></div><br>        
     </td>
 </tr>
 </table>
@@ -106,7 +106,7 @@ function getTariff(csid){
 
 function extractAndSubmit(form){
     var d = GRID.getData();
-    $('#data').val(d);
+    $('#data').val(JSON.stringify(d));
     form.submit();
 }
 </script>

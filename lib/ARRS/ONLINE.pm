@@ -971,6 +971,7 @@ warn "undef etadate";
                     $rate->{'arcostmin'} = $arcostmin;
                     $rate->{'unittype'} = $unittype;
                     $rate->{'rateid'} = $rateid;
+					$rate->{'ratetypeid'} = $ratetypeid;
 
                     if($arcost)
                     {    
@@ -1002,6 +1003,20 @@ warn "undef etadate";
             #warn "########## ReturnRef: " . Dumper($ReturnRef);
             return $ReturnRef;
         }
+		
+	sub SaveTariff
+		{
+			warn "########## 5";
+            my $self = shift;
+            my ($tariff) = @_;
+
+			my statement = 'update rate set ';
+			foreach my $record (@$tariff)
+			{
+				
+			}
+
+		}
         
 	sub OkToShipOnShipDate
 	{
@@ -1010,6 +1025,7 @@ warn "undef etadate";
 
 		my @ValidShipDays = split(/,/,$ValidShipDays);
 
+		my $statement = 'update rate set ';
 		foreach my $ShipDay (@ValidShipDays)
 		{
 			if ( $ShipDay == $NumericDOW )

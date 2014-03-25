@@ -60,28 +60,39 @@ sub tariff_to_json
     my $prevunitsstart = 0;
     my @data = ();
     my $d = {};
-    my $meta = {};
+	my $i = 0;
     foreach (@ratearray)
     {
         $record = $_;
         my $unitsstart = $record->{'unitsstart'};
-        if($prevunitsstart != $unitsstart) {
+        if($prevunitsstart != $unitsstart || $i == 0) {
             push(@data, $d);
-            push(@data, $meta);
-            $d = {};
-            $meta = {};
+            $d = {};            
             $d->{'wtmin'} = $unitsstart;
             $d->{'wtmax'} = $record->{'unitsstop'};
             $d->{'mincost'} = $record->{'arcostmin'};                        
-            $d->{'rateid'} = $record->{'rateid'};
+            #$d->{'rateid'} = $record->{'rateid'};
+			$d->{'ratetypeid'} = $record->{'ratetypeid'};
         }
 
-        $d->{$record->{'zonenumber'}} = $record->{'actualcost'};        
+        $d->{$record->{'zonenumber'}} = {
+										'actualcost'=>$record->{'actualcost'}, 
+										'rateid'=>$record->{'rateid'}, 
+										'costfield'=>$record->{'costfield'}
+										};        
         $prevunitsstart = $unitsstart;
+		$i++;
     }
 
     $json->{'rows'} = \@data;
     return encode_json($json); 
+}
+
+sub json_to_tariff
+{
+	warn "########## json_to_tariff";    
+    my ( $self, $json) = @_;
+	return decode_json($json);
 }
 
 1;

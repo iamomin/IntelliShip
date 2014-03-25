@@ -66,9 +66,12 @@ sub get_service_tariff :Local
 
 sub save :Local
     {
-        warn "########## 2";
+        warn "########## save";
         my ( $self, $c, $data ) = @_;
-        warn "########## data: $data";
+		my $params = $c->req->params; 
+		my $tariff = $JSONUTIL->json_to_tariff($params->{'data'});
+		warn "######### tariff: ".Dumper($tariff);		
+		return $self->API->save_tariff($tariff);
     }
 
 1;
