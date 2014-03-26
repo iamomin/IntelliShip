@@ -8,8 +8,8 @@
 [% END %]
 
 <form id="frm_label" name="frm_label" action="/customer/order/quickship">
-	<input type="hidden" name="do" id="do"/>
-	<input type="hidden" name="force_edit" id="force_edit"/>
+	<input type="hidden" id="do" name="do"/>
+	<input type="hidden" id="force_edit" name="force_edit"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
 	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
@@ -24,8 +24,11 @@
 	<table class="center DoNotPrint">
 		<tr>
 			<td><input type="button" class="green" value="PRINT" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
+			<td><input type="button" class="green" value="CONFIRM" onclick=""/></td>
 			<td><input type="button" class="red"   value="CANCEL" onclick="void_order();"/></td>
+			[% IF LABEL_IMG %]
 			<td><input type="button" class="blue"  value="DOWNLOAD" id="download" onclick="triggerDownload();"/></td>
+			[% END %]
 			<td><input type="button" class="blue"  value="EMAIL" id="email" onclick="" /></td>
 		</tr>
 	</table>
@@ -33,7 +36,7 @@
 
 	<div id="label" class="Print">
 	[% IF LABEL_IMG %]
-		<center><img id="lblimg" src="[% LABEL_IMG %]" style="border: 1px solid;"></center>
+		<table class="center><tr><td><img id="lblimg" src="[% LABEL_IMG %]" style="border: 1px solid;"></td></tr></table>
 	[% ELSE %]
 		[% LABEL %]
 	[% END %]
@@ -46,21 +49,22 @@ function void_order() {
 	var shipmentid=$("#shipmentid").val();
 	BatchVoidShipment(shipmentid);
 	}
-	
+
 function BatchVoidShipment(ShipmentIds)
 	{
 	if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
 	var query_param = "shipmentids=" + ShipmentIds;
 	send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
-	if ( JSON_data.is_success ) {
-		showMessage("Shipment voided successfully ...", "Void Shipment", function() {
-		$("#do").val('');
-		$("#force_edit").val('1');
-		$('#frm_label').submit();
+		if ( JSON_data.is_success ) {
+			showMessage("Shipment voided successfully ...", "Void Shipment", function() {
+				$("#do").val('');
+				$("#force_edit").val('1');
+				$('#frm_label').submit();
+				});
+			} else {
+			showMessage("Shipment void operation failed...", "Void Shipment");
+			}
 		});
-	}else{
-	showMessage("Shipment void operation failed...", "Void Shipment");}
-	});
 	}
 
 var PrintFormSequence_[% shipmentid %] = new Array();
