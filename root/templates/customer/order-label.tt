@@ -53,7 +53,7 @@ function BatchVoidShipment(ShipmentIds)
 	var query_param = "shipmentids=" + ShipmentIds;
 	send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
 	if ( JSON_data.is_success ) {
-		showMessage("Shipment voided please wait ...", "Void Shipment", function() {
+		showMessage("Shipment voided successfully ...", "Void Shipment", function() {
 		$("#do").val('');
 		$("#force_edit").val('1');
 		$('#frm_label').submit();
