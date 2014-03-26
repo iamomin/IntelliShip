@@ -48,10 +48,10 @@
 		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/style.css"/>
 		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/menu.css"/>
 		[% IF CUSTOMER_OVERRIDE %]
-		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contact.customerid %].css"/>
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.customerid %].css"/>
 		[% END %]
 		[% IF CONTACT_OVERRIDE %]
-		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contact.contactid %].css"/>
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.contactid %].css"/>
 		[% END %]
 		<script>
 			$(document).ready(function() {
@@ -86,7 +86,7 @@
 				<a href="[% landing_page %]"><img src="/static/branding/[% branding_id %]/images/header/company-logo.png"/></a>
 				<nav>
 					<ul>
-					<li><a href="#" id="settings"><img src="/static/branding/[% branding_id %]/images/header/settings.png"/><span>[% contact.full_name %]</span></a>
+					<li><a href="#" id="settings"><img src="/static/branding/[% branding_id %]/images/header/settings.png"/><span>[% contactObj.full_name %]</span></a>
 							<ul>
 								<li><a href="/customer/settings">ACCOUNT SETTINGS</a></li>
 								<li><hr></li>
