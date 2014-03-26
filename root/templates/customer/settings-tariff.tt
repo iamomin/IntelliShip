@@ -17,7 +17,7 @@
 <input type="hidden" name="data" id="data"/>
 <table style="border: solid gray 1px; width: 100%; height: 400px">
 <tr>
-    <td>Breadcrumb goes here </td>
+    <td><label id="lbl_breadcrumb"></label> </td></td>
 	<td><input type="submit" value="Update"/> </td>
 </tr>
 <tr>
@@ -34,227 +34,275 @@
 <script type="text/javascript">
 var GRID;
 
-function loadServicesTree(){ 
-
-    $('#services_tree').jstree({
-    "core" : {
-      "animation" : 0,
-      "check_callback" : true,
-      "themes" : { "stripes" : true },
-      'data' : JSON_data
-    },                
-    "plugins" : [                   
-      "state", "wholerow"
-    ]
-  });
-
-  $('#services_tree').on('changed.jstree', function (e, data) {
-      //alert("CSID: " + data.node.id);
-      getTariff(data.node.id);
-    })
-
+function loadServicesTree() {
+	$('#services_tree').on("changed.jstree", function (e, data) {
+		alert("DATA: " + JSON.stringify(data.node));
+		//alert("" + JSON.stringify($("#" + data.node.parent)));
+		if (data.node.original.hasOwnProperty('sid')) {
+			getTariff(data.node.id);
+		}
+	}).jstree({
+		"core" : {
+			"animation" : 0,
+			"check_callback" : true,
+			"themes" : {
+				"stripes" : true
+			},
+			'data' : JSON_data
+		}
+		
+	});
 }
 
-function getAllServices(){    
-        //alert("getAllServices");
-        var params = 'customerid='+$("#customerid").val();
-        send_ajax_request('', 'JSON', 'settings/tariff', 'get_carrier_service_list', params, function (){
-            loadServicesTree();
-        });    
+function getAllServices() {
+	//alert("getAllServices");
+	var params = 'customerid=' + $("#customerid").val();
+	send_ajax_request('', 'JSON', 'settings/tariff', 'get_carrier_service_list', params, function () {
+		loadServicesTree();
+		$('#lbl_breadcrumb').html($("#customername").val() + " /");
+	});
 }
 
-if(!$('#services_tree').html()){
-    getAllServices();
+if (!$('#services_tree').html()) {
+	getAllServices();
 }
 
-function loadGrid(){
-    //alert(JSON_data);
-    $('#myGrid').empty();
-    var options = {
-        selectable: false,
-        editable: true,        
-        enableCellNavigation: true,
-        asyncEditorLoading: false,
-        autoEdit: false,
-		dataItemColumnValueExtractor: getItemColumnValue
-      };
-    
-    var columns = [];
-    
-    var headers = JSON_data['headers'];
-    var colWidth = 750 / headers.length + 3;
+function loadGrid() {
+	//alert(JSON_data);
+	$('#myGrid').empty();
+	var options = {
+		selectable : false,
+		editable : true,
+		enableCellNavigation : true,
+		asyncEditorLoading : false,
+		autoEdit : false,
+		dataItemColumnValueExtractor : getItemColumnValue
+	};
 
-    columns.push({id: "title_wtrange", name: "Wt. Range", field: "wtrange", width: colWidth * 2, cssClass: "cell-title", editor: NumericRangeEditor, formatter: NumericRangeFormatter});    
-    columns.push({id: "title_mincost", name: "mincost", field: "mincost", width: colWidth, cssClass: "cell-title", editor: RealNumberEditor});
-	
-    headers.forEach(function(entry){
-        columns.push({id: "header_" + entry, name: "" + entry, field: "" + entry, width: colWidth, cssClass: "cell-title", editor: RealNumberEditor, sortable: false});
-    });
+	var columns = [];
 
-    var data = JSON_data['rows'];
+	var headers = JSON_data['headers'];
+	var colWidth = 700 / headers.length + 3;
 
-    GRID = new Slick.Grid("#myGrid", data, columns, options);
-    GRID.setSelectionModel(new Slick.CellSelectionModel());
+	columns.push({
+		id : "title_wtrange",
+		name : "Wt. Range",
+		field : "wtrange",
+		maxWidth : colWidth * 2,
+		cssClass : "cell-title",
+		editor : NumericRangeEditor,
+		formatter : NumericRangeFormatter
+	});
+	columns.push({
+		id : "title_mincost",
+		name : "mincost",
+		field : "mincost",
+		maxWidth : colWidth,
+		cssClass : "cell-title",
+		editor : RealNumberEditor
+	});
+
+	headers.forEach(function (entry) {
+		columns.push({
+			id : "header_" + entry,
+			name : "" + entry,
+			field : "" + entry,
+			maxWidth : colWidth,
+			cssClass : "cell-title",
+			editor : RealNumberEditor,
+			sortable : false
+		});
+	});
+
+	var data = JSON_data['rows'];
+
+	GRID = new Slick.Grid("#myGrid", data, columns, options);
+	GRID.setSelectionModel(new Slick.CellSelectionModel());
 }
 
-function getTariff(csid){
-    //alert("getTariff " + csid);
-    var params = 'csid=' + csid;
-    send_ajax_request('', 'JSON', 'settings/tariff', 'get_service_tariff', params, function (){
-        loadGrid();
-    });
+function getTariff(csid) {
+	//alert("getTariff " + csid);
+	var params = 'csid=' + csid;
+	send_ajax_request('', 'JSON', 'settings/tariff', 'get_service_tariff', params, function () {
+		loadGrid();
+	});
 }
 
-function extractAndSubmit(form){
-    var d = GRID.getData();
-    $('#data').val(JSON.stringify(d));
-    form.submit();
+function extractAndSubmit(form) {
+	var d = GRID.getData();
+	$('#data').val(JSON.stringify(d));
+	form.submit();
+}
+
+function updateBreadcrumb(child, parent) {
+	var breadcrumb = $("#customername").val();
+	breadcrumb = breadcrumb + (parent ? "/" + parent : "");
+	breadcrumb = breadcrumb + (child ? "/" + child : "");
+	$('#lbl_breadcrumb').html(breadcrumb);
 }
 
 // Get the item column value using a custom 'fieldIdx' column param
-  function getItemColumnValue(item, column) {
-    var values = item[column.field];
-	if( values !== null && typeof values === 'object' && values.hasOwnProperty('actualcost')){
+function getItemColumnValue(item, column) {
+	var values = item[column.field];
+	if (values !== null && typeof values === 'object' && values.hasOwnProperty('actualcost')) {
 		return values.actualcost;
-	}else {		
+	} else {
 		return values;
-    }
-  }
+	}
+}
 
 /**
-	RealNumberEditor
-*/
+RealNumberEditor
+ */
 
 function RealNumberEditor(args) {
 	var $numVal;
 	var scope = this;
 
 	this.init = function () {
-	  $numVal = $("<INPUT type=text style='width:40px' />")
-		  .appendTo(args.container)
-		  .bind("keydown", scope.handleKeyDown);
-	  scope.focus();
+		$numVal = $("<INPUT type=text style='width:40px' />")
+			.appendTo(args.container)
+			.bind("keydown", scope.handleKeyDown);
+		scope.focus();
 	};
 
 	this.handleKeyDown = function (e) {
-	  if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
-		e.stopImmediatePropagation();
-	  }
+		if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+			e.stopImmediatePropagation();
+		}
 	};
 
 	this.destroy = function () {
-	  $(args.container).empty();
+		$(args.container).empty();
 	};
 
 	this.focus = function () {
-	  $numVal.focus();
+		$numVal.focus();
 	};
 
 	this.serializeValue = function () {
-		alert("serializeValue");
+		//alert("serializeValue");
 		return parseFloat($numVal.val(), 10);
 	};
 
 	this.applyValue = function (item, state) {
-		alert("applyValue " + args.column.field);					  
+		//alert("applyValue " + args.column.field);
 		item[args.column.field].actualcost = state;
 	};
 
-	this.loadValue = function (item) {		
-		$numVal.val(item[args.column.field].actualcost);	  
+	this.loadValue = function (item) {
+		$numVal.val(item[args.column.field].actualcost);
 	};
 
 	this.isValueChanged = function () {
-	  return args.item.actualcost != parseFloat($numVal.val(), 10);
+		return args.item.actualcost != parseFloat($numVal.val(), 10);
 	};
 
 	this.validate = function () {
-	  if($numVal.val().trim()){
-		  if (isNaN(parseFloat($numVal.val(), 10))) {
-			return {valid: false, msg: "Please type in valid numbers."};
-		  }
-	  }
-	  return {valid: true, msg: null};
+		if ($numVal.val().trim()) {
+			if (isNaN(parseFloat($numVal.val(), 10))) {
+				return {
+					valid : false,
+					msg : "Please type in valid numbers."
+				};
+			}
+		}
+		return {
+			valid : true,
+			msg : null
+		};
 	};
 
 	this.init();
 }
 
 /**
-	NumericRangeEditor
-*/
+NumericRangeEditor
+ */
 
 function NumericRangeEditor(args) {
-	var $from, $to;
+	var $from,
+	$to;
 	var scope = this;
 
 	this.init = function () {
-	  $from = $("<INPUT type=text style='width:40px' />")
-		  .appendTo(args.container)
-		  .bind("keydown", scope.handleKeyDown);
+		$from = $("<INPUT type=text style='width:40px' />")
+			.appendTo(args.container)
+			.bind("keydown", scope.handleKeyDown);
 
-	  $(args.container).append("&nbsp; to &nbsp;");
+		$(args.container).append("&nbsp; to &nbsp;");
 
-	  $to = $("<INPUT type=text style='width:40px' />")
-		  .appendTo(args.container)
-		  .bind("keydown", scope.handleKeyDown);
+		$to = $("<INPUT type=text style='width:40px' />")
+			.appendTo(args.container)
+			.bind("keydown", scope.handleKeyDown);
 
-	  scope.focus();
+		scope.focus();
 	};
 
 	this.handleKeyDown = function (e) {
-	  if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
-		e.stopImmediatePropagation();
-	  }
+		if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+			e.stopImmediatePropagation();
+		}
 	};
 
 	this.destroy = function () {
-	  $(args.container).empty();
+		$(args.container).empty();
 	};
 
 	this.focus = function () {
-	  $from.focus();
+		$from.focus();
 	};
 
 	this.serializeValue = function () {
-	  return {from: parseInt($from.val(), 10), to: parseInt($to.val(), 10)};
+		return {
+			from : parseInt($from.val(), 10),
+			to : parseInt($to.val(), 10)
+		};
 	};
 
 	this.applyValue = function (item, state) {
-	  item.wtmin = state.from;
-	  item.wtmax = state.to;
+		item.wtmin = state.from;
+		item.wtmax = state.to;
 	};
 
 	this.loadValue = function (item) {
-	  $from.val(item.wtmin);
-	  $to.val(item.wtmax);
+		$from.val(item.wtmin);
+		$to.val(item.wtmax);
 	};
 
 	this.isValueChanged = function () {
-	  return args.item.wtmin != parseInt($from.val(), 10) || args.item.wtmax != parseInt($from.val(), 10);
+		return args.item.wtmin != parseInt($from.val(), 10) || args.item.wtmax != parseInt($from.val(), 10);
 	};
 
 	this.validate = function () {
-	  if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
-		return {valid: false, msg: "Please type in valid numbers."};
-	  }
+		if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
+			return {
+				valid : false,
+				msg : "Please type in valid numbers."
+			};
+		}
 
-	  if (parseInt($from.val(), 10) > parseInt($to.val(), 10)) {
-		return {valid: false, msg: "'from' cannot be greater than 'to'"};
-	  }
+		if (parseInt($from.val(), 10) > parseInt($to.val(), 10)) {
+			return {
+				valid : false,
+				msg : "'from' cannot be greater than 'to'"
+			};
+		}
 
-	  return {valid: true, msg: null};
+		return {
+			valid : true,
+			msg : null
+		};
 	};
 
 	this.init();
 }
 
-
 /**
-	NumericRangeFormatter
-*/
+NumericRangeFormatter
+ */
 function NumericRangeFormatter(row, cell, value, columnDef, dataContext) {
-    return dataContext.wtmin + " - " + dataContext.wtmax;
+	return dataContext.wtmin + " - " + dataContext.wtmax;
 }
 
 </script>
