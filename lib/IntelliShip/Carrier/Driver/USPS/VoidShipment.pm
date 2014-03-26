@@ -1,4 +1,4 @@
-package IntelliShip::Carrier::Driver::UPS::VoidShipment;
+package IntelliShip::Carrier::Driver::USPS::VoidShipment;
 
 use Moose;
 

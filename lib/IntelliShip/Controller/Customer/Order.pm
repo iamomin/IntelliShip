@@ -28,7 +28,7 @@ sub onepage :Local
 		}
 	elsif ($do_value eq 'cancel')
 		{
-		$self->void_shipment;
+		$self->cancel_order;
 		}
 	else
 		{
@@ -48,7 +48,7 @@ sub quickship :Local
 		}
 	elsif ($do_value eq 'cancel')
 		{
-		$self->void_shipment;
+		$self->cancel_order;
 		$self->setup_one_page;
 		}
 	else
@@ -754,7 +754,7 @@ sub save_new_order :Private
 		}
 	}
 
-sub void_shipment :Private
+sub cancel_order :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -1690,7 +1690,7 @@ sub SHIP_ORDER :Private
 		}
 	}
 
-sub GetNotificationShipments
+sub GetNotificationShipments :Private
 	{
 	my $self = shift;
 	my $Shipment = shift;
@@ -1737,7 +1737,7 @@ sub GetNotificationShipments
 	return $shipments;
 	}
 
-sub SendShipNotification
+sub SendShipNotification :Private
 	{
 	my $self = shift;
 	my $Shipment = shift;
@@ -1771,12 +1771,141 @@ sub SendShipNotification
 	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
 	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
 
-	#$Email->attach($c->stash->{FILE}) if $c->stash->{FILE};
+	my $LabelImageFile = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
+	if (-e $LabelImageFile)
+		{
+		$Email->attach($LabelImageFile);
+		}
 
 	if ($Email->send)
 		{
 		$c->log->debug("Email successfully sent to " . $emails);
 		}
+	}
+
+sub VOID_SHIPMENT :Private
+	{
+	my $self = shift;
+	my $shipment_id = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $Customer = $self->customer;
+	my $Contact = $self->contact;
+
+	$c->log->debug("VOID_SHIPMENT, ID: " . $shipment_id);
+
+	# Set shipment to void status, for later processing
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipment_id});
+	$Shipment->statusid(5); ## Void Shipment
+	$Shipment->update;
+
+	# Set co to 'unshipped' status
+	my $CO = $Shipment->CO;
+	$CO->statusid(1); ## Void Shipment
+	$CO->update;
+
+	my $OrderNumber = $CO->ordernumber;
+	$c->log->debug("Order number " . $OrderNumber);
+
+	## Remove product counts from pick & pack CO shipped product counts
+	my @packages = $Shipment->packages;
+	foreach my $Package (@packages)
+		{
+		$Package->products->delete;
+		$Package->delete;
+		}
+
+	# Delete any associated orders
+	$Shipment->shipmentcoassocs->delete;
+
+	# Check if the shipment had a pickuprequest sent.  If it did, cancel it.
+
+	# set a couple of values to pass to the pickup cancel request if they were passed in
+	if ( defined($self->{'customerid'}) && $self->{'customerid'} ne '' )
+		{
+		$Shipment->{'customerid'} = $self->{'customerid'};
+		}
+	if ( defined($self->{'customername'}) && $self->{'customername'} ne '' )
+		{
+		$Shipment->{'customername'} = $self->{'customername'};
+		}
+
+	###################################################################
+	## Process void shipment down through the carrrier handler
+	###################################################################
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_VOID_SHIPMENT);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->customer($self->customer);
+	$Handler->carrier($Shipment->carrier);
+	$Handler->CO($CO);
+	$Handler->SHIPMENT($Shipment);
+
+	my $Response = $Handler->process_request({
+					NO_TOKEN_OPTION => 1
+					});
+
+	# Process errors
+	unless ($Response->is_success)
+		{
+		$c->log->debug("VOID SHIPMENT TO CARRIER FAILED: " . $Response->message);
+		#return $self->display_error_details($Response->message);
+		return undef;
+		}
+
+	## Send an Email Alert to LossPrevention Email
+	## If the customer has an email address, check to see if the shipment address is different
+	## from the co address (and send an email, if it is)
+	my $ToEmail = $Customer->losspreventemail;
+	my $CustomerName = $Customer->customername;
+	if ($ToEmail)
+		{
+		my $OriginalAddress = $CO->to_address;
+		$self->SendShipmentVoidEmail($OriginalAddress,$Shipment);
+		}
+
+	## Add note to notes table
+	my $noteData = { ownerid => $Shipment->shipmentid };
+	$noteData->{'notesid'} = $self->get_token_id;
+	$noteData->{'note'} = 'Shipment Voided By ' . $Contact->username;
+	$noteData->{'contactid'} = $Contact->contactid;
+	$noteData->{'notestypeid'} = 900;
+	$noteData->{'datehappened'} = IntelliShip::DateUtils->get_timestamp_with_time_zone();
+
+	$c->model('MyDBI::Note')->new($noteData)->insert;
+
+	return 1;
+	}
+
+sub SendShipmentVoidEmail
+	{
+	my $self = shift;
+	my $OriginalAddress = shift;
+	my $Shipment = shift;
+	my $Customer = $self->customer;
+	my $OrderNumber='';
+
+	return;
+
+	my $TrackingNumber = $Shipment->tracking1;
+	my ($CarrierName,$ServiceName) = $self->API->get_carrier_service_name($Shipment->customerserviceid);
+	my $EmailInfo = {};
+	$EmailInfo->{'fromemail'} = "intelliship\@intelliship.engagetechnology.com";
+	$EmailInfo->{'fromname'} = 'NOC';
+	$EmailInfo->{'toemail'} = $self->customerlosspreventemail;;
+	$EmailInfo->{'toname'} = '';
+	$EmailInfo->{'subject'}	='WARNING: ' . $self->customer->customername . ', ' . $CarrierName . ' ' . $ServiceName . ' ' . $TrackingNumber . ' (Voided By ' . $self->contact->contact->full_name  . '/' . $self->{'ipaddress'} . ')' ;
+	#$EmailInfo->{'cc'} = 'noc@engagetechnology.com';
+	my $ServerType; # 1 = production, 2 = beta, 3 = dev
+
+	if ( $ServerType == 1 )
+		{
+		$EmailInfo->{'subject'} =  "TEST " . $EmailInfo->{'subject'};
+		}
+
+	my $Body = 'ShipmentID: ' . $Shipment->shipmentid . "\n" . $self->customer->customername . "\n" . $CarrierName . " " . $ServiceName . "\n" . $TrackingNumber . "\n" . " " . $OrderNumber . "\n" . "\n\n\n";
 	}
 
 sub generate_label :Private
@@ -1912,7 +2041,8 @@ sub setup_label_to_print
 		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 		}
 
-	$c->stash->{AUTO_PRINT}        = $self->contact->get_contact_data_value('autoprint');
+	$c->stash->{SEND_EMAIL} = IntelliShip::Utils->is_valid_email($Shipment->deliverynotification);
+	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
 	}
 
 sub ProcessPrinterStream
@@ -2167,8 +2297,10 @@ sub BuildShipmentInfo
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	my $Customer = $self->customer;
+
 	my $CO = $self->get_order;
+	my $Contact = $CO->contact;
+	my $Customer = $CO->customer;
 
 	my $myDBI = $c->model('MyDBI');
 
@@ -2273,9 +2405,10 @@ sub BuildShipmentInfo
 	$ShipmentData->{'insurance'} = $params->{'insurance'};
 
 	$ShipmentData->{'branchcontact'}  = $Customer->contact;
-	$ShipmentData->{'oacontactname'}  = $Customer->contact;
 	$ShipmentData->{'branchphone'}    = $Customer->phone;
-	$ShipmentData->{'oacontactphone'} = $Customer->phone;
+
+	$ShipmentData->{'oacontactname'}  = $Contact->full_name;
+	$ShipmentData->{'oacontactphone'} = $Contact->phonebusiness;
 
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};

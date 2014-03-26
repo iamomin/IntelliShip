@@ -81,6 +81,93 @@ sub get_HTML :Private
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
 
+sub get_JSON_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $dataHash;
+	my $action = $c->req->param('action') || '';
+	if ($action eq 'get_address_detail')
+		{
+		$dataHash = $self->get_address_detail;
+		}
+	elsif ($action eq 'get_sku_detail')
+		{
+		$dataHash = $self->get_sku_detail;
+		}
+	elsif ($action eq 'adjust_due_date')
+		{
+		$dataHash = $self->adjust_due_date;
+		}
+	elsif ($action eq 'add_pkg_detail_row')
+		{
+		$dataHash = $self->add_pkg_detail_row;
+		}
+	elsif ($action eq 'get_freight_class')
+		{
+		$dataHash = $self->get_freight_class;
+		}
+	elsif ($action eq 'third_party_delivery')
+		{
+		$dataHash = $self->set_third_party_delivery;
+		}
+	elsif ($action eq 'get_city_state')
+		{
+		$dataHash = $self->get_city_state;
+		}
+	elsif ($action eq 'save_special_services')
+		{
+		$dataHash = $self->update_special_services;
+		}
+	elsif ($action eq 'save_third_party_info')
+		{
+		$dataHash = $self->save_third_party_info;
+		}
+	elsif ($c->req->param('action') eq 'send_email_notification')
+		{
+		$dataHash = $self->send_email_notification;
+		}
+	elsif ($action eq 'mark_shipment_as_printed')
+		{
+		$dataHash = $self->mark_shipment_as_printed;
+		}
+	elsif ($action eq 'search_ordernumber')
+		{
+		$dataHash = $self->search_ordernumber;
+		}
+	elsif ($action eq 'get_dim_weight')
+		{
+		$dataHash = $self->get_dim_weight;
+		}
+	elsif ($c->req->param('action') eq 'generate_packing_list')
+		{
+		$dataHash = $self->prepare_packing_list_details;
+		}
+	elsif ($c->req->param('action') eq 'generate_bill_of_lading')
+		{
+		$dataHash = $self->prepare_BOL;
+		}
+	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
+		{
+		$dataHash = $self->prepare_com_inv;
+		}
+	elsif ($c->req->param('action') eq 'cancel_shipment')
+		{
+		$dataHash = $self->cancel_shipment;
+		}
+	else
+		{
+		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
+		}
+
+	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	$c->response->body($json_DATA);
+	}
+
 sub set_international_details
 	{
 	my $self = shift;
@@ -441,85 +528,6 @@ sub calculate_freight_insurance
 	return 0;
 	}
 
-sub get_JSON_DATA :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $dataHash;
-	my $action = $c->req->param('action') || '';
-	if ($action eq 'get_address_detail')
-		{
-		$dataHash = $self->get_address_detail;
-		}
-	elsif ($action eq 'get_sku_detail')
-		{
-		$dataHash = $self->get_sku_detail;
-		}
-	elsif ($action eq 'adjust_due_date')
-		{
-		$dataHash = $self->adjust_due_date;
-		}
-	elsif ($action eq 'add_pkg_detail_row')
-		{
-		$dataHash = $self->add_pkg_detail_row;
-		}
-	elsif ($action eq 'get_freight_class')
-		{
-		$dataHash = $self->get_freight_class;
-		}
-	elsif ($action eq 'third_party_delivery')
-		{
-		$dataHash = $self->set_third_party_delivery;
-		}
-	elsif ($action eq 'get_city_state')
-		{
-		$dataHash = $self->get_city_state;
-		}
-	elsif ($action eq 'save_special_services')
-		{
-		$dataHash = $self->update_special_services;
-		}
-	elsif ($action eq 'save_third_party_info')
-		{
-		$dataHash = $self->save_third_party_info;
-		}
-	elsif ($action eq 'mark_shipment_as_printed')
-		{
-		$dataHash = $self->mark_shipment_as_printed;
-		}
-	elsif ($action eq 'search_ordernumber')
-		{
-		$dataHash = $self->search_ordernumber;
-		}
-	elsif ($action eq 'get_dim_weight')
-		{
-		$dataHash = $self->get_dim_weight;
-		}
-	elsif ($c->req->param('action') eq 'generate_packing_list')
-		{
-		$dataHash = $self->prepare_packing_list_details;
-		}
-	elsif ($c->req->param('action') eq 'generate_bill_of_lading')
-		{
-		$dataHash = $self->prepare_BOL;
-		}
-	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
-		{
-		$dataHash = $self->prepare_com_inv;
-		}
-	else
-		{
-		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
-		}
-
-	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
-	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
-	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
-	$c->response->body($json_DATA);
-	}
-
 sub get_sku_detail :Private
 	{
 	my $self = shift;
@@ -652,6 +660,17 @@ sub save_third_party_info
 	return { UPDATED => 1};
 	}
 
+sub send_email_notification
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid} }));
+
+	return { EMAIL_SENT => 1};
+	}
+
 sub mark_shipment_as_printed
 	{
 	my $self = shift;
@@ -666,7 +685,7 @@ sub mark_shipment_as_printed
 
 	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
 
-	$self->SendShipNotification($Shipment);
+	#$self->SendShipNotification($Shipment);
 
 	return { UPDATED => 1};
 	}
@@ -729,6 +748,12 @@ sub prepare_com_inv
 	my $HTML = $self->generate_commercial_invoice;
 	$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
 	return { ComInv => $HTML };
+	}
+
+sub cancel_shipment
+	{
+	my $self = shift;
+	return { voided => $self->VOID_SHIPMENT($self->context->req->params->{'shipmentid'}) };
 	}
 
 =encoding utf8
