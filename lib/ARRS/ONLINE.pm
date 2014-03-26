@@ -631,13 +631,16 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 
 		if ($@)
 			{
-			warn "[Error] GetCarrierHandler eval Exception: $@";
+			#warn "[Error] GetCarrierHandler eval Exception: $@";
+			warn "\n[Warn] Handler '$HandlerName' not found [ONLINE]";
 			# other exception handling goes here...
 			}
-
-		$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
-		}
 		else
+			{
+			$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
+			}
+		}
+		unless ($Handler)
 		{
 		warn "HANDLERNAME: use CARRIERHANLDER";
    		use ARRS::CARRIERHANDLER;

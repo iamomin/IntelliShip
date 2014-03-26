@@ -1004,15 +1004,18 @@ sub GetCarrierHandler
 
 		if ($@)
 			{
-			warn "\n[Error] GetCarrierHandler eval Exception: $@";
+			#warn "\n[Error] GetCarrierHandler eval Exception: $@";
+			warn "\n[Warn] Handler '$HandlerName' not found [CUSTOMERSERVICE]";
 			# other exception handling goes here...
 			}
-
-		$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
-
-		#warn "\ndone with eval";
+		else
+			{
+			$Handler = $HandlerName->new($self->{"dbref"}, $self->{"contact"});
+			#warn "\ndone with eval";
+			}
 		}
-	else
+
+	unless ($Handler)
 		{
 		use ARRS::CARRIERHANDLER;
 		$Handler = new ARRS::CARRIERHANDLER($self->{'dbref'},$self->{'contact'});
