@@ -13,44 +13,61 @@
 <script src="/static/js/slick/plugins/slick.cellrangeselector.js"></script>
 <script src="/static/js/slick/plugins/slick.cellselectionmodel.js"></script>
 
-<form id="frm" action="/customer/settings/tariff/save" onsubmit="extractAndSubmit(this);" method="POST">
 <input type="hidden" name="data" id="data"/>
-<table style="border: solid gray 1px; width: 100%; height: 400px">
+<input type="hidden" name="csid" id="csid"/>
+<table style="width: 100%; height: 400px">
 <tr>
-    <td><label id="lbl_breadcrumb"></label> </td></td>
-	<td><input type="submit" value="Update"/> </td>
+    <td colspan="2" style="border-bottom: solid gray 1px"><label id="lbl_breadcrumb"></label> </td></td>	
 </tr>
 <tr>
-    <td style="height: 100%; width: 20%; border: solid gray 1px; vertical-align: top">            
-        <div id="services_tree"></div>            
+    <td style="height: 100%; width: 20%; border-right: solid gray 1px; vertical-align: top">
+		<div id="services_tree"></div>            
     </td>
-    <td style="height: 100%; width: 80%; border: solid gray 1px; vertical-align: top">
-        <div id="myGrid" style="width:700px; height:400px;"></div><br>        
+    <td style="height: 100%; width: 80%; vertical-align: top">
+		<table style="height: 100%; width: 100%;  vertical-align: top">
+			<tr>
+				<td style="height: 100%; width: 100%; vertical-align: top">
+					<div id="operations" style="display:none">
+						<input type="button" value="Update" onclick="extractAndSubmit();"/>						
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td style="height: 100%; width: 100%; vertical-align: top">
+					<div id="myGrid" style="width:700px; height:400px;"></div><br>        
+				</td>
+			</tr>
+		</table>
+        
     </td>
 </tr>
 </table>
-</form>
+
 
 <script type="text/javascript">
 var GRID;
 
 function loadServicesTree() {
+	//alert("loadServicesTree");
 	$('#services_tree').on("changed.jstree", function (e, data) {
-		alert("DATA: " + JSON.stringify(data.node));
-		//alert("" + JSON.stringify($("#" + data.node.parent)));
+		/*alert("DATA: " + JSON.stringify(data.node));
+		var parent=data.inst._get_parent(data.rslt.obj);
+		alert(parent.find('a').first().text());*/
+
 		if (data.node.original.hasOwnProperty('sid')) {
+			$('#csid').val(data.node.id);
 			getTariff(data.node.id);
 		}
 	}).jstree({
+		"plugins" : ['themes', 'json_data', 'ui'],
 		"core" : {
 			"animation" : 0,
 			"check_callback" : true,
 			"themes" : {
-				"stripes" : true
+				"classic" : true
 			},
 			'data' : JSON_data
 		}
-		
 	});
 }
 
@@ -64,11 +81,12 @@ function getAllServices() {
 }
 
 if (!$('#services_tree').html()) {
+	//alert("Loading....");
 	getAllServices();
 }
 
 function loadGrid() {
-	//alert(JSON_data);
+	alert("loadGrid");
 	$('#myGrid').empty();
 	var options = {
 		selectable : false,
@@ -80,7 +98,6 @@ function loadGrid() {
 	};
 
 	var columns = [];
-
 	var headers = JSON_data['headers'];
 	var colWidth = 700 / headers.length + 3;
 
@@ -125,13 +142,22 @@ function getTariff(csid) {
 	var params = 'csid=' + csid;
 	send_ajax_request('', 'JSON', 'settings/tariff', 'get_service_tariff', params, function () {
 		loadGrid();
+		$('#operations').show();
 	});
 }
 
-function extractAndSubmit(form) {
+function extractAndSubmit() {
+	alert($('#csid').val());
 	var d = GRID.getData();
-	$('#data').val(JSON.stringify(d));
-	form.submit();
+	var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
+	my_ajax_request('settings/tariff/save', params, function () {
+		if(JSON_data.status == "success"){
+			showMessage(JSON_data.message);
+			GRID.invalidate();
+		}else{
+			showMessage("Failed to update");
+		}
+	});
 }
 
 function updateBreadcrumb(child, parent) {
@@ -305,5 +331,51 @@ function NumericRangeFormatter(row, cell, value, columnDef, dataContext) {
 	return dataContext.wtmin + " - " + dataContext.wtmax;
 }
 
+function my_ajax_request(section_value, optional_param, call_back_function) {
+
+	waiting_COUNT++;
+	$('#preload').show();
+
+	var data_string = "ajax=1&eventtimestamp=" + jQuery.now();
+	
+	if (optional_param)
+		data_string += '&' + optional_param;
+
+	var request_url = (section_value ? '/customer/' + section_value  : '/customer/ajax');
+
+	var charPattern = /#/g;
+	if (data_string.match(charPattern)) {
+		data_string = data_string.replace(charPattern, "%23");
+	}
+	
+	JSON_data = null;
+	$.ajax({
+		type : "POST",
+		url : request_url,
+		data : data_string,
+		//contentType : "application/json; charset=utf-8",
+		dataType : 'json',
+		success : function (data) {
+			waiting_COUNT--;
+			if (waiting_COUNT == 0)
+				$('#preload').hide();
+			JSON_data = data;
+			if (JSON_data.error)
+				showMessage("<div class='error'>" + JSON_data.error + "</div>", "Reseponse Error");
+
+			afterSuccessCallBack("JSON", "", call_back_function);
+		},
+		error : function (data) {
+			showMessage("An internal error has occurred, Please contact support. " + data, "Internal Server Error");
+			waiting_COUNT--;
+			if (waiting_COUNT == 0)
+				$('#preload').hide();
+		},
+		complete : function (data) {
+			//$('#preload').hide();
+		}
+	});
+	
+}
 </script>
 

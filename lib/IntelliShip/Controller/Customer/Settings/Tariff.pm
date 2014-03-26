@@ -13,8 +13,8 @@ our $JSONUTIL = IntelliShip::Controller::Customer::Settings::JSONUtil->new();
 
 sub ajax :Local
     {
-        my ( $self, $c ) = @_;
-
+		
+        my ( $self, $c ) = @_;		
         my $params = $c->req->params;
 
         $c->log->debug("######### Tariff Pricing: ". Dumper($params));
@@ -32,6 +32,12 @@ sub ajax :Local
         if($params->{'action'} eq 'get_template' )
         {
             $self->get_template($c);
+        }
+		
+		if($params->{'action'} eq 'save' )
+        {
+			shift @_;
+            $self->save(@_);
         }
     }
 
@@ -68,10 +74,12 @@ sub save :Local
     {
         warn "########## save";
         my ( $self, $c, $data ) = @_;
-		my $params = $c->req->params; 
-		my $tariff = $JSONUTIL->json_to_tariff($params->{'data'});
-		warn "######### tariff: ".Dumper($tariff);		
-		return $self->API->save_tariff($tariff);
+		my $params = $c->req->params;			
+		my $tariff = $JSONUTIL->from_json($params->{'data'});
+		#warn "######### tariff: ".Dumper($tariff);
+		
+		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->save_tariff($tariff));
+        $c->stash(template => "templates/customer/json.tt");
     }
 
 1;

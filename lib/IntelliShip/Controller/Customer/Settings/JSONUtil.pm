@@ -89,11 +89,18 @@ sub tariff_to_json
     return encode_json($json); 
 }
 
-sub json_to_tariff
+sub from_json
 {
-	warn "########## json_to_tariff";    
+	warn "########## from_json";    
     my ( $self, $json) = @_;
 	return decode_json($json);
+}
+
+sub to_json
+{
+	warn "########## to_json";    
+    my ( $self, $obj) = @_;
+	return encode_json($obj);
 }
 
 1;

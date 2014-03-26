@@ -1010,9 +1010,9 @@ warn "undef etadate";
             my $self = shift;
             my ($tariff) = @_;
 
-			#Use the statements in for loop to update all the values
 			#We don't look for changed values.
 			#We update them all
+			my $count = 0;
 			foreach my $record (@$tariff)
 			{
 				#warn "########## \$record = ".Dumper($record);
@@ -1024,12 +1024,16 @@ warn "undef etadate";
 					{
 						my $sql = "update rate set " . $price->{'costfield'}. " = ". $price->{'actualcost'} ." where rateid = '".$price->{'rateid'}."'";
 						warn "########## \$sql= $sql";
-						$self->{'dbref'}->do($sql)
+						my $success = $self->{'dbref'}->do($sql)
 								or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
+								
+						if($success) {$count++;}		
 					}					
 				}
 			}
 			$self->{'dbref'}->commit;
+			
+			return {'status' => 'success', 'message' => "$count records updated in RATE"};
 		}
         
 	sub OkToShipOnShipDate
