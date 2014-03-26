@@ -219,7 +219,7 @@ sub get_carrier_service_list
 	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
-	my ($CS_list_1, $CS_list_2) = ([], []);
+	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
 	foreach my $customerserviceid (keys %$carrier_Details)
 		{
 		my $CSData = $carrier_Details->{$customerserviceid};
@@ -306,6 +306,8 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { id => 'frtins',  text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
+			$CS_charge_details->{$customerserviceid} = "freightcharges:$freightcharges|fuelcharges:$fuelcharges|decval:$DVI_Charge|frtins:$FI_Charge";
+
 			#$detail_hash->{'freight_charge'} = $freightcharges || '0';
 			$detail_hash->{'freight_charge'} = sprintf("%.2f",($freightcharges || '0'));
 			#$detail_hash->{'other_charge'} = ($fuelcharges+$DVI_Charge+$FI_Charge) || '0';
@@ -363,6 +365,8 @@ sub get_carrier_service_list
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByCharge, @$CS_list_2];
 		$c->stash->{viewallcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		}
+
+	$c->stash->{CS_CHARGE_HASH} = IntelliShip::Utils->jsonify($CS_charge_details);
 
 	$c->stash->{CARRIER_SERVICE_LIST_LOOP} = undef;
 	$c->stash->{ONLY_TABLE} = 0;
