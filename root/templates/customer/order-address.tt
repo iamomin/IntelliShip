@@ -23,14 +23,28 @@
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
 [% IF one_page %]
-	<table>
+	<table width="100%">
 		<tr>
-			<td>
+			<td width="9%">
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
 			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/>
 			</td>
+			[% IF quickship AND SHOW_SHIPMENT_TYPES %]
+			<td>
+				<div id="shipmenttypeDiv" style="float:right;" class="css3-radios">
+					<ul><li>
+					[% FOREACH item IN shipmenttype_loop %]
+						<label>
+						<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.value == shipmenttype ? 'CHECKED' : ''%]/>
+						<span><label for="[% item.value %]">[% item.name %]</label></span>
+						</label>
+					[% END %]
+					</li></ul>
+				</div>
+			</td>
+			[% END %]
 		<!--
 			<td>
 			<input type="button" class="button submit" value="CONSOLIDATE"/>
@@ -60,20 +74,58 @@
 				<tr>
 					<td><label for="fromaddress2" class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" name="fromaddress2" id="fromaddress2" value='[% fromCustomerAddress.address2 %]'/></td>
 				</tr>
+				[% IF quickship%]
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
-				</tr>
-				<tr>
-					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" name="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
+					<td><label for="fromcity" class="float-right">City, State, Zip:</label></td><!--<td><b><input type="text" class="" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>-->
+					<td>
+					<input type="text" name="fromcity" id="fromcity" style="width: 100px;" value="[% fromCustomerAddress.city %]"/>
+					<div id="fromStateDiv" style="display: inline; padding: 0;">
+					<label>
+					<select name="fromstate" id="fromstate" style="width: 45px;">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == fromCustomerAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+						[% END %]
+					</select>
+					</label>
+					</div>
+					<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromCustomerAddress.zip %]"/>
+
 					</td>
 				</tr>
+				<tr>
+					<td><label for="fromcountry" class="float-right">Country:</label></td>
+					<td><!--<input type="hidden" class="broad-text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><!--<input  type="text" class="" value='[% fromCustomerAddress.country_description %]'/></td>-->
+					<select name="fromcountry" id="fromcountry" style="width: 220px;">
+						[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]" [% (fromCustomerAddress.country and item.value == fromCustomerAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+					</td>
+				</tr>
+				[% ELSE %]
+				<tr>
+					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
+					<input type="hidden" name="fromcity" id="fromcity" value='[% fromCustomerAddress.city %]'/>
+					<input type="hidden" name="fromstate" id="fromstate" value='[% fromCustomerAddress.state %]'/>
+					<input type="hidden" name="fromzip" id="fromzip" value='[% fromCustomerAddress.zip %]'/>
+				</tr>
+				<tr>
+					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" name="fromcountry" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
+					</td>
+				</tr>
+				[% END %]
 				<tr>
 					<td><label for="fromcontact" class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" name="fromcontact" id="fromcontact" value='[% fromcontact %]'/></td>
 				</tr>
 				<tr>
 					<td><label for="fromphone" class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" name="fromphone" id="fromphone" value='[% fromphone %]'/></td>
 				</tr>
-				<tr>
+				[% IF quickship AND one_page %]
+				<tr id='fromcustomernumber_tr'>
+					<td><label for="fromcustomernumber" class="float-right">Customer#:</label></td><td><input type="text" class="broad-text" name="fromcustomernumber" id="fromcustomernumber" value="[% fromcustomernumber %]"/></td>
+				</tr id='fromcustomernumber_tr'>
+				[% END %]
+				<tr id="fromdepartment_tr">
 					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
 				</tr>
 				<tr>
@@ -129,12 +181,17 @@
 					<td><label for="tophone" class="float-right">Phone:</label></td><td><input type="text" class="broad-text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
 				[% IF one_page %]
-				<tr>
+				<tr id='tocustomernumber_tr'>
 					<td><label for="tocustomernumber" class="float-right">Customer#:</label></td><td><input type="text" class="broad-text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
 				[% ELSE %]
-				<tr>
+				<tr id='tocustomernumber_tr'>
 					<td><label for="tocustomernumber" class="float-right">Customer Number:</label></td><td><input type="text" class="broad-text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
+				</tr>
+				[% END %]
+				[% IF quickship %]
+				<tr id="todepartment_tr">
+					<td><label for="todepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% department %]"></td>
 				</tr>
 				[% END %]
 				<tr>
@@ -257,12 +314,12 @@ $("#toname").autocomplete({
 		var RefID = hashCompanyRef[Key];
 		if (RefID == undefined) return;
 		ui.item.value = Company;
-		populateShipToAddress(RefID);
+		populateShipAddress('to', RefID);
 		}
 	});
 
 $("#tozip").change(function() {
-	setCityAndState();
+	setCityAndState('to');
 	});
 
 $("#dateneeded").change(function() {
@@ -272,6 +329,201 @@ $("#dateneeded").change(function() {
 
 //$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
+
+
+[% IF quickship%]
+	var addressArray		= {};	
+	var previousCheck		= 'outbound';
+	var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+
+	addressArray['currentCompanyAddress']	= setAddress('from');
+	addressArray['selectedAddress1']		= setAddress('');
+	addressArray['selectedAddress2']		= setAddress('');
+
+	$('#todepartment_tr').hide();
+	$('#fromcustomernumber_tr').hide();
+
+	hideEditBox('from');
+
+function showEditBox(direction){
+	jQuery.each( fieldArray, function( i, val ) {
+	if (val != 'department' && val != 'customernumber' && val != 'email')
+		{
+		if(val == 'state' || val == 'country'){
+			$('#' + direction + val).prop("disabled", false);
+			}
+		else{
+			$('#' + direction + val).removeClass('labellike').addClass('broad-text');
+			$('#' + direction + val).prop("readonly",false);
+			}
+		}
+	});
+}
+
+function hideEditBox(direction){
+	jQuery.each( fieldArray, function( i, val ) {
+	if (val != 'department' && val != 'customernumber' && val != 'email')
+		{
+		if(val == 'state' || val == 'country'){
+			$('#' + direction + val).prop("disabled", true);
+			}
+		else{
+			$('#' + direction + val).removeClass('broad-text').addClass('labellike');
+			$('#' + direction + val).prop("readonly",true);
+			}
+		}
+	});
+}
+
+$("input[name='shipmenttype']").click(function(){
+
+	if(previousCheck == 'outbound'){
+		addressArray['selectedAddress1'] = setAddress('to');
+		}
+	else if (previousCheck == 'inbound'){
+		addressArray['selectedAddress1'] = setAddress('from');
+		}
+	else{
+		addressArray['selectedAddress1'] = setAddress('from');
+		addressArray['selectedAddress2'] = setAddress('to');
+		}
+
+	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
+
+	if (selectedType == 'inbound'){
+		$('#fromdepartment_tr').hide();
+		$('#todepartment_tr').show();
+		$('#fromcustomernumber_tr').show();
+		$('#tocustomernumber_tr').hide();
+		
+		restoreAddress('currentCompanyAddress', 'to');
+		restoreAddress('selectedAddress1','from');
+		showEditBox('from');
+		hideEditBox('to');
+		}
+	else if(selectedType == 'outbound'){
+		
+		$('#fromdepartment_tr').show();
+		$('#todepartment_tr').hide();
+		$('#fromcustomernumber_tr').hide();
+		$('#tocustomernumber_tr').show();
+		
+		restoreAddress('currentCompanyAddress', 'from');
+		restoreAddress('selectedAddress1','to');
+		showEditBox('to');
+		hideEditBox('from');
+		}
+	else if(selectedType == 'dropship'){
+		restoreAddress('selectedAddress1', 'from');
+		restoreAddress('selectedAddress2','to');
+		showEditBox('to');
+		showEditBox('from');
+		}
+
+	previousCheck = selectedType;
+	});
+
+$("#fromname").autocomplete({
+	source: availableCustomers,
+	select: function( event, ui ) {
+		var SelectedCompany = ui.item.value
+		var AddrParts = SelectedCompany.split(" | ");
+		var Company = AddrParts[0];
+		var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
+		var RefID = hashCompanyRef[Key];
+		if (RefID == undefined) return;
+		ui.item.value = Company;
+		populateShipAddress('from', RefID);
+		}
+	});
+
+$("#fromzip").change(function() {
+	setCityAndState('from');
+	});
+
+function restoreAddress(address, direction){
+	$('#' + direction + 'name').val(addressArray[address].name);
+	$('#' + direction + 'address1').val(addressArray[address].address1);
+	$('#' + direction + 'address2').val(addressArray[address].address2);
+	$('#' + direction + 'city').val(addressArray[address].city);
+	$('#' + direction + 'state').val(addressArray[address].state);
+	$('#' + direction + 'zip').val(addressArray[address].zip);
+	$('#' + direction + 'country').val(addressArray[address].country);
+	$('#' + direction + 'contact').val(addressArray[address].contact);
+	$('#' + direction + 'phone').val(addressArray[address].phone);
+
+	$('#' + direction + 'department').val(addressArray[address].department);
+	$('#' + direction + 'customernumber').val(addressArray[address].customernumber);
+	$('#' + direction + 'email').val(addressArray[address].email);
+	}
+
+function setAddress(direction){
+	var name			= direction ? $('#' + direction + 'name').val() : '';
+	var address1		= direction ? $('#' + direction + 'address1').val() : '';
+	var address2		= direction ? $('#' + direction + 'address2').val() : '';
+	var city			= direction ? $('#' + direction + 'city').val() : '';
+	var state			= direction ? $('#' + direction + 'state').val() : '';
+	var zip				= direction ? $('#' + direction + 'zip').val() : '';
+	var country			= direction ? $('#' + direction + 'country').val() : '';
+	var contact			= direction ? $('#' + direction + 'contact').val() : '';
+	var phone			= direction ? $('#' + direction + 'phone').val() : '';
+	var department		= direction ? $('#' + direction + 'department').val() : '';
+	var customernumber	= direction ? $('#' + direction + 'customernumber').val() : '';
+	var email			= direction ? $('#' + direction + 'email').val() : '';
+
+	var newAddress;
+	newAddress = {
+		name			: name,
+		address1		: address1,
+		address2		: address2,
+		city			: city,
+		state			: state,
+		zip				: zip,
+		country			: country,
+		contact			: contact,
+		phone			: phone,
+		department		: department,
+		customernumber	: customernumber,
+		email			: email
+	};
+	return newAddress;
+}
+
+	requiredFieldHash['fromname']		={ minlength: 2 };
+	requiredFieldHash['fromaddress1']	={ minlength: 2 };
+	requiredFieldHash['fromcity']		={ minlength: 2 };
+	requiredFieldHash['fromstate']		={ minlength: 2 };
+	requiredFieldHash['fromzip']		={ minlength: 5 };
+	requiredFieldHash['fromcountry']	={ minlength: 2 };
+
+	
+[% END %]
+
+function enableFields()
+	{
+	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
+	if(selectedType == 'inbound'){
+		$('#tostate').prop("disabled", false);
+		$('#tocountry').prop("disabled", false);
+		}
+	else if(selectedType == 'outbound'){
+		$('#fromstate').prop("disabled", false);
+		$('#fromcountry').prop("disabled", false);
+		}
+	}
+
+function disableFields()
+	{
+	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
+	if(selectedType == 'inbound'){
+		$('#tostate').prop("disabled", true);
+		$('#tocountry').prop("disabled", true);
+		}
+	else if(selectedType == 'outbound'){
+		$('#fromstate').prop("disabled", true);
+		$('#fromcountry').prop("disabled", true);
+		}
+	}
 
 [% UNLESS one_page %]
 	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];

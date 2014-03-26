@@ -440,37 +440,37 @@ function checkInternationalSection() {
 		}
 	}
 
-function setCityAndState()
+function setCityAndState(type)
 	{
-	var tozip = $("#tozip").val();
+	var tozip = $("#"+type+"zip").val();
 	if (tozip.length < 5) return;
 
 	//$("#tocity").val('');
 	//$("#tostate").val('');
 	//$("#tocountry").val('');
 
-	var query_param = "&zipcode=" + tozip + '&city=' + $("#tocity").val() + '&state=' + $("#tostate").val() + '&country=' + $("#tocountry").val();
-	if($("#tozip").val() != "") {
+	var query_param = "&zipcode=" + tozip + '&city=' + $("#"+type+"city").val() + '&state=' + $("#"+type+"state").val() + '&country=' + $("#"+type+"country").val();
+	if($("#"+type+"zip").val() != "") {
 		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
-			$("#tocity").val(JSON_data.city);
-			$("#tostate").val(JSON_data.state);
-			$("#tocountry").val(JSON_data.country);
+			$("#"+type+"city").val(JSON_data.city);
+			$("#"+type+"state").val(JSON_data.state);
+			$("#"+type+"country").val(JSON_data.country);
 			});
 		}
 	}
 
 function updateStateList(type,call_back_fn)
 	{
-	$("#tocity").val('');
-	$("#tostate").val('');
-	$("#tozip").val('');
+	$("#"+type+"city").val('');
+	$("#"+type+"state").val('');
+	$("#"+type+"zip").val('');
 
 	var country = $("#"+type+"country").val();
 	if (country.length == 0) return;
 
 	var query_param = "country=" + country + '&control=' + type + 'state';
 
-	send_ajax_request('toStateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
+	send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
 	}
 
 function validate_package_details()
@@ -651,6 +651,7 @@ function get_customer_service_list(form_name)
 		send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
 
 			$("#route").attr("disabled",false);
+			disableFields();
 			$("#route").val(origVal);
 			has_FC=true;
 
@@ -718,7 +719,7 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
-function populateShipToAddress(referenceid)
+function populateShipAddress(direction, referenceid)
 	{
 	if (referenceid == undefined) return;
 
@@ -729,20 +730,20 @@ function populateShipToAddress(referenceid)
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
 			if (JSON_data.addressname) {
 				var ADDRESS_data = JSON_data;
-				$("#tocountry").val(ADDRESS_data.country);
+				$("#" + direction + "country").val(ADDRESS_data.country);
 				checkInternationalSection();
 
-				updateStateList('to', function() {
-					$("#toname").val(ADDRESS_data.addressname);
-					$("#toaddress1").val(ADDRESS_data.address1);
-					$("#toaddress2").val(ADDRESS_data.address2);
-					$("#tocity").val(ADDRESS_data.city);
-					$("#tostate").val(ADDRESS_data.state);
-					$("#tozip").val(ADDRESS_data.zip);
-					$("#tocontact").val(ADDRESS_data.contactname);
-					$("#tophone").val(ADDRESS_data.contactphone);
-					$("#tocustomernumber").val(ADDRESS_data.extcustnum);
-					$("#toemail").val(ADDRESS_data.shipmentnotification);
+				updateStateList(direction, function() {
+					$("#" + direction + "name").val(ADDRESS_data.addressname);
+					$("#" + direction + "address1").val(ADDRESS_data.address1);
+					$("#" + direction + "address2").val(ADDRESS_data.address2);
+					$("#" + direction + "city").val(ADDRESS_data.city);
+					$("#" + direction + "state").val(ADDRESS_data.state);
+					$("#" + direction + "zip").val(ADDRESS_data.zip);
+					$("#" + direction + "contact").val(ADDRESS_data.contactname);
+					$("#" + direction + "phone").val(ADDRESS_data.contactphone);
+					$("#" + direction + "customernumber").val(ADDRESS_data.extcustnum);
+					$("#" + direction + "email").val(ADDRESS_data.shipmentnotification);
 					});
 
 				}

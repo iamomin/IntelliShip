@@ -802,6 +802,12 @@ __PACKAGE__->belongs_to(
 	);
 
 __PACKAGE__->belongs_to(
+	from_address => 
+	"IntelliShip::SchemaClass::Result::Address",
+	"oaaddressid"
+	);
+
+__PACKAGE__->belongs_to(
 	drop_address => 
 	"IntelliShip::SchemaClass::Result::Address",
 	"dropaddressid"
@@ -830,6 +836,20 @@ __PACKAGE__->has_many(
 	"IntelliShip::SchemaClass::Result::Assdata",
 	{ "foreign.ownerid" => "self.coid" }
 	);
+
+sub origin_address
+	{
+	my $self = shift;
+	my $FromAddress = $self->from_address;
+	$FromAddress = $self->customer->address unless $FromAddress;
+	return $FromAddress;
+	}
+
+sub destination_address
+	{
+	my $self = shift;
+	return $self->to_address;
+	}
 
 sub is_shipped
 	{

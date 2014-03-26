@@ -947,7 +947,25 @@ sub get_select_list
 			{ name => 'USPS'	, value => IntelliShip::Utils->get_tracking_URL('USPS', 'XXXX') },
 			];
 		}
-
+	elsif ($list_name eq 'SHIPMENT_TYPE')
+		{
+		my $Contact = $self->contact;
+		my $returncapability = $Contact->get_contact_data_value('returncapability');
+		my $dropshipcapability = $Contact->get_contact_data_value('dropshipcapability');
+		$list = [{ name => 'Outbound', value => 'outbound' }];
+		
+		if ($returncapability == 1 || $returncapability == 3)
+			{
+			push(@$list, { name => 'Inbound',  value => 'inbound' }) ;
+			$c->stash->{SHOW_SHIPMENT_TYPES} = 1;
+			}
+		
+		if ($dropshipcapability == 1 || $dropshipcapability == 3)
+			{
+			push(@$list, { name => 'Dropship', value => 'dropship' }) ;
+			$c->stash->{SHOW_SHIPMENT_TYPES} = 1;
+			}
+		}
 	return $list;
 	}
 

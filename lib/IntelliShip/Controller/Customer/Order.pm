@@ -53,8 +53,9 @@ sub quickship :Local
 		}
 	else
 		{
-		$self->setup_one_page;
+
 		$c->stash->{quickship} = 1;
+		$self->setup_one_page;
 		}
 	}
 
@@ -110,7 +111,7 @@ sub setup_address :Private
 	my $Customer = $self->customer;
 
 	my $CO = $self->get_order;
-
+	$c->stash->{fromCustomerAddress} = $Customer->address;
 	my $do = $c->req->param('do') || '';
 	if (!$do or $do eq 'address')
 		{
@@ -119,7 +120,7 @@ sub setup_address :Private
 		}
 
 	$c->stash->{fromCustomer} = $Customer;
-	$c->stash->{fromCustomerAddress} = $Customer->address;
+	
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
 	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
@@ -127,7 +128,8 @@ sub setup_address :Private
 
 	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
 	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
-
+	$c->stash->{shipmenttype_loop} = $self->get_select_list('SHIPMENT_TYPE');
+	$c->stash->{shipmenttype} = 'outbound';
 	if ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
@@ -302,7 +304,8 @@ sub save_CO_details :Private
 			}
 		}
 
-	$coData->{'isdropship'} = $params->{'isdropship'} || 0;
+	$coData->{'isinbound'} = (defined($params->{'shipmenttype'})  && $params->{'shipmenttype'} eq 'inbound') || 0;
+	$coData->{'isdropship'} = (defined($params->{'shipmenttype'})  && $params->{'shipmenttype'} eq 'dropship') || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
 	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
 	$coData->{'department'} = $params->{'fromdepartment'} if $params->{'fromdepartment'};
@@ -474,6 +477,50 @@ sub save_address :Private
 		$CO->rtaddressid($ReturnAddress->id);
 		$update_co=1;
 		}
+
+	## Sort out Origin address/id
+	if (defined $params->{'fromaddress1'})
+		{
+		$c->log->debug("checking for return address availability");
+
+		my $originAddressData = {
+			addressname => $params->{'fromname'},
+			address1    => $params->{'fromaddress1'},
+			address2    => $params->{'fromaddress2'},
+			city        => $params->{'fromcity'},
+			state       => $params->{'fromstate'},
+			zip         => $params->{'fromzip'},
+			country     => $params->{'fromcountry'},
+			};
+
+		IntelliShip::Utils->trim_hash_ref_values($originAddressData);
+
+		## Fetch drop address
+		my @addresses = $c->model('MyDBI::Address')->search($originAddressData);
+
+		my $OriginAddress;
+		if (@addresses)
+			{
+			$OriginAddress = $addresses[0];
+			$c->log->debug("Existing Address Found, ID: " . $OriginAddress->addressid);
+			}
+		else
+			{
+			$OriginAddress = $c->model("MyDBI::Address")->new($originAddressData);
+			$OriginAddress->addressid($self->get_token_id);
+			$OriginAddress->insert;
+			$c->log->debug("New Address Inserted, ID: " . $OriginAddress->addressid);
+			}
+
+		$CO->oaaddressid($OriginAddress->id);
+		$update_co=1;
+
+		if (defined($params->{'shipmenttype'}) && $params->{'shipmenttype'} eq 'dropship')
+			{
+			$CO->dropaddressid($OriginAddress->id);
+			}
+		}
+		
 
 	$CO->update if $update_co;
 	}
@@ -927,9 +974,12 @@ sub populate_order :Private
 		$c->stash->{tophone} = $CO->contactphone;
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
-		$c->stash->{toAddress} = $CO->to_address;
+		
 		$c->stash->{tocustomernumber} = $CO->custnum;
 		$c->stash->{description} = $CO->description;
+		
+		$c->stash->{fromCustomerAddress} = $CO->origin_address;
+		$c->stash->{toAddress} = $CO->destination_address;
 		}
 
 	## Package Details
@@ -2310,7 +2360,7 @@ sub BuildShipmentInfo
 
 	$ShipmentData->{$_} = $params->{$_} foreach keys %$params;
 
-	my $FromAddress = $Customer->address;
+	my $FromAddress = $CO->origin_address;
 	$ShipmentData->{'shipasname'}           = $FromAddress->addressname;
 	$ShipmentData->{'customername'}         = $FromAddress->addressname;
 	$ShipmentData->{'branchaddress1'}       = $FromAddress->address1;
@@ -2320,7 +2370,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'branchaddresszip'}     = $FromAddress->zip;
 	$ShipmentData->{'branchaddresscountry'} = $FromAddress->country;
 
-	my $ToAddress = $CO->to_address;
+	my $ToAddress = $CO->destination_address;
 	$ShipmentData->{'addressname'}    = $ToAddress->addressname;
 	$ShipmentData->{'address1'}       = $ToAddress->address1;
 	$ShipmentData->{'address2'}       = $ToAddress->address2;

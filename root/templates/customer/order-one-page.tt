@@ -64,6 +64,7 @@
 
 	$("#route").click(function() {
 		update_package_product_sequence();
+		enableFields();
 		get_customer_service_list('frm_order');
 		});
 
@@ -110,7 +111,17 @@
 
 	$("#frm_order").submit(function() {
 		update_package_product_sequence();
-		return validateForm(requiredFieldHash);
+		if (validateForm(requiredFieldHash))
+			{
+			enableFields();
+			//$('#fromstate').prop("disabled", false);
+			//$('#fromcountry').prop("disabled", false);
+			//$('#tostate').prop("disabled", false);
+			//$('#tocountry').prop("disabled", false);
+			}
+		else{
+			return false;
+			}
 		});
 
 	[% IF tooltips %]
