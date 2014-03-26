@@ -81,6 +81,7 @@ sub get_EPL
 		USTPO     => 'get_USPS_EPL_2',
 		UPRIORITY => 'get_USPS_EPL_3',
 		USPSMM    => 'get_USPS_EPL_4',
+		USPSLM    => 'get_USPS_EPL_5',
 		};
 
 	my $method = $EPL_TEMPLATES->{$DATA->{'servicecode'}};

@@ -313,7 +313,7 @@ sub process_request
 	eval {
 	$ShipmentReturn = $self->ProcessLocalRequest($ShipmentString); ##**
 	};
-	$self->log('... ShipmentReturnResponse: ' . $ShipmentReturn);
+	#$self->log('... ShipmentReturnResponse: ' . $ShipmentReturn);
 
 	# Check return string for errors;
 	if ($ShipmentReturn =~ /"2,"\w+?"/)
