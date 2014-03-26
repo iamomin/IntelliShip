@@ -84,6 +84,7 @@ sub tariff_to_json
 		$i++;
     }
 
+	shift @data; # remove the first empty row
     $json->{'rows'} = \@data;
     return encode_json($json); 
 }

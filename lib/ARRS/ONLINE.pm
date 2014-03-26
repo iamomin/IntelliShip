@@ -1006,16 +1006,30 @@ warn "undef etadate";
 		
 	sub SaveTariff
 		{
-			warn "########## SaveTariff";
+			warn "########## Online::SaveTariff";
             my $self = shift;
             my ($tariff) = @_;
 
-			my $statement = 'update rate set ';
+			#Use the statements in for loop to update all the values
+			#We don't look for changed values.
+			#We update them all
 			foreach my $record (@$tariff)
 			{
-				
+				#warn "########## \$record = ".Dumper($record);
+				while(my ($zonenumber, $price) = each %$record)
+				{
+					warn "########## \$zonenumber = $zonenumber";
+					#warn "########## \$price = ".Dumper($price);
+					if(ref($price) eq "HASH")
+					{
+						my $sql = "update rate set " . $price->{'costfield'}. " = ". $price->{'actualcost'} ." where rateid = '".$price->{'rateid'}."'";
+						warn "########## \$sql= $sql";
+						$self->{'dbref'}->do($sql)
+								or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
+					}					
+				}
 			}
-
+			$self->{'dbref'}->commit;
 		}
         
 	sub OkToShipOnShipDate

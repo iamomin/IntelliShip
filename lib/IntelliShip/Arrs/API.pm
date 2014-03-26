@@ -136,6 +136,20 @@ sub get_service_tariff
 
 	return $self->APIRequest($http_request);
 	}
+	
+sub save_tariff
+	{
+		warn "########## save_tariff";
+		my $self = shift;
+		my ($tariff) = @_;
+		
+		my $http_request = {
+			action => 'SaveTariff',
+			tariff => $tariff		
+		};
+
+		return $self->APIRequest($http_request);
+	}
 
 sub get_carrrier_service_rate_list
 	{
