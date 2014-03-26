@@ -326,7 +326,8 @@
 	</table>
 	[% ELSE %]
 
-	<input type="hidden" id="carrier" name="carrier" value=""/>
+	<input type="hidden" id="carrier" name="carrier"/>
+	<input type="hidden" id="packagecosts" name="packagecosts"/>
 	<div id="carrier-service-list">
 		<ul style="padding: 0;">
 			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
@@ -357,7 +358,6 @@
 				resizable  : false,
 				title      : "Estimated Shipment Charges"
 				});
-
 
 		$(".show-hide-link").click(function showDetails(){
 			var linkObject = $(this);

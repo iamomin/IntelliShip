@@ -23,12 +23,11 @@
 	[% UNLESS REPRINT_LABEL %]
 	<table class="center DoNotPrint">
 		<tr>
-			<td><input type="button" class="green" value="PRINT" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-			<td><input type="button" class="green" value="CONFIRM" onclick=""/></td>
-			<td><input type="button" class="red"   value="CANCEL" onclick="CancelShipment();"/></td>
 			[% IF LABEL_IMG %]
 			<td><input type="button" class="blue"  value="DOWNLOAD" id="download" onclick="triggerDownload();"/></td>
 			[% END %]
+			<td><input type="button" class="green" value="CONFIRM" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
+			<td><input type="button" class="red"   value="CANCEL" onclick="CancelShipment();"/></td>
 			[% IF SEND_EMAIL %]
 			<td><input type="button" class="blue" value="EMAIL" onclick="SendEmailNotification();"/></td>
 			[% END %]
@@ -40,7 +39,7 @@
 	[% IF LABEL_IMG %]
 		<table class="center"><tr><td><img id="lblimg" src="[% LABEL_IMG %]" style="border: 1px solid;"/></td></tr></table>
 	[% ELSE %]
-		[% LABEL %]
+		<center>[% LABEL %]</center>
 	[% END %]
 	</div>
 

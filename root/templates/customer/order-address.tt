@@ -52,26 +52,26 @@
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
-					<td><label class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomer.customername %]'/></td>
+					<td><label for="fromname" class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" name="fromname" id="fromname" value='[% fromCustomer.customername %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Address 1:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address1 %]'/></td>
+					<td><label for="fromaddress1" class="float-right">Address 1:</label></td><td><input readonly type="text" class="labellike" name="fromaddress1" id="fromaddress1" value='[% fromCustomerAddress.address1 %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.address2 %]'/></td>
+					<td><label for="fromaddress2" class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" name="fromaddress2" id="fromaddress2" value='[% fromCustomerAddress.address2 %]'/></td>
 				</tr>
 				<tr>
 					<td><label class="float-right">City, State, Zip:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
+					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" name="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
 					</td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" value='[% fromcontact %]'/></td>
+					<td><label for="fromcontact" class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" name="fromcontact" id="fromcontact" value='[% fromcontact %]'/></td>
 				</tr>
 				<tr>
-					<td><label class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" value='[% fromphone %]'/></td>
+					<td><label for="fromphone" class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" name="fromphone" id="fromphone" value='[% fromphone %]'/></td>
 				</tr>
 				<tr>
 					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>

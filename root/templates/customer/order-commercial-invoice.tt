@@ -384,6 +384,7 @@
 		  <p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
 		  style='font-size:8.0pt;font-family:Arial'>Dimensions <span class=SpellE>HxWxL</span>
 		  (m<sup>3</sup>)<o:p></o:p></span></b></p>
+		  <p class=MsoNormal align=center><b style='mso-bidi-font-weight:normal'><span style='font-size:10.0pt;font-family:Arial'>&nbsp;<br>[% dimensions %]<o:p></o:p></span></b></p>
 		  </td>
 		 </tr>
 		 <tr style='mso-yfti-irow:6;height:41.5pt'>
@@ -490,8 +491,8 @@
 		<!-- Start package line item section -->
 		[% FOREACH item IN packinglist_loop %]
 		<tr style='mso-yfti-irow:8'>
-		  <td width=475 colspan=4 valign=top style='width:4.95in; border-left:solid windowtext 1.0pt; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'><p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'>[% item.description %]<o:p></o:p></span></b></p> </td>
-		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% item.quantity %]<o:p></o:p></span></b></p></td>
+		  <td width=475 colspan=4 valign=top style='width:4.95in; border-left:solid windowtext 1.0pt; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'><p class=MsoNormal><span style='font-size:8.0pt;font-family:Arial'>[% item.packagedescription %]<o:p></o:p></span></b></p> </td>
+		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% item.packagequantity %]<o:p></o:p></span></b></p></td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'><o:p></o:p></span></b></p> </td>
 		  <td width=96 valign=top style='width:1.0in; border-right:solid windowtext 1.0pt; border-top: none; border-bottom: none; padding:0in 5.4pt 0in 5.4pt'> <p class=MsoNormal align=center style='text-align:center'><span style='font-size:8.0pt;font-family: Arial'>[% item.decval %]<o:p></o:p></span></b></p> </td>
 		</tr>

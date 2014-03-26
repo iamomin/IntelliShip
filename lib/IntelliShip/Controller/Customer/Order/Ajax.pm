@@ -300,10 +300,10 @@ sub get_carrier_service_list
 			#$detail_hash->{'shipment_charge'} =~ s/Quote//;
 
 			my $SHIPMENT_CHARGE_DETAILS = [];
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Charges' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Fuel Charges' , value => '$' . sprintf("%.2f",$fuelcharges) }) if $fuelcharges;
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Declared Value Insurance' , value => '$' . sprintf("%.2f",$DVI_Charge) }) if $DVI_Charge;
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
+			push(@$SHIPMENT_CHARGE_DETAILS, { id => 'freight', text => 'Freight Charges' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
+			push(@$SHIPMENT_CHARGE_DETAILS, { id => 'fuel',    text => 'Fuel Charges' , value => '$' . sprintf("%.2f",$fuelcharges) }) if $fuelcharges;
+			push(@$SHIPMENT_CHARGE_DETAILS, { id => 'decval',  text => 'Declared Value Insurance' , value => '$' . sprintf("%.2f",$DVI_Charge) }) if $DVI_Charge;
+			push(@$SHIPMENT_CHARGE_DETAILS, { id => 'frtins',  text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
 			#$detail_hash->{'freight_charge'} = $freightcharges || '0';

@@ -1407,6 +1407,7 @@ sub SHIP_ORDER :Private
 				$ShipmentPackage->ownertypeid(2000); # 2000 = shipment
 				$ShipmentPackage->ownerid($params->{'new_shipmentid'});
 				$ShipmentPackage->packprodataid($self->get_token_id);
+				$ShipmentPackage->shippedqty($ShipmentPackage->quantity);
 				$ShipmentPackage->insert;
 
 				$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
@@ -1418,6 +1419,7 @@ sub SHIP_ORDER :Private
 					$ShipmentProduct->ownertypeid(3000); # 3000 = Product (for Packages)
 					$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
 					$ShipmentProduct->packprodataid($self->get_token_id);
+					$ShipmentProduct->shippedqty($ShipmentProduct->quantity);
 					$ShipmentProduct->insert;
 
 					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
@@ -1435,7 +1437,7 @@ sub SHIP_ORDER :Private
 				}
 
 			# Push all shipmentcharges onto a list for use by all shipments
-			if ($params->{'packagecosts'} and $params->{'packagecosts'} > 0)
+			if ($params->{'packagecosts'})
 				{
 				$params->{'shipmentchargepassthru'} = $self->BuildShipmentChargePassThru;
 				$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
@@ -2407,8 +2409,8 @@ sub BuildShipmentInfo
 	$ShipmentData->{'branchcontact'}  = $Customer->contact;
 	$ShipmentData->{'branchphone'}    = $Customer->phone;
 
-	$ShipmentData->{'oacontactname'}  = $Contact->full_name;
-	$ShipmentData->{'oacontactphone'} = $Contact->phonebusiness;
+	$ShipmentData->{'oacontactname'}  = $params->{'fromcontact'};
+	$ShipmentData->{'oacontactphone'} = $params->{'fromphone'};
 
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};
@@ -2727,7 +2729,6 @@ sub generate_packing_list
 
 	# Set global packing list values
 	$c->stash($Shipment->{_column_data});
-	$c->stash->{'oacontactname'}  = $Customer->contact;
 	$c->stash->{'contactname'}    = $CO->contactname;
 	$c->stash->{'ordernumber'}    = $CO->ordernumber;
 	$c->stash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
@@ -2738,16 +2739,16 @@ sub generate_packing_list
 	# Origin Address
 	if (my $OAAddress = $Shipment->origin_address)
 		{
-		my $shipper_address = $OAAddress->{'addressname'};
-		$shipper_address .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
-		$shipper_address .= " " . $OAAddress->address2    if $OAAddress->address2;
-		$shipper_address .= "<br>" . $OAAddress->city     if $OAAddress->city;
-		$shipper_address .= ", " . $OAAddress->state      if $OAAddress->state;
-		$shipper_address .= "  " . $OAAddress->zip        if $OAAddress->zip;
-		$shipper_address .= "<br>" . $OAAddress->country  if $OAAddress->country;
+		my $shipper_address = $OAAddress->addressname;
+		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
+		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
+		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
+		$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
+		$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
+		$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
 
-		$shipper_address .= "<br>" . $Shipment->oacontactphone       if $Shipment->oacontactphone;
-		$shipper_address .= "<br>" . $Shipment->deliverynotification if $Shipment->deliverynotification;
+		$shipper_address   .= "<br>" . $Shipment->oacontactphone       if $Shipment->oacontactphone;
+		$shipper_address   .= "<br>" . $Shipment->deliverynotification if $Shipment->deliverynotification;
 
 		$c->stash->{'shipperaddress'} = $shipper_address;
 		}
@@ -2756,15 +2757,15 @@ sub generate_packing_list
 	if (my $DAAddress = $Shipment->destination_address)
 		{
 		my $consignee_address = $DAAddress->addressname;
-		$consignee_address .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
-		$consignee_address .= " " . $DAAddress->address2    if $DAAddress->address2;
-		$consignee_address .= "<br>" . $DAAddress->city     if $DAAddress->city;
-		$consignee_address .= ", " . $DAAddress->state      if $DAAddress->state;
-		$consignee_address .= "  " . $DAAddress->zip        if $DAAddress->zip;
-		$consignee_address .= "<br>" . $DAAddress->country  if $DAAddress->country;
+		$consignee_address   .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
+		$consignee_address   .= " " . $DAAddress->address2    if $DAAddress->address2;
+		$consignee_address   .= "<br>" . $DAAddress->city     if $DAAddress->city;
+		$consignee_address   .= ", " . $DAAddress->state      if $DAAddress->state;
+		$consignee_address   .= "  " . $DAAddress->zip        if $DAAddress->zip;
+		$consignee_address   .= "<br>" . $DAAddress->country  if $DAAddress->country;
 
-		$consignee_address .= "<br>" . $Shipment->contactphone         if $Shipment->contactphone;
-		$consignee_address .= "<br>" . $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+		$consignee_address   .= "<br>" . $Shipment->contactphone         if $Shipment->contactphone;
+		$consignee_address   .= "<br>" . $Shipment->shipmentnotification if $Shipment->shipmentnotification;
 
 		$c->stash->{'consigneeaddress'} = $consignee_address;
 		}
@@ -2871,10 +2872,13 @@ sub GetLineItems
 	# First check order-centric/pick & pack data
 	my ($product_ref,$product_statusid) = $self->GetOrderProductData($package_id,$shipment_id);
 
+	$self->context->log->debug("GetOrderProductData: " . Dumper $product_ref);
+
 	# Then check shipment products
 	if ( !exists($product_ref->{0}) )
 		{
 		($product_ref,$product_statusid) = $self->GetShipmentProductData($package_id,$shipment_id);
+		$self->context->log->debug("GetShipmentProductData: " . Dumper $product_ref);
 		}
 
 	# Finish off with shipment package
@@ -2883,7 +2887,7 @@ sub GetLineItems
 		$product_ref->{0} = {
 			partnumber			=> $PackProData->partnumber,
 			orderedqty			=> $PackProData->quantity,
-			shippedqty			=> $PackProData->quantity,
+			shippedqty			=> $PackProData->shippedqty,
 			remainingqty		=> 0,
 			productdescription	=> $PackProData->description,
 			nmfc				=> $PackProData->nmfc,
@@ -2894,6 +2898,8 @@ sub GetLineItems
 		$product_ref->{0} = $self->GetComInvPackData($product_ref->{0},$shipment_id);
 
 		$product_statusid = 2;
+
+		$self->context->log->debug("final details: " . Dumper $product_ref);
 		}
 
 	return ($product_ref,$product_statusid);
@@ -3027,7 +3033,6 @@ sub generate_bill_of_lading
 
 	## Set global packing list values
 	my $dataHash = $Shipment->{_column_data};
-	$dataHash->{'oacontactname'}  = $Customer->contact;
 	$dataHash->{'contactname'}    = $CO->contactname;
 	$dataHash->{'ordernumber'}    = $CO->ordernumber;
 	$dataHash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
@@ -3462,8 +3467,11 @@ sub generate_commercial_invoice
 			}
 		}
 
+	my $PackPro = $packages[0] if @packages;
 	$dataHash->{'packinglist_loop'} = $packinglist_loop;
+	$dataHash->{'dimensions'}       = $PackPro->dimheight . 'x' . $PackPro->dimwidth . 'x' . $PackPro->dimlength if $PackPro;
 	$dataHash->{'grossweight'}      = $gross_weight;
+	$dataHash->{'netweight'}        = $gross_weight;
 	$dataHash->{'quantity'}         = $quantity;
 
 	## Set Grand Total
