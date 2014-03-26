@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/static/css/themes/default/style.min.css"/>
 <link rel="stylesheet" type="text/css" href="/static/css/slick/slick.grid.css"/>
 <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
-<link rel="stylesheet" type="text/css" href="/static/css/slick/slick-default-theme.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/grid.css"/>
 
 <script src="/static/jquery/jstree.min.js" type="text/javascript"></script>
 <script src="/static/jquery/jquery.event.drag-2.2.js"></script>
@@ -45,7 +45,7 @@
 
 
 <script type="text/javascript">
-var GRID;
+var GRID, COLWIDTH;
 
 function loadServicesTree() {
 	//alert("loadServicesTree");
@@ -99,13 +99,13 @@ function loadGrid() {
 
 	var columns = [];
 	var headers = JSON_data['headers'];
-	var colWidth = 700 / headers.length + 3;
+	COLWIDTH = 700 / headers.length + 3;
 
 	columns.push({
 		id : "title_wtrange",
 		name : "Wt. Range",
 		field : "wtrange",
-		maxWidth : colWidth * 2,
+		maxWidth : COLWIDTH * 2,
 		cssClass : "cell-title",
 		editor : NumericRangeEditor,
 		formatter : NumericRangeFormatter
@@ -114,7 +114,7 @@ function loadGrid() {
 		id : "title_mincost",
 		name : "mincost",
 		field : "mincost",
-		maxWidth : colWidth,
+		maxWidth : COLWIDTH,
 		cssClass : "cell-title",
 		editor : RealNumberEditor
 	});
@@ -124,7 +124,7 @@ function loadGrid() {
 			id : "header_" + entry,
 			name : "" + entry,
 			field : "" + entry,
-			maxWidth : colWidth,
+			maxWidth : COLWIDTH,
 			cssClass : "cell-title",
 			editor : RealNumberEditor,
 			sortable : false
@@ -186,7 +186,7 @@ function RealNumberEditor(args) {
 	var scope = this;
 
 	this.init = function () {
-		$numVal = $("<INPUT type=text style='width:40px' />")
+		$numVal = $("<INPUT type='text' class='editor-text'/>")
 			.appendTo(args.container)
 			.bind("keydown", scope.handleKeyDown);
 		scope.focus();
