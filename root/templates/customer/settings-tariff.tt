@@ -86,7 +86,7 @@ if (!$('#services_tree').html()) {
 }
 
 function loadGrid() {
-	alert("loadGrid");
+	//alert("loadGrid");
 	$('#myGrid').empty();
 	var options = {
 		selectable : false,
@@ -147,7 +147,7 @@ function getTariff(csid) {
 }
 
 function extractAndSubmit() {
-	alert($('#csid').val());
+	//alert($('#csid').val());
 	var d = GRID.getData();
 	var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
 	my_ajax_request('settings/tariff/save', params, function () {
