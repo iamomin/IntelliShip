@@ -36,7 +36,7 @@
 
 	<div id="label" class="Print">
 	[% IF LABEL_IMG %]
-		<table class="center><tr><td><img id="lblimg" src="[% LABEL_IMG %]" style="border: 1px solid;"></td></tr></table>
+		<table class="center"><tr><td><img id="lblimg" src="[% LABEL_IMG %]" style="border: 1px solid;"/></td></tr></table>
 	[% ELSE %]
 		[% LABEL %]
 	[% END %]
