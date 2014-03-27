@@ -193,19 +193,14 @@
 	[% IF LABEL_IMG %]
 	function PrintImageLabel_[% shipmentid %]()
 		{
-		var lblimg = document.getElementById("lblimg");
-		lblimg.onload =  function() {
+		var wb = "<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>";
+		var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){ var WB = document.getElementById('WB'); WB.ExecWB(6,2,1); window.close(); }" + "</" + "script" + ">";
+		var lbl = "<html><head></head><body>" + wb + " " + $("#label").html() + " " + strScript + "</body></html>";
 
-			var wb = "<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>";
-			var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){ var WB = document.getElementById('WB'); WB.ExecWB(6,2,1); window.close(); }" +"</script" + ">";
-			var lbl = "<html><head></head><body>" + wb + " " + $("#label").html() + " " + strScript + "</body></html>";
+		var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+		printWin.document.write(lbl);
 
-			var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
-			printWin.onafterprint = CheckAfterLabelPrintActivities_[% shipmentid %]();
-
-			printWin.document.write(lbl);
-			printWin.document.close();
-			}
+		printWin.onafterprint = CheckAfterLabelPrintActivities_[% shipmentid %];
 		}
 	[% END %]
 
