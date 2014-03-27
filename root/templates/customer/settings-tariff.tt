@@ -348,6 +348,22 @@ function NumericRangeEditor(args) {
 					msg : "Overlapping maximum"
 				};
 			}
+			
+			if($from.val() < min && $to.val() > max){
+				alert("Range or sub-range is already defined");
+				return {
+					valid : false,
+					msg : "Range or sub-range is already defined"
+				};
+			}
+			
+			if($from.val() > min && $to.val() < max){
+				alert("Range or super-range is already defined");
+				return {
+					valid : false,
+					msg : "Range or super-range is already defined"
+				};
+			}
 		}
 		
 		return {
