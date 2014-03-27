@@ -3455,7 +3455,7 @@ sub generate_commercial_invoice
 	my $OAAddress;
 	if ($OAAddress = $CO->route_to_address)
 		{
-		my $shipper_address = $OAAddress->{'addressname'};
+		my $shipper_address = $OAAddress->addressname;
 		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
 		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
 		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
@@ -3479,7 +3479,7 @@ sub generate_commercial_invoice
 		}
 	elsif ($OAAddress = $Shipment->origin_address)
 		{
-		my $shipper_address = $OAAddress->{'addressname'};
+		my $shipper_address = $OAAddress->addressname;
 		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
 		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
 		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
