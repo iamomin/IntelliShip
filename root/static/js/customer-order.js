@@ -45,7 +45,9 @@ function RestoreAddress(address, direction)
 	$('#' + direction + 'address1').val(addressArray[address].address1);
 	$('#' + direction + 'address2').val(addressArray[address].address2);
 	$('#' + direction + 'city').val(addressArray[address].city);
+	$('#' + direction + 'city').next("span").text($('#' + direction + 'city').val());
 	$('#' + direction + 'state').val(addressArray[address].state);
+	$('#' + direction + 'state').next("span").text($('#' + direction + 'state').val());
 	$('#' + direction + 'zip').val(addressArray[address].zip);
 	$('#' + direction + 'country').val(addressArray[address].country);
 	$('#' + direction + 'contact').val(addressArray[address].contact);
@@ -117,7 +119,11 @@ var previousCheck = 'outbound';
 var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
 function ConfigureInboundOutboundDropship()
 	{
-
+	
+	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
+	
+	if(selectedType == previousCheck) return;
+	
 	if (previousCheck == 'outbound')
 		{
 		addressArray['ADDRESS_1'] = GetAddress('to');
@@ -131,8 +137,6 @@ function ConfigureInboundOutboundDropship()
 		addressArray['ADDRESS_1'] = GetAddress('from');
 		addressArray['ADDRESS_2'] = GetAddress('to');
 		}
-
-	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
 
 	if (selectedType == 'inbound')
 		{

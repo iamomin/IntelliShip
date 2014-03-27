@@ -92,7 +92,7 @@
 					<td>
 					<div id="fromCountryDiv" style="display: inline; padding: 0;">
 					<label>
-					<select name="fromcountry" id="fromcountry" style="width: 220px;">
+					<select name="fromcountry" id="fromcountry" style="width: 220px;" onchange="updateStateList('from');">
 						[% FOREACH item IN countrylist_loop %]
 							<option value="[% item.value %]" [% (fromCustomerAddress.country and item.value == fromCustomerAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
