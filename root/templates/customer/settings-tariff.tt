@@ -17,7 +17,7 @@
 <input type="hidden" name="csid" id="csid"/>
 <table style="width: 100%; height: 400px">
 <tr>
-    <td colspan="2" style="border-bottom: solid gray 1px"><label id="lbl_breadcrumb"></label> </td></td>	
+    <td colspan="2" style="border-bottom: solid gray 1px"><label id="lbl_breadcrumb" class="breadcrumb"></label> </td></td>	
 </tr>
 <tr>
     <td style="height: 100%; width: 20%; border-right: solid gray 1px; vertical-align: top">
@@ -50,14 +50,27 @@ var GRID, COLWIDTH;
 function loadServicesTree() {
 	//alert("loadServicesTree");
 	$('#services_tree').on("changed.jstree", function (e, data) {
-		/*alert("DATA: " + JSON.stringify(data.node));
-		var parent=data.inst._get_parent(data.rslt.obj);
-		alert(parent.find('a').first().text());*/
-
+	
 		if (data.node.original.hasOwnProperty('sid')) {
 			$('#csid').val(data.node.id);
 			getTariff(data.node.id);
 		}
+		
+		//alert("DATA: " + JSON.stringify(data.node));
+		var parents = data.node.parents;
+		//alert(parents);
+		var breadcrumbStr = $("#customername").val() + " / ";
+		
+		for(var i = 0; i < parents.length; i++){
+			var parentId = parents[i];
+			if(parentId != "#"){
+				//alert(JSON.stringify($("#" + parentId)));
+				breadcrumbStr += $("#" + parentId).find("a").first().text() + " / ";
+			}	
+		}
+		breadcrumbStr += data.node.text; 
+		$('#lbl_breadcrumb').html(breadcrumbStr);			
+	
 	}).jstree({
 		"plugins" : ['themes', 'json_data', 'ui'],
 		"core" : {
@@ -76,7 +89,7 @@ function getAllServices() {
 	var params = 'customerid=' + $("#customerid").val();
 	send_ajax_request('', 'JSON', 'settings/tariff', 'get_carrier_service_list', params, function () {
 		loadServicesTree();
-		$('#lbl_breadcrumb').html($("#customername").val() + " /");
+		$('#lbl_breadcrumb').html($("#customername").val() + " / ");
 	});
 }
 
@@ -158,13 +171,6 @@ function extractAndSubmit() {
 			showMessage("Failed to update");
 		}
 	});
-}
-
-function updateBreadcrumb(child, parent) {
-	var breadcrumb = $("#customername").val();
-	breadcrumb = breadcrumb + (parent ? "/" + parent : "");
-	breadcrumb = breadcrumb + (child ? "/" + child : "");
-	$('#lbl_breadcrumb').html(breadcrumb);
 }
 
 // Get the item column value using a custom 'fieldIdx' column param

@@ -777,6 +777,13 @@ input.delete {
     cursor: pointer;
 }
 
+label.breadcrumb{
+	width: 100%;
+	font-size: 12px;    
+	color: #9BA7AF;
+	padding: 2px;
+}
+
 .green-forward {
     min-width: 150px;
     height: 32px;
