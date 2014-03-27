@@ -1,14 +1,11 @@
 <h2>SHIPMENT-NOTIFICATION</h2>
 <style>
-div.notice {
-    position: relative;
-    margin: 10px 0px;
-    padding: 15px;
-    border: 1px solid #97C1DA;
-    color: #264C72;
-    background-color: #D0E3EF;
-    text-align: left;
-}
+div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid #97C1DA;color: #264C72;background-color: #D0E3EF;text-align: left;}
+#notification table  {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+#notification table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+#notification table tr:nth-child(even) {color: #000; background: #E4E5E7 }
+#notification table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
+#notification table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap;}
 </style>
 <div id="notification">
 
