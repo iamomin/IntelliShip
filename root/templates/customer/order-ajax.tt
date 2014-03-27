@@ -298,7 +298,7 @@
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td valign="top">
-				<label><input type="radio" name="customerserviceid" id="[% TAB _ '-' _ item.customerserviceid %]" value="[% item.customerserviceid %]" onclick="javascript:setCarrier('[% item.carrier %]'); CalculateDimentionalWeight('[% item.customerserviceid %]');" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="[% TAB _ '-' _ item.customerserviceid %]" value="[% item.customerserviceid %]" onclick="javascript:setCarrierServiceDetails('[% item.carrier %]','[% item.customerserviceid %]'); CalculateDimentionalWeight('[% item.customerserviceid %]');" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
 			[% IF item.checked %]<script>$("#carrier").val('[% item.carrier %]');</script>[% END %]
 			</td>
 			<td valign="top">[% item.carrier %]</td>
@@ -344,10 +344,11 @@
 
 	<style>.no-close .ui-dialog-titlebar-close { display: none;}</style>
 	<script>
-
-		function setCarrier(carrier)
+		var carrierServiceChargeDetails = [% CS_CHARGE_HASH ? CS_CHARGE_HASH : '{}' %];
+		function setCarrierServiceDetails(carrier,customerserviceid)
 			{
 			$("#carrier").val(carrier);
+			$("#packagecosts").val(carrierServiceChargeDetails[customerserviceid]);
 			}
 
 		var shipmentChargeDlg = $("#SC-DLG").dialog({

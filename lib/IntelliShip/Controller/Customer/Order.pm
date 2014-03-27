@@ -1359,6 +1359,7 @@ sub SHIP_ORDER :Private
 	my $ServiceTypeID = $self->API->get_CS_value($params->{'customerserviceid'}, 'servicetypeid', $CustomerID);
 	#$c->log->debug("API ServiceTypeID: " . Dumper $ServiceTypeID);
 
+	my $laundryArr = [];
 	$params->{'new_shipmentid'} = $self->get_token_id;
 
 	## 'OTHER' carriers
@@ -1410,6 +1411,8 @@ sub SHIP_ORDER :Private
 				$ShipmentPackage->shippedqty($ShipmentPackage->quantity);
 				$ShipmentPackage->insert;
 
+				push(@$laundryArr, $ShipmentPackage);
+
 				$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
 
 				my @products = $Package->products;
@@ -1421,6 +1424,8 @@ sub SHIP_ORDER :Private
 					$ShipmentProduct->packprodataid($self->get_token_id);
 					$ShipmentProduct->shippedqty($ShipmentProduct->quantity);
 					$ShipmentProduct->insert;
+
+					push(@$laundryArr, $ShipmentProduct);
 
 					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
 					}
@@ -1434,19 +1439,29 @@ sub SHIP_ORDER :Private
 				$AssData->ownerid($params->{'new_shipmentid'});
 				$AssData->assdataid($self->get_token_id);
 				$AssData->insert;
+
+				push(@$laundryArr, $AssData);
 				}
 
 			# Push all shipmentcharges onto a list for use by all shipments
 			if ($params->{'packagecosts'})
 				{
-				$params->{'shipmentchargepassthru'} = $self->BuildShipmentChargePassThru;
-				$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
-				}
+				#$params->{'shipmentchargepassthru'} = $self->BuildShipmentChargePassThru;
+				#$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
+				my @shipmentCharges = split('|',$params->{'packagecosts'});
+				foreach my $sc (@shipmentCharges)
+					{
+					my ($chargename,$chargeamount) = split(':',$sc);
+					my $ShipmentCharge = $c->model('MyDBI::Shipmentcharge')->new({
+						shipmentchargeid => $self->get_token_id,
+						shipmentid       => $params->{'new_shipmentid'},
+						chargename       => $chargename,
+						chargeamount     => $chargeamount
+						});
 
-			# Extract shipment specific data for use in the shipping process
-			if ( $params->{'fakeitemids'} )
-				{
-				#$params = $self->GetCurrentPackage;
+					$ShipmentCharge->insert;
+					push(@$laundryArr, $ShipmentCharge);
+					}
 				}
 
 			################################################
@@ -1547,6 +1562,7 @@ sub SHIP_ORDER :Private
 		{
 		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
 		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
+		$_->delete foreach @$laundryArr; ## Flush all inserted shipment information
 		return $self->display_error_details($Response->message);
 		}
 
@@ -1556,6 +1572,7 @@ sub SHIP_ORDER :Private
 	unless ($Shipment)
 		{
 		$c->log->debug("ERROR: No response received. " . $Response->message);
+		$_->delete foreach @$laundryArr; ## Flush all inserted shipment information
 		return $self->display_error_details($Response->message);
 		}
 
