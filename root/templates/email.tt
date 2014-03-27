@@ -20,7 +20,7 @@
 				<div class="content">
 					<table bgcolor="#999999">
 					<tr>
-						<td><img src="http://www.engagetechnology.com/resources/css/images/intelliship_logo_frontpage.png"/></td>
+						<td><img src="https://dintelliship2.engagetechnology.com/static/branding/engage/images/login/logo.png"/></td>
 						<td align="right"><h6 class="collapse">Engage Technology</h6></td>
 					</tr>
 				</table>
@@ -32,7 +32,7 @@
 
 
 		<!-- BODY -->
-		<table class="body-wrap">
+		<table class="body-wrap" border=0>
 			<tr>
 				<td></td>
 				<td class="container" bgcolor="#FFFFFF">
@@ -45,8 +45,7 @@
 								<h3>Welcome, [% username %]</h3>
 								<p class="lead">Cloud based multi-carrier manifesting and shipment routing software.</p>
 
-								<!-- A Real Hero (and a real human being) -->
-								<p><img src="http://www.engagetechnology.com/resources/css/images/intelli_slider/Slide1.png" /></p><!-- /hero -->
+								<p><img src="http://www.engagetechnology.com/resources/css/images/intelli_slider/Slide1.png" /></p>
 
 								<!-- Callout Panel -->
 								<p class="callout">
@@ -95,7 +94,6 @@
 										</td>
 									</tr>
 								</table><!-- /social & contact -->
-
 
 							</td>
 						</tr>

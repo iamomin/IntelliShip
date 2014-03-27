@@ -1808,7 +1808,7 @@ sub GetNotificationShipments :Private
 		WHERE
 			s.shipmentid = '$shipment_id'
 			AND date(s.dateshipped) = date(timestamp 'now')
-			AND s.statusid = '100'
+			AND s.statusid IN (4,100)
 			AND p.datatypeid = 1000
 			AND p.ownertypeid = 2000
 			AND s.shipmentnotification IS NOT NULL";

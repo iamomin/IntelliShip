@@ -1,10 +1,20 @@
 <h2>SHIPMENT-NOTIFICATION</h2>
-
+<style>
+div.notice {
+    position: relative;
+    margin: 10px 0px;
+    padding: 15px;
+    border: 1px solid #97C1DA;
+    color: #264C72;
+    background-color: #D0E3EF;
+    text-align: left;
+}
+</style>
 <div id="notification">
 
 	<div class="notice">Your shipment has been prepared and is ready for to pick-up</div>
 
-	<table class="content-wrap" border="1px">
+	<table class="content-wrap" border="0">
 		<tr>
 			<th>SHIPMENT</th>
 			<th>TRACKING#</th>
