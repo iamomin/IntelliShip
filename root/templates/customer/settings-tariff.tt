@@ -321,6 +321,35 @@ function NumericRangeEditor(args) {
 			};
 		}
 
+		var inRange = function(v, m, M){
+			return m <= v && v <= M;
+		};
+		
+		var gridData = GRID.getData();		
+		for(var key in gridData){
+			var row = gridData[key];
+			var myRowNum = args.item.rownum;
+			var min = row.wtmin;
+			var max = row.wtmax;
+
+			if(myRowNum > row.rownum && inRange($from.val(), min, max)){
+				
+				alert("Overlapping minimum");
+				return {
+					valid : false,
+					msg : "Overlapping minimum"
+				};
+			}
+			
+			if(myRowNum < row.rownum && inRange($to.val(), min, max)){
+				alert("Overlapping maximum");
+				return {
+					valid : false,
+					msg : "Overlapping maximum"
+				};
+			}
+		}
+		
 		return {
 			valid : true,
 			msg : null

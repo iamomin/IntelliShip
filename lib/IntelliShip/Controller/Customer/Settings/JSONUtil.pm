@@ -61,6 +61,7 @@ sub tariff_to_json
     my @data = ();
     my $d = {};
 	my $i = 0;
+	my $rownum = 0;
     foreach (@ratearray)
     {
         $record = $_;
@@ -73,6 +74,7 @@ sub tariff_to_json
             $d->{'mincost'} = $record->{'arcostmin'};                        
             #$d->{'rateid'} = $record->{'rateid'};
 			$d->{'ratetypeid'} = $record->{'ratetypeid'};
+			$d->{'rownum'} = $rownum++; #ONLY for UI purpose			
         }
 
         $d->{$record->{'zonenumber'}} = {
