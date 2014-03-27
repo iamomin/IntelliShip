@@ -16,6 +16,9 @@ sub process_request
 
 	$self->log("Process FedEx Void Shipment");
 
+	$Shipment->statusid('6'); ## Voiding
+	$Shipment->update;
+
 	if ($Shipment->pickuprequest or $Shipment->customerserviceid)
 		{
 		}
@@ -62,6 +65,9 @@ sub process_request
 
 	unless ($VoidReturn)
 		{
+		$Shipment->statusid('5'); ## Void
+		$Shipment->update;
+
 		$self->add_error("No response received from FedEx");
 		return;
 		}

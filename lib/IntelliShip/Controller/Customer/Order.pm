@@ -1888,28 +1888,55 @@ sub VOID_SHIPMENT :Private
 	$Shipment->statusid(5); ## Void Shipment
 	$Shipment->update;
 
-	# Set co to 'unshipped' status
+	## Set CO to 'unshipped' status
 	my $CO = $Shipment->CO;
 	$CO->statusid(1); ## Void Shipment
 	$CO->update;
+
+	$CO->delete_all_package_details;
 
 	my $OrderNumber = $CO->ordernumber;
 	$c->log->debug("Order number " . $OrderNumber);
 
 	## Remove product counts from pick & pack CO shipped product counts
-	my @packages = $Shipment->packages;
-	foreach my $Package (@packages)
+	if ($CO->has_pick_and_pack)
 		{
-		$Package->products->delete;
-		$Package->delete;
+		my @packages = $Shipment->packages;
+		foreach my $Package (@packages)
+			{
+			my @products = $Package->products;
+			foreach my $Product (@products)
+				{
+				if ($CO->cotypeid == 2)
+					{
+					my $shipped_qty = $Product->shippedqty - $Package->quantity;
+					$shipped_qty = $shipped_qty > 0 ? $shipped_qty : 0;
+					$Product->shippedqty($shipped_qty);
+					$Product->reqqty($shipped_qty);
+					}
+				else
+					{
+					my $qty = $Product->quantity + $Package->quantity;
+					my $shipped_qty = $Product->shippedqty - $Package->quantity;
+					my $status_id = $qty > 0 ? 1 : 2;
+
+					$Product->shippedqty($shipped_qty);
+					$Product->statusid($status_id);
+					$Product->quantity($qty);
+					}
+
+				$Product->update;
+				}
+			}
 		}
 
-	# Delete any associated orders
+	## Delete any associated orders
 	$Shipment->shipmentcoassocs->delete;
 
-	# Check if the shipment had a pickuprequest sent.  If it did, cancel it.
+	##************ PENDING ************
+	## Check if the shipment had a pickuprequest sent.  If it did, cancel it.
 
-	# set a couple of values to pass to the pickup cancel request if they were passed in
+	## set a couple of values to pass to the pickup cancel request if they were passed in
 	if ( defined($self->{'customerid'}) && $self->{'customerid'} ne '' )
 		{
 		$Shipment->{'customerid'} = $self->{'customerid'};
@@ -1950,16 +1977,15 @@ sub VOID_SHIPMENT :Private
 	my $CustomerName = $Customer->customername;
 	if ($ToEmail)
 		{
-		my $OriginalAddress = $CO->to_address;
-		$self->SendShipmentVoidEmail($OriginalAddress,$Shipment);
+		$self->SendShipmentVoidEmail($Shipment);
 		}
 
 	## Add note to notes table
 	my $noteData = { ownerid => $Shipment->shipmentid };
-	$noteData->{'notesid'} = $self->get_token_id;
-	$noteData->{'note'} = 'Shipment Voided By ' . $Contact->username;
-	$noteData->{'contactid'} = $Contact->contactid;
-	$noteData->{'notestypeid'} = 900;
+	$noteData->{'notesid'}      = $self->get_token_id;
+	$noteData->{'note'}         = 'Shipment Voided By ' . $Contact->username;
+	$noteData->{'contactid'}    = $Contact->contactid;
+	$noteData->{'notestypeid'}  = 900;
 	$noteData->{'datehappened'} = IntelliShip::DateUtils->get_timestamp_with_time_zone();
 
 	$c->model('MyDBI::Note')->new($noteData)->insert;
@@ -1970,30 +1996,39 @@ sub VOID_SHIPMENT :Private
 sub SendShipmentVoidEmail
 	{
 	my $self = shift;
-	my $OriginalAddress = shift;
 	my $Shipment = shift;
-	my $Customer = $self->customer;
-	my $OrderNumber='';
 
-	return;
-
+	my $Contact        = $self->contact;
+	my $Customer       = $self->customer;
+	my $OrderNumber    = $Shipment->CO->ordernumber;
 	my $TrackingNumber = $Shipment->tracking1;
-	my ($CarrierName,$ServiceName) = $self->API->get_carrier_service_name($Shipment->customerserviceid);
-	my $EmailInfo = {};
-	$EmailInfo->{'fromemail'} = "intelliship\@intelliship.engagetechnology.com";
-	$EmailInfo->{'fromname'} = 'NOC';
-	$EmailInfo->{'toemail'} = $self->customerlosspreventemail;;
-	$EmailInfo->{'toname'} = '';
-	$EmailInfo->{'subject'}	='WARNING: ' . $self->customer->customername . ', ' . $CarrierName . ' ' . $ServiceName . ' ' . $TrackingNumber . ' (Voided By ' . $self->contact->contact->full_name  . '/' . $self->{'ipaddress'} . ')' ;
-	#$EmailInfo->{'cc'} = 'noc@engagetechnology.com';
-	my $ServerType; # 1 = production, 2 = beta, 3 = dev
+	my $ipaddress      = $self->context->req->address;
 
-	if ( $ServerType == 1 )
+	my ($Carrier,$Service) = $self->API->get_carrier_service_name($Shipment->customerserviceid);
+
+	my $subject = "WARNING: " . $Customer->customername . ", $Carrier $Service $TrackingNumber (Voided By " . $Contact->full_name  . "/$ipaddress )";
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('NOC');
+	$Email->subject($subject);
+	$Email->to($Customer->losspreventemail);
+
+	$Email->add_line('');
+	$Email->add_line('=' x 60);
+	$Email->add_line('ShipmentID  : ' . $Shipment->shipmentid);
+	$Email->add_line('Carrier     : ' . $Carrier);
+	$Email->add_line('Service     : ' . $Service);
+	$Email->add_line('Tracking1   : ' . $TrackingNumber);
+	$Email->add_line('OrderNumber : ' . $OrderNumber);
+	$Email->add_line('=' x 60);
+	$Email->add_line('');
+
+	if ($Email->send)
 		{
-		$EmailInfo->{'subject'} =  "TEST " . $EmailInfo->{'subject'};
+		$self->context->log->debug("Shipment voide notification email successfully sent");
 		}
-
-	my $Body = 'ShipmentID: ' . $Shipment->shipmentid . "\n" . $self->customer->customername . "\n" . $CarrierName . " " . $ServiceName . "\n" . $TrackingNumber . "\n" . " " . $OrderNumber . "\n" . "\n\n\n";
 	}
 
 sub generate_label :Private
@@ -2407,14 +2442,14 @@ sub BuildShipmentInfo
 	$ShipmentData->{'branchaddresscountry'} = $FromAddress->country;
 
 	my $ToAddress = $CO->destination_address;
-	$ShipmentData->{'addressname'}    = $ToAddress->addressname;
-	$ShipmentData->{'address1'}       = $ToAddress->address1;
-	$ShipmentData->{'address2'}       = $ToAddress->address2;
-	$ShipmentData->{'addresscity'}    = $ToAddress->city;
-	$ShipmentData->{'addressstate'}   = $ToAddress->state;
-	$ShipmentData->{'addresszip'}     = $ToAddress->zip;
-	$ShipmentData->{'addresscountry'} = $ToAddress->country;
-	$ShipmentData->{'addresscountryname'} = $ToAddress->country_description;
+	$ShipmentData->{'addressname'}          = $ToAddress->addressname;
+	$ShipmentData->{'address1'}             = $ToAddress->address1;
+	$ShipmentData->{'address2'}             = $ToAddress->address2;
+	$ShipmentData->{'addresscity'}          = $ToAddress->city;
+	$ShipmentData->{'addressstate'}         = $ToAddress->state;
+	$ShipmentData->{'addresszip'}           = $ToAddress->zip;
+	$ShipmentData->{'addresscountry'}       = $ToAddress->country;
+	$ShipmentData->{'addresscountryname'}   = $ToAddress->country_description;
 
 	$ShipmentData->{'coid'} = $CO->coid;
 	$ShipmentData->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);

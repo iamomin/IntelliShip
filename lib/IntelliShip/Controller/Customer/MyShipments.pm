@@ -299,7 +299,7 @@ sub get_shipped_sql :Private
 			s.carrier,
 			s.mode,
 			CASE
-			WHEN s.statusid = 7THEN 6
+			WHEN s.statusid = 7 THEN 6
 			ELSE 4
 			END
 			as condition,

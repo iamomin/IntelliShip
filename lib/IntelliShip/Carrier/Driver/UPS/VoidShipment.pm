@@ -10,6 +10,9 @@ sub process_request
 	my $c = $self->context;
 	my $Shipment = $self->SHIPMENT;
 
+	$Shipment->statusid('6'); ## Voiding
+	$Shipment->update;
+
 	$self->void_shipment;
 
 	return $Shipment;

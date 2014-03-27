@@ -109,7 +109,7 @@
 			</tr>
 			[% FOREACH item IN myshipment_list %]
 			<tr>
-				<td><label><input type="checkbox" id="[% item.shipmentid %] " name="shipment" value="[% item.shipmentid _ '-' _ item.carrier _ '-' _ item.tracking %]" class="items"/><span></span></label></td>
+				<td>[% UNLESS item.condition == 6 %]<label><input type="checkbox" id="[% item.shipmentid %] " name="shipment" value="[% item.shipmentid _ '-' _ item.carrier _ '-' _ item.tracking %]" class="items"/><span></span></label>[% END %]</td>
 				<td><a class="[% item.a_class %]" href="javascript:showShipmentDetails('[% item.shipmentid %]');"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
@@ -121,7 +121,11 @@
 				<td>[% item.carrier %]</td>
 				<td>[% item.mode %]</td>
 				<td class="center">
+					[% IF item.condition == 6 %]
+					<a href="javascript:void(0);" class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void">VOID</a>
+					[% ELSE %]
 					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:ReprintLabel('[% item.shipmentid %]');" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
+					[% END %]
 				</td>
 			</tr>
 			[% END %]

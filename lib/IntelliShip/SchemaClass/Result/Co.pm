@@ -963,7 +963,7 @@ sub has_pick_and_pack
 	my @packages = $self->packages;
 	foreach (@packages)
 		{
-		my $RS = $_->packprochilds;
+		my $RS = $_->packprochilds({ statusid => [0,1] });
 		return 1 if $RS->count > 0;
 		}
 	}
