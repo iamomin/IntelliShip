@@ -298,7 +298,7 @@
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td valign="top">
-				<label><input type="radio" name="customerserviceid" id="[% TAB _ '-' _ item.customerserviceid %]" value="[% item.customerserviceid %]" onclick="javascript:setCarrierServiceDetails('[% item.carrier %]','[% item.customerserviceid %]'); CalculateDimentionalWeight('[% item.customerserviceid %]');" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="[% TAB %]-[% item.customerserviceid %]" value="[% item.customerserviceid %]" onclick="javascript:setCarrierServiceDetails('[% item.carrier %]','[% item.customerserviceid %]'); CalculateDimentionalWeight('[% item.customerserviceid %]');" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
 			[% IF item.checked %]<script>$("#carrier").val('[% item.carrier %]');</script>[% END %]
 			</td>
 			<td valign="top">[% item.carrier %]</td>
@@ -381,7 +381,7 @@
 					}
 				});
 
-			CalculateDimentionalWeight($('input:radio[name=customerserviceid]:checked').val());
+			$('input:radio[name=customerserviceid]:checked').click();
 			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();
 			});
 

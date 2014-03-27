@@ -1448,15 +1448,15 @@ sub SHIP_ORDER :Private
 				{
 				#$params->{'shipmentchargepassthru'} = $self->BuildShipmentChargePassThru;
 				#$c->log->debug("___ shipmentchargepassthru: " . $params->{'shipmentchargepassthru'});
-				my @shipmentCharges = split('|',$params->{'packagecosts'});
+				my @shipmentCharges = split(/\|/,$params->{'packagecosts'});
 				foreach my $sc (@shipmentCharges)
 					{
-					my ($chargename,$chargeamount) = split(':',$sc);
+					my ($chargename,$chargeamount) = split(/:/,$sc);
 					my $ShipmentCharge = $c->model('MyDBI::Shipmentcharge')->new({
 						shipmentchargeid => $self->get_token_id,
 						shipmentid       => $params->{'new_shipmentid'},
 						chargename       => $chargename,
-						chargeamount     => $chargeamount
+						chargeamount     => sprintf("%.2f",$chargeamount)
 						});
 
 					$ShipmentCharge->insert;

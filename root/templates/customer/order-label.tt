@@ -62,7 +62,8 @@
 		var query_param = "shipmentid=" + $("#shipmentid").val();
 		send_ajax_request('', 'JSON', 'order', 'cancel_shipment', query_param, function () {
 			if ( JSON_data.voided ) {
-				showMessage("Shipment voided, please wait ...", "Void Shipment", function() {
+				showMessage("<div class='notice'>Shipment voided successfully</div>", "Void Shipment", function() {
+					$("#dialog-message").html("<div class='notice'>Please wait...</div>");
 					$("#do").val('');
 					$("#force_edit").val('1');
 					$('#frm_label').submit();
