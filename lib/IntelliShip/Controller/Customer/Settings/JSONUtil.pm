@@ -59,6 +59,7 @@ sub tariff_to_json
     
     my $prevunitsstart = 0;
     my @data = ();
+	my @rate_ids = ();
     my $d = {};
 	my $i = 0;
 	my $rownum = 0;
@@ -67,7 +68,9 @@ sub tariff_to_json
         $record = $_;
         my $unitsstart = $record->{'unitsstart'};
         if($prevunitsstart != $unitsstart || $i == 0) {
+			$d->{'rateids'} = \@rate_ids;
             push(@data, $d);
+			
             $d = {};            
             $d->{'wtmin'} = $unitsstart;
             $d->{'wtmax'} = $record->{'unitsstop'};
@@ -81,7 +84,8 @@ sub tariff_to_json
 										'actualcost'=>$record->{'actualcost'}, 
 										'rateid'=>$record->{'rateid'}, 
 										'costfield'=>$record->{'costfield'}
-										};        
+										}; 
+		push(@rate_ids, $record->{'rateid'});
         $prevunitsstart = $unitsstart;
 		$i++;
     }

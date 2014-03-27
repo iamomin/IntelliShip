@@ -26,14 +26,14 @@
     <td style="height: 100%; width: 80%; vertical-align: top">
 		<table style="height: 100%; width: 100%;  vertical-align: top">
 			<tr>
-				<td style="height: 100%; width: 100%; vertical-align: top">
+				<td style="width: 100%; vertical-align: top">
 					<div id="operations" style="display:none">
 						<input type="button" value="Update" onclick="extractAndSubmit();"/>						
 					</div>
 				</td>
 			</tr>
 			<tr>
-				<td style="height: 100%; width: 100%; vertical-align: top">
+				<td style="width: 100%; vertical-align: top">
 					<div id="myGrid" style="width:700px; height:400px;"></div><br>        
 				</td>
 			</tr>
@@ -118,7 +118,8 @@ function loadGrid() {
 		id : "title_wtrange",
 		name : "Wt. Range",
 		field : "wtrange",
-		minWidth : (COLWIDTH * 2) + 30,
+		//width : (COLWIDTH * 2) + 30,
+		minWidth : 140,
 		cssClass : "cell-title",
 		editor : NumericRangeEditor,
 		formatter : NumericRangeFormatter
@@ -307,6 +308,7 @@ function NumericRangeEditor(args) {
 	};
 
 	this.validate = function () {
+		//alert(JSON.stringify(args.item.rateids));
 		if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
 			return {
 				valid : false,
@@ -333,8 +335,7 @@ function NumericRangeEditor(args) {
 			var max = row.wtmax;
 
 			if(myRowNum > row.rownum && inRange($from.val(), min, max)){
-				
-				alert("Overlapping minimum");
+				//alert("Overlapping minimum");
 				return {
 					valid : false,
 					msg : "Overlapping minimum"
@@ -342,7 +343,7 @@ function NumericRangeEditor(args) {
 			}
 			
 			if(myRowNum < row.rownum && inRange($to.val(), min, max)){
-				alert("Overlapping maximum");
+				//alert("Overlapping maximum");
 				return {
 					valid : false,
 					msg : "Overlapping maximum"
@@ -350,7 +351,7 @@ function NumericRangeEditor(args) {
 			}
 			
 			if($from.val() < min && $to.val() > max){
-				alert("Range or sub-range is already defined");
+				//alert("Range or sub-range is already defined");
 				return {
 					valid : false,
 					msg : "Range or sub-range is already defined"
@@ -358,7 +359,7 @@ function NumericRangeEditor(args) {
 			}
 			
 			if($from.val() > min && $to.val() < max){
-				alert("Range or super-range is already defined");
+				//alert("Range or super-range is already defined");
 				return {
 					valid : false,
 					msg : "Range or super-range is already defined"
