@@ -659,15 +659,14 @@
 
 	<script>
 		window.onload = function () {
-			//alert("I am here on load : com inv");
-			//window.onunload = function() { alert("Unloading child"); };
-			//window.onbeforeunload = function (event) { alert("I am here on before unload"); };
 			var WebBrowser = document.getElementById('WebBrowser');
 			WebBrowser.ExecWB(6,2);
+			//window.print();
 			};
 		window.onafterprint = function() {
 			//alert("I am here on after print : com inv");
-			window.close();
+			//window.close();
+			window.location.href = '/customer/order/quickship';
 			};
 	</script>
 </html>

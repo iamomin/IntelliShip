@@ -456,16 +456,16 @@
 
 	<script>
 		window.onload = function () {
-			//window.onunload = function() { alert("Unloading child"); };
 			var WebBrowser = document.getElementById('WebBrowser');
 			WebBrowser.ExecWB(6,2);
+			//window.print();
 			};
 		window.onafterprint = function() {
-			//alert("I am here on after print : bol");
 			if ($('input[name=action]').length > 0)
 				document.getElementById('frm_next').submit();
 			else
-				window.close();
+				//window.close();
+				window.location.href = '/customer/order/quickship';
 			};
 	</script>
 </html>

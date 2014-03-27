@@ -7,6 +7,7 @@
 <div class="notice">[% MESSAGE %]</div>
 [% END %]
 
+<div id="forms">
 <form id="frm_label" name="frm_label" action="/customer/order/quickship">
 	<input type="hidden" id="do" name="do"/>
 	<input type="hidden" id="force_edit" name="force_edit"/>
@@ -44,6 +45,7 @@
 	</div>
 
 </form>
+</div>
 
 <script>
 	var PrintFormSequence_[% shipmentid %] = new Array();
@@ -74,6 +76,7 @@
 					$("#dialog-message").html("<div class='notice'>Please wait...</div>");
 					$("#do").val('');
 					$("#force_edit").val('1');
+					$("#frm_label").attr('action',window.location.href);
 					$('#frm_label').submit();
 					});
 				} else {
@@ -97,8 +100,11 @@
 	function GeneratePrintPackingList(coid, shipmentid)
 		{
 		var query_param = 'action=generate_packing_list&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
-		var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
+		//var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
+		//myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
+
+		//$("#forms").html('<iframe src="/customer/order/ajax?' + query_param + '" width="100%" height="1000" frameborder="0"></iframe>');
+		window.location.href = '/customer/order/ajax?' + query_param;
 		return;
 
 		var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
@@ -116,8 +122,11 @@
 	function GenerateBillOfLading(coid, shipmentid)
 		{
 		var query_param = 'action=generate_bill_of_lading&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
-		var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
+		//var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
+		//myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
+
+		//$("#forms").html('<iframe src="/customer/order/ajax?' + query_param + '" width="100%" height="1000" frameborder="0"></iframe>');
+		window.location.href = '/customer/order/ajax?' + query_param;
 		return;
 
 		var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
@@ -135,8 +144,11 @@
 	function GenerateCommercialInvoice(coid, shipmentid)
 		{
 		var query_param = 'action=generate_commercial_invoice&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
-		var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
+		//var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
+		//myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
+
+		//$("#forms").html('<iframe src="/customer/order/ajax?' + query_param + '" width="100%" height="1000" frameborder="0"></iframe>');
+		window.location.href = '/customer/order/ajax?' + query_param;
 		return;
 	/*
 		send_ajax_request('', 'JSON', 'order', 'generate_commercial_invoice', query_param, function() {
@@ -179,40 +191,37 @@
 	[% END %]
 
 	[% IF LABEL_IMG %]
+	function PrintImageLabel_[% shipmentid %]()
+		{
 		[% IF AUTO_PRINT %]
-		function AutoPrintImageLabel_[% shipmentid %]()
-			{
-			var lblimg = document.getElementById("lblimg");
-			lblimg.onload =  function() {
-				var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
-				var lbl = $("#label").html();
-				var wb = "<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>";
-				var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){ var WB = document.getElementById('WB'); WB.ExecWB(6,2,1); window.close(); }" +"</script" + ">";
-				lbl = "<html><head></head><body>"+ wb + " " + lbl + " " + strScript + "</body></html>";
-				printWin.document.write(lbl);
-				printWin.document.close();
 
-				CheckAfterLabelPrintActivities_[% shipmentid %]();
-				}
+		var lblimg = document.getElementById("lblimg");
+		lblimg.onload =  function() {
+			var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+			var lbl = $("#label").html();
+			var wb = "<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>";
+			var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){ var WB = document.getElementById('WB'); WB.ExecWB(6,2,1); window.close(); }" +"</script" + ">";
+			lbl = "<html><head></head><body>"+ wb + " " + lbl + " " + strScript + "</body></html>";
+			printWin.document.write(lbl);
+			printWin.document.close();
+
+			printWin.onafterprint = CheckAfterLabelPrintActivities_[% shipmentid %]();
 			}
 
 		[% ELSE %]
-		function PrintImageLabel_[% shipmentid %]()
-			{
-			var lblimg = document.getElementById("lblimg");
-			lblimg.onload =  function() {
-				var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
-				var lbl = $("#label").html();
-				var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){window.print(); window.close(); }" +"</script" + ">";
-				lbl = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + lbl + " " + strScript + "</body></html>";
-				printWin.document.write(lbl);
-				printWin.document.close();
-				printWin.focus();
 
-				printWin.onafterprint = CheckAfterLabelPrintActivities_[% shipmentid %];
-				}
-			}
+		var Script = "<script>document.getElementById('lblimg').onload = function(){window.print(); window.close(); }</script>";
+		var HTML   = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + $("#label").html() + " " + Script + "</body></html>";
+
+		var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
+		printWin.document.write(HTML);
+		printWin.document.close();
+		printWin.focus();
+
+		printWin.onafterprint = CheckAfterLabelPrintActivities_[% shipmentid %];
+
 		[% END %]
+		}
 	[% END %]
 
 	function PrintThermalLabel_[% shipmentid %]()
@@ -222,14 +231,10 @@
 		for (var count=0; count < label_print_count; ++count)
 			{
 			[% IF printerstring_loop %]
-			PrintEplLabel_[% shipmentid %]();
+				PrintEplLabel_[% shipmentid %]();
 			[% END %]
 			[% IF LABEL_IMG %]
-				[% IF AUTO_PRINT %]
-					AutoPrintImageLabel_[% shipmentid %]();
-				[% ELSE %]
-					PrintImageLabel_[% shipmentid %]();
-				[% END %]
+				PrintImageLabel_[% shipmentid %]();
 			[% END %]
 			}
 		}
