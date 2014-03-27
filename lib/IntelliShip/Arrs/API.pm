@@ -143,33 +143,21 @@ sub get_carrrier_service_rate_list
 	my $contact_login_level = $Contact->login_level || 0;
 
 	## Add support for dropship & inbound
-	if ($CO->isinbound)
-		{
-		my $ToAddress = $CO->to_address;
-		my $FromAddress = $Customer->address;
-		$request->{'fromzip'} = $FromAddress->zip;
-		$request->{'fromstate'} = $FromAddress->state;
-		$request->{'fromcountry'} = $FromAddress->country;
-		$request->{'tozip'} = $ToAddress->zip;
-		$request->{'tostate'} = $ToAddress->state;
-		$request->{'tocountry'} = $ToAddress->country;
-		}
-	else
-		{
-		my $ToAddress = $Customer->address;
-		my $FromAddress = $CO->to_address;
-		$request->{'fromzip'} = $ToAddress->zip;
-		$request->{'fromstate'} = $ToAddress->state;
-		$request->{'fromcountry'} = $ToAddress->country;
-		$request->{'tozip'} = $FromAddress->zip;
-		$request->{'tostate'} = $FromAddress->state;
-		$request->{'tocountry'} = $FromAddress->country;
-		}
+
+	my $FromAddress = $CO->origin_address;
+	$request->{'fromzip'} = $FromAddress->zip;
+	$request->{'fromstate'} = $FromAddress->state;
+	$request->{'fromcountry'} = $FromAddress->country;
+
+	my $ToAddress = $CO->destination_address;
+	$request->{'tozip'} = $ToAddress->zip;
+	$request->{'tostate'} = $ToAddress->state;
+	$request->{'tocountry'} = $ToAddress->country;
 
 	$request->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 
-	 unless ($request->{'dateneeded'})
+	unless ($request->{'dateneeded'})
 		{
 		my $future_date = IntelliShip::DateUtils->get_timestamp_delta_days_from_now(7);
 		$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($future_date);
@@ -220,11 +208,11 @@ sub get_carrrier_service_rate_list
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
 
-	#$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
+	$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
 	############################################
 	my $response = $self->APIRequest($request);
 	############################################
-	#$self->context->log->debug("GetCSList API RESPONSE:". Dumper($response));
+	$self->context->log->debug("GetCSList API RESPONSE:". Dumper($response));
 
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});

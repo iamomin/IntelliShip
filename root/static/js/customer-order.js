@@ -1,5 +1,181 @@
 var requiredFieldHash = {};
 
+/*
+########################################################################################
+## Inbound / Outbound / Dropship stuffs
+########################################################################################
+*/
+
+function GetAddress(direction)
+	{
+	var name			= direction ? $('#' + direction + 'name').val() : '';
+	var address1		= direction ? $('#' + direction + 'address1').val() : '';
+	var address2		= direction ? $('#' + direction + 'address2').val() : '';
+	var city			= direction ? $('#' + direction + 'city').val() : '';
+	var state			= direction ? $('#' + direction + 'state').val() : '';
+	var zip				= direction ? $('#' + direction + 'zip').val() : '';
+	var country			= direction ? $('#' + direction + 'country').val() : '';
+	var contact			= direction ? $('#' + direction + 'contact').val() : '';
+	var phone			= direction ? $('#' + direction + 'phone').val() : '';
+	var department		= direction ? $('#' + direction + 'department').val() : '';
+	var customernumber	= direction ? $('#' + direction + 'customernumber').val() : '';
+	var email			= direction ? $('#' + direction + 'email').val() : '';
+
+	var newAddress = {
+		name			: name,
+		address1		: address1,
+		address2		: address2,
+		city			: city,
+		state			: state,
+		zip				: zip,
+		country			: country,
+		contact			: contact,
+		phone			: phone,
+		department		: department,
+		customernumber	: customernumber,
+		email			: email
+		};
+
+	return newAddress;
+	}
+
+function RestoreAddress(address, direction)
+	{
+	$('#' + direction + 'name').val(addressArray[address].name);
+	$('#' + direction + 'address1').val(addressArray[address].address1);
+	$('#' + direction + 'address2').val(addressArray[address].address2);
+	$('#' + direction + 'city').val(addressArray[address].city);
+	$('#' + direction + 'state').val(addressArray[address].state);
+	$('#' + direction + 'zip').val(addressArray[address].zip);
+	$('#' + direction + 'country').val(addressArray[address].country);
+	$('#' + direction + 'contact').val(addressArray[address].contact);
+	$('#' + direction + 'phone').val(addressArray[address].phone);
+
+	$('#' + direction + 'department').val(addressArray[address].department);
+	$('#' + direction + 'customernumber').val(addressArray[address].customernumber);
+	$('#' + direction + 'email').val(addressArray[address].email);
+	}
+
+var from_to_Hash = {};
+function ConfigureAddressSection(direction,type)
+	{
+	var editable     = (type == 'EDITABLE' ? true : false);
+	var add_class    = (editable ? 'broad-text' : 'labellike');
+	var remove_class = (editable ? 'labellike' : 'broad-text');
+
+	jQuery.each( fieldArray, function( i, val ) {
+		if (val == 'department' || val == 'customernumber' || val == 'email') return;
+
+		var targetCtrl = direction + val;
+		if (val == 'city')
+			{
+			var targetDiv = direction + 'CityDiv';
+			if (editable)
+				$('#'+targetDiv).html(from_to_Hash[targetCtrl]);
+			else
+				{
+				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
+				var inputCtrl = '<input type="hidden" name="' + targetCtrl + '" id="' + targetCtrl + '" value="' + $('#'+targetCtrl).val() + '"/>';
+				$('#'+targetDiv).html(inputCtrl + '<span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
+				}
+			}
+		else if (val == 'state')
+			{
+			var targetDiv = direction + 'StateDiv';
+			if (editable)
+				$('#'+targetDiv).html(from_to_Hash[targetCtrl]);
+			else
+				{
+				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
+				var inputCtrl = '<input type="hidden" name="' + targetCtrl + '" id="' + targetCtrl + '" value="' + $('#'+targetCtrl).val() + '"/>';
+				$('#'+targetDiv).html(inputCtrl + '<span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
+				}
+			}
+		else if(val == 'country')
+			{
+			var targetDiv = direction + 'CountryDiv';
+			if (editable)
+				$('#'+targetDiv).html(from_to_Hash[targetCtrl]);
+			else
+				{
+				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
+				$('#'+targetDiv).html('<input type="text" name="'+targetCtrl+'" id="'+targetCtrl+'" class="labellike" value="'+$('#'+targetCtrl).val()+'"/>');
+				}
+			}
+		else
+			{
+			$('#' + targetCtrl).removeClass(remove_class);
+			$('#' + targetCtrl).addClass(add_class);
+			$('#' + targetCtrl).prop("readonly", !editable);
+			}
+		$('#'+targetCtrl).prop('width', $('#'+targetCtrl).val().length);
+		});
+	}
+
+var addressArray  = {};
+var previousCheck = 'outbound';
+var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+function ConfigureInboundOutboundDropship()
+	{
+
+	if (previousCheck == 'outbound')
+		{
+		addressArray['ADDRESS_1'] = GetAddress('to');
+		}
+	else if (previousCheck == 'inbound')
+		{
+		addressArray['ADDRESS_1'] = GetAddress('from');
+		}
+	else
+		{
+		addressArray['ADDRESS_1'] = GetAddress('from');
+		addressArray['ADDRESS_2'] = GetAddress('to');
+		}
+
+	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
+
+	if (selectedType == 'inbound')
+		{
+		$('#fromdepartment_tr').hide();
+		$('#todepartment_tr').show();
+		$('#fromcustomernumber_tr').show();
+		$('#tocustomernumber_tr').hide();
+
+		ConfigureAddressSection('from', 'EDITABLE');
+		ConfigureAddressSection('to', 'READONLY');
+
+		RestoreAddress('COMPANY_ADDRESS', 'to');
+		RestoreAddress('ADDRESS_1','from');
+		}
+	else if(selectedType == 'outbound')
+		{
+
+		$('#fromdepartment_tr').show();
+		$('#todepartment_tr').hide();
+		$('#fromcustomernumber_tr').hide();
+		$('#tocustomernumber_tr').show();
+
+		ConfigureAddressSection('from', 'READONLY');
+		ConfigureAddressSection('to', 'EDITABLE');
+
+		RestoreAddress('COMPANY_ADDRESS', 'from');
+		RestoreAddress('ADDRESS_1','to');
+		}
+	else if(selectedType == 'dropship')
+		{
+		ConfigureAddressSection('from', 'EDITABLE');
+		ConfigureAddressSection('to', 'EDITABLE');
+
+		RestoreAddress('ADDRESS_1', 'from');
+		RestoreAddress('ADDRESS_2','to');
+		}
+
+	previousCheck = selectedType;
+	}
+/*
+########################################################################################
+*/
+
 function check_due_date()
 	{
 	var ShipDate = $('#datetoship').val();
@@ -440,37 +616,37 @@ function checkInternationalSection() {
 		}
 	}
 
-function setCityAndState()
+function setCityAndState(type)
 	{
-	var tozip = $("#tozip").val();
+	var tozip = $("#"+type+"zip").val();
 	if (tozip.length < 5) return;
 
 	//$("#tocity").val('');
 	//$("#tostate").val('');
 	//$("#tocountry").val('');
 
-	var query_param = "&zipcode=" + tozip + '&city=' + $("#tocity").val() + '&state=' + $("#tostate").val() + '&country=' + $("#tocountry").val();
-	if($("#tozip").val() != "") {
+	var query_param = "&zipcode=" + tozip + '&city=' + $("#"+type+"city").val() + '&state=' + $("#"+type+"state").val() + '&country=' + $("#"+type+"country").val();
+	if($("#"+type+"zip").val() != "") {
 		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
-			$("#tocity").val(JSON_data.city);
-			$("#tostate").val(JSON_data.state);
-			$("#tocountry").val(JSON_data.country);
+			$("#"+type+"city").val(JSON_data.city);
+			$("#"+type+"state").val(JSON_data.state);
+			$("#"+type+"country").val(JSON_data.country);
 			});
 		}
 	}
 
 function updateStateList(type,call_back_fn)
 	{
-	$("#tocity").val('');
-	$("#tostate").val('');
-	$("#tozip").val('');
+	$("#"+type+"city").val('');
+	$("#"+type+"state").val('');
+	$("#"+type+"zip").val('');
 
 	var country = $("#"+type+"country").val();
 	if (country.length == 0) return;
 
 	var query_param = "country=" + country + '&control=' + type + 'state';
 
-	send_ajax_request('toStateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
+	send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
 	}
 
 function validate_package_details()
@@ -718,7 +894,7 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
-function populateShipToAddress(referenceid)
+function populateShipAddress(direction, referenceid)
 	{
 	if (referenceid == undefined) return;
 
@@ -729,20 +905,20 @@ function populateShipToAddress(referenceid)
 		send_ajax_request('', 'JSON', 'order', 'get_address_detail', query_param, function (){
 			if (JSON_data.addressname) {
 				var ADDRESS_data = JSON_data;
-				$("#tocountry").val(ADDRESS_data.country);
+				$("#" + direction + "country").val(ADDRESS_data.country);
 				checkInternationalSection();
 
-				updateStateList('to', function() {
-					$("#toname").val(ADDRESS_data.addressname);
-					$("#toaddress1").val(ADDRESS_data.address1);
-					$("#toaddress2").val(ADDRESS_data.address2);
-					$("#tocity").val(ADDRESS_data.city);
-					$("#tostate").val(ADDRESS_data.state);
-					$("#tozip").val(ADDRESS_data.zip);
-					$("#tocontact").val(ADDRESS_data.contactname);
-					$("#tophone").val(ADDRESS_data.contactphone);
-					$("#tocustomernumber").val(ADDRESS_data.extcustnum);
-					$("#toemail").val(ADDRESS_data.shipmentnotification);
+				updateStateList(direction, function() {
+					$("#" + direction + "name").val(ADDRESS_data.addressname);
+					$("#" + direction + "address1").val(ADDRESS_data.address1);
+					$("#" + direction + "address2").val(ADDRESS_data.address2);
+					$("#" + direction + "city").val(ADDRESS_data.city);
+					$("#" + direction + "state").val(ADDRESS_data.state);
+					$("#" + direction + "zip").val(ADDRESS_data.zip);
+					$("#" + direction + "contact").val(ADDRESS_data.contactname);
+					$("#" + direction + "phone").val(ADDRESS_data.contactphone);
+					$("#" + direction + "customernumber").val(ADDRESS_data.extcustnum);
+					$("#" + direction + "email").val(ADDRESS_data.shipmentnotification);
 					});
 
 				}

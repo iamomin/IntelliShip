@@ -23,22 +23,30 @@
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
 [% IF one_page %]
-	<table>
+	<table width="100%">
 		<tr>
-			<td>
+			<td width="9%">
 			<label for="ordernumber" class="small_title">Order Number:</label>
 			</td>
 			<td>
 			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/>
 			</td>
-		<!--
+			[% IF shipmenttype_loop %]
 			<td>
-			<input type="button" class="button submit" value="CONSOLIDATE"/>
+				<table class="float-right css3-radios">
+					<tr>
+					[% FOREACH item IN shipmenttype_loop %]
+						<td>
+						<label>
+						<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
+						<span><label for="[% item.value %]">[% item.name %]</label></span>
+						</label>
+						</td>
+					[% END %]
+					</tr>
+				</table>
 			</td>
-			<td class="css3-checkboxes">
-			<label><input type="checkbox" class="checkbox" id="combine" name="combine" value="1" [% combine ? 'CHECKED' : ''%]/><span><label for="combine">Combine</label></span></label>
-			</td>
-		-->
+			[% END %]
 		<tr>
 	</table>
 [% END %]
@@ -60,20 +68,63 @@
 				<tr>
 					<td><label for="fromaddress2" class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" name="fromaddress2" id="fromaddress2" value='[% fromCustomerAddress.address2 %]'/></td>
 				</tr>
+				[% IF quickship%]
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
+					<td><label for="fromcity" class="float-right">City, State, Zip:</label></td><!--<td><b><input type="text" class="" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>-->
+					<td>
+					<div id="fromCityDiv" style="display: inline; padding: 0;">
+					<input type="text" name="fromcity" id="fromcity" style="width: 100px;" value="[% fromCustomerAddress.city %]"/>
+					</div>
+					<div id="fromStateDiv" style="display: inline; padding: 0;">
+					<label>
+					<select name="fromstate" id="fromstate" style="width: 45px;">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == fromCustomerAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+						[% END %]
+					</select>
+					</label>
+					</div>
+					<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromCustomerAddress.zip %]"/>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="fromcountry" class="float-right">Country:</label></td>
+					<td>
+					<div id="fromCountryDiv" style="display: inline; padding: 0;">
+					<label>
+					<select name="fromcountry" id="fromcountry" style="width: 220px;">
+						[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]" [% (fromCustomerAddress.country and item.value == fromCustomerAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</div>
+					</td>
+				</tr>
+				[% ELSE %]
+				<tr>
+					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
+					<input type="hidden" name="fromcity"  id="fromcity" value='[% fromCustomerAddress.city %]'/>
+					<input type="hidden" name="fromstate" id="fromstate" value='[% fromCustomerAddress.state %]'/>
+					<input type="hidden" name="fromzip"   id="fromzip" value='[% fromCustomerAddress.zip %]'/>
 				</tr>
 				<tr>
 					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" name="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
 					</td>
 				</tr>
+				[% END %]
 				<tr>
 					<td><label for="fromcontact" class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" name="fromcontact" id="fromcontact" value='[% fromcontact %]'/></td>
 				</tr>
 				<tr>
 					<td><label for="fromphone" class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" name="fromphone" id="fromphone" value='[% fromphone %]'/></td>
 				</tr>
-				<tr>
+				[% IF quickship %]
+				<tr id='fromcustomernumber_tr'>
+					<td><label for="fromcustomernumber" class="float-right">Customer#:</label></td><td><input type="text" class="broad-text" name="fromcustomernumber" id="fromcustomernumber" value="[% fromcustomernumber %]"/></td>
+				</tr id='fromcustomernumber_tr'>
+				[% END %]
+				<tr id="fromdepartment_tr">
 					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
 				</tr>
 				<tr>
@@ -98,7 +149,9 @@
 						<label class="float-right require"><label for="tocity">City</label>, <label for="tostate">State</label>, <label for="tozip">Zip</label>:</label>
 					</td>
 					<td>
+					<div id="toCityDiv" style="display: inline; padding: 0;">
 					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
+					</div>
 					<div id="toStateDiv" style="display: inline; padding: 0;">
 					<label>
 					<select name="tostate" id="tostate" style="width: 45px;">
@@ -112,7 +165,9 @@
 					</td>
 				</tr>
 				<tr>
-					<td><label for="tocountry" class="float-right require">Country:</label></td><td>
+					<td><label for="tocountry" class="float-right require">Country:</label></td>
+					<td>
+					<div id="toCountryDiv" style="display: inline; padding: 0;">
 					<label>
 					<select name="tocountry" id="tocountry" style="width: 220px;" onchange="updateStateList('to');">
 						[% FOREACH item IN countrylist_loop %]
@@ -120,6 +175,7 @@
 						[% END %]
 					</select>
 					</label>
+					</div>
 					</td>
 				</tr>
 				<tr>
@@ -129,12 +185,17 @@
 					<td><label for="tophone" class="float-right">Phone:</label></td><td><input type="text" class="broad-text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
 				[% IF one_page %]
-				<tr>
+				<tr id='tocustomernumber_tr'>
 					<td><label for="tocustomernumber" class="float-right">Customer#:</label></td><td><input type="text" class="broad-text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
 				</tr>
 				[% ELSE %]
-				<tr>
+				<tr id='tocustomernumber_tr'>
 					<td><label for="tocustomernumber" class="float-right">Customer Number:</label></td><td><input type="text" class="broad-text" name="tocustomernumber" id="tocustomernumber" value="[% tocustomernumber %]"/></td>
+				</tr>
+				[% END %]
+				[% IF quickship %]
+				<tr id="todepartment_tr">
+					<td><label for="todepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% department %]"></td>
 				</tr>
 				[% END %]
 				<tr>
@@ -257,12 +318,12 @@ $("#toname").autocomplete({
 		var RefID = hashCompanyRef[Key];
 		if (RefID == undefined) return;
 		ui.item.value = Company;
-		populateShipToAddress(RefID);
+		populateShipAddress('to', RefID);
 		}
 	});
 
 $("#tozip").change(function() {
-	setCityAndState();
+	setCityAndState('to');
 	});
 
 $("#dateneeded").change(function() {
@@ -270,8 +331,46 @@ $("#dateneeded").change(function() {
 	check_due_date();
 	});
 
-//$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
+
+[% IF quickship%]
+
+	addressArray['COMPANY_ADDRESS']= GetAddress('from');
+	addressArray['ADDRESS_1']      = GetAddress('');
+	addressArray['ADDRESS_2']      = GetAddress('');
+
+	$('#todepartment_tr').hide();
+	$('#fromcustomernumber_tr').hide();
+
+	ConfigureAddressSection('from','READONLY');
+
+	$("input[name='shipmenttype']").click(ConfigureInboundOutboundDropship);
+
+	$("#fromname").autocomplete({
+		source: availableCustomers,
+		select: function( event, ui ) {
+			var SelectedCompany = ui.item.value
+			var AddrParts = SelectedCompany.split(" | ");
+			var Company = AddrParts[0];
+			var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
+			var RefID = hashCompanyRef[Key];
+			if (RefID == undefined) return;
+			ui.item.value = Company;
+			populateShipAddress('from', RefID);
+			}
+		});
+
+	$("#fromzip").change(function() {
+		setCityAndState('from');
+		});
+
+	requiredFieldHash['fromname']		={ minlength: 2 };
+	requiredFieldHash['fromaddress1']	={ minlength: 2 };
+	requiredFieldHash['fromcity']		={ minlength: 2 };
+	requiredFieldHash['fromstate']		={ minlength: 2 };
+	requiredFieldHash['fromzip']		={ minlength: 5 };
+	requiredFieldHash['fromcountry']	={ minlength: 2 };
+[% END %]
 
 [% UNLESS one_page %]
 	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
