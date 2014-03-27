@@ -210,7 +210,7 @@
 
 		[% ELSE %]
 
-		var Script = "<script>document.getElementById('lblimg').onload = function(){window.print(); window.close(); }</script>";
+		var Script = "<script" + ">" + "document.getElementById('lblimg').onload = function(){ var WB = document.getElementById('WB'); WB.ExecWB(6,2,1); window.close(); }" +"</script" + ">";
 		var HTML   = "<html><head></head><body><style type='text/css'>@media print {body{ font-size: 10px; background-color:#FFFFFF; position: fixed; top:0; left: 0; width: auto; margin: 1px} #tbl_print{position: fixed; top: 5; left: 1; width: 7cm}} </style>" + $("#label").html() + " " + Script + "</body></html>";
 
 		var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
