@@ -105,7 +105,7 @@ function loadGrid() {
 		id : "title_wtrange",
 		name : "Wt. Range",
 		field : "wtrange",
-		maxWidth : COLWIDTH * 2,
+		minWidth : (COLWIDTH * 2) + 30,
 		cssClass : "cell-title",
 		editor : NumericRangeEditor,
 		formatter : NumericRangeFormatter
