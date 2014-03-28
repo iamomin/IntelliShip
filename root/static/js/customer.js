@@ -97,17 +97,20 @@ function afterSuccessCallBack(response_type, result_div, call_back_function, res
 
 //$(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });
 
-$( "#dialog-message" ).dialog({
-	show: { effect: "blind", duration: 1000 },
-	hide: { effect: "explode", duration: 1000 },
-	autoOpen: false,
-	modal: true,
-	buttons: {
-		Ok: function() {
-		$( this ).dialog( "close" );
-		}
+if ($( "#dialog-message" ).length)
+	{
+	$( "#dialog-message" ).dialog({
+		show: { effect: "blind", duration: 1000 },
+		hide: { effect: "explode", duration: 1000 },
+		autoOpen: false,
+		modal: true,
+		buttons: {
+			Ok: function() {
+				$( this ).dialog( "close" );
+				}
+			}
+		});
 	}
-	});
 
 function showMessage( dialogMessage, dialogTitle, ok_button_callback ) {
 	if (dialogTitle == undefined) dialogTitle = "Message";

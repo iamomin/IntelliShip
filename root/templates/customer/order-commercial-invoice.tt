@@ -669,7 +669,7 @@
 		window.onafterprint = function() {
 			var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
 			send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
-				window.parent.location.href = '/customer/order/quickship';
+				window.location.href = '/customer/order/quickship';
 				});
 			};
 	</script>
