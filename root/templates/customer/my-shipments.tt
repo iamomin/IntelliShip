@@ -305,7 +305,7 @@
 
 			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
 				if ( JSON_data.is_success ) {
-					showMessage("Shipment voided successfully...", "Void Shipment");
+					showMessage("<div class='notice'>Shipment voided successfully...</div>", "Void Shipment");
 					var vDate = $("#view_date").val();
 					var query_param = "view_date=" + vDate;
 					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
