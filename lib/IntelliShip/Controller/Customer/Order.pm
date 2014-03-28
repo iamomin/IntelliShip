@@ -2023,7 +2023,7 @@ sub SendShipmentVoidEmail
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 	$Email->from_name('NOC');
 	$Email->subject($subject);
-	$Email->to($Customer->losspreventemail);
+	$Email->add_to($Customer->losspreventemail);
 
 	$Email->add_line('');
 	$Email->add_line('=' x 60);
