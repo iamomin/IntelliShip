@@ -1601,6 +1601,8 @@ sub SHIP_ORDER :Private
 		$Service->{'webhandlername'} = $ShippingData->{'webhandlername'};
 		}
 
+	$Service->{'webhandlername'} = '' if $params->{'carrier'} =~ /USPS/i;
+
 	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
 		{
 		$params->{'carrier'} = &CARRIER_EFREIGHT;
