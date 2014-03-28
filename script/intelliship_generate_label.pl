@@ -503,6 +503,12 @@ sub createImage()
 		open(FH,"> $outdir/$file.jpg")or die "$!\n";
 		print FH $blob;
 		close FH;
+
+		########################################
+		## ADD BORDER OF 2px to the image
+		########################################
+		system("/usr/bin/convert $outdir/$file.jpg -bordercolor opaque -border 2 $outdir/$file.jpg");
+
 		if($sizeGot < 2)
 		{
 ############### Code here to rotate and format type for Single input streams##############
