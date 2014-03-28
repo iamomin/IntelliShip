@@ -95,7 +95,7 @@ function afterSuccessCallBack(response_type, result_div, call_back_function, res
 	if (call_back_function != null) {call_back_function();}
 	}
 
-$(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });
+//$(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });
 
 $( "#dialog-message" ).dialog({
 	show: { effect: "blind", duration: 1000 },
