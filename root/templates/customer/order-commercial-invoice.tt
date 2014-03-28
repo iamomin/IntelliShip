@@ -6,7 +6,10 @@
 	<meta name=ProgId content=Word.Document>
 	<meta name=Generator content="Microsoft Word 10">
 	<meta name=Originator content="Microsoft Word 10">
+
 	<script src="/static/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+	<script src="/static/js/customer.js"></script>
+
 	<link rel=File-List href="commercial_invoice_files/filelist.xml">
 	<link rel=Edit-Time-Data href="commercial_invoice_files/editdata.mso">
 	<!--[if !mso]>
@@ -664,9 +667,10 @@
 			//window.print();
 			};
 		window.onafterprint = function() {
-			//alert("I am here on after print : com inv");
-			//window.close();
-			window.location.href = '/customer/order/quickship';
+			var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
+			send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
+				window.parent.location.href = '/customer/order/quickship';
+				});
 			};
 	</script>
 </html>

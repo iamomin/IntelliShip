@@ -293,16 +293,10 @@ $("#fromdepartment").change(function() {
 	validateDepartment('fromdepartment', '[%fromCustomer.customerid%]');
 	});
 
-//$("#tophone").mask("999-999-9999");
-//$("#tozip").mask("99999");
 [% IF one_page %]
-$("#datetoship").datepicker({
-		minDate: '-0d'
-		});
-[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
-$("#dateneeded").datepicker({
-		minDate: '-0d'
-		});
+	$("#datetoship").datepicker({ minDate: '-0d' });
+	[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
+	$("#dateneeded").datepicker({ minDate: '-0d' });
 [% END %]
 
 var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.zip %] | [% item.address1 %]",[% END %]];
