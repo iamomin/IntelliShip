@@ -19,11 +19,11 @@ __PACKAGE__->config(
     }
 );
 
-sub sth { my $self = shift; if (@_) { $self->{STH_HANDLE} = shift }; return $self->{STH_HANDLE}; }
-sub numrows { my $self = shift; if (@_) { $self->{STH_NUMROWS} = shift }; return $self->{STH_NUMROWS}; }
-sub query_data { my $self = shift; if (@_) { $self->{TABLE_ARRAY} = shift }; return $self->{TABLE_ARRAY}; }
+sub dbh                { my $self = shift; return $self->storage->dbh; }
+sub sth                { my $self = shift; if (@_) { $self->{STH_HANDLE} = shift }; return $self->{STH_HANDLE}; }
+sub numrows            { my $self = shift; if (@_) { $self->{STH_NUMROWS} = shift }; return $self->{STH_NUMROWS}; }
+sub query_data         { my $self = shift; if (@_) { $self->{TABLE_ARRAY} = shift }; return $self->{TABLE_ARRAY}; }
 sub query_field_number { my $self = shift; if (@_) { $self->{QUERY_FIELD_NUMBER} = shift }; return $self->{QUERY_FIELD_NUMBER}; }
-sub dbh { my $self = shift; return $self->storage->dbh; }
 
 sub select
 	{

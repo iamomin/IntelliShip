@@ -1,6 +1,7 @@
 package IntelliShip::Carrier::Driver;
 
 use Moose;
+use ARRS::IDBI;
 use Data::Dumper;
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
@@ -10,10 +11,12 @@ BEGIN {
 
 	extends 'IntelliShip::Errors';
 
+	has 'API'             => ( is => 'rw' );
 	has 'CO'              => ( is => 'rw' );
 	has 'SHIPMENT'        => ( is => 'rw' );
 	has 'context'         => ( is => 'rw' );
 	has 'customer'        => ( is => 'rw' );
+	has 'MYDBI_ref'       => ( is => 'rw' );
 	has 'DB_ref'          => ( is => 'rw' );
 	has 'data'            => ( is => 'rw' );
 	has 'customerservice' => ( is => 'rw' );
@@ -37,8 +40,18 @@ sub model
 sub myDBI
 	{
 	my $self = shift;
-	$self->DB_ref($self->model->('MyDBI')) unless $self->DB_ref;
-	return $self->DB_ref if $self->DB_ref;
+	$self->MYDBI_ref($self->model('MyDBI')) unless $self->MYDBI_ref;
+	return $self->MYDBI_ref if $self->MYDBI_ref;
+	}
+
+sub DBI
+	{
+	my $self = shift;
+	my $dbname = shift;
+	my $DB_REF = $self->DB_ref || {};
+	$self->DB_ref($DB_REF) unless $self->DB_ref;
+	$DB_REF->{$dbname} = ARRS::IDBI->connect({ dbname => $dbname }) unless $DB_REF->{$dbname};
+	return $DB_REF->{$dbname};
 	}
 
 sub get_token_id

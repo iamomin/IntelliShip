@@ -1,0 +1,179 @@
+<table cellspacing=0 cellpadding=0 width="100%" border=0>
+<tr>
+<td>
+	<table width="450" border="1" cellspacing="0" cellpadding="0" align="center" bordercolor="#000000" bgcolor="#FFFFFF">
+	<tr>
+		<td>
+			<table width=90% cellpadding=1 cellspacing=0>
+				<tr valign=top>
+					<td width=15% align=right>
+						<font size="-1" face="Arial, Helvetica, sans-serif">
+							<b>From:</b>
+						</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=40%>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							[% fromAddress.addressname %]
+						<br>[% fromAddress.address1 %]
+						[% IF fromAddress.address2 %]<br>[% fromAddress.address2 %][% END %]
+						<br>[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]
+						<br>[% fromAddress.country %]
+						</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=35%>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							[% branchcontact %]<br>
+							[% branchphone %]<br>
+							Ref: [% refnumber %]<br>
+							Ship Date: [% shipdate %]<br>
+							Airport Code: <br>
+						</font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width=90% cellpadding=1 cellspacing=0>
+				<tr valign=top>
+					<td width=15% align=right>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							<b>To:</b>
+						</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=40%>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							[% toAddress.addressname %]
+						<br>[% toAddress.address1 %]
+						[% IF toAddress.address2 %]<br>[% toAddress.address2 %][% END %]
+						<br>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]
+						<br>[% toAddress.country %]
+						</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=35%>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							[% contactname %]<br>
+							[% contactphone %]<br>
+							PO: [% ponumber %]<br>
+							ETA: [% duedate %]<br>
+							Airport Code: [% airportcode %]
+						</font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width=90% cellpadding=1 cellspacing=0>
+				<tr valign=top>
+					<td width=15% align=right>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							<b>Bill To:</b>
+						</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=40%>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							 [% billingname %] <br>
+							 [% billingaddress1 %]<br>
+							 [% billingaddress2 %] <br>
+							 [% billingcity %], [% billingstate %] [% billingzip %]
+						</font>
+					</td>
+					<td width=5%>&nbsp;</td>
+					<td width=35%>
+						<font face="Arial, Helvetica, sans-serif" size="-1">
+							Weight: [% enteredweight %] Lbs<br>
+							DIM Weight: [% dimweight %]<br>
+							DIMS: [% dims %]<br>
+							Density: [% density %]<br>
+							Packages: [% totalquantity %]<br>
+							Zone: [% zonenumber %]<br>
+							Tracking: [% tracking1 %]<br>
+						</font>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width=90% cellpadding=1 cellspacing=0>
+			<tr>
+				<td align=left width=25%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
+							<b>&nbsp;&nbsp;Description:</b>
+						</font>
+				</td>
+				<td align=left width=75%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
+							[% description %]
+						</font>
+				</td>
+			</tr>
+			<tr>
+				<td align=left width=25%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
+							<b>&nbsp;&nbsp;Comments:</b>
+						</font>
+				</td>
+				<td align=left width=75%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
+							[% comments %]
+						</font>
+				</td>
+			</tr>
+		 </table>
+		</td>
+	</tr>
+	</tr>
+	<tr>
+		<td>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td align=left bgcolor="000000">
+					<font face="Arial, Helvetica, sans-serif" size="4" color="FFFFFF">
+							<b>&nbsp;&nbsp;[% carrier %]</b>
+						</font>
+				</td>
+			</tr>
+			<tr>
+				<td align=left bgcolor="000000">
+					<font face="Arial, Helvetica, sans-serif" size="4" color="FFFFFF">
+							<b>&nbsp;&nbsp;[% service %]</b>
+						</font>
+				</td>
+			</tr>
+		 <tr><td>&nbsp;</td></tr>
+		 <tr>
+			<td align=center>
+				<img src="/print/barcode/[% tracking1 %].png">
+			</td>
+			</tr>
+			<tr><td>&nbsp;</td></tr>
+			<tr>
+				<td align=left>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
+						<b>&nbsp;&nbsp;[% labelbanner %]</b>
+					</font>
+				</td>
+			</tr>
+			 <tr>
+			<td align=left>
+				<font face="Arial, Helvetica, sans-serif" size="-1">
+					<b>&nbsp;&nbsp;[% commentstring %]</b>
+				</font>
+			</td>
+		 </tr>
+		</table>
+		</td>
+	</tr>
+	</table>
+</td>
+</table>

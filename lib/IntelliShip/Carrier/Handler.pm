@@ -6,6 +6,7 @@ use IntelliShip::Carrier::Response;
 use IntelliShip::Carrier::Constants;
 
 BEGIN {
+	has 'API' => ( is => 'rw' );
 	has 'CO' => ( is => 'rw' );
 	has 'SHIPMENT' => ( is => 'rw' );
 	has 'token' => ( is => 'rw' );
@@ -22,6 +23,8 @@ my $carriers = {
 	'UPS' => &CARRIER_UPS,
 	'USPS' => &CARRIER_USPS,
 	'FEDEX' => &CARRIER_FEDEX,
+	'EFREIGHT' => &CARRIER_EFREIGHT,
+	'GENERIC' => &CARRIER_GENERIC,
 	};
 
 sub model
@@ -140,6 +143,7 @@ sub process_request
 	my $Driver = $DriverModule->new;
 	$Driver->response($Response);
 	$Driver->DB_ref($myDBI);
+	$Driver->API($self->API);
 	$Driver->CO($self->CO);
 	$Driver->SHIPMENT($self->SHIPMENT);
 	$Driver->customerservice($self->customerservice);

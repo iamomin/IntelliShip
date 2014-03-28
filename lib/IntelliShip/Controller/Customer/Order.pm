@@ -1601,6 +1601,15 @@ sub SHIP_ORDER :Private
 		$Service->{'webhandlername'} = $ShippingData->{'webhandlername'};
 		}
 
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$params->{'carrier'} = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+		{
+		$params->{'carrier'} = &CARRIER_GENERIC;
+		}
+
 	foreach my $key (%$Service)
 		{
 		next if !$key or !$Service->{$key};
@@ -1620,6 +1629,7 @@ sub SHIP_ORDER :Private
 	$Handler->customerservice($CustomerService);
 	$Handler->service($Service);
 	$Handler->CO($CO);
+	$Handler->API($self->API);
 	$Handler->request_data($ShipmentData);
 
 	my $Response = $Handler->process_request({
