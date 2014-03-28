@@ -93,6 +93,12 @@ sub process_request
 		return $shipmentData;
 		}
 
+	## Check Priority Express Mail Commitment Days
+	if ($shipmentData->{'servicecode'} eq 'UPME')
+		{
+		$self->CheckExpressMailCommitment;
+		}
+
 	my $TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
 	$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
 
@@ -472,6 +478,150 @@ END
 	#$self->log("... XML Request Data:  " . $XML_request);
 
 	return $XML_request;
+	}
+
+sub get_PriorityMailExpress_xml_request
+	{
+	my $self = shift;
+	my $shipmentData = $self->data;
+	my $CO = $self->CO;
+	my $Contact = $CO->contact;
+
+	$self->log("### Get XML Request for Standar Post ###: " );
+	$self->log("### Get XML Request ###: " . Dumper $shipmentData);
+
+	$shipmentData->{serviceType} = 'Standard Post';
+
+	#$self->log("### Service Type" .$shipmentData->{serviceType} );
+
+	$shipmentData->{'FromFirstName'} =  $Contact->firstname;
+	$shipmentData->{'FromLastName'} = $Contact->lastname;
+	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
+	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
+	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$self->log("Senders Name ". $shipmentData->{FromName});
+
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+		{
+		$shipmentData->{'packagesize'} = 'LARGE';
+		}
+	else
+		{
+		$shipmentData->{'packagesize'} = 'REGULAR';
+		}
+
+	if ($shipmentData->{'packagesize'} eq 'LARGE')
+		{
+		$shipmentData->{'containerType'} = 'RECTANGULAR';
+		}
+	else
+		{
+		$shipmentData->{'containerType'} = 'VARIABLE';
+		}
+
+	my $XML_request = <<END;
+<?xml version="1.0" encoding="UTF-8" ?>
+<ExpressMailLabelRequest USERID="667ENGAG1719">
+<Option />
+<Revision>2</Revision>
+<EMCAAccount />
+<EMCAPassword />
+<ImageParameters />
+<FromFirstName>$shipmentData->{FromFirstName}</FromFirstName>
+<FromLastName>$shipmentData->{FromLastName}</FromLastName>
+<FromFirm>$shipmentData->{'customername'}</FromFirm>
+<FromAddress1>$shipmentData->{'branchaddress2'}</FromAddress1>
+<FromAddress2>$shipmentData->{'branchaddress1'}</FromAddress2>
+<FromCity>$shipmentData->{'branchaddresscity'}</FromCity>
+<FromState>$shipmentData->{'branchaddressstate'}</FromState>
+<FromZip5>$shipmentData->{'branchaddresszip'}</FromZip5>
+<FromZip4/>
+<FromPhone>2125551234</FromPhone>
+<ToFirstName>Janice</ToFirstName>
+<ToLastName>Dickens</ToLastName>
+<ToFirm>$shipmentData->{'addressname'}</ToFirm>
+<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToCity>$shipmentData->{'addresscity'}</ToCity>
+<ToState>$shipmentData->{'addressstate'}</ToState>
+<ToZip5>$shipmentData->{'addresszip'}</ToZip5>
+<ToZip4 />
+<ToPhone>2125551234</ToPhone>
+<WeightInOunces>$shipmentData->{'weightinounces'}</WeightInOunces>
+<SundayHolidayDelivery/>
+<StandardizeAddress/>
+<WaiverOfSignature/>
+<NoWeekend/>
+<SeparateReceiptPage>True</SeparateReceiptPage>
+<POZipCode>$shipmentData->{'addresszip'}</POZipCode>
+<FacilityType>DDU</FacilityType>
+<ImageType>PDF</ImageType>
+<CustomerRefNo/>
+<SenderName>$shipmentData->{FromName}</SenderName>
+<SenderEMail>$shipmentData->{'fromemail'}</SenderEMail>
+<RecipientName>$shipmentData->{'contactname'}</RecipientName>
+<RecipientEMail>$shipmentData->{'toemail'}</RecipientEMail>
+<HoldForManifest/>
+<CommercialPrice>false</CommercialPrice>
+<InsuredAmount>425.00</InsuredAmount>
+<Container>$shipmentData->{'containerType'}</Container>
+<Size>$shipmentData->{'packagesize'}</Size>
+<Width>$shipmentData->{'dimheight'}</Width>
+<Length>$shipmentData->{'dimwidth'}</Length>
+<Height>$shipmentData->{'dimlength'}</Height>
+</ExpressMailLabelRequest>
+END
+
+	$self->log("... XML Request Data:  " . $XML_request);
+
+	return $XML_request;
+	}
+
+sub CheckExpressMailCommitment
+	{
+	my $self = shift;
+
+	my $shipmentData = $self->data;
+
+	my $XML_request = <<END;
+<?xml version="1.0" encoding="UTF-8" ?>
+<ExpressMailCommitmentRequest USERID="667ENGAG1719">
+<OriginZIP>$shipmentData->{'branchaddresszip'}</OriginZIP>
+<DestinationZIP>$shipmentData->{'addresszip'}</DestinationZIP>
+<Date>$shipmentData->{'datetoship'}</Date>
+</ExpressMailCommitmentRequest>
+END
+
+	my $shupment_request = {
+			httpurl => 'http://production.shippingapis.com/ShippingAPITest.dll',
+			API => 'ExpressMailCommitment',
+			XML => $XML_request
+			};
+
+	my $UserAgent = LWP::UserAgent->new();
+	my $response = $UserAgent->request(
+			POST $shupment_request->{'httpurl'},
+			Content_Type  => 'text/html',
+			Content       => [%$shupment_request]
+			);
+
+	unless ($response)
+		{
+		$self->log("USPS: Unable to access USPS site");
+		$self->add_error("No response received from USPS");
+		return $shipmentData;
+		}
+	$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
+
+	my $xml = new XML::Simple;
+
+	my $XMLResponse = $xml->XMLin($response->content);
+
+	$shipmentData->{'commintmentName'} = uc($XMLResponse->{Commitment}->{CommitmentName}) if  $XMLResponse->{Commitment}->{CommitmentName};
+	$shipmentData->{'CommitmentTime'} = $XMLResponse->{Commitment}->{CommitmentTime} if  $XMLResponse->{Commitment}->{CommitmentTime};
 	}
 
 __PACKAGE__->meta()->make_immutable();

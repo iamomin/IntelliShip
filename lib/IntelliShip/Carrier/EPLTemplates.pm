@@ -353,6 +353,116 @@ END
 	return $EPL;
 	}
 
+sub get_USPS_EPL_6
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $EPL = <<END;
+.
+
+N
+OD10
+Q1218,24
+q812
+D13
+ZB
+LO10,80,790,2
+LO205,80,2,150
+A600,130,0,4,1,1,N,"POSTAGE"
+A600,160,0,4,1,1,N,"REQUIRED"
+LO10,80,2,1042
+LO800,80,2,1042
+A60,110,0,5,3,2,N,"E"
+LO10,230,790,2
+A20,240,0,3,2,3,N,"PRIORITY MAIL EXPRESS $DATA->{'commintmentName'}"
+A755,250,0,4,1,1,N,"TM"
+LO10,300,790,2
+A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,350,0,2,1,1,N,"$DATA->{'customername'} "
+A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
+A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'} "
+A25,410,0,2,1,1,N,"$DATA->{'branchaddresscity'}, $DATA->{'branchaddressstate'} $DATA->{'branchaddresszip'}"
+A100,510,0,3,1,1,N,"$DATA->{'contactname'}"
+A100,530,0,3,1,1,N,"$DATA->{'addressname'}"
+A100,550,0,3,1,1,N,"$DATA->{'address1'}"
+A100,570,0,3,1,1,N,"$DATA->{'address2'}"
+A100,590,0,3,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
+A550,330,0,2,1,1,N,"Ship Date:$DATA->{'datetoship'}"
+A475,350,0,2,1,1,N,"Expected Delivery:02/06/2014"
+A630,370,0,2,1,1,N,"Weight: $DATA->{'weightinounces'} oz"
+A710,390,0,1,2,2,N,"$DATA->{'RDC'}"
+LO590,430,1,40
+LO500,430,1,40
+LO500,430,90,1
+LO500,470,90,1
+A510,440,0,1,2,2,N,"$DATA->{'CarrierRoute'}"
+LO10,640,790,10
+A90,680,0,2,2,2,N,"USPS SIGNATURE TRACKING #"
+B80,730,0,1E,3,7,150,N,"$DATA->{'barcodedata'}"
+A220,890,0,3,1,1,N,"$DATA->{'tracking1'}"
+LO10,920,790,60
+A20,940,0,4,2,1,R,"POSTAL USE ONLY"
+A20,1000,0,2,1,1,N,"Date In:"
+A110,1010,0,1,1,1,N,"Mo"
+A220,1010,0,1,1,1,N,"Day"
+A360,1010,0,1,1,1,N,"Year"
+A480,1000,0,2,1,1,N,"Time In:"
+LO705,985,15,1
+LO705,1000,15,1
+LO705,985,1,15
+LO720,985,1,15
+A730,990,0,2,1,1,N,"AM"
+LO705,1005,15,1
+LO705,1020,15,1
+LO705,1005,1,15
+LO720,1005,1,15
+A730,1010,0,2,1,1,N,"PM"
+LO10,1025,790,1
+A20,1045,0,2,1,1,N,"Day of Delivery:"
+LO225,1040,15,1
+LO225,1055,15,1
+LO225,1040,1,15
+LO240,1040,1,15
+A250,1045,0,2,1,1,N,"Next"
+LO355,1040,15,1
+LO355,1055,15,1
+LO355,1040,1,15
+LO370,1040,1,15
+A380,1045,0,2,1,1,N,"Second"
+A510,1045,0,2,1,1,N,"10:30AM"
+A620,1045,0,2,1,1,N,"12 Noon"
+A730,1045,0,2,1,1,N,"3 Pm"
+LO485,1040,15,1
+LO485,1055,15,1
+LO485,1040,1,15
+LO500,1040,1,15
+LO595,1040,15,1
+LO595,1055,15,1
+LO595,1040,1,15
+LO610,1040,1,15
+LO705,1040,15,1
+LO705,1055,15,1
+LO705,1040,1,15
+LO720,1040,1,15
+LO470,1025,1,95
+LO240,1075,1,45
+LO10,1075,790,1
+A20,1085,0,1,1,1,N,"Return"
+A20,1105,0,1,1,1,N,"Receipt"
+A260,1095,0,1,1,1,N,"C00"
+A480,1085,0,1,1,1,N,"Additional"
+A480,1105,0,1,1,1,N,"Receipt"
+LO10,1120,790,4
+P1
+N
+R0,0
+.
+END
+
+	return $EPL;
+	}
+
 sub get_BOL_EPL
 	{
 	my $self = shift;
