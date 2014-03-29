@@ -122,7 +122,7 @@ A190,740,0,3,2,2,N,"USPS TRACKING #"
 B80,790,0,1E,3,7,150,N,"$DATA->{'barcodedata'}"
 A220,970,0,3,1,1,N,"$DATA->{'tracking1'}"
 LO10,1020,790,10
-A120,1070,0,4,1,1,N,"Electronic Rate Approved # 699329"
+A120,1070,0,4,1,1,N,"Electronic Rate Approved # $DATA->{'ElectronicRateApproved'}"
 LO10,1120,790,4
 P1
 N
@@ -178,7 +178,7 @@ A190,740,0,3,2,2,N,"USPS TRACKING #"
 B80,790,0,1E,3,7,150,N,"$DATA->{'barcodedata'}"
 A220,970,0,3,1,1,N,"$DATA->{'tracking1'}"
 LO10,1020,790,10
-A120,1070,0,4,1,1,N,"Electronic Rate Approved # 699329"
+A120,1070,0,4,1,1,N,"Electronic Rate Approved # $DATA->{'ElectronicRateApproved'} "
 LO10,1120,790,4
 P1
 N
@@ -236,7 +236,7 @@ A190,740,0,3,2,2,N,"USPS TRACKING #"
 B80,790,0,1E,3,7,150,N,"$DATA->{'barcodedata'}"
 A220,970,0,3,1,1,N,"$DATA->{'tracking1'}"
 LO10,1020,790,10
-A120,1070,0,4,1,1,N,"Electronic Rate Approved # 699329"
+A120,1070,0,4,1,1,N,"Electronic Rate Approved # $DATA->{'ElectronicRateApproved'} "
 LO10,1120,790,4
 P1
 N
@@ -292,7 +292,7 @@ A190,740,0,3,2,2,N,"USPS TRACKING #"
 B80,790,0,1E,3,7,150,N,"$DATA->{'barcodedata'}"
 A220,970,0,3,1,1,N,"$DATA->{'tracking1'}"
 LO10,1020,790,10
-A120,1070,0,4,1,1,N,"Electronic Rate Approved # 699320"
+A120,1070,0,4,1,1,N,"Electronic Rate Approved # $DATA->{'ElectronicRateApproved'}"
 LO10,1120,790,4
 P1
 N
@@ -348,7 +348,7 @@ A190,740,0,3,2,2,N,"USPS TRACKING #"
 B80,790,0,1E,3,7,150,N,"$DATA->{'barcodedata'}"
 A220,970,0,3,1,1,N,"$DATA->{'tracking1'}"
 LO10,1020,790,10
-A120,1070,0,4,1,1,N,"Electronic Rate Approved # 699320"
+A120,1070,0,4,1,1,N,"Electronic Rate Approved # $DATA->{'ElectronicRateApproved'}"
 LO10,1120,790,4
 P1
 N
@@ -395,7 +395,7 @@ A100,550,0,3,1,1,N,"$DATA->{'address1'}"
 A100,570,0,3,1,1,N,"$DATA->{'address2'}"
 A100,590,0,3,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
 A550,330,0,2,1,1,N,"Ship Date:$DATA->{'datetoship'}"
-A475,350,0,2,1,1,N,"Expected Delivery:02/06/2014"
+A475,350,0,2,1,1,N,"Expected Delivery:$DATA->{'expectedDelivery'}"
 A630,370,0,2,1,1,N,"Weight: $DATA->{'weightinounces'} oz"
 A710,390,0,1,2,2,N,"$DATA->{'RDC'}"
 LO590,430,1,40

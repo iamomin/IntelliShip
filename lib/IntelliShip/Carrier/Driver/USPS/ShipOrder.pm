@@ -99,15 +99,30 @@ sub process_request
 		$self->CheckExpressMailCommitment;
 		}
 
-	my $TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
-	$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
+	my $TrackingNumber;
+
+	if ($shipmentData->{'servicecode'} eq 'UPME')
+		{
+		$TrackingNumber =$XMLResponse->{EMConfirmationNumber};
+		$self->log("EMConfirmationNumber: ".$TrackingNumber);
+		}
+	else
+		{
+		$TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
+		$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
+		}
 
 	$shipmentData->{'barcodedata'} = $TrackingNumber ;
 
 	$TrackingNumber = substr ($TrackingNumber, -22);
+
+	my $Electronic  = substr ($TrackingNumber, 7,6);
+	$self->log("Electronic: ".$Electronic);
+
 	$self->log("TrackingNumber: ".$TrackingNumber);
 
 	$shipmentData->{'tracking1'}    = $TrackingNumber;
+	$shipmentData->{'ElectronicRateApproved'}    = $Electronic;
 	$shipmentData->{'weight'}       = $shipmentData->{'enteredweight'};
 	$shipmentData->{'RDC'}          = $XMLResponse->{RDC};
 	$shipmentData->{'CarrierRoute'} = $XMLResponse->{CarrierRoute};
@@ -140,9 +155,10 @@ sub get_FirstClass_xml_request
 
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
 	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
-	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
-	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
-	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
@@ -170,8 +186,8 @@ sub get_FirstClass_xml_request
 <FromZip4/>
 <ToName>$shipmentData->{'contactname'}</ToName>
 <ToFirm>$shipmentData->{'addressname'}</ToFirm>
-<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
-<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToAddress1>$shipmentData->{'address2'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address1'}</ToAddress2>
 <ToCity>$shipmentData->{'addresscity'}</ToCity>
 <ToState>$shipmentData->{'addressstate'}</ToState>
 <ToZip5>$shipmentData->{'addresszip'}</ToZip5>
@@ -211,9 +227,10 @@ sub get_StandardPost_xml_request
 
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
 	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
-	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
-	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
-	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
@@ -241,8 +258,8 @@ sub get_StandardPost_xml_request
 <FromZip4/>
 <ToName>$shipmentData->{'contactname'}</ToName>
 <ToFirm>$shipmentData->{'addressname'}</ToFirm>
-<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
-<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToAddress1>$shipmentData->{'address2'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address1'}</ToAddress2>
 <ToCity>$shipmentData->{'addresscity'}</ToCity>
 <ToState>$shipmentData->{'addressstate'}</ToState>
 <ToZip5>$shipmentData->{'addresszip'}</ToZip5>
@@ -283,9 +300,10 @@ sub get_PriorityMail_xml_request
 
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
 	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
-	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
-	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
-	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
@@ -313,8 +331,8 @@ sub get_PriorityMail_xml_request
 <FromZip4/>
 <ToName>$shipmentData->{'contactname'}</ToName>
 <ToFirm>$shipmentData->{'addressname'}</ToFirm>
-<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
-<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToAddress1>$shipmentData->{'address2'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address1'}</ToAddress2>
 <ToCity>$shipmentData->{'addresscity'}</ToCity>
 <ToState>$shipmentData->{'addressstate'}</ToState>
 <ToZip5>$shipmentData->{'addresszip'}</ToZip5>
@@ -354,9 +372,10 @@ sub get_MediaMail_xml_request
 
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
 	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
-	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
-	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
-	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
@@ -384,8 +403,8 @@ sub get_MediaMail_xml_request
 <FromZip4/>
 <ToName>$shipmentData->{'contactname'}</ToName>
 <ToFirm>$shipmentData->{'addressname'}</ToFirm>
-<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
-<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToAddress1>$shipmentData->{'address2'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address1'}</ToAddress2>
 <ToCity>$shipmentData->{'addresscity'}</ToCity>
 <ToState>$shipmentData->{'addressstate'}</ToState>
 <ToZip5>$shipmentData->{'addresszip'}</ToZip5>
@@ -425,10 +444,11 @@ sub get_LibraryMail_xml_request
 
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
 	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
-	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
-	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
-	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
 
+	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+   
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
 	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
@@ -487,8 +507,8 @@ sub get_PriorityMailExpress_xml_request
 	my $CO = $self->CO;
 	my $Contact = $CO->contact;
 
-	$self->log("### Get XML Request for Standar Post ###: " );
-	$self->log("### Get XML Request ###: " . Dumper $shipmentData);
+	#$self->log("### Get XML Request for Standar Post ###: " );
+	#$self->log("### Get XML Request ###: " . Dumper $shipmentData);
 
 	$shipmentData->{serviceType} = 'Standard Post';
 
@@ -498,9 +518,10 @@ sub get_PriorityMailExpress_xml_request
 	$shipmentData->{'FromLastName'} = $Contact->lastname;
 	$shipmentData->{FromName} =  $Contact->firstname.' '.$Contact->lastname;
 	$shipmentData->{'weightinounces'} = $shipmentData->{'enteredweight'};
-	$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
-	$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
-	$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
+
+	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
+	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
+	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
@@ -543,8 +564,8 @@ sub get_PriorityMailExpress_xml_request
 <ToFirstName>Janice</ToFirstName>
 <ToLastName>Dickens</ToLastName>
 <ToFirm>$shipmentData->{'addressname'}</ToFirm>
-<ToAddress1>$shipmentData->{'address1'}</ToAddress1>
-<ToAddress2>$shipmentData->{'address2'}</ToAddress2>
+<ToAddress1>$shipmentData->{'address2'}</ToAddress1>
+<ToAddress2>$shipmentData->{'address1'}</ToAddress2>
 <ToCity>$shipmentData->{'addresscity'}</ToCity>
 <ToState>$shipmentData->{'addressstate'}</ToState>
 <ToZip5>$shipmentData->{'addresszip'}</ToZip5>
@@ -575,7 +596,7 @@ sub get_PriorityMailExpress_xml_request
 </ExpressMailLabelRequest>
 END
 
-	$self->log("... XML Request Data:  " . $XML_request);
+	#$self->log("... XML Request Data:  " . $XML_request);
 
 	return $XML_request;
 	}
@@ -614,14 +635,33 @@ END
 		$self->add_error("No response received from USPS");
 		return $shipmentData;
 		}
-	$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
+	#$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
 
 	my $XMLResponse = $xml->XMLin($response->content);
 
-	$shipmentData->{'commintmentName'} = uc($XMLResponse->{Commitment}->{CommitmentName}) if  $XMLResponse->{Commitment}->{CommitmentName};
-	$shipmentData->{'CommitmentTime'} = $XMLResponse->{Commitment}->{CommitmentTime} if  $XMLResponse->{Commitment}->{CommitmentTime};
+	if( $XMLResponse->{Number} and $XMLResponse->{Description})
+		{
+		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
+		$self->log($msg);
+		$self->add_error($msg);
+		return $shipmentData;
+		}
+
+	my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
+
+	#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
+
+	$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
+	$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
+
+	#$self->log("Date1 " .$shipmentData->{'datetoship'});
+
+	my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
+	#$self->log("Day " .$Days);
+	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
+	#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
 	}
 
 __PACKAGE__->meta()->make_immutable();
