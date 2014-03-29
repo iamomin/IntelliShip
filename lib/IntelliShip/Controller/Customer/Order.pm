@@ -1937,20 +1937,36 @@ sub VOID_SHIPMENT :Private
 
 	$c->log->debug("VOID_SHIPMENT, ID: " . $shipment_id);
 
-	# Set shipment to void status, for later processing
+	## Set shipment to void status, for later processing
 	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipment_id});
 	$Shipment->statusid(5); ## Void Shipment
 	$Shipment->update;
 
-	## Set CO to 'unshipped' status
 	my $CO = $Shipment->CO;
-	$CO->statusid(1); ## Void Shipment
-	$CO->update;
 
-	$CO->delete_all_package_details;
+	###################################################################
+	## Process void shipment down through the carrrier handler
+	###################################################################
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_VOID_SHIPMENT);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->customer($self->customer);
+	$Handler->carrier($Shipment->carrier);
+	$Handler->CO($CO);
+	$Handler->SHIPMENT($Shipment);
 
-	my $OrderNumber = $CO->ordernumber;
-	$c->log->debug("Order number " . $OrderNumber);
+	my $Response = $Handler->process_request({
+					NO_TOKEN_OPTION => 1
+					});
+
+	# Process errors
+	unless ($Response->is_success)
+		{
+		$c->log->debug("VOID SHIPMENT TO CARRIER FAILED: " . $Response->message);
+		#return $self->display_error_details($Response->message);
+		return undef;
+		}
 
 	## Remove product counts from pick & pack CO shipped product counts
 	if ($CO->has_pick_and_pack)
@@ -1982,46 +1998,6 @@ sub VOID_SHIPMENT :Private
 				$Product->update;
 				}
 			}
-		}
-
-	## Delete any associated orders
-	$Shipment->shipmentcoassocs->delete;
-
-	##************ PENDING ************
-	## Check if the shipment had a pickuprequest sent.  If it did, cancel it.
-
-	## set a couple of values to pass to the pickup cancel request if they were passed in
-	if ( defined($self->{'customerid'}) && $self->{'customerid'} ne '' )
-		{
-		$Shipment->{'customerid'} = $self->{'customerid'};
-		}
-	if ( defined($self->{'customername'}) && $self->{'customername'} ne '' )
-		{
-		$Shipment->{'customername'} = $self->{'customername'};
-		}
-
-	###################################################################
-	## Process void shipment down through the carrrier handler
-	###################################################################
-	my $Handler = IntelliShip::Carrier::Handler->new;
-	$Handler->request_type(&REQUEST_TYPE_VOID_SHIPMENT);
-	$Handler->token($self->get_login_token);
-	$Handler->context($self->context);
-	$Handler->customer($self->customer);
-	$Handler->carrier($Shipment->carrier);
-	$Handler->CO($CO);
-	$Handler->SHIPMENT($Shipment);
-
-	my $Response = $Handler->process_request({
-					NO_TOKEN_OPTION => 1
-					});
-
-	# Process errors
-	unless ($Response->is_success)
-		{
-		$c->log->debug("VOID SHIPMENT TO CARRIER FAILED: " . $Response->message);
-		#return $self->display_error_details($Response->message);
-		return undef;
 		}
 
 	## Send an Email Alert to LossPrevention Email

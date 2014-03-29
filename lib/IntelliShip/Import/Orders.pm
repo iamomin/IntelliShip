@@ -176,18 +176,18 @@ sub ImportOrders
 		{
 		$LineCount++;
 
-		# Trim spaces from front and back
+		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
 
-		# skip blank lines
+		## skip blank lines
 		next unless $Line;
 
 		$c->log->debug("");
 		#$c->log->debug("... Import Line: " . $Line);
 
 		my $CustRef = {};
-		# split the tab delimited line into field names
+		## split the tab delimited line into field names
 		(
 			$CustRef->{'ordernumber'},
 			$CustRef->{'ponumber'},
@@ -277,10 +277,10 @@ sub ImportOrders
 				}
 			}
 
-		# Sort out generic values - in the MAERSK era, we were saddled with a very bad design where the
-		# dim fields were co-opted for other uses (volume,density,class, at this point)
-		# So.  If all three generic fields are filled, they correspond to the previous dims.
-		# If only generic1 is filled, that's volume.  Only generic2=density.  Only generic3=classo
+		## Sort out generic values - in the MAERSK era, we were saddled with a very bad design where the
+		## dim fields were co-opted for other uses (volume,density,class, at this point)
+		## So.  If all three generic fields are filled, they correspond to the previous dims.
+		## If only generic1 is filled, that's volume.  Only generic2=density.  Only generic3=classo
 		if ( $CustRef->{'generic1'} and $CustRef->{'generic2'} and $CustRef->{'generic3'} )
 			{
 			$CustRef->{'dimlength'} = $CustRef->{'generic1'};
@@ -300,7 +300,7 @@ sub ImportOrders
 			$CustRef->{'class'} = $CustRef->{'generic3'};
 			}
 
-		# undef freightcharges if not valid value, (0,1,2)(prepaid,collect,tp)
+		## undef freightcharges if not valid value, (0,1,2)(prepaid,collect,tp)
 		if ( defined $CustRef->{'freightcharges'}
 			and $CustRef->{'freightcharges'} ne '0'
 			and $CustRef->{'freightcharges'} ne '1'
@@ -311,15 +311,15 @@ sub ImportOrders
 
 		if ( defined($CustRef->{'transitdays'}) and $CustRef->{'transitdays'} ne '' )
 			{
-			$CustRef->{'transitdays'} =~ s/[^0-9]//g; # Remove non-numbers;
-			# undef transitdays if not nothing left after removing everything expect integers
+			$CustRef->{'transitdays'} =~ s/[^0-9]//g; ## Remove non-numbers;
+			## undef transitdays if not nothing left after removing everything expect integers
 			if ( defined($CustRef->{'transitdays'}) and $CustRef->{'transitdays'} eq '' )
 				{
 				$CustRef->{'transitdays'} = undef;
 				}
 			}
 
-		# set cotypeid
+		## set cotypeid
 		if ( defined($CustRef->{'cotype'}) and $CustRef->{'cotype'} =~ /PO/i )
 			{
 			$CustRef->{'cotypeid'} = 2;
@@ -348,13 +348,13 @@ sub ImportOrders
 			$CustRef->{'address2'} = '';
 			}
 
-		# Default country to US if it is null
+		## Default country to US if it is null
 		$CustRef->{'addresscountry'} = uc($CustRef->{'addresscountry'});
 		if ( !defined($CustRef->{'addresscountry'}) or $CustRef->{'addresscountry'} eq '' )
 			{
 			$CustRef->{'addresscountry'} = 'US';
 			}
-		# Trim contact name to 50
+		## Trim contact name to 50
 		if ( defined($CustRef->{'contactname'}) and $CustRef->{'contactname'} ne '' )
 			{
 			$CustRef->{'contactname'} = substr($CustRef->{'contactname'},0,50);
@@ -370,14 +370,14 @@ sub ImportOrders
 			$export_flag = -9;
 			}
 
-		# Figure out who this is
+		## Figure out who this is
 		my ($ContactID,$CustomerID) = $self->AuthenticateContact($CustRef->{'extloginid'});
 		$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
 
 		my $Contact = $c->model('MyDBI::Contact')->find({ contactid => $ContactID }) if $ContactID;
 		my $Customer = $c->model('MyDBI::Customer')->find({ customerid => $CustomerID }) if $CustomerID;
 
-		# If we don't have an incoming class, check if we have a default class...and stuff it in if we do
+		## If we don't have an incoming class, check if we have a default class...and stuff it in if we do
 		unless ($Contact and $Customer)
 			{
 			$Contact = $self->contact;
@@ -400,7 +400,7 @@ sub ImportOrders
 		#	($CustRef->{'errorshipdate'},$CustRef->{'errorduedate'}) = ($Customer->errorshipdate, $Customer->errorduedate);
 		#	}
 
-		# Convert Customer Security Type to Intelliship Security Type
+		## Convert Customer Security Type to Intelliship Security Type
 		if ( defined($CustRef->{'securitytype'}) and $CustRef->{'securitytype'} ne '' )
 			{
 			my $STHS = $self->myDBI->select("
@@ -439,21 +439,21 @@ sub ImportOrders
 				}
 			}
 
-		# Must have an order number
+		## Must have an order number
 		unless ($CustRef->{'ordernumber'})
 			{
 			$c->log->debug("--- ordernumber not found");
 			$export_flag = -1;
 			}
 
-		# Order needs an addr1 and an addr2
+		## Order needs an addr1 and an addr2
 		if (!$CustRef->{'address1'} and !$CustRef->{'address2'})
 			{
 			$c->log->debug("--- address 1 and 2 not found");
 			$export_flag = -2;
 			}
 
-		# Validate Country
+		## Validate Country
 		if ($CustRef->{'addresscountry'})
 			{
 			my $ValidCountry = $self->ValidateCountry($CustRef->{'addresscountry'});
@@ -484,23 +484,23 @@ sub ImportOrders
 				}
 			}
 
-		# US Specific Requirements and quirks
+		## US Specific Requirements and quirks
 		if ( $CustRef->{'addresscountry'} eq 'US' )
 			{
-			# Order needs a city, state, and zip
+			## Order needs a city, state, and zip
 			if (!$CustRef->{'addresscity'} or !$CustRef->{'addressstate'} or !$CustRef->{'addresszip'})
 				{
 				$c->log->debug("--- address city/state/zip not found");
 				$export_flag = -3;
 				}
 
-			# if we've got a 4 digit US zip then pad with zero
+			## if we've got a 4 digit US zip then pad with zero
 			if ( $CustRef->{'addresszip'} and $CustRef->{'addresszip'} =~ /^\d{4}$/ )
 				{
 				$CustRef->{'addresszip'} = "0" . $CustRef->{'addresszip'};
 				}
 
-			# Zip needs to be 5 or 5+4
+			## Zip needs to be 5 or 5+4
 			if ( $CustRef->{'addresszip'} and $CustRef->{'addresszip'} !~ /\d{5}(\-\d{4})?/ )
 				{
 				$c->log->debug("--- address city/state/zip not found");
@@ -514,7 +514,7 @@ sub ImportOrders
 			$export_flag = -6;
 			}
 
-		# if anything is given for dropship address then validate that it is a good address
+		## if anything is given for dropship address then validate that it is a good address
 		if (
 				(defined($CustRef->{'dropname'}) and $CustRef->{'dropname'} ne '')
 			or (defined($CustRef->{'dropaddress1'}) and $CustRef->{'dropaddress1'} ne '')
@@ -546,7 +546,7 @@ sub ImportOrders
 					$export_flag = -20;
 					}
 				}
-			# Needs an addr1 and an addr2
+			## Needs an addr1 and an addr2
 			if (!$CustRef->{'dropaddress1'} eq '' and !$CustRef->{'dropaddress2'})
 				{
 				$c->log->debug("--- drop address 1 and 2 not found");
@@ -555,19 +555,19 @@ sub ImportOrders
 
 			if ( $CustRef->{'dropcountry'} eq 'US' )
 				{
-				# Needs a city, state, and zip
+				## Needs a city, state, and zip
 				if (!$CustRef->{'dropcity'} or !$CustRef->{'dropstate'} or !$CustRef->{'dropzip'})
 					{
 					$c->log->debug("--- drop city/state/zip not found");
 					$export_flag = -17;
 					}
 
-				# if we've got a 4 digit US zip then pad with zero
+				## if we've got a 4 digit US zip then pad with zero
 				if ( $CustRef->{'dropzip'} and $CustRef->{'dropzip'} =~ /^\d{4}$/ )
 					{
 					$CustRef->{'dropzip'} = "0" . $CustRef->{'dropzip'};
 					}
-				# Zip needs to be 5 or 5+4
+				## Zip needs to be 5 or 5+4
 				if ( defined($CustRef->{'dropzip'}) and $CustRef->{'dropzip'} !~ /\d{5}(\-\d{4})?/ )
 					{
 					$c->log->debug("--- drop zip not found");
@@ -646,7 +646,7 @@ sub ImportOrders
 				}
 			}
 
-		# If shipment and delivery notification addresses are provided, they must be valid
+		## If shipment and delivery notification addresses are provided, they must be valid
 		if ( defined($CustRef->{'shipmentnotification'}) and $CustRef->{'shipmentnotification'} ne '' )
 			{
 			unless (IntelliShip::Utils->is_valid_email($CustRef->{'shipmentnotification'}))
@@ -686,7 +686,7 @@ sub ImportOrders
 				$CustRef->{'description'} = substr($CustRef->{'description'},0,99);
 				}
 
-			my $C = {
+			my $CO = {
 				customerid => $CustomerID,
 				contactid  => $ContactID,
 				statusid   => $StatusID,
@@ -726,7 +726,7 @@ sub ImportOrders
 				$c->log->debug("... New Address Inserted, ID: " . $ToAddress->addressid);
 				}
 
-			$C->{'addressid'} = $ToAddress->id;
+			$CO->{'addressid'} = $ToAddress->id;
 
 			#########################################################
 			## Store Drop Address
@@ -762,128 +762,128 @@ sub ImportOrders
 				$c->log->debug("... New Address Inserted, ID: " . $ReturnAddress->addressid);
 				}
 
-			$C->{'rtaddressid'} = $ReturnAddress->id;
+			$CO->{'rtaddressid'} = $ReturnAddress->id;
 			###########################
 
-			$C->{'ordernumber'}           = $CustRef->{'ordernumber'};
-			$C->{'ponumber'}              = $CustRef->{'ponumber'};
-			$C->{'datetoship'}            = $CustRef->{'datetoship'} if $CustRef->{'datetoship'};
-			$C->{'estimatedweight'}       = $CustRef->{'estimatedweight'} || 0;
-			$C->{'estimatedinsurance'}    = $CustRef->{'estimatedinsurance'} || 0;
-			$C->{'description'}           = $CustRef->{'description'};
-			$C->{'exthsc'}                = $CustRef->{'exthsc'} if $CustRef->{'exthsc'};
-			$C->{'extcd'}                 = $CustRef->{'extcd'} if $CustRef->{'extcd'};
-			$C->{'extcarrier'}            = $CustRef->{'extcarrier'} if $CustRef->{'extcarrier'};
-			$C->{'extservice'}            = $CustRef->{'extservice'} if $CustRef->{'extservice'};
-			$C->{'dateneeded'}            = $CustRef->{'dateneeded'} if $CustRef->{'dateneeded'};
-			$C->{'extloginid'}            = $CustRef->{'extloginid'} if $CustRef->{'extloginid'};
-			$C->{'extcustnum'}            = $CustRef->{'extcustnum'} if $CustRef->{'extcustnum'};
-			$C->{'department'}            = $CustRef->{'department'} if $CustRef->{'department'};
-			$C->{'contactname'}           = $CustRef->{'contactname'} if $CustRef->{'contactname'};
-			$C->{'contactphone'}          = $CustRef->{'contactphone'} if $CustRef->{'contactphone'};
-			$C->{'extid'}                 = $CustRef->{'extid'} if $CustRef->{'extid'};
-			$C->{'dimlength'}             = $CustRef->{'dimlength'} || 0;
-			$C->{'dimwidth'}              = $CustRef->{'dimwidth'} || 0;
-			$C->{'dimheight'}             = $CustRef->{'dimheight'} || 0;
-			$C->{'unitquantity'}          = $CustRef->{'unitquantity'} || 1;
-			$C->{'commodityquantity'}     = $CustRef->{'commodityquantity'} || 0;
-			$C->{'chargeamount'}          = $CustRef->{'chargeamount'} || 0;
-			$C->{'stream'}                = $CustRef->{'stream'} if $CustRef->{'stream'};
-			$C->{'dateneededon'}          = $CustRef->{'dateneededon'} if $CustRef->{'dateneededon'};
-			$C->{'tpacctnumber'}          = $CustRef->{'tpacctnumber'} if $CustRef->{'tpacctnumber'};
-			$C->{'shipmentnotification'}  = $CustRef->{'shipmentnotification'} if $CustRef->{'shipmentnotification'};
-			$C->{'deliverynotification'}  = $CustRef->{'deliverynotification'} if $CustRef->{'deliverynotification'};
-			$C->{'importfile'}            = fileparse($import_file) if $import_file;
-			$C->{'securitytype'}          = $CustRef->{'securitytype'} if $CustRef->{'securitytype'};
-			$C->{'termsofsale'}           = $CustRef->{'termsofsale'} if $CustRef->{'termsofsale'};
-			$C->{'dutypaytype'}           = $CustRef->{'dutypaytype'} if $CustRef->{'dutypaytype'};
-			$C->{'dutyaccount'}           = $CustRef->{'dutyaccount'} if $CustRef->{'dutyaccount'};
-			$C->{'commodityunits'}        = $CustRef->{'commodityunits'} if $CustRef->{'commodityunits'};
-			$C->{'partiestotransaction'}  = $CustRef->{'partiestotransaction'} if $CustRef->{'partiestotransaction'};
-			$C->{'commodityunitvalue'}    = $CustRef->{'commodityunitvalue'} || 0;
-			$C->{'destinationcountry'}    = $CustRef->{'destinationcountry'} if $CustRef->{'destinationcountry'};
-			$C->{'commoditycustomsvalue'} = $CustRef->{'commoditycustomsvalue'} || 0;
-			$C->{'manufacturecountry'}    = $CustRef->{'manufacturecountry'} if $CustRef->{'manufacturecountry'};
-			$C->{'currencytype'}          = $CustRef->{'currencytype'} if $CustRef->{'currencytype'};
-			$C->{'dropcontact'}           = $CustRef->{'dropcontact'} if $CustRef->{'dropcontact'};
-			$C->{'dropphone'}             = $CustRef->{'dropphone'} if $CustRef->{'dropphone'};
-			$C->{'isdropship'}            = $CustRef->{'isdropship'} || 0;
-			$C->{'volume'}                = $CustRef->{'volume'} || 0;
-			$C->{'density'}               = $CustRef->{'density'} || 0;
-			$C->{'class'}                 = $CustRef->{'class'} || 0;
-			$C->{'custref2'}              = $CustRef->{'custref2'} if $CustRef->{'custref2'};
-			$C->{'custref3'}              = $CustRef->{'custref3'} if $CustRef->{'custref3'};
-			$C->{'freightcharges'}        = $CustRef->{'freightcharges'} || 0;
-			$C->{'transitdays'}           = $CustRef->{'transitdays'} || 0;
-			$C->{'cotypeid'}              = $CustRef->{'cotypeid'} || 1;
+			$CO->{'ordernumber'}           = $CustRef->{'ordernumber'};
+			$CO->{'ponumber'}              = $CustRef->{'ponumber'};
+			$CO->{'datetoship'}            = $CustRef->{'datetoship'} if $CustRef->{'datetoship'};
+			$CO->{'estimatedweight'}       = $CustRef->{'estimatedweight'} || 0;
+			$CO->{'estimatedinsurance'}    = $CustRef->{'estimatedinsurance'} || 0;
+			$CO->{'description'}           = $CustRef->{'description'};
+			$CO->{'exthsc'}                = $CustRef->{'exthsc'} if $CustRef->{'exthsc'};
+			$CO->{'extcd'}                 = $CustRef->{'extcd'} if $CustRef->{'extcd'};
+			$CO->{'extcarrier'}            = $CustRef->{'extcarrier'} if $CustRef->{'extcarrier'};
+			$CO->{'extservice'}            = $CustRef->{'extservice'} if $CustRef->{'extservice'};
+			$CO->{'dateneeded'}            = $CustRef->{'dateneeded'} if $CustRef->{'dateneeded'};
+			$CO->{'extloginid'}            = $CustRef->{'extloginid'} if $CustRef->{'extloginid'};
+			$CO->{'extcustnum'}            = $CustRef->{'extcustnum'} if $CustRef->{'extcustnum'};
+			$CO->{'department'}            = $CustRef->{'department'} if $CustRef->{'department'};
+			$CO->{'contactname'}           = $CustRef->{'contactname'} if $CustRef->{'contactname'};
+			$CO->{'contactphone'}          = $CustRef->{'contactphone'} if $CustRef->{'contactphone'};
+			$CO->{'extid'}                 = $CustRef->{'extid'} if $CustRef->{'extid'};
+			$CO->{'dimlength'}             = $CustRef->{'dimlength'} || 0;
+			$CO->{'dimwidth'}              = $CustRef->{'dimwidth'} || 0;
+			$CO->{'dimheight'}             = $CustRef->{'dimheight'} || 0;
+			$CO->{'unitquantity'}          = $CustRef->{'unitquantity'} || 1;
+			$CO->{'commodityquantity'}     = $CustRef->{'commodityquantity'} || 0;
+			$CO->{'chargeamount'}          = $CustRef->{'chargeamount'} || 0;
+			$CO->{'stream'}                = $CustRef->{'stream'} if $CustRef->{'stream'};
+			$CO->{'dateneededon'}          = $CustRef->{'dateneededon'} if $CustRef->{'dateneededon'};
+			$CO->{'tpacctnumber'}          = $CustRef->{'tpacctnumber'} if $CustRef->{'tpacctnumber'};
+			$CO->{'shipmentnotification'}  = $CustRef->{'shipmentnotification'} if $CustRef->{'shipmentnotification'};
+			$CO->{'deliverynotification'}  = $CustRef->{'deliverynotification'} if $CustRef->{'deliverynotification'};
+			$CO->{'importfile'}            = fileparse($import_file) if $import_file;
+			$CO->{'securitytype'}          = $CustRef->{'securitytype'} if $CustRef->{'securitytype'};
+			$CO->{'termsofsale'}           = $CustRef->{'termsofsale'} if $CustRef->{'termsofsale'};
+			$CO->{'dutypaytype'}           = $CustRef->{'dutypaytype'} if $CustRef->{'dutypaytype'};
+			$CO->{'dutyaccount'}           = $CustRef->{'dutyaccount'} if $CustRef->{'dutyaccount'};
+			$CO->{'commodityunits'}        = $CustRef->{'commodityunits'} if $CustRef->{'commodityunits'};
+			$CO->{'partiestotransaction'}  = $CustRef->{'partiestotransaction'} if $CustRef->{'partiestotransaction'};
+			$CO->{'commodityunitvalue'}    = $CustRef->{'commodityunitvalue'} || 0;
+			$CO->{'destinationcountry'}    = $CustRef->{'destinationcountry'} if $CustRef->{'destinationcountry'};
+			$CO->{'commoditycustomsvalue'} = $CustRef->{'commoditycustomsvalue'} || 0;
+			$CO->{'manufacturecountry'}    = $CustRef->{'manufacturecountry'} if $CustRef->{'manufacturecountry'};
+			$CO->{'currencytype'}          = $CustRef->{'currencytype'} if $CustRef->{'currencytype'};
+			$CO->{'dropcontact'}           = $CustRef->{'dropcontact'} if $CustRef->{'dropcontact'};
+			$CO->{'dropphone'}             = $CustRef->{'dropphone'} if $CustRef->{'dropphone'};
+			$CO->{'isdropship'}            = $CustRef->{'isdropship'} || 0;
+			$CO->{'volume'}                = $CustRef->{'volume'} || 0;
+			$CO->{'density'}               = $CustRef->{'density'} || 0;
+			$CO->{'class'}                 = $CustRef->{'class'} || 0;
+			$CO->{'custref2'}              = $CustRef->{'custref2'} if $CustRef->{'custref2'};
+			$CO->{'custref3'}              = $CustRef->{'custref3'} if $CustRef->{'custref3'};
+			$CO->{'freightcharges'}        = $CustRef->{'freightcharges'} || 0;
+			$CO->{'transitdays'}           = $CustRef->{'transitdays'} || 0;
+			$CO->{'cotypeid'}              = $CustRef->{'cotypeid'} || 1;
 
 			if (defined($CustRef->{'hazardous'}))
 				{
 				if ( $CustRef->{'hazardous'} eq 'Y' or  $CustRef->{'hazardous'} eq 'y')
 					{
-					$C->{'hazardous'} = 1;
+					$CO->{'hazardous'} = 1;
 					}
 				else
 					{
-					$C->{'hazardous'} = 0;
+					$CO->{'hazardous'} = 0;
 					}
 				}
 			if (defined($CustRef->{'keep'}))
 				{
 				if ( $CustRef->{'keep'} eq 'Y' or  $CustRef->{'keep'} eq 'y' or $CustRef->{'keep'} eq '1' )
 					{
-					$C->{'keep'} = 1;
+					$CO->{'keep'} = 1;
 					}
 				else
 					{
-					$C->{'keep'} = 0;
+					$CO->{'keep'} = 0;
 					}
 				}
 				if (defined($CustRef->{'routeflag'}))
 					{
 					if ( $CustRef->{'routeflag'} eq 'Y' or  $CustRef->{'routeflag'} eq 'y')
 						{
-						$C->{'routeflag'} = 1;
-						$C->{'extcarrier'} = undef;
-						$C->{'extservice'} = undef;
+						$CO->{'routeflag'} = 1;
+						$CO->{'extcarrier'} = undef;
+						$CO->{'extservice'} = undef;
 						}
 					else
 						{
-						$C->{'routeflag'} = 0;
+						$CO->{'routeflag'} = 0;
 						}
 					}
 
-			#$c->log->debug("... CO DATA DETAILS:  " . Dumper $C);
+			#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
 
-			my $CO = $c->model('MyDBI::CO')->new($C);
-			$CO->coid($self->myDBI->get_token_id);
-			$CO->insert;
-			$c->log->debug("... NEW CO INSERTED:  " . $CO->coid);
+			my $CO_Obj = $c->model('MyDBI::CO')->new($CO);
+			$CO_Obj->coid($self->myDBI->get_token_id);
+			$CO_Obj->insert;
 
-			my $COID = $CO->coid;
+			my $COID = $CO_Obj->coid;
 
-			$c->log->debug("... COID: " . $COID);
+			$c->log->debug("... NEW CO INSERTED, COID:  " . $COID);
 
-			# Create package data
+			## Create package data
 			my $packageData = {
 				datatypeid  => '1000',
 				ownertypeid => '1000',
 				ownerid     => $COID,
+				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				};
 
-			# default package quantity to one if none was given
-			$packageData->{'quantity'}    = defined($C->{'unitquantity'}) ? $C->{'unitquantity'} : 1;
-			$packageData->{'description'} = $C->{'description'};
-			$packageData->{'weight'}      = $C->{'estimatedweight'};
-			$packageData->{'decval'}      = $C->{'estimatedinsurance'};
+			## Default package quantity to one if none was given
+			$packageData->{'quantity'}    = defined($CO->{'unitquantity'}) ? $CO->{'unitquantity'} : 1;
+			$packageData->{'description'} = $CO->{'description'};
+			$packageData->{'weight'}      = $CO->{'estimatedweight'};
+			$packageData->{'decval'}      = $CO->{'estimatedinsurance'};
 
 			my $PackProData = $c->model('MyDBI::Packprodata')->new($packageData);
 			$PackProData->packprodataid($self->myDBI->get_token_id);
 			$PackProData->insert;
 
-			$c->log->debug("... NEW PackProData INSERTED, packprodataid:  " . $PackProData->packprodataid);
+			$c->log->debug("... NEW Package INSERTED, packprodataid:  " . $PackProData->packprodataid);
 
-			# set assessorials
+			## set assessorials
 			if ( $CustRef->{'saturdayflag'} and $CustRef->{'saturdayflag'} == 1 )
 				{
 				$self->SaveAssessorial($COID,'saturdaysunday','Saturday Delivery','0')
@@ -899,7 +899,7 @@ sub ImportOrders
 			}
 		elsif ( $export_flag < 0 )
 			{
-			# We need a valid customerid for the failure to do any good...it's likely a header line
+			## We need a valid customerid for the failure to do any good...it's likely a header line
 			if ($CustomerID)
 				{
 				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'}";
@@ -909,8 +909,8 @@ sub ImportOrders
 					}
 				$ImportFailureRef->{$CustomerID} .= ": $export_flag\n";
 				}
-			# Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
-			# code for them explicitly
+			## Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
+			## code for them explicitly
 			else
 				{
 				$UnknownCustCount++;
@@ -984,7 +984,7 @@ sub ImportProducts
 
 		my $CustRef = {};
 
-		# Trim spaces from front and back
+		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
 
@@ -1014,7 +1014,7 @@ sub ImportProducts
 
 		#$c->log->debug("...CustRef:  " . Dumper $CustRef);
 
-		# set cotypeid
+		## set cotypeid
 		if ( defined($CustRef->{'cotype'}) && $CustRef->{'cotype'} =~ /PO/i )
 			{
 			$CustRef->{'cotypeid'} = 2;
@@ -1031,7 +1031,7 @@ sub ImportProducts
 			$ordertype = 'order';
 			}
 
-		# set descr equal to part number if descr is not given and part number is
+		## set descr equal to part number if descr is not given and part number is
 		if ( $CustRef->{'productdescr'} eq '' && $CustRef->{'partnumber'} ne '' )
 			{
 			$CustRef->{'productdescr'} = $CustRef->{'partnumber'};
@@ -1047,25 +1047,10 @@ sub ImportProducts
 			$CustRef->{'productweight'} = undef;
 			}
 
-		#if (!defined($CustRef->{'dimwidth'}) || $CustRef->{'dimwidth'} eq '')
-		#	{
-		#	$CustRef->{'dimwidth'} = 0;
-		#	}
-        #
-		#if (!defined($CustRef->{'dimheight'}) || $CustRef->{'dimheight'} eq '')
-		#	{
-		#	$CustRef->{'dimheight'} = 0;
-		#	}
-        #
-		#if (!defined($CustRef->{'dimlength'}) || $CustRef->{'dimlength'} eq '')
-		#	{
-		#	$CustRef->{'dimlength'} = 0;
-		#	}
-
 		################################################
 		### Check for required fields & errors
 		################################################
-		#Check for valid extloginid
+		## Check for valid extloginid
 
 		my ($ContactID,$CustomerID) = $self->AuthenticateContact($CustRef->{'extloginid'});
 		#$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
@@ -1094,7 +1079,7 @@ sub ImportProducts
 		#		}
 		#	}
 
-		# Must have an order number
+		## Must have an order number
 		if (!defined($CustRef->{'ordernumber'}) || $CustRef->{'ordernumber'} eq '')
 			{
 			$export_flag = -2;
@@ -1128,7 +1113,7 @@ sub ImportProducts
 				}
 			}
 
-		# use this to issue delete of products for an order only once.
+		## use this to issue delete of products for an order only once.
 		$LastCOID = $CustRef->{'coid'};
 
 		if ($CustRef->{'productquantity'})
@@ -1190,27 +1175,41 @@ sub ImportProducts
 		my $CO;
 		if ( $export_flag == 0 )
 			{
-			# if it's the 1st hit on a particular order then delete any existing product records
+			## if it's the 1st hit on a particular order then delete any existing product records
 			if ( $LineCount== 1 || ($LastCOID ne $CustRef->{'coid'}) )
 				{
 				$CO=$c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
 
 				#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
-
-				$CO->delete_all_package_details;
 				}
 
 			my $productData = { datatypeid => '2000' };
 
-			# coid and packageid are passed in.  ideally products will associate to a package.
-			# if none exist, the coid is passed so that the products will tie to the order instead.
-			my @packages;
-			if ($CO and @packages = $CO->packages)
+			## coid and packageid are passed in.  ideally products will associate to a package.
+			## if none exist, the coid is passed so that the products will tie to the order instead.
+
+			## OwnerTypeID:
+			## 1000 = order (CO)
+			## 2000 = shipment
+			## 3000 = product (for packages)
+
+			## DataTypeId
+			## 1000 = Package
+			## 2000 = Product
+			my @packages = $CO->packages if $CO;
+			if (@packages)
 				{
-				$productData->{'packageid'} = $packages[0]->packprodataid;
+				$c->log->debug("... package found, packprodataid: " . $packages[0]->packprodataid);
+				$productData->{'ownerid'}     = $packages[0]->packprodataid;
+				$productData->{'ownertypeid'} = '3000';
+				}
+			else
+				{
+				$c->log->debug("... package not found");
+				$productData->{'ownerid'}     = $CustRef->{'coid'};
+				$productData->{'ownertypeid'} = '1000';
 				}
 
-			$productData->{'ownerid'}          = $CustRef->{'coid'};
 			$productData->{'quantity'}         = $CustRef->{'productquantity'};
 			$productData->{'reqqty'}           = $CustRef->{'productquantity'};
 			$productData->{'unittypeid'}       = $CustRef->{'unittypeid'};
@@ -1227,6 +1226,7 @@ sub ImportProducts
 			$productData->{'dimheight'}        = $CustRef->{'dimheight'} || 0;
 			$productData->{'serialnumber'}     = $CustRef->{'serialnumber'};
 			$productData->{'producttype'}      = $CustRef->{'producttype'};
+			$productData->{'datecreated'}      = IntelliShip::DateUtils->get_timestamp_with_time_zone;
 
 			$productData->{'description'} =~ s/'//g if $productData->{'description'};
 
@@ -1234,13 +1234,6 @@ sub ImportProducts
 				{
 				$productData->{'hazardous'} = ($CustRef->{'hazardous'} =~ /Y/i ? 1 : 0);
 				}
-
-			# set onwertypeid
-			my $OwnerTypeID = '1000';
-
-			# Let the product go to a package if we've got one
-			$OwnerTypeID = '3000' if $productData->{'packageid'};
-			$productData->{'ownertypeid'} = $OwnerTypeID;
 
 			#$c->log->debug("....productdata  : ".Dumper $productData );
 
@@ -1252,13 +1245,13 @@ sub ImportProducts
 			}
 		elsif ( $export_flag < 0 )
 			{
-			# We need a valid customerid for the failure to do any good...it's likely a header line
+			## We need a valid customerid for the failure to do any good...it's likely a header line
 			 if ( defined($CustomerID) && $CustomerID ne '' )
 				{
 				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'}: $export_flag\n";
 				}
-			 # Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
-			 # code for them explicitly
+			 ## Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
+			 ## code for them explicitly
 			 else
 				{
 				$UnknownCustCount++;
@@ -1281,19 +1274,19 @@ sub ImportProducts
 		print STDERR"\n  ###UnknownCustCount ".$UnknownCustCount;
 		#close (OUT);
 		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
-		#   or &TraceBack("Could not move $Error_File: $!");
+		##   or &TraceBack("Could not move $Error_File: $!");
 		}
 
 	return ($ImportFailureRef,$ordertype);
 	}
 
-# Send email with list of failed imports
+## Send email with list of failed imports
 sub EmailImportFailures
 	{
 	my $self = shift;
 	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
 
-	return;# print STDERR "\n..... Skip EmailImportFailures: $ImportFailures, $filepath, $filename, $OrderTypeRef";
+	return;## print STDERR "\n..... Skip EmailImportFailures: $ImportFailures, $filepath, $filename, $OrderTypeRef";
 
 	#foreach my $customerid (keys(%$ImportFailures))
 	#	{
@@ -1338,13 +1331,13 @@ sub SaveAssessorial
 
 	my $AssData = $self->context->model('MyDBI::ASSDATA')->new({
 						ownertypeid => '1000',
-						ownerid	 => $OwnerID,
-						assname	 => $AssName,
+						ownerid     => $OwnerID,
+						assname     => $AssName,
 						assdisplay  => $AssDisplay,
-						assvalue	=> $AssValue,
+						assvalue    => $AssValue,
 						});
 
-	# Delete old assessorial for order
+	## Delete old assessorial for order
 	#if
 	#(
 	#$AssData->LowLevelLoadAdvanced(undef,{
@@ -1380,7 +1373,7 @@ sub AuthenticateContact
 
 	my $myDBI = $self->myDBI;
 	my $SQL;
-	# New contact user
+	## New contact user
 	if ($Username =~ /\//)
 		{
 		my ($Domain, $Contact) = $Username =~ m/^(.*)\/(.*)$/;
@@ -1400,7 +1393,7 @@ sub AuthenticateContact
 		}
 	else
 		{
-		# Standard/Backwards compatible user
+		## Standard/Backwards compatible user
 		$SQL = "
 			SELECT
 				c.contactid,

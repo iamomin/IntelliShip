@@ -1014,6 +1014,16 @@ sub has_carrier_service_details
 	return ($carrier ne '' and $service ne '');
 	}
 
+sub reset
+	{
+	my $self = shift;
+	#$self->dateneeded('');
+	$self->extcarrier('');
+	$self->extservice('');
+	$self->density('0');
+	$self->class('');
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

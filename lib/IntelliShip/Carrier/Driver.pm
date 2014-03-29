@@ -77,7 +77,15 @@ sub void_shipment
 	$Shipment->statusid(7); ## Void Shipment complete
 	$Shipment->update;
 
-	$CO->statusid(5); ## Void Shipment
+	## Delete any associated orders
+	$Shipment->shipmentcoassocs->delete;
+
+	$CO->delete_all_package_details;
+
+	## Set CO to 'unshipped' status
+	## Flush carrier and service details
+	$CO->statusid(1);
+	$CO->reset;
 	$CO->update;
 	}
 
@@ -144,7 +152,7 @@ sub TagPrinterString
 			{
 			next;
 			}
-		if ($CO->extcarrier =~ /FedEx/i $line eq 'ZB' )
+		if ($CO->extcarrier =~ /FedEx/i and $line eq 'ZB' )
 			{
 			$line .= "\nLO0,3,800,2\nLO0,3,2,1150\nLO800,3,2,1150\nLO0,1150,800,2\n" if $CO->extservice =~ /Ground/i;
 			}
