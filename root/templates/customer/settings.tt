@@ -619,7 +619,7 @@ $(document).ready(function(){
 			[% IF READONLY %]
 				[% password %]
 			[% ELSE %]
-				<input type="text" name="password" id="password" value="[% password %]" class="broad-text">
+				<input type="text" name="contact_password" id="contact_password" value="[% contact_password %]" class="broad-text">
 			[% END %]
 			</td>
 			<td><label class="float-right" for="lastname">Last Name:</label></td>
@@ -666,14 +666,14 @@ $(document).ready(function(){
 		</tr>
 		<tr>
 			<td><label class="float-right" for="fax">Fax:</label></td>
-			<td><input type="text" name="fax" id="fax" value="[% contactInfo.fax %]" class="broad-text"></td>
+			<td><input type="text" name="contact_fax" id="contact_fax" value="[% contactInfo.fax %]" class="broad-text"></td>
 
 			<td><label class="float-right" for="contact_zip">Shipping Zip:</label></td>
 			<td><input type="text" name="contact_zip" id="contact_zip" value="[% contactAddress.zip %]" class="broad-text"></td>
 		</tr>
 		<tr>
 			<td><label class="float-right" for="email">E-mail:</label></td>
-			<td><input type="text" name="email" id="email" value="[% contactInfo.email %]" class="broad-text"></td>
+			<td><input type="text" name="contact_email" id="contact_email" value="[% contactInfo.email %]" class="broad-text"></td>
 
 			<td><label for="contact_country" class="float-right">Country:</label></td>
 			<td>

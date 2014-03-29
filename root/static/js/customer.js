@@ -12,7 +12,7 @@ function isEmpty( el ) {
 
 var JSON_data, waiting_COUNT=0;
 function send_ajax_request(result_div, type_value, section_value, action_value, optional_param, call_back_function) {
-
+	
 	waiting_COUNT++;
 	$('#preload').show();
 

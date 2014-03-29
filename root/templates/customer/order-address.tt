@@ -60,31 +60,31 @@
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
-					<td><label for="fromname" class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" name="fromname" id="fromname" value='[% fromCustomer.customername %]'/></td>
+					<td><label for="fromname" class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" name="fromname" id="fromname" value='[% fromAddress.addressname %]'/></td>
 				</tr>
 				<tr>
-					<td><label for="fromaddress1" class="float-right">Address 1:</label></td><td><input readonly type="text" class="labellike" name="fromaddress1" id="fromaddress1" value='[% fromCustomerAddress.address1 %]'/></td>
+					<td><label for="fromaddress1" class="float-right">Address 1:</label></td><td><input readonly type="text" class="labellike" name="fromaddress1" id="fromaddress1" value='[% fromAddress.address1 %]'/></td>
 				</tr>
 				<tr>
-					<td><label for="fromaddress2" class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" name="fromaddress2" id="fromaddress2" value='[% fromCustomerAddress.address2 %]'/></td>
+					<td><label for="fromaddress2" class="float-right">Address 2:</label></td><td><input readonly type="text" class="labellike" name="fromaddress2" id="fromaddress2" value='[% fromAddress.address2 %]'/></td>
 				</tr>
 				[% IF quickship%]
 				<tr>
-					<td><label for="fromcity" class="float-right">City, State, Zip:</label></td><!--<td><b><input type="text" class="" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>-->
+					<td><label for="fromcity" class="float-right">City, State, Zip:</label></td><!--<td><b><input type="text" class="" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>-->
 					<td>
 					<div id="fromCityDiv" style="display: inline; padding: 0;">
-					<input type="text" name="fromcity" id="fromcity" style="width: 100px;" value="[% fromCustomerAddress.city %]"/>
+					<input type="text" name="fromcity" id="fromcity" style="width: 100px;" value="[% fromAddress.city %]"/>
 					</div>
 					<div id="fromStateDiv" style="display: inline; padding: 0;">
 					<label>
 					<select name="fromstate" id="fromstate" style="width: 45px;">
 						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]" [% IF item.value == fromCustomerAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+							<option value="[% item.value %]" [% IF item.value == fromAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
 						[% END %]
 					</select>
 					</label>
 					</div>
-					<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromCustomerAddress.zip %]"/>
+					<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromAddress.zip %]"/>
 					</td>
 				</tr>
 				<tr>
@@ -94,7 +94,7 @@
 					<label>
 					<select name="fromcountry" id="fromcountry" style="width: 220px;" onchange="updateStateList('from');">
 						[% FOREACH item IN countrylist_loop %]
-							<option value="[% item.value %]" [% (fromCustomerAddress.country and item.value == fromCustomerAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							<option value="[% item.value %]" [% (fromAddress.country and item.value == fromAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
@@ -103,13 +103,13 @@
 				</tr>
 				[% ELSE %]
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromCustomerAddress.city %], [% fromCustomerAddress.state %], [% fromCustomerAddress.zip %]' /></td>
-					<input type="hidden" name="fromcity"  id="fromcity" value='[% fromCustomerAddress.city %]'/>
-					<input type="hidden" name="fromstate" id="fromstate" value='[% fromCustomerAddress.state %]'/>
-					<input type="hidden" name="fromzip"   id="fromzip" value='[% fromCustomerAddress.zip %]'/>
+					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>
+					<input type="hidden" name="fromcity"  id="fromcity" value='[% fromAddress.city %]'/>
+					<input type="hidden" name="fromstate" id="fromstate" value='[% fromAddress.state %]'/>
+					<input type="hidden" name="fromzip"   id="fromzip" value='[% fromAddress.zip %]'/>
 				</tr>
 				<tr>
-					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" name="fromcountry" value="[% fromCustomerAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromCustomerAddress.country_description %]'/>
+					<td><label class="float-right">Country:</label></td><td><input type="hidden" class="text" id="fromcountry" name="fromcountry" value="[% fromAddress.country %]"/><input readonly type="text" class="labellike" value='[% fromAddress.country_description %]'/>
 					</td>
 				</tr>
 				[% END %]
@@ -125,7 +125,7 @@
 				</tr id='fromcustomernumber_tr'>
 				[% END %]
 				<tr id="fromdepartment_tr">
-					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% department %]"></td>
+					<td><label for="fromdepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="fromdepartment" id="fromdepartment" value="[% fromdepartment %]"></td>
 				</tr>
 				<tr>
 					<td><label for="fromemail" class="float-right">Email:</label></td><td><input type="text" class="broad-text" name="fromemail" id="fromemail" value="[% fromemail %]"/></td>
@@ -195,7 +195,7 @@
 				[% END %]
 				[% IF quickship %]
 				<tr id="todepartment_tr">
-					<td><label for="todepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% department %]"></td>
+					<td><label for="todepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% todepartment %]"></td>
 				</tr>
 				[% END %]
 				<tr>
@@ -290,7 +290,7 @@
 <script>
 
 $("#fromdepartment").change(function() {
-	validateDepartment('fromdepartment', '[%fromCustomer.customerid%]');
+	validateDepartment('fromdepartment', '[% contactObj.customerid %]');
 	});
 
 [% IF one_page %]
@@ -327,18 +327,40 @@ $("#dateneeded").change(function() {
 
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
-[% IF quickship%]
+[% IF quickship %]
 
-	addressArray['COMPANY_ADDRESS']= GetAddress('from');
+	addressArray['COMPANY_ADDRESS']= initializeCompanyAddress();
 	addressArray['ADDRESS_1']      = GetAddress('');
 	addressArray['ADDRESS_2']      = GetAddress('');
 
-	$('#todepartment_tr').hide();
-	$('#fromcustomernumber_tr').hide();
+	
+	previousCheck = $('input:radio[name=shipmenttype]:checked').val();
 
-	ConfigureAddressSection('from','READONLY');
+	function initializeCompanyAddress()
+		{
+		var company_address = {
+			name			: '[% customername %]',
+			address1		: '[% customeraddress1 %]',
+			address2		: '[% customeraddress2 %]',
+			city			: '[% customercity %]',
+			state			: '[% customerstate %]',
+			zip				: '[% customerzip %]',
+			country			: '[% customercountry %]',
+			contact			: '[% customercontact %]',
+			phone			: '[% customerphone %]',
+			department		: '[% customerdepartment %]',
+			customernumber	: '[% customercustomernumber %]',
+			email			: '[% customeremail %]'
+		};
 
-	$("input[name='shipmenttype']").click(ConfigureInboundOutboundDropship);
+
+		return company_address;
+		}
+		
+		ConfigureInboundOutboundDropship();
+		
+	
+	$("input[name='shipmenttype']").change(ConfigureInboundOutboundDropship);
 
 	$("#fromname").autocomplete({
 		source: availableCustomers,

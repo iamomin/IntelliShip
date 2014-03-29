@@ -115,22 +115,22 @@ function ConfigureAddressSection(direction,type)
 	}
 
 var addressArray  = {};
-var previousCheck = 'outbound';
+var previousCheck;
 var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
 function ConfigureInboundOutboundDropship()
 	{
 	
 	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
 	
-	if(selectedType == previousCheck) return;
-	
 	if (previousCheck == 'outbound')
 		{
+		addressArray['COMPANY_ADDRESS'] = GetAddress('from');
 		addressArray['ADDRESS_1'] = GetAddress('to');
 		}
 	else if (previousCheck == 'inbound')
 		{
 		addressArray['ADDRESS_1'] = GetAddress('from');
+		addressArray['COMPANY_ADDRESS'] = GetAddress('to');
 		}
 	else
 		{
@@ -167,6 +167,11 @@ function ConfigureInboundOutboundDropship()
 		}
 	else if(selectedType == 'dropship')
 		{
+		$('#fromdepartment_tr').show();
+		$('#todepartment_tr').hide();
+		$('#fromcustomernumber_tr').hide();
+		$('#tocustomernumber_tr').show();
+		
 		ConfigureAddressSection('from', 'EDITABLE');
 		ConfigureAddressSection('to', 'EDITABLE');
 

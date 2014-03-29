@@ -119,7 +119,8 @@ sub setup_address :Private
 		}
 
 	$c->stash->{fromCustomer} = $Customer;
-	$c->stash->{fromCustomerAddress} = $Customer->address unless $c->stash->{fromCustomerAddress};
+	$self->get_company_address;
+	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
 	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
@@ -151,7 +152,7 @@ sub setup_address :Private
 
 	$c->stash->{tocountry}  = "US";
 	$c->stash->{fromemail}  = $Contact->email unless $c->stash->{fromemail};
-	$c->stash->{department} = $Contact->department unless $c->stash->{department};
+	$c->stash->{fromdepartment} = $Contact->department unless $c->stash->{fromdepartment};
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
 	$c->stash->{fromphone}  = $Contact->phonebusiness unless $c->stash->{fromphone};
 
@@ -258,18 +259,23 @@ sub get_shipment_types
 	{
 	my $self = shift;
 	my $Contact = $self->contact;
+	
+	return unless $self->context->stash->{quickship};
 
 	my $returncapability = $Contact->get_contact_data_value('returncapability');
 	my $dropshipcapability = $Contact->get_contact_data_value('dropshipcapability');
 
-	my $shipmenttype_loop = [{ name => 'Outbound', value => 'outbound', checked => 1 }];
+	my $CO = $self->get_order;
+	my $is_outbound = (!$CO->isinbound and !$CO->isdropship);
+
+	my $shipmenttype_loop = [{ name => 'Outbound', value => 'outbound', checked =>  $is_outbound }];
 	if ($returncapability == 1 || $returncapability == 3)
 		{
-		push(@$shipmenttype_loop, { name => 'Inbound',  value => 'inbound' });
+		push(@$shipmenttype_loop, { name => 'Inbound',  value => 'inbound', checked => $CO->isinbound });
 		}
 	if ($dropshipcapability == 1 || $dropshipcapability == 3)
 		{
-		push(@$shipmenttype_loop, { name => 'Dropship', value => 'dropship' });
+		push(@$shipmenttype_loop, { name => 'Dropship', value => 'dropship', checked => $CO->isdropship });
 		}
 
 	return (@$shipmenttype_loop > 1 ? $shipmenttype_loop : undef);
@@ -328,8 +334,10 @@ sub save_CO_details :Private
 	$coData->{'isdropship'} = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'dropship') || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
 	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
-	$coData->{'department'} = $params->{'fromdepartment'} if $params->{'fromdepartment'};
+	$coData->{'department'} = $coData->{'isinbound'} ? $params->{'todepartment'} : $params->{'fromdepartment'};
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
+	$coData->{'oacontactname'}  = $params->{'fromcontact'} if $params->{'fromcontact'};
+	$coData->{'oacontactphone'} = $params->{'fromphone'} if $params->{'fromphone'};
 	$coData->{'datetoship'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'datetoship'}) if $params->{'datetoship'};
 	$coData->{'dateneeded'} = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateneeded'}) if $params->{'dateneeded'};
 
@@ -351,7 +359,8 @@ sub save_CO_details :Private
 	$coData->{'freightcharges'} = $params->{'deliverymethod'} if $params->{'deliverymethod'};
 
 	$coData->{'shipmentnotification'} = $params->{'toemail'} if $params->{'toemail'};
-	$coData->{'custnum'} = $params->{'tocustomernumber'} if $params->{'tocustomernumber'};
+
+	$coData->{'custnum'} = $coData->{'isinbound'} ? $params->{'fromcustomernumber'} : $params->{'tocustomernumber'};
 
 	$coData->{'cotypeid'} = ($params->{'action'} and $params->{'action'} eq 'clearquote') ? 10 : 1;
 
@@ -983,10 +992,22 @@ sub populate_order :Private
 		$c->stash->{combine} = $CO->combine;
 		$c->stash->{customer} = $self->customer;
 		$c->stash->{customerAddress} = $self->customer->address;
-
+		
 		## Ship From Section
-		$c->stash->{department} = $CO->department;
-		$c->stash->{fromemail} = $CO->deliverynotification;
+		$c->stash->{fromcontact}= $CO->oacontactname;
+		$c->stash->{fromemail}  = $CO->deliverynotification;
+		$c->stash->{fromphone}  = $CO->oacontactphone;
+		
+		if($CO->isinbound)
+			{
+			$c->stash->{fromcustomernumber} = $CO->custnum;
+			$c->stash->{todepartment} = $CO->department;
+			}
+		else
+			{
+			$c->stash->{tocustomernumber} = $CO->custnum;
+			$c->stash->{fromdepartment} = $CO->department;
+			}
 
 		## Ship To Section
 		$c->stash->{tocontact} = $CO->contactname;
@@ -997,7 +1018,7 @@ sub populate_order :Private
 		$c->stash->{tocustomernumber} = $CO->custnum;
 		$c->stash->{description} = $CO->description;
 		
-		$c->stash->{fromCustomerAddress} = $CO->origin_address;
+		$c->stash->{fromAddress} = $CO->origin_address;
 		$c->stash->{toAddress} = $CO->destination_address;
 		}
 
@@ -1100,6 +1121,27 @@ sub populate_order :Private
 		}
 
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
+	}
+
+
+sub get_company_address
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $Contact = $self->contact;
+	my $customerAddress = $self->customer->address;
+
+	$c->stash->{customername}		= $customerAddress->addressname;
+	$c->stash->{customeraddress1}	= $customerAddress->address1;
+	$c->stash->{customeraddress2}	= $customerAddress->address2;
+	$c->stash->{customercity}		= $customerAddress->city;
+	$c->stash->{customercountry}	= $customerAddress->country;
+	$c->stash->{customerzip}		= $customerAddress->zip;
+	$c->stash->{customerstate}		= $customerAddress->state;
+	$c->stash->{customeremail}		= $Contact->email;
+	$c->stash->{customerdepartment} = $Contact->department ;
+	$c->stash->{customercontact}	= $Contact->full_name;
+	$c->stash->{customerphone}		= $Contact->phonebusiness;
 	}
 
 sub add_detail_row :Private
@@ -3032,7 +3074,7 @@ sub GetLineItems
 
 		$product_statusid = 2;
 
-		$self->context->log->debug("final details: " . Dumper $product_ref);
+		#$self->context->log->debug("final details: " . Dumper $product_ref);
 		}
 
 	return ($product_ref,$product_statusid);

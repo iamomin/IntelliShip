@@ -664,12 +664,16 @@
 
 	$("#frm_setup_customer").submit(function () {
 		var requireHash = {
-			customername : { minlength: 1, description: "Please specify customer name" },
-			username     : { minlength: 1, description: "Please specify username" },
-			address1     : { minlength: 1, description: "Please specify address" },
-			city         : { minlength: 1, description: "Please specify city" },
-			state        : { minlength: 1, description: "Please specify state" },
-			zip          : { minlength: 5, description: "Please specify zip" },
+			customername : { minlength: 1,		description: "Please specify customer name" },
+			username     : { minlength: 1,		description: "Please specify username" },
+			password     : { minlength: 6,		description: "Please specify password" },
+			address1     : { minlength: 1,		description: "Please specify address" },
+			city         : { minlength: 1,		description: "Please specify city" },
+			state        : { minlength: 1,		description: "Please specify state" },
+			zip          : { minlength: 5,		description: "Please specify zip" },
+			phone		 : { phone	  : false,	description: "Please specify phone" },
+			email		 : { email    : false,	description: "Please specify email" },
+			fax			 : { phone    : false,	description: "Please specify fax" },
 			};
 
 		if (validateForm(requireHash)) {
@@ -683,6 +687,9 @@
 			return false;
 			}
 		});
+
+	$("#phone").mask("999-999-9999");
+	$("#fax").mask("999-999-9999");
 
 	$(document).ready(function(){
 		$("#update_customer").attr("disabled", false);
@@ -778,7 +785,12 @@
 	function editContact(contactid) {
 		var customerid = $("#customerid").val();
 		var params = '&do=&SHOW_RULES=1&customerid=' + customerid + '&contactid=' + contactid;
-		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', params, '');
+		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '', params, function (){
+			if ($("#phonebusiness").length > 0) {$("#phonebusiness").mask("999-999-9999")};
+			if ($("#phonemobile").length > 0) {$("#phonemobile").mask("999-999-9999")};
+			if ($("#phonehome").length > 0) {$("#phonehome").mask("999-999-9999")};
+			if ($("#contact_fax").length > 0) {$("#contact_fax").mask("999-999-9999")};
+			});
 		}
 
 	function addContact()

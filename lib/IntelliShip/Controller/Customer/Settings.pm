@@ -552,12 +552,12 @@ sub contactinformation :Local
 		$Address->update($addressData);
 
 		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
-		$Contact->password($params->{'password'}) if $params->{'password'};
+		$Contact->password($params->{'contact_password'}) if $params->{'contact_password'};
 
 		$Contact->firstname($params->{'firstname'});
 		$Contact->lastname($params->{'lastname'});
-		$Contact->email($params->{'email'});
-		$Contact->fax($params->{'fax'});
+		$Contact->email($params->{'contact_email'});
+		$Contact->fax($params->{'contact_fax'});
 		$Contact->department($params->{'department'});
 		$Contact->phonemobile($params->{'phonemobile'});
 		$Contact->phonebusiness($params->{'phonebusiness'});
@@ -620,17 +620,17 @@ sub contactinformation :Local
 
 		if ($Contact)
 			{
-			$c->stash->{contactInfo}	= $Contact;
-			$c->stash->{password}		= $Contact->password;
-			$c->stash->{contactAddress}	= $Contact->address;
-			$c->stash->{location}		= $Contact->get_contact_data_value('location');
-			$c->stash->{ownerid}		= $Contact->get_contact_data_value('ownerid');
-			$c->stash->{origdate}		= $Contact->get_contact_data_value('origdate');
-			$c->stash->{sourcedate}		= $Contact->get_contact_data_value('sourcedate');
-			$c->stash->{disabledate}	= $Contact->get_contact_data_value('disabledate');
+			$c->stash->{contactInfo}		= $Contact;
+			$c->stash->{contact_password}	= $Contact->password;
+			$c->stash->{contactAddress}		= $Contact->address;
+			$c->stash->{location}			= $Contact->get_contact_data_value('location');
+			$c->stash->{ownerid}			= $Contact->get_contact_data_value('ownerid');
+			$c->stash->{origdate}			= $Contact->get_contact_data_value('origdate');
+			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
+			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
 			}
 
-		$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
+		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
 		$c->stash->{statelist_loop}          = $self->get_select_list('US_STATES');
 		$c->stash->{countrylist_loop}        = $self->get_select_list('COUNTRY');
 
@@ -649,7 +649,7 @@ sub contactinformation :Local
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{READONLY} = 1 unless $self->contact->is_superuser;
-		$self->set_required_fields($self->contact);
+		$self->set_required_fields;
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
@@ -664,20 +664,30 @@ sub set_required_fields :Private
 
 	my $requiredList = [];
 
-	unless ($Contact->is_superuser)
+	if ($Contact->is_superuser)
+		{
+		push(@$requiredList, { name => 'phonebusiness',	details => "{ phone: false }"});
+		push(@$requiredList, { name => 'phonemobile',	details => "{ phone: false }"});
+		}
+	else
 		{
 		$requiredList = [
-			{ name => 'phonebusiness',  details => "{ phone: true }"},
-			{ name => 'phonemobile',     details => "{ phone: true }"},
+			{ name => 'phonebusiness',	  details => "{ phone: true }"},
+			{ name => 'phonemobile',	  details => "{ phone: true }"},
 			{ name => 'contact_address1', details => "{ minlength: 2 }"},
 			{ name => 'contact_city',     details => " { minlength: 2 }"},
 			{ name => 'contact_state',    details => "{ minlength: 2 }"},
 			{ name => 'contact_zip',      details => "{ minlength: 5 }"},
 			{ name => 'contact_country',  details => "{ minlength: 1 }"},
-		];
-	}
-	push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"});
-	push(@$requiredList, { name => 'password', details => "{ minlength: 6 }"});
+			];
+		}
+
+	push(@$requiredList, { name => 'contact_username',	details => "{ minlength: 1 }"});
+	push(@$requiredList, { name => 'contact_password',	details => "{ minlength: 6 }"});
+	push(@$requiredList, { name => 'phonehome',			details => "{ phone: false }"});
+	push(@$requiredList, { name => 'contact_email',     details => "{ email: false }"});
+	push(@$requiredList, { name => 'contact_fax',		details => "{ phone: false }"});
+
 	$c->log->debug("requiredfield_list: " . Dumper $requiredList);
 	$c->stash->{requiredfield_list} = $requiredList;
 	}
