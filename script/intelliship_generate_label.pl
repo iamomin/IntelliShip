@@ -507,7 +507,7 @@ sub createImage()
 		########################################
 		## ADD BORDER OF 2px to the image
 		########################################
-		system("/usr/bin/convert $outdir/$file.jpg -bordercolor opaque -border 2 $outdir/$file.jpg");
+		#system("/usr/bin/convert $outdir/$file.jpg -bordercolor opaque -border 2 $outdir/$file.jpg");
 
 		if($sizeGot < 2)
 		{

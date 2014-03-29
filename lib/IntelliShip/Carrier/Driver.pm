@@ -145,6 +145,15 @@ sub TagPrinterString
 			{
 			next;
 			}
+		if ( $line eq 'ZB' )
+			{
+			$line .= "
+LO0,3,800,2
+LO0,3,2,1150
+LO800,3,2,1150
+LO0,1150,800,2
+			";
+			}
 
 		$tagged_string .= "$line\n";
 		}
