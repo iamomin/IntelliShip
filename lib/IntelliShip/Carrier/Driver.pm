@@ -120,7 +120,6 @@ sub TagPrinterString
 	{
 	my $self = shift;
 	my $string = shift;
-	my $ordernumber = shift;
 
 	# Check for order stream, and add it to main stream, if it exists
 	my $CO = $self->CO;
@@ -145,14 +144,9 @@ sub TagPrinterString
 			{
 			next;
 			}
-		if ( $line eq 'ZB' )
+		if ($CO->extcarrier =~ /FedEx/i $line eq 'ZB' )
 			{
-			$line .= "
-LO0,3,800,2
-LO0,3,2,1150
-LO800,3,2,1150
-LO0,1150,800,2
-			";
+			$line .= "\nLO0,3,800,2\nLO0,3,2,1150\nLO800,3,2,1150\nLO0,1150,800,2\n" if $CO->extservice =~ /Ground/i;
 			}
 
 		$tagged_string .= "$line\n";
