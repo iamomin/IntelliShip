@@ -42,7 +42,11 @@ sub quickship :Local
 	my $c = $self->context;
 
 	my $do_value = $c->req->param('do') || '';
-	if ($do_value eq 'ship')
+	if ($do_value eq 'save')
+		{
+		$self->save_new_order;
+		}
+	elsif ($do_value eq 'ship')
 		{
 		$self->SHIP_ORDER;
 		}
@@ -118,8 +122,8 @@ sub setup_address :Private
 		$self->populate_order;
 		}
 
-	$c->stash->{fromCustomer} = $Customer;
-	$self->get_company_address;
+	$self->set_company_address;
+
 	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
 	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
@@ -1123,8 +1127,7 @@ sub populate_order :Private
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
 	}
 
-
-sub get_company_address
+sub set_company_address
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -2818,10 +2821,9 @@ sub clear_CO_details :Private
 
 	$c->log->debug("___ clear_CO_details ___");
 
-	$params->{'coid'} = undef;
-	$c->stash->{CO} = undef;
-	$c->stash->{coid} = undef;
-	$c->stash({});
+	my $stashRef = $c->stash;
+	delete $params->{$_} foreach keys %$params;
+	delete $stashRef->{$_} foreach keys %$stashRef;
 	}
 
 sub display_error_details :Private
