@@ -174,6 +174,7 @@ sub set_international_details
 	my $c = $self->context;
 
 	$c->stash->{INTERNATIONAL} = 1;
+	$c->stash->{currencytype} = "USD";
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 	$c->stash->{currencylist_loop} = $self->get_select_list('CURRENCY');
 	$c->stash->{dimentionlist_loop} = $self->get_select_list('DIMENTION');

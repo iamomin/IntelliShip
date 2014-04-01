@@ -93,7 +93,7 @@
 			<select name="currencytype" id="currencytype">
 				<option selected value=""></option>
 				[% FOREACH item IN currencylist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]" [% (currencytype == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</td>
@@ -305,7 +305,7 @@
 			<td valign="top">[% item.service %]</td>
 			[% IF IS_PREPAID %]
 			<td valign="top">[% item.days %]</td>
-			<td valign="top" [% IF item.no_on_time %]style="color: #D44444;"[% END %]>[% item.delivery %]</td>
+			<td valign="top" [% IF item.no_on_time %]"[% END %]>[% item.delivery %]</td>
 			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.freight_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.other_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 10px;"><green>[% item.shipment_charge %]&nbsp;&nbsp;</green>
