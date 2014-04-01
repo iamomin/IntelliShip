@@ -18,6 +18,8 @@ requires 'Class::Load';
 requires 'Class::Load::XS';
 requires 'Eval::Closure';
 requires 'Package::Stash';
+requires 'Module::Runtime';
+requires 'Test::LeakTrace';
 requires 'Moose';
 requires 'MooseX::NonMoose';
 requires 'MooseX::MarkAsMethods';
