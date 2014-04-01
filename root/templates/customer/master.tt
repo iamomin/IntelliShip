@@ -59,7 +59,7 @@
 				if (link == undefined) return;
 				var src = link.attr('src');
 				link.addClass("selected ");
-				link.removeAttr('href');
+				//link.removeAttr('href');
 				var src = $("#[% selected_mnu %] > img").attr('src');
 				if (src != undefined) $("#[% selected_mnu %] > img").attr('src', src.replace(/grayed/,"white"));
 				});

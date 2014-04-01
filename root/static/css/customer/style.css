@@ -141,7 +141,7 @@ img { border: none; vertical-align: middle }
 
 #menu a.selected {
     color: #FFF;
-    cursor: default;
+    cursor: pointer;
     background-color: #98A7AF;
 }
 
