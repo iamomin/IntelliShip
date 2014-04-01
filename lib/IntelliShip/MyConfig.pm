@@ -22,7 +22,7 @@ use constant TEST         => "TEST";
 
 # hostname-to-mode hash, any server not listed here is assumed to be production
 my %hosts = (
-	'DONT-KNOW'  => &PRODUCTION,
+	'ENCP02'     => &PRODUCTION,
 	'ENCD00'     => &DEVELOPMENT,
 	'RT-XML'     => &TEST,
 
