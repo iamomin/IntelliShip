@@ -139,13 +139,14 @@ sub process_request
 		20		=>	$AccountNumber, 						#Payer Account Number
 		23		=>	$BillingType,							#Pay Type
 		25		=>	$shipmentData->{'refnumber'},			#Reference Number
-		117		=>	"US",									#Sender Country Code
+		117		=>	$shipmentData->{'branchaddresscountry'},#Sender Country Code
 		183		=>	$shipmentData->{'oacontactphone'},		#Sender Phone Number
 		498		=>	$shipmentData->{'meternumber'},			#Required - Meter #
 		1119	=>	"Y",
 		24		=>	$ShipDate,								# Ship date
 		1273	=>	$PackageType,							#FedEx Packaging Type
 		1274	=>	$shipmentData->{'webname'},				#FedEx Service Type
+		32		=>	$shipmentData->{'oacontactname'},		#Shipping contactname
 		187		=>	"299",									# New printer stuff
 		);
 

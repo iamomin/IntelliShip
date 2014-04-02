@@ -2560,8 +2560,8 @@ sub BuildShipmentInfo
 	$ShipmentData->{'originid'} = 3;
 	$ShipmentData->{'insurance'} = $params->{'insurance'};
 
-	$ShipmentData->{'branchcontact'}  = $Customer->contact;
-	$ShipmentData->{'branchphone'}    = $Customer->phone;
+	$ShipmentData->{'branchcontact'}  = $CO->oacontactname;
+	$ShipmentData->{'branchphone'}    = $CO->oacontactphone;
 
 	$ShipmentData->{'oacontactname'}  = $params->{'fromcontact'};
 	$ShipmentData->{'oacontactphone'} = $params->{'fromphone'};

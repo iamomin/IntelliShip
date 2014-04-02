@@ -99,9 +99,9 @@ LO10,230,790,2
 A15,240,0,5,1,1,N,"USPS FIRST-CLASS MAIL"
 A750,240,0,4,1,1,N,"®"
 LO10,300,790,2
-A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,330,0,2,1,1,N,"$DATA->{'oacontactname'}"
 A25,350,0,2,1,1,N,"$DATA->{'customername'} "
-A25,370,0,2,1,1,N,"$DATA->{'branchaddress2'}"
+A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
 A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'}"
 A25,410,0,2,1,1,N,"$DATA->{'branchaddresscity'}, $DATA->{'branchaddressstate'} $DATA->{'branchaddresszip'}"
 A100,510,0,3,1,1,N,"$DATA->{'contactname'}"
@@ -155,7 +155,7 @@ LO800,80,2,1042
 LO10,230,790,2
 A90,240,0,5,1,1,N,"USPS STANDARD POST"
 LO10,300,790,2
-A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,330,0,2,1,1,N,"$DATA->{'oacontactname'}"
 A25,350,0,2,1,1,N,"$DATA->{'customername'} "
 A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
 A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'}"
@@ -212,7 +212,7 @@ LO10,230,790,2
 A50,240,0,5,1,1,N,"PRIORITY MAIL $DATA->{'commintmentName'}"
 A735,245,0,4,1,1,N,"TM"
 LO10,300,790,2
-A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,330,0,2,1,1,N,"$DATA->{'oacontactname'}"
 A25,350,0,2,1,1,N,"$DATA->{'customername'} "
 A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
 A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'} "
@@ -269,7 +269,7 @@ LO800,80,2,1042
 LO10,230,790,2
 A90,240,0,5,1,1,N,"USPS MEDIA MAIL"
 LO10,300,790,2
-A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,330,0,2,1,1,N,"$DATA->{'oacontactname'}"
 A25,350,0,2,1,1,N,"$DATA->{'customername'} "
 A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
 A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'}"
@@ -325,7 +325,7 @@ LO800,80,2,1042
 LO10,230,790,2
 A90,240,0,5,1,1,N,"USPS LIBRARY MAIL"
 LO10,300,790,2
-A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,330,0,2,1,1,N,"$DATA->{'oacontactname'}"
 A25,350,0,2,1,1,N,"$DATA->{'customername'} "
 A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
 A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'}"
@@ -384,7 +384,7 @@ LO10,230,790,2
 A20,240,0,3,2,3,N,"PRIORITY MAIL EXPRESS $DATA->{'commintmentName'}"
 A755,250,0,4,1,1,N,"TM"
 LO10,300,790,2
-A25,330,0,2,1,1,N,"$DATA->{FromName}"
+A25,330,0,2,1,1,N,"$DATA->{'oacontactname'}"
 A25,350,0,2,1,1,N,"$DATA->{'customername'} "
 A25,370,0,2,1,1,N,"$DATA->{'branchaddress1'}"
 A25,390,0,2,1,1,N,"$DATA->{'branchaddress2'} "
