@@ -50,7 +50,9 @@
 		<tr>
 	</table>
 [% END %]
-	<div class="notice">Enter the recipient's (SHIP TO) address [% one_page ? 'and Shipment ' : '' %]details</div>
+	<!--
+		<div class="notice">Enter the recipient's (SHIP TO) address [% one_page ? 'and Shipment ' : '' %]details</div>
+	-->
 
 	<div id="equal">
 		<div id="row">

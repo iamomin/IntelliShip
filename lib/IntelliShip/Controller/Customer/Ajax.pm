@@ -138,7 +138,7 @@ sub get_city_state :Private
 		foreach my $GeoCode (@$GeoCodes)
 			{
 			my $formatted_address = $GeoCode->{'formatted_address'};
-			my $address_components = $geocodeResponse->{'address_component'};
+			my $address_components = $GeoCode->{'address_component'};
 
 			foreach my $component (@$address_components)
 				{

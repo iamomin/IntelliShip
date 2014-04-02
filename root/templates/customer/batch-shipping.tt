@@ -15,7 +15,7 @@
 
 	<table>
 		<tr>
-			<td><div class="notice">The selected criteria results in a <strong>1</strong> order batch shipment.</div></td>
+			<td><!--<div class="notice">The selected criteria results in a <strong>1</strong> order batch shipment.</div>--></td>
 			<td>Total <strong><span id="select-count"></span></strong> orders selected</td>
 			<td><button class="quick-ship" id="btn_batch_ship"><label></label><span>SHIP PACKAGES</span></button></td>
 		</tr>
@@ -73,9 +73,10 @@
 
 	<h2>Batch Shipping</h2>
 
+	<!--
 	<div class="notice">* Charges displayed in IntelliShip may not include freight, fuel, or other miscellaneous accessorial charges</div>
 	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
-
+	-->
 	<form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
 		<input type="hidden" id="do" name="do" value="batchship"/>
 

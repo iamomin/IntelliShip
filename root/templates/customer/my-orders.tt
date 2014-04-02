@@ -66,9 +66,11 @@
 		</tr>
 	</table>
 
+<!--
 	[% IF refresh_interval_sec %]
 	<div class="notice">Order list will automatically refresh in <span id="refresh_interval"></span> seconds</div>
 	[% END %]
+-->
 
  <div id="myShipments">
 	[% END %]

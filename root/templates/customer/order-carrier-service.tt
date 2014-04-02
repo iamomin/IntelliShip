@@ -94,9 +94,9 @@
 [% IF specialservice_loop %]
 
 	<h2>Special Services Requested</h2>
-
+	<!--
 	<div class="notice">Please check the appropriate boxes for any special services needed for this shipment.</div>
-
+	-->
 	<table class="app css3-checkboxes">
 		[% count=0 %]
 		<tr>
@@ -139,10 +139,11 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<h1>SERVICE LEVEL SUMMARY</h1>
+<!--
 [% IF one_page %]
 	<div class="notice">Click on "Route" button to populate available carrier service list</div>
 [% END %]
-
+-->	
 	<table>
 		<tr>
 		[% IF SHOW_NEW_OTHER_CARRIER %]

@@ -154,7 +154,7 @@ sub setup_address :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('address');
 
-	$c->stash->{tocountry}  = "US";
+	$c->stash->{tocountry}  = "US" unless $c->stash->{toAddress};
 	$c->stash->{fromemail}  = $Contact->email unless $c->stash->{fromemail};
 	$c->stash->{fromdepartment} = $Contact->department unless $c->stash->{fromdepartment};
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};

@@ -44,12 +44,12 @@ function RestoreAddress(address, direction)
 	$('#' + direction + 'name').val(addressArray[address].name);
 	$('#' + direction + 'address1').val(addressArray[address].address1);
 	$('#' + direction + 'address2').val(addressArray[address].address2);
+	$('#' + direction + 'country').val(addressArray[address].country).change();
 	$('#' + direction + 'city').val(addressArray[address].city);
 	$('#' + direction + 'city').next("span").text($('#' + direction + 'city').val());
 	$('#' + direction + 'state').val(addressArray[address].state);
 	$('#' + direction + 'state').next("span").text($('#' + direction + 'state').val());
-	$('#' + direction + 'zip').val(addressArray[address].zip);
-	$('#' + direction + 'country').val(addressArray[address].country);
+	$('#' + direction + 'zip').val(addressArray[address].zip).change();
 	$('#' + direction + 'contact').val(addressArray[address].contact);
 	$('#' + direction + 'phone').val(addressArray[address].phone);
 

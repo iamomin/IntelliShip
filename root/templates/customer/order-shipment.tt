@@ -62,7 +62,7 @@
 [% UNLESS one_page %]
 <h2>Package Detail</h2>
 [% END %]
-<div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>
+<!--<div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>-->
 
 <input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 
