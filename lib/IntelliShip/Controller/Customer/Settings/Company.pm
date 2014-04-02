@@ -181,29 +181,29 @@ sub configure :Local
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
-	$Customer->halocustomerid($params->{'halocustomerid'});
+	$Customer->halocustomerid($params->{'halocustomerid'}) if $params->{'halocustomerid'};
 	$Customer->customername($params->{'customername'});
 	$Customer->username($params->{'username'});
 	$Customer->contact($params->{'contact'});
 	$Customer->phone($params->{'phone'});
-	$Customer->email($params->{'email'});
-	$Customer->fax($params->{'fax'});
-	$Customer->ssnein($params->{'ssnein'});
+	$Customer->email($params->{'email'}) if $params->{'email'};
+	$Customer->fax($params->{'fax'})  if $params->{'fax'};
+	$Customer->ssnein($params->{'ssnein'}) if $params->{'ssnein'};
 	$Customer->password($params->{'password'});
-	$Customer->labelbanner($params->{'labelbanner'});
+	$Customer->labelbanner($params->{'labelbanner'}) if $params->{'labelbanner'} ;
 	$Customer->labelport($params->{'cust_labelport'});
 	$Customer->defaultthermalcount($params->{'cust_defaultthermalcount'});
 	$Customer->bolcount8_5x11($params->{'cust_bolcount8_5x11'});
-	$Customer->bolcountthermal($params->{'cust_bolcountthermal'});
-	$Customer->autoreporttime($params->{'cust_autoreporttime'});
-	$Customer->autoreportemail($params->{'cust_autoreportemail'});
-	$Customer->autoreportinterval($params->{'cust_autoreportinterval'});
-	$Customer->proxyip($params->{'cust_proxyip'});
-	$Customer->proxyport($params->{'cust_proxyport'});
-	$Customer->losspreventemail($params->{'cust_losspreventemail'});
-	$Customer->losspreventemailordercreate($params->{'cust_losspreventemailordercreate'});
+	$Customer->bolcountthermal($params->{'cust_bolcountthermal'}) if $params->{'cust_bolcountthermal'} ;
+	$Customer->autoreporttime($params->{'cust_autoreporttime'}) if $params->{'cust_autoreporttime'} ;
+	$Customer->autoreportemail($params->{'cust_autoreportemail'}) if $params->{'cust_autoreportemail'};
+	$Customer->autoreportinterval($params->{'cust_autoreportinterval'}) if $params->{'cust_autoreportinterval'};
+	$Customer->proxyip($params->{'cust_proxyip'}) if $params->{'cust_proxyip'};
+	$Customer->proxyport($params->{'cust_proxyport'})  if $params->{'cust_proxyport'};
+	$Customer->losspreventemail($params->{'cust_losspreventemail'})  if $params->{'cust_losspreventemail'};
+	$Customer->losspreventemailordercreate($params->{'cust_losspreventemailordercreate'}) if $params->{'cust_losspreventemailordercreate'};
 	$Customer->smartaddressbook($params->{'cust_smartaddressbook'});
-	$Customer->apiaosaddress($params->{'cust_apiaosaddress'});
+	$Customer->apiaosaddress($params->{'cust_apiaosaddress'}) if $params->{'cust_apiaosaddress'};
 	$Customer->weighttype($params->{'weighttype'});
 
 	if ($params->{'cust_quickship'} && !$params->{'cust_defaulttoquickship'} )
