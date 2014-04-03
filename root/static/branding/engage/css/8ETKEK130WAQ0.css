@@ -1,6 +1,22 @@
 #header{
-    background:#861717;
+    background:#fff;
 }
-table.app caption{
-    background:#861717;
+#header #settings img{
+    border:1px solid #ddd;
+    border-radius:15px 15px;
+}
+#header input[type="text"]{
+    border:1px solid #ddd;
+    box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    padding-left:9px;
+}
+nav a span, nav ul ul li a, h2, h1, table.app caption{
+    color:#220c00;
+}
+h1, table.app caption{
+    background-color:#ffdd05;
+}
+#header input[type="button"]{
+    background-color:#220c00
 }

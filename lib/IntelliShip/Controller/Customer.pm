@@ -2,7 +2,7 @@ package IntelliShip::Controller::Customer;
 use Moose;
 use IO::File;
 use Data::Dumper;
-#use Math::BaseCalc;
+use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
 use IntelliShip::Arrs::API;
 use namespace::autoclean;
@@ -1010,6 +1010,20 @@ sub spawn_batches
 	push @$batches, [ splice @$matching_ids, 0, $batch_size ] while @$matching_ids;
 
 	return $batches;
+	}
+
+sub set_header_section
+	{
+	my $self = shift;
+	my $page = shift;
+
+	my $c = $self->context;
+	my $Contact = $self->contact;
+	my $Customer = $self->customer;
+	my $company_logo = $Customer->username . '-logo.png';
+	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $company_logo;
+	$company_logo = 'engage-logo.png' unless -e $fullpath;
+	$c->stash->{logo} = $company_logo;
 	}
 
 sub set_navigation_rules

@@ -15,7 +15,7 @@
 		<script src="/static/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
 
 		<!-- The jQuery UI 1.10.3 Plugin -->
-		<link rel="stylesheet" href="/static/jquery/jquery-ui-1.10.3/themes/base/jquery.ui.all.css">
+		<link rel="stylesheet" href="/static/jquery/jquery-ui-1.10.3/themes/base/jquery.ui.all.css"/>
 
 		<script src="/static/jquery/jquery-ui-1.10.3/jquery-1.9.1.js"></script>
 		<script src="/static/jquery/jquery-ui-1.10.3/ui/jquery.ui.core.js"></script>
@@ -83,7 +83,7 @@
 		<!-- start header -->
 		<div id="header">
 			<div id="content">
-				<a href="[% landing_page %]"><img src="/static/branding/[% branding_id %]/images/header/company-logo.png"/></a>
+				<a href="[% landing_page %]"><img src="/static/branding/[% branding_id %]/images/header/[% logo %]"/></a>
 				<nav>
 					<ul>
 					<li><a href="#" id="settings"><img src="/static/branding/[% branding_id %]/images/header/settings.png"/><span>[% contactObj.full_name %]</span></a>

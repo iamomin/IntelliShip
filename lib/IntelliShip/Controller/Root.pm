@@ -146,6 +146,7 @@ sub end : Private {
 		}
 	elsif ($Token)
 		{
+		$Controller->set_header_section;
 		$Controller->set_navigation_rules;
 		$c->stash->{contactObj} = $Controller->contact;
 		$c->forward($c->view('CustomerMaster'));
