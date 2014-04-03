@@ -95,7 +95,7 @@
 								<li><a href="/customer/logout">LOG OFF</a></li>
 							</ul>
 						</li>
-					<li><input type="text" name="searchterm" placeholder="Search..."/><input type="button" id="search"/></li>
+					<!--<li><input type="text" name="searchterm" placeholder="Search..."/><input type="button" id="search"/></li>-->
 					</ul>
 				</nav>
 			</div>
