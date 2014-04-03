@@ -114,6 +114,25 @@ sub get_CS_shipping_values
 	return $self->APIRequest($http_request);
 	}
 
+sub get_zone_number
+	{
+	my $self = shift;
+	my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry) = @_;
+
+	my $http_request = {
+		action      => 'GetZone',
+		fromzip     => $FromZip, 
+		tozip       => $ToZip,
+		fromstate   => $FromState, 
+		tostate     => $ToState, 
+		fromcountry => $FromCountry, 
+		tocountry   => $ToCountry
+		};
+
+	my $response = $self->APIRequest($http_request);
+	return $response->{zone} if $response;
+	}
+
 sub get_carrier_list
 	{
 	my $self = shift;

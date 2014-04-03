@@ -1,9 +1,9 @@
 <table cellspacing=0 cellpadding=0 width="100%" border=0 id=virtuallabel>
 <tr>
 <td>
-  <table width="450" border="1" cellspacing="0" cellpadding="0" align="center" bordercolor="#000000" bgcolor="#FFFFFF">
-    <tr>
-      <td>
+	<table width="450" border="1" cellspacing="0" cellpadding="0" align="center" bordercolor="#000000" bgcolor="#FFFFFF">
+	<tr>
+		<td>
 			<table width=90% cellpadding=1 cellspacing=0>
 				<tr valign=top>
 					<td width=15% align=right>
@@ -28,16 +28,16 @@
 							[% branchcontact %]<br>
 							[% branchphone %]<br>
 							Ref: [% refnumber %]<br>
-							Ship Date:  [% shipdate %]<br>
+							Ship Date: [% shipdate %]<br>
 							Airport Code: <br>
 						</font>
 					</td>
 				</tr>
 			</table>
-       </td>
-    </tr>
-    <tr>
-      <td>
+	 	</td>
+	</tr>
+	<tr>
+		<td>
 			<table width=90% cellpadding=1 cellspacing=0>
 				<tr valign=top>
 					<td width=15% align=right>
@@ -67,10 +67,10 @@
 					</td>
 				</tr>
 			</table>
-      </td>
-    </tr>
-    <tr>
-      <td>
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<table width=90% cellpadding=1 cellspacing=0>
 				<tr valign=top>
 					<td width=15% align=right>
@@ -81,17 +81,22 @@
 					<td width=5%>&nbsp;</td>
 					<td width=40%>
 						<font face="Arial, Helvetica, sans-serif" size="-1">
-							[% billingname %] <br>
-							[% billingaddress1 %]<br>
-							[% billingaddress2 %] <br>
-							[% billingcity %], [% billingstate %] [% billingzip %]
+							[% BillingAddressInfo.addressname %] <br>
+							[% BillingAddressInfo.address1 %]
+							[% IF BillingAddressInfo.address2 %]
+							<br>[% BillingAddressInfo.address2 %][% END %]
+							<br>[% BillingAddressInfo.city %], [% BillingAddressInfo.state %] [% BillingAddressInfo.zip %]
+							<br>[% BillingAddressInfo.country %]
+							<br>[% BillingAddressInfo.careof %]
+							[% IF BillingAddressInfo.engage %]
+							<br>[% BillingAddressInfo.engage %][% END %]
 						</font>
 					</td>
 					<td width=5%>&nbsp;</td>
 					<td width=35%>
 						<font face="Arial, Helvetica, sans-serif" size="-1">
-							Weight: [%  enteredweight %] Lbs<br>
-							DIM Weight:  [%  dimweight %]<br>
+							Weight: [% enteredweight %] Lbs<br>
+							DIM Weight: [% dimweight %]<br>
 							DIMS: [% dims %]<br>
 							Density: [% density %]<br>
 							Packages: [% totalquantity %]<br>
@@ -101,62 +106,62 @@
 					</td>
 				</tr>
 			</table>
-      </td>
-    </tr>
-    <tr>
-      <td>
-      	 <table width=90% cellpadding=1 cellspacing=0>
-            <tr>
-               <td align=left width=25%>
-                  <font face="Arial, Helvetica, sans-serif" size="-1">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<table width=90% cellpadding=1 cellspacing=0>
+			<tr>
+			 	<td align=left width=25%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
 							<b>&nbsp;&nbsp;Description:</b>
 						</font>
-               </td>
-               <td align=left width=75%>
-                  <font face="Arial, Helvetica, sans-serif" size="-1">
+			 	</td>
+			 	<td align=left width=75%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
 							[% description %]
 						</font>
-               </td>
-            </tr>
-            <tr>
-               <td align=left width=25%>
-                  <font face="Arial, Helvetica, sans-serif" size="-1">
+			 	</td>
+			</tr>
+			<tr>
+			 	<td align=left width=25%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
 							<b>&nbsp;&nbsp;Comments:</b>
 						</font>
-               </td>
-               <td align=left width=75%>
-                  <font face="Arial, Helvetica, sans-serif" size="-1">
+			 	</td>
+			 	<td align=left width=75%>
+					<font face="Arial, Helvetica, sans-serif" size="-1">
 							[% comments %]
 						</font>
-               </td>
-            </tr>
-         </table>
+			 	</td>
+			</tr>
+		 </table>
 		</td>
-    </tr>
-    </tr>
-    <tr>
-      <td>
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	</tr>
+	</tr>
+	<tr>
+		<td>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0">
 			<tr>
 				<td align=left bgcolor="000000">
-                  <font face="Arial, Helvetica, sans-serif" size="4" color="FFFFFF">
+					<font face="Arial, Helvetica, sans-serif" size="4" color="FFFFFF">
 							<b>&nbsp;&nbsp;[% carrier %]</b>
 						</font>
 				</td>
 			</tr>
 			<tr>
 				<td align=left bgcolor="000000">
-                  <font face="Arial, Helvetica, sans-serif" size="4" color="FFFFFF">
+					<font face="Arial, Helvetica, sans-serif" size="4" color="FFFFFF">
 							<b>&nbsp;&nbsp;[% service %]</b>
 						</font>
 				</td>
 			</tr>
-         <tr><td>&nbsp;</td></tr>
-         <tr>
-            <td align=center>
-				<img src="root/print/barcodes/[% tracking1 %].png">
-            </td>
-          </tr>
+		 <tr><td>&nbsp;</td></tr>
+		 <tr>
+			<td align=center>
+				<img src="/print/barcode/[% tracking1 %].png">
+			</td>
+			</tr>
 			<tr><td>&nbsp;</td></tr>
 			<tr>
 				<td align=left>
@@ -166,15 +171,15 @@
 				</td>
 			</tr>
 			 <tr>
-            <td align=left>
-               <font face="Arial, Helvetica, sans-serif" size="-1">
-                  <b>&nbsp;&nbsp;[% commentstring %]</b>
-               </font>
-            </td>
-         </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+			<td align=left>
+			 	<font face="Arial, Helvetica, sans-serif" size="-1">
+					<b>&nbsp;&nbsp;[% commentstring %]</b>
+			 	</font>
+			</td>
+		 </tr>
+		</table>
+		</td>
+	</tr>
+	</table>
 </td>
 </table>

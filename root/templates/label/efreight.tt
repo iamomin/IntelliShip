@@ -14,11 +14,12 @@
 					<td width=5%>&nbsp;</td>
 					<td width=40%>
 						<font face="Arial, Helvetica, sans-serif" size="-1">
-							[% fromAddress.addressname %]
-						<br>[% fromAddress.address1 %]
-						[% IF fromAddress.address2 %]<br>[% fromAddress.address2 %][% END %]
-						<br>[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]
-						<br>[% fromAddress.country %]
+							[% fromAddress.addressname %] 
+							<br>[% fromAddress.address1 %]
+							[% IF fromAddress.address2 %]
+							<br>[% fromAddress.address2 %][% END %]
+							<br>[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]
+							<br>[% fromAddress.country %]
 						</font>
 					</td>
 					<td width=5%>&nbsp;</td>
@@ -48,10 +49,10 @@
 					<td width=40%>
 						<font face="Arial, Helvetica, sans-serif" size="-1">
 							[% toAddress.addressname %]
-						<br>[% toAddress.address1 %]
-						[% IF toAddress.address2 %]<br>[% toAddress.address2 %][% END %]
-						<br>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]
-						<br>[% toAddress.country %]
+							<br>[% toAddress.address1 %]
+							[% IF toAddress.address2 %]<br>[% toAddress.address2 %][% END %]
+							<br>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]
+							<br>[% toAddress.country %]
 						</font>
 					</td>
 					<td width=5%>&nbsp;</td>
@@ -61,7 +62,7 @@
 							[% contactphone %]<br>
 							PO: [% ponumber %]<br>
 							ETA: [% duedate %]<br>
-							Airport Code: [% airportcode %]
+							Airport Code: 
 						</font>
 					</td>
 				</tr>
@@ -80,10 +81,15 @@
 					<td width=5%>&nbsp;</td>
 					<td width=40%>
 						<font face="Arial, Helvetica, sans-serif" size="-1">
-							 [% billingname %] <br>
-							 [% billingaddress1 %]<br>
-							 [% billingaddress2 %] <br>
-							 [% billingcity %], [% billingstate %] [% billingzip %]
+							[% BillingAddressInfo.addressname %] <br>
+							[% BillingAddressInfo.address1 %]
+							[% IF BillingAddressInfo.address2 %]
+							<br>[% BillingAddressInfo.address2 %][% END %]
+							<br>[% BillingAddressInfo.city %], [% BillingAddressInfo.state %] [% BillingAddressInfo.zip %]
+							<br>[% BillingAddressInfo.country %]
+							<br>[% BillingAddressInfo.careof %]
+							[% IF BillingAddressInfo.engage %]
+							<br>[% BillingAddressInfo.engage %][% END %]
 						</font>
 					</td>
 					<td width=5%>&nbsp;</td>
