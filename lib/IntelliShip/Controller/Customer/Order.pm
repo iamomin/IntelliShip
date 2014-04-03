@@ -1657,11 +1657,38 @@ sub SHIP_ORDER :Private
 		$params->{'carrier'} = &CARRIER_GENERIC;
 		}
 
+	if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+		{
+		my $BillingAddressInfo = $self->GetBillingAddressInfo(
+				$params->{'customerserviceid'},
+				$CustomerService->{'webaccount'},
+				$Customer->customername,
+				$Customer->customerid,
+				$ShipmentData->{'billingaccount'},
+				$ShipmentData->{'freightcharges'},
+				$CO->addressid,
+				$ShipmentData->{'custnum'},
+				$ShippingData->{'baaddressid'}
+				);
+
+		$ShipmentData->{'billingaddressname'} = $BillingAddressInfo->{'addressname'};
+		$ShipmentData->{'billingaddress1'}    = $BillingAddressInfo->{'address1'};
+		$ShipmentData->{'billingaddress2'}    = $BillingAddressInfo->{'address2'};
+		$ShipmentData->{'billingcity'}        = $BillingAddressInfo->{'city'};
+		$ShipmentData->{'billingstate'}       = $BillingAddressInfo->{'state'};
+		$ShipmentData->{'billingcountry'}     = $BillingAddressInfo->{'country'};
+		$ShipmentData->{'billingzip'}         = $BillingAddressInfo->{'zip'};
+
+		$c->log->debug("Billing Address" . Dumper $BillingAddressInfo);
+		}
+
 	foreach my $key (%$Service)
 		{
 		next if !$key or !$Service->{$key};
 		$ShipmentData->{$key} = $Service->{$key};
 		}
+
+	#$c->log->debug("Ship order ShippingData" . Dumper $ShipmentData);
 
 	###################################################################
 	## Process shipment down through the carrrier handler
@@ -1954,7 +1981,7 @@ sub VOID_SHIPMENT :Private
 	$Handler->request_type(&REQUEST_TYPE_VOID_SHIPMENT);
 	$Handler->token($self->get_login_token);
 	$Handler->context($self->context);
-	$Handler->customer($self->customer);
+	$Handler->contact($self->contact);
 	$Handler->carrier($Shipment->carrier);
 	$Handler->CO($CO);
 	$Handler->SHIPMENT($Shipment);
@@ -2190,15 +2217,105 @@ sub setup_label_to_print
 			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
 			}
 
+		if($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+			{
+			$self->SetGenericLabelData($Shipment)
+			}
+
 		$self->ProcessPrinterStream($Shipment, $PrinterString);
 
-		my $template = $Shipment->carrier || $params->{'carrier'};
+		my $template = $params->{'carrier'} || $Shipment->carrier ;
 		   $template = 'default' unless $template;
 		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 		}
 
 	$c->stash->{SEND_EMAIL} = IntelliShip::Utils->is_valid_email($Shipment->deliverynotification);
 	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+	}
+
+sub SetGenericLabelData
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ SetGenericLabelData ___");
+
+	my $CO       = $Shipment->CO;
+	my $Customer = $CO->customer;
+
+	#####################################################################################################
+	## Build comment string (concat all charges for the shipment) and assessorials that aren't charged
+	#####################################################################################################
+
+	# build string to exclude asses that were charged/included above
+	my ($CommentString,$ExcludeNames) = ('',{});
+
+	my @shipmentcharge = $Shipment->shipment_charges;
+	foreach my $ShipmentCharge (@shipmentcharge)
+		{
+		if ( $ShipmentCharge->chargename !~ /Freight/i && $ShipmentCharge->chargename !~ /Fuel Surcharge/i ) 
+			{
+			$ExcludeNames->{$ShipmentCharge->chargename} = 1;
+			}
+		$CommentString .= $ShipmentCharge->chargename . ", ";
+		}
+
+	my @assessorials = $Shipment->assessorials;
+
+	foreach my $AccessorialName (@assessorials)
+		{
+		next if $ExcludeNames->{$AccessorialName->assdisplay};
+		$CommentString .= $AccessorialName->assdisplay. ", ";
+		}
+
+	$CommentString =~ s/(.*), $/\( $1 \)/;
+	$c->stash->{commentstring}      = $CommentString;
+	$c->stash->{customsdescription} = $Shipment->customsdescription;
+	$c->stash->{branchcontact}      = $Shipment->oacontactname;
+	$c->stash->{branchphone}        = $Shipment->oacontactphone;
+
+	my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
+
+	my $webaccount;
+	if ( $CSValueRef->{'webaccount'} )
+		{
+		$webaccount = $CSValueRef->{'webaccount'};
+		}
+
+	my $BillingAddressInfo = $self->GetBillingAddressInfo(
+			$Shipment->customerserviceid,
+			$webaccount,
+			$Customer->customername,
+			$Customer->customerid,
+			$Shipment->billingaccount,
+			$Shipment->freightcharges,
+			$Shipment->addressiddestin,
+			$Shipment->custnum,
+			$CSValueRef->{'baaddressid'}
+			);
+
+	$c->log->debug("Billing Address" . Dumper $BillingAddressInfo);
+
+	## if it's third party billing add the account number to the name
+	if ($Shipment->billingaccount && $Shipment->billingaccount ne 'Collect')
+		{
+		$BillingAddressInfo->{'addressname'} .= " (" . $Shipment->billingaccount . ")";
+		}
+
+	$BillingAddressInfo->{'addressname'}  = '' unless $BillingAddressInfo->{'addressname'};
+	$BillingAddressInfo->{'addressname2'} = '' unless $BillingAddressInfo->{'addressname2'};
+
+	if ($BillingAddressInfo->{'addressname'} =~ /Engage TMS Global Logistics/i || $BillingAddressInfo->{'addressname2'} =~ /c\/o Engage TMS Global Logistics/i)
+		{
+		$BillingAddressInfo->{'engage'} ='714-517-5540';
+		}
+
+	## generate tracking number barcode image
+	IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+
+	$c->stash->{BillingAddressInfo} = $BillingAddressInfo;
 	}
 
 sub ProcessPrinterStream

@@ -15,7 +15,8 @@ BEGIN {
 	has 'CO'              => ( is => 'rw' );
 	has 'SHIPMENT'        => ( is => 'rw' );
 	has 'context'         => ( is => 'rw' );
-	has 'customer'        => ( is => 'rw' );
+	has 'carrier'         => ( is => 'rw' );
+	has 'contact'         => ( is => 'rw' );
 	has 'MYDBI_ref'       => ( is => 'rw' );
 	has 'DB_ref'          => ( is => 'rw' );
 	has 'data'            => ( is => 'rw' );
@@ -89,22 +90,22 @@ sub void_shipment
 	$CO->update;
 	}
 
+my $EPL_TEMPLATES = {
+	USPSF     => 'get_USPS_EPL_1',
+	USTPO     => 'get_USPS_EPL_2',
+	UPRIORITY => 'get_USPS_EPL_3',
+	USPSMM    => 'get_USPS_EPL_4',
+	USPSLM    => 'get_USPS_EPL_5',
+	UPME      => 'get_USPS_EPL_6',
+	};
+
 sub get_EPL
 	{
 	my $self = shift;
 	my $DATA = shift;
 
-	my $carrier = $self->CO->extcarrier;
+	my $carrier = $self->carrier;
 	return unless $carrier;
-
-	my $EPL_TEMPLATES = {
-		USPSF     => 'get_USPS_EPL_1',
-		USTPO     => 'get_USPS_EPL_2',
-		UPRIORITY => 'get_USPS_EPL_3',
-		USPSMM    => 'get_USPS_EPL_4',
-		USPSLM    => 'get_USPS_EPL_5',
-		UPME      => 'get_USPS_EPL_6',
-		};
 
 	my $method = $EPL_TEMPLATES->{$DATA->{'servicecode'}};
 	$method = 'get_' . uc($carrier) . '_EPL' unless $method;

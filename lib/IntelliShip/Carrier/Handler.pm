@@ -12,7 +12,7 @@ BEGIN {
 	has 'token' => ( is => 'rw' );
 	has 'context' => ( is => 'rw' );
 	has 'carrier' => ( is => 'rw' );
-	has 'customer' => ( is => 'rw' );
+	has 'contact' => ( is => 'rw' );
 	has 'customerservice' => ( is => 'rw' );
 	has 'service' => ( is => 'rw' );
 	has 'request_data' => ( is => 'rw' );
@@ -144,12 +144,13 @@ sub process_request
 	$Driver->response($Response);
 	$Driver->DB_ref($myDBI);
 	$Driver->API($self->API);
+	$Driver->carrier($self->carrier);
 	$Driver->CO($self->CO);
 	$Driver->SHIPMENT($self->SHIPMENT);
 	$Driver->customerservice($self->customerservice);
 	$Driver->service($self->service);
 	$Driver->context($self->context);
-	$Driver->customer($self->customer);
+	$Driver->contact($self->contact);
 	$Driver->data($self->request_data);
 
 	###############################################
