@@ -1,4 +1,4 @@
-package IntelliShip::Carrier::Driver::eFreight::ShipOrder;
+package IntelliShip::Carrier::Driver::Efreight::ShipOrder;
 
 use Moose;
 use SOAP::Lite;
