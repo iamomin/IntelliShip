@@ -1646,17 +1646,6 @@ sub SHIP_ORDER :Private
 		$Service->{'webhandlername'} = $ShippingData->{'webhandlername'};
 		}
 
-	$Service->{'webhandlername'} = '' if $params->{'carrier'} =~ /USPS/i;
-
-	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
-		{
-		$params->{'carrier'} = &CARRIER_EFREIGHT;
-		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
-		{
-		$params->{'carrier'} = &CARRIER_GENERIC;
-		}
-
 	if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
 		{
 		my $BillingAddressInfo = $self->GetBillingAddressInfo(
@@ -1690,6 +1679,15 @@ sub SHIP_ORDER :Private
 
 	#$c->log->debug("Ship order ShippingData" . Dumper $ShipmentData);
 
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$params->{'carrier'} = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+		{
+		$params->{'carrier'} = &CARRIER_GENERIC;
+		}
+
 	###################################################################
 	## Process shipment down through the carrrier handler
 	## (online, customerservice, service, carrier handler).
@@ -1698,7 +1696,7 @@ sub SHIP_ORDER :Private
 	$Handler->request_type(&REQUEST_TYPE_SHIP_ORDER);
 	$Handler->token($self->get_login_token);
 	$Handler->context($self->context);
-	$Handler->customer($self->customer);
+	$Handler->contact($self->contact);
 	$Handler->carrier($params->{'carrier'});
 	$Handler->customerservice($CustomerService);
 	$Handler->service($Service);
@@ -1974,6 +1972,19 @@ sub VOID_SHIPMENT :Private
 
 	my $CO = $Shipment->CO;
 
+	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+	my $Service         = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+	my $carrier = $Shipment->carrier;
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$carrier = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+		{
+		$carrier = &CARRIER_GENERIC;
+		}
+
 	###################################################################
 	## Process void shipment down through the carrrier handler
 	###################################################################
@@ -1982,7 +1993,7 @@ sub VOID_SHIPMENT :Private
 	$Handler->token($self->get_login_token);
 	$Handler->context($self->context);
 	$Handler->contact($self->contact);
-	$Handler->carrier($Shipment->carrier);
+	$Handler->carrier($carrier);
 	$Handler->CO($CO);
 	$Handler->SHIPMENT($Shipment);
 
