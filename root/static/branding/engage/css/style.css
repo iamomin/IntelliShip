@@ -447,7 +447,7 @@ div.error {
     text-align: left;
 }
 
-.active {
+input.active {
     width: 100%;
     padding: 5px 20px;
     color: #FFF;
@@ -459,7 +459,7 @@ div.error {
     cursor: pointer;
 }
 
-.inactive {
+input.inactive {
     width: 100%;
     padding: 5px 0px;
     color: #FFF;
