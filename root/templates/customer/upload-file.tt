@@ -19,12 +19,13 @@
 [% IF SETUP_UPLOAD_FILE %]
 	<h2>[% TITLE %]</h2>
 
+	<!--
 	<div class="notice">
 		<p>Please allow several minutes for the file upload to complete.</p>
 		<p>&nbsp;</p>
 		<p>Valid file formats are plain text/csv and Zip compressed files. Files compressed in Windows .EXE format are not allowed.</p>
 	</div>
-
+	-->
 	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 
 	<!-- <p class="validateTips"></p> -->

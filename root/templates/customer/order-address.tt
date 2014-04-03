@@ -96,7 +96,7 @@
 					<label>
 					<select name="fromcountry" id="fromcountry" style="width: 220px;" onchange="updateStateList('from');">
 						[% FOREACH item IN countrylist_loop %]
-							<option value="[% item.value %]" [% (fromAddress.country and item.value == fromAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							<option value="[% item.value %]" [% (fromAddress.country and item.value == fromAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select>
 					</label>
@@ -116,7 +116,7 @@
 				</tr>
 				[% END %]
 				<tr>
-					<td><label for="fromcontact" class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" name="fromcontact" id="fromcontact" value='[% fromcontact %]'/></td>
+					<td><label for="fromcontact" class="float-right">Contact:</label></td><td><input readonly type="text" class="labellike" name="fromcontact" id="fromcontact" value="[% fromcontact %]"/></td>
 				</tr>
 				<tr>
 					<td><label for="fromphone" class="float-right">Phone:</label></td><td><input readonly type="text" class="labellike" name="fromphone" id="fromphone" value='[% fromphone %]'/></td>
@@ -341,18 +341,18 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 	function initializeCompanyAddress()
 		{
 		var company_address = {
-			name			: '[% customername %]',
-			address1		: '[% customeraddress1 %]',
-			address2		: '[% customeraddress2 %]',
-			city			: '[% customercity %]',
-			state			: '[% customerstate %]',
-			zip				: '[% customerzip %]',
-			country			: '[% customercountry %]',
-			contact			: '[% customercontact %]',
-			phone			: '[% customerphone %]',
-			department		: '[% customerdepartment %]',
-			customernumber	: '[% customercustomernumber %]',
-			email			: '[% customeremail %]'
+			name			: "[% customername %]",
+			address1		: "[% customeraddress1 %]",
+			address2		: "[% customeraddress2 %]",
+			city			: "[% customercity %]",
+			state			: "[% customerstate %]",
+			zip				: "[% customerzip %]",
+			country			: "[% customercountry %]",
+			contact			: "[% customercontact %]",
+			phone			: "[% customerphone %]",
+			department		: "[% customerdepartment %]",
+			customernumber	: "[% customercustomernumber %]",
+			email			: "[% customeremail %]"
 		};
 
 
@@ -360,8 +360,9 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 		}
 		
 		ConfigureInboundOutboundDropship();
+		$("#fromstate").change(function(){alert('changed');});
+		setCityAndState('from');
 		
-	
 	$("input[name='shipmenttype']").change(ConfigureInboundOutboundDropship);
 
 	$("#fromname").autocomplete({

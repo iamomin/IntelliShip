@@ -35,12 +35,12 @@
 
 <h2>Ship Packages</h2>
 
-	<div class="notice">
+	<!--<div class="notice">
 		<p>Please enter the order number and package weight.</p>
 		<p>Click &quot;Submit&quot; when finished.</p>
 		<p>&nbsp;</p>
 		<p class="require_text">* Charges displayed in Intelliship may not include freight, fuel, or other miscellaneous accessorial charges.</p>
-	</div>
+	</div>-->
 
 	<div class="validateTips">[% IF ERROR %]<div class="error">[% ERROR %]</div>[% END %]</div>
 

@@ -1,11 +1,11 @@
 <h2>SHIPMENT MAINTENANCE</h2>
 
 [% IF SETUP_SCREEN %]
-<div class="notice">
+<!---<div class="notice">
 	<p>Please enter a tracking number or select a carrier below.</p>
 	<p>Shipment Maintenance is for voiding and reprinting shipment labels and documents.</p>
 	<p>&nbsp;</p>
-</div>
+</div>-->
 
 <!-- <p class="validateTips"></p> -->
 

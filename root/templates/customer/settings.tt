@@ -23,10 +23,10 @@
 <h2>Change Password</h2>
 
 <form id="frm_change_password" method="post" action="/customer/settings/changepassword">
-	<div class="notice">
+	<!--<div class="notice">
 	When you create a new password, make sure that it's at least 6 characters long. Try to use a complex combination of numbers, letters, and punctuation marks.
 	<br>If the password you entered isn't strong enough, try mixing together uppercase and lowercase letters or making the password longer.
-	</div>
+	</div>-->
 
 	<p class="validateTips">[% IF MESSAGE %]<div class="error">[% MESSAGE %]</div>[% END %]</p>
 

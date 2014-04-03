@@ -73,10 +73,9 @@
 
 	<h2>Batch Shipping</h2>
 
-	<!--
-	<div class="notice">* Charges displayed in IntelliShip may not include freight, fuel, or other miscellaneous accessorial charges</div>
+	<!--<div class="notice">* Charges displayed in IntelliShip may not include freight, fuel, or other miscellaneous accessorial charges</div>-->
 	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
-	-->
+	
 	<form id="frm_batch_shipping" method="post" action="/customer/batchshipping">
 		<input type="hidden" id="do" name="do" value="batchship"/>
 

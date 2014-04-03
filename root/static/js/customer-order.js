@@ -39,17 +39,19 @@ function GetAddress(direction)
 	return newAddress;
 	}
 
-function RestoreAddress(address, direction)
+function RestoreAddress(address, direction, type)
 	{
 	$('#' + direction + 'name').val(addressArray[address].name);
 	$('#' + direction + 'address1').val(addressArray[address].address1);
 	$('#' + direction + 'address2').val(addressArray[address].address2);
-	$('#' + direction + 'country').val(addressArray[address].country).change();
+	$('#' + direction + 'country').val(addressArray[address].country);
+	if(type == 'EDITABLE') $('#' + direction + 'country').change();
 	$('#' + direction + 'city').val(addressArray[address].city);
 	$('#' + direction + 'city').next("span").text($('#' + direction + 'city').val());
 	$('#' + direction + 'state').val(addressArray[address].state);
 	$('#' + direction + 'state').next("span").text($('#' + direction + 'state').val());
-	$('#' + direction + 'zip').val(addressArray[address].zip).change();
+	$('#' + direction + 'zip').val(addressArray[address].zip);
+	if(type == 'EDITABLE') $('#' + direction + 'zip').change();
 	$('#' + direction + 'contact').val(addressArray[address].contact);
 	$('#' + direction + 'phone').val(addressArray[address].phone);
 
@@ -59,7 +61,7 @@ function RestoreAddress(address, direction)
 	}
 
 var from_to_Hash = {};
-function ConfigureAddressSection(direction,type)
+function ConfigureAddressSection(address, direction, type)
 	{
 	var editable     = (type == 'EDITABLE' ? true : false);
 	var add_class    = (editable ? 'broad-text' : 'labellike');
@@ -90,7 +92,7 @@ function ConfigureAddressSection(direction,type)
 				{
 				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
 				var inputCtrl = '<input type="hidden" name="' + targetCtrl + '" id="' + targetCtrl + '" value="' + $('#'+targetCtrl).val() + '"/>';
-				$('#'+targetDiv).html(inputCtrl + '<span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
+				$('#'+targetDiv).html(inputCtrl + '<span id="'+direction+'statespan" class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
 				}
 			}
 		else if(val == 'country')
@@ -112,6 +114,7 @@ function ConfigureAddressSection(direction,type)
 			}
 		$('#'+targetCtrl).prop('width', $('#'+targetCtrl).val().length);
 		});
+		RestoreAddress(address, direction, type);
 	}
 
 var addressArray  = {};
@@ -144,12 +147,12 @@ function ConfigureInboundOutboundDropship()
 		$('#todepartment_tr').show();
 		$('#fromcustomernumber_tr').show();
 		$('#tocustomernumber_tr').hide();
+		ConfigureAddressSection('COMPANY_ADDRESS', 'to', 'READONLY');
+		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
+		
 
-		ConfigureAddressSection('from', 'EDITABLE');
-		ConfigureAddressSection('to', 'READONLY');
-
-		RestoreAddress('COMPANY_ADDRESS', 'to');
-		RestoreAddress('ADDRESS_1','from');
+		//RestoreAddress('COMPANY_ADDRESS', 'to');
+		//RestoreAddress('ADDRESS_1','from');
 		}
 	else if(selectedType == 'outbound')
 		{
@@ -158,12 +161,12 @@ function ConfigureInboundOutboundDropship()
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
+		ConfigureAddressSection('ADDRESS_1', 'to', 'EDITABLE');
+		ConfigureAddressSection('COMPANY_ADDRESS', 'from', 'READONLY');
+		
 
-		ConfigureAddressSection('from', 'READONLY');
-		ConfigureAddressSection('to', 'EDITABLE');
-
-		RestoreAddress('COMPANY_ADDRESS', 'from');
-		RestoreAddress('ADDRESS_1','to');
+		//RestoreAddress('COMPANY_ADDRESS', 'from');
+		//RestoreAddress('ADDRESS_1','to');
 		}
 	else if(selectedType == 'dropship')
 		{
@@ -172,11 +175,11 @@ function ConfigureInboundOutboundDropship()
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
 		
-		ConfigureAddressSection('from', 'EDITABLE');
-		ConfigureAddressSection('to', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_2', 'to', 'EDITABLE');
 
-		RestoreAddress('ADDRESS_1', 'from');
-		RestoreAddress('ADDRESS_2','to');
+		//RestoreAddress('ADDRESS_1', 'from');
+		//RestoreAddress('ADDRESS_2','to');
 		}
 
 	previousCheck = selectedType;
@@ -640,6 +643,7 @@ function setCityAndState(type)
 			$("#"+type+"city").val(JSON_data.city);
 			$("#"+type+"state").val(JSON_data.state);
 			$("#"+type+"country").val(JSON_data.country);
+			if ($("#fromstatespan").length && type == 'from') $("#fromstatespan").text(JSON_data.state);
 			});
 		}
 	}
