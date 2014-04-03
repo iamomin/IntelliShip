@@ -642,6 +642,105 @@ END
 	return $EPL;
 	}
 
+sub get_EFREIGHT_EPL
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $EPL = <<END;
+.
+
+OD
+JF
+Q1370,24
+q812
+R5,140
+S8
+D15
+N
+ZB
+A220,20,0,3,2,2,R,""
+LO0,80,1000,2
+A25,100,0,3,1,1,N,"From:"
+A150,100,0,2,1,1,N,"$DATA->{'shipasname'}"
+A150,125,0,2,1,1,N,"$DATA->{'branchaddress1'}"
+A150,150,0,2,1,1,N,"$DATA->{'branchaddress2'}"
+A150,175,0,2,1,1,N,"$DATA->{'branchaddresscity'} $DATA->{'branchaddressstate'} $DATA->{'branchaddresszip'}"
+A150,200,0,2,1,1,N,"$DATA->{'branchaddresscountry'}"
+A515,100,0,2,1,1,N,"$DATA->{'branchcontact'}"
+A515,125,0,2,1,1,N,"$DATA->{'branchphone'}"
+A515,150,0,2,1,1,N,"Ref: $DATA->{'refnumber'}"
+A515,175,0,2,1,1,N,"Ship Date: $DATA->{'shipdate'}"
+A515,200,0,2,1,1,N,"Airport Code: $DATA->{'branchairportcode'}"
+LO0,230,1000,2
+A25,250,0,3,1,1,N,"To:"
+A150,250,0,2,1,1,N,"$DATA->{'addressname'}"
+A150,275,0,2,1,1,N,"$DATA->{'address1'}"
+A150,300,0,2,1,1,N,"$DATA->{'address2'}"
+A150,325,0,2,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
+A150,350,0,2,1,1,N,"$DATA->{'addresscountry'}"
+A515,250,0,2,1,1,N,"$DATA->{'contactname'}"
+A515,275,0,2,1,1,N,"$DATA->{'contactphone'}"
+A515,300,0,2,1,1,N,"PO: $DATA->{'ponumber'}"
+A515,325,0,2,1,1,N,"ETA: $DATA->{'datedue'}"
+A515,350,0,2,1,1,N,"Airport Code: $DATA->{'airportcode'}"
+LO0,380,1000,2
+A515,400,0,2,1,1,N,"Weight: $DATA->{'weight'} Lbs"
+A515,425,0,2,1,1,N,"DIM Weight: $DATA->{'dimweight'}"
+A515,450,0,2,1,1,N,"DIMS: $DATA->{'dims'}"
+A515,475,0,2,1,1,N,"Density: $DATA->{'density'}"
+A515,500,0,2,1,1,N,"Packages: $DATA->{'totalquantity'}"
+A515,525,0,2,1,1,N,"Zone: $DATA->{'zonenumber'}"
+A515,550,0,2,1,1,N,"Tracking: $DATA->{'tracking1'}"
+LO0,580,1000,2
+A25,600,0,3,1,1,N,"Description:"
+A215,600,0,2,1,1,N,"$DATA->{'extcd'}"
+A25,640,0,3,1,1,N,"Comments:"
+A215,640,0,2,1,1,N,"$DATA->{'comments'}"
+LO0,670,1000,2
+A25,690,0,3,2,2,R,"$DATA->{'carrier'}"
+A515,690,0,3,2,2,N,"$DATA->{'hazardstring'}"
+A25,750,0,3,2,2,R,"$DATA->{'service'}"
+B50,810,0,3C,3,7,150,N,"$DATA->{'tracking1'}"
+A350,980,0,3,1,1,N,"$DATA->{'tracking1'}"
+A25,1015,0,3,1,1,R,"$DATA->{'labelbanner'}"
+
+A25,400,0,3,1,1,N,"Bill To:"
+A150,400,0,2,1,1,N,"$DATA->{'billingaddressname'}"
+A150,425,0,2,1,1,N,"$DATA->{'billingaddress1'}"
+A150,450,0,2,1,1,N,"$DATA->{'billingaddress1'}"
+A150,475,0,2,1,1,N,"$DATA->{'billingcity'}, $DATA->{'billingstate'}  $DATA->{'billingzip'}"
+A150,500,0,2,1,1,N,"$DATA->{'billingcountry'}"
+
+A25,1265,0,3,1,1,N,"Pro#:"
+A25,1290,0,3,1,1,N,"Carrier:"
+A25,1315,0,3,1,1,N,"Service:"
+A25,1340,0,3,1,1,N,"Origin:"
+A25,1365,0,3,1,1,N,"Dest:"
+A150,1265,0,3,1,1,N,"$DATA->{'tracking1'}"
+A150,1290,0,3,1,1,N,"$DATA->{'carrier'}"
+A150,1315,0,3,1,1,N,"$DATA->{'service'}"
+A150,1340,0,3,1,1,N,"$DATA->{'branchaddressstate'} $DATA->{'branchaddresszip'}"
+A150,1365,0,3,1,1,N,"$DATA->{'addressstate'} $DATA->{'addresszip'}"
+
+A410,1265,0,3,1,1,N,"Customer Number"
+A410,1290,0,3,1,1,N,"Consignee:"
+A410,1315,0,3,1,1,N,"Zone:"
+A410,1340,0,3,1,1,N,"Quantity:"
+A410,1365,0,3,1,1,N,"Est Charge:"
+
+A570,1265,0,3,1,1,N,"$DATA->{'truncd_custnum'}"
+A570,1290,0,3,1,1,N,"$DATA->{'truncd_addressname'}"
+A570,1315,0,3,1,1,N,"$DATA->{'zonenumber'}"
+A570,1340,0,3,1,1,N,"$DATA->{'quantitydisplay'}"
+A570,1365,0,3,1,1,N,"$DATA->{'chargeamount'}"
+P1
+R0,0
+.
+END
+
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;

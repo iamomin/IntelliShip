@@ -285,6 +285,13 @@ sub process_request
 	$self->response->printer_string($PrinterString);
 	}
 
+sub BuildPrinterString
+	{
+	my $self = shift;
+	my $shipmentData = shift;
+	return $self->get_EPL($shipmentData);
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
