@@ -154,8 +154,9 @@
 			<ul>
 			   <li><a href="#company-profile">Profile</a></li>
 			   <li><a href="#company-rules">Rules</a></li>
-               <li><a href="#company-settings">Default Settings</a></li>
+                           <li><a href="#company-settings">Default Settings</a></li>
 			   <li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
+                           [% IF NOT READONLY %]<li><a id="tariff-pricing-tab" href="#tariff-pricing">Tariff Pricing</a></li>[% END %]
 			</ul>
             <div id="company-profile">
 				<table class="center-app">
@@ -636,6 +637,7 @@
 				</table>
 			</div>
 			<div id="company-contacts"></div>
+                        [% IF NOT READONLY %]<div id="tariff-pricing"></div>[% END %]
 		</div>
 
 		<center><input type="submit" class="green" id="update_customer" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
@@ -702,11 +704,29 @@
 			}
 		});
 
+        
+
 	function getCustomerContacts()
 		{
 		var params = 'customerid='+$("#customerid").val();
 		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
 		}
+        [% IF NOT READONLY %]
+        $("#tariff-pricing-tab").click(function() {            
+               
+		if($("#tariff-pricing").html().length == 0){
+			$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
+			getTariff();
+			}
+                        
+		});
+
+        function getTariff()
+		{
+		var params = 'customerid='+$("#customerid").val();
+		send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
+		}
+        [% END %]
 	</script>
 
 	[% END %]

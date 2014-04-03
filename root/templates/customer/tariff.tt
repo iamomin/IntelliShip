@@ -1,0 +1,77 @@
+[% IF TARIFF %]
+<link rel="stylesheet" type="text/css" href="/static/css/slick/slick.grid.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/slick/slick.examples.css"/>
+
+<link rel="stylesheet" type="text/css" href="/static/css/slick/slick-default-theme.css"/>
+<script src="/static/jquery/jquery.event.drag-2.2.js"></script>
+<script src="/static/js/slick/slick.core.js"></script>
+<script src="/static/js/slick/slick.formatters.js"></script>
+<script src="/static/js/slick/slick.editors.js"></script>
+<script src="/static/js/slick/slick.grid.js"></script>
+<script src="/static/js/slick/plugins/slick.cellrangedecorator.js"></script>
+<script src="/static/js/slick/plugins/slick.cellrangeselector.js"></script>
+<script src="/static/js/slick/plugins/slick.cellselectionmodel.js"></script>
+<div id="myGrid" style="width:100%;height:500px;"></div>
+<script>
+    [% KEY = 'zonenumbers' %]
+    [% ZONENUMBERS = TARIFF.$KEY %]
+    [% FSIZE = 900 / (ZONENUMBERS.size + 3) %]
+    var grid;
+    var columns = [];
+    
+    columns.push({id: "title_wtmin", name: "wtmin", field: "wtmin", width: [% FSIZE %], cssClass: "cell-title", editor: Slick.Editors.Integer});
+    columns.push({id: "title_wtmax", name: "wtmax", field: "wtmax", width: [% FSIZE %], cssClass: "cell-title", editor: Slick.Editors.Integer});
+    columns.push({id: "title_mincost", name: "mincost", field: "mincost", width: [% FSIZE %], cssClass: "cell-title", editor: Slick.Editors.Integer});
+
+    [% FOREACH ZNUM IN ZONENUMBERS %]
+    columns.push({id: "title_[% ZNUM %]", name: "[% ZNUM %]", field: "[% ZNUM %]", width: [% FSIZE %], cssClass: "cell-title", editor: Slick.Editors.Integer});
+    [% END %]
+
+     var options = {
+        editable: true,        
+        enableCellNavigation: true,
+        asyncEditorLoading: false,
+        autoEdit: true
+      };
+
+    [% KEY = 'ratearray' %]
+    [% RATEARRAY = TARIFF.$KEY %] 
+
+    var data = [];
+    var d = [];
+    [% PREVUNITSSTART = 0 %]
+    [% FOREACH RATE IN RATEARRAY %]
+        [% KEY = 'unitsstart' %]
+        [% UNITSSTART = RATE.$KEY %]
+
+        [% IF PREVUNITSSTART != UNITSSTART %]
+        data.push(d);
+        d = [];
+        [% KEY = 'unitsstart' %]
+        [% UNITSSTART = RATE.$KEY %]
+        d['wtmin'] = '[% UNITSSTART %]';
+
+        [% KEY = 'unitsstop' %]
+        [% UNITSSTOP = RATE.$KEY %] 
+        d['wtmax'] = '[% UNITSSTOP %]';        
+
+        [% KEY = 'arcostmin' %]
+        [% ARCOSTMIN = RATE.$KEY %] 
+        d['mincost'] = '[% ARCOSTMIN %]';
+        [% END %]
+
+        [% KEY = 'zonenumber' %]
+        [% ZONENUMBER = RATE.$KEY %] 
+
+        [% KEY = 'actualcost' %]
+        [% ACTUALCOST = RATE.$KEY %] 
+        d['[% ZONENUMBER %]'] = '[% ACTUALCOST %]';
+
+        [% PREVUNITSSTART = UNITSSTART %]
+    [% END %]
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+    grid.setSelectionModel(new Slick.CellSelectionModel());
+</script>    
+[% END %]
+

@@ -447,7 +447,7 @@ div.error {
     text-align: left;
 }
 
-.active {
+input.active {
     width: 100%;
     padding: 5px 20px;
     color: #FFF;
@@ -459,7 +459,7 @@ div.error {
     cursor: pointer;
 }
 
-.inactive {
+input.inactive {
     width: 100%;
     padding: 5px 0px;
     color: #FFF;
@@ -774,6 +774,13 @@ input.delete {
     border: 1px solid #ED1D24;
     vertical-align: middle;
     cursor: pointer;
+}
+
+label.breadcrumb{
+	width: 100%;
+	font-size: 12px;    
+	color: #9BA7AF;
+	padding: 2px;
 }
 
 .green-forward {

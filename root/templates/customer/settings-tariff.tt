@@ -1,0 +1,433 @@
+<link rel="stylesheet" type="text/css" href="/static/css/themes/default/style.min.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/slick/slick.grid.css"/>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/grid.css"/>
+
+<script src="/static/jquery/jstree.min.js" type="text/javascript"></script>
+<script src="/static/jquery/jquery.event.drag-2.2.js"></script>
+<script src="/static/js/slick/slick.core.js"></script>
+<script src="/static/js/slick/slick.formatters.js"></script>
+<script src="/static/js/slick/slick.editors.js"></script>
+<script src="/static/js/slick/slick.grid.js"></script>
+<script src="/static/js/slick/plugins/slick.cellrangedecorator.js"></script>
+<script src="/static/js/slick/plugins/slick.cellrangeselector.js"></script>
+<script src="/static/js/slick/plugins/slick.cellselectionmodel.js"></script>
+
+<input type="hidden" name="data" id="data"/>
+<input type="hidden" name="csid" id="csid"/>
+<table style="width: 100%; height: 400px">
+<tr>
+    <td colspan="2" style="border-bottom: solid gray 1px"><label id="lbl_breadcrumb" class="breadcrumb"></label> </td></td>	
+</tr>
+<tr>
+    <td style="height: 100%; width: 20%; border-right: solid gray 1px; vertical-align: top">
+		<div id="services_tree"></div>            
+    </td>
+    <td style="height: 100%; width: 80%; vertical-align: top">
+		<table style="height: 100%; width: 100%;  vertical-align: top">
+			<tr>
+				<td style="width: 100%; vertical-align: top">
+					<div id="operations" style="display:none">
+						<input type="button" value="Update" onclick="extractAndSubmit();"/>						
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 100%; vertical-align: top">
+					<div id="myGrid" style="width:700px; height:400px;"></div><br>        
+				</td>
+			</tr>
+		</table>
+        
+    </td>
+</tr>
+</table>
+
+
+<script type="text/javascript">
+var GRID, COLWIDTH;
+
+function loadServicesTree() {
+	//alert("loadServicesTree");
+	$('#services_tree').on("changed.jstree", function (e, data) {
+	
+		if (data.node.original.hasOwnProperty('sid')) {
+			$('#csid').val(data.node.id);
+			getTariff(data.node.id);
+		}
+		
+		//alert("DATA: " + JSON.stringify(data.node));
+		var parents = data.node.parents;
+		//alert(parents);
+		var breadcrumbStr = $("#customername").val() + " / ";
+		
+		for(var i = 0; i < parents.length; i++){
+			var parentId = parents[i];
+			if(parentId != "#"){
+				//alert(JSON.stringify($("#" + parentId)));
+				breadcrumbStr += $("#" + parentId).find("a").first().text() + " / ";
+			}	
+		}
+		breadcrumbStr += data.node.text; 
+		$('#lbl_breadcrumb').html(breadcrumbStr);			
+	
+	}).jstree({
+		"plugins" : ['themes', 'json_data', 'ui'],
+		"core" : {
+			"animation" : 0,
+			"check_callback" : true,
+			"themes" : {
+				"classic" : true
+			},
+			'data' : JSON_data
+		}
+	});
+}
+
+function getAllServices() {
+	//alert("getAllServices");
+	var params = 'customerid=' + $("#customerid").val();
+	send_ajax_request('', 'JSON', 'settings/tariff', 'get_carrier_service_list', params, function () {
+		loadServicesTree();
+		$('#lbl_breadcrumb').html($("#customername").val() + " / ");
+	});
+}
+
+if (!$('#services_tree').html()) {
+	//alert("Loading....");
+	getAllServices();
+}
+
+function loadGrid() {
+	//alert("loadGrid");
+	$('#myGrid').empty();
+	var options = {
+		selectable : false,
+		editable : true,
+		enableCellNavigation : true,
+		asyncEditorLoading : false,
+		autoEdit : false,
+		dataItemColumnValueExtractor : getItemColumnValue
+	};
+
+	var columns = [];
+	var headers = JSON_data['headers'];
+	COLWIDTH = 700 / headers.length + 3;
+
+	columns.push({
+		id : "title_wtrange",
+		name : "Wt. Range",
+		field : "wtrange",
+		//width : (COLWIDTH * 2) + 30,
+		minWidth : 140,
+		cssClass : "cell-title",
+		editor : NumericRangeEditor,
+		formatter : NumericRangeFormatter
+	});
+	columns.push({
+		id : "title_mincost",
+		name : "mincost",
+		field : "mincost",
+		maxWidth : COLWIDTH,
+		cssClass : "cell-title",
+		editor : RealNumberEditor
+	});
+
+	headers.forEach(function (entry) {
+		columns.push({
+			id : "header_" + entry,
+			name : "" + entry,
+			field : "" + entry,
+			maxWidth : COLWIDTH,
+			cssClass : "cell-title",
+			editor : RealNumberEditor,
+			sortable : false
+		});
+	});
+
+	var data = JSON_data['rows'];
+
+	GRID = new Slick.Grid("#myGrid", data, columns, options);
+	GRID.setSelectionModel(new Slick.CellSelectionModel());
+}
+
+function getTariff(csid) {
+	//alert("getTariff " + csid);
+	var params = 'csid=' + csid;
+	send_ajax_request('', 'JSON', 'settings/tariff', 'get_service_tariff', params, function () {
+		loadGrid();
+		$('#operations').show();
+	});
+}
+
+function extractAndSubmit() {
+	//alert($('#csid').val());
+	var d = GRID.getData();
+	var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
+	my_ajax_request('settings/tariff/save', params, function () {
+		if(JSON_data.status == "success"){
+			showMessage(JSON_data.message);
+			GRID.invalidate();
+		}else{
+			showMessage("Failed to update");
+		}
+	});
+}
+
+// Get the item column value using a custom 'fieldIdx' column param
+function getItemColumnValue(item, column) {
+	var values = item[column.field];
+	if (values !== null && typeof values === 'object' && values.hasOwnProperty('actualcost')) {
+		return values.actualcost;
+	} else {
+		return values;
+	}
+}
+
+/**
+RealNumberEditor
+ */
+
+function RealNumberEditor(args) {
+	var $numVal;
+	var scope = this;
+
+	this.init = function () {
+		$numVal = $("<INPUT type='text' class='editor-text'/>")
+			.appendTo(args.container)
+			.bind("keydown", scope.handleKeyDown);
+		scope.focus();
+	};
+
+	this.handleKeyDown = function (e) {
+		if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+			e.stopImmediatePropagation();
+		}
+	};
+
+	this.destroy = function () {
+		$(args.container).empty();
+	};
+
+	this.focus = function () {
+		$numVal.focus();
+	};
+
+	this.serializeValue = function () {
+		//alert("serializeValue");
+		return parseFloat($numVal.val(), 10);
+	};
+
+	this.applyValue = function (item, state) {
+		//alert("applyValue " + args.column.field);
+		item[args.column.field].actualcost = state;
+	};
+
+	this.loadValue = function (item) {
+		$numVal.val(item[args.column.field].actualcost);
+	};
+
+	this.isValueChanged = function () {
+		return args.item.actualcost != parseFloat($numVal.val(), 10);
+	};
+
+	this.validate = function () {
+		if ($numVal.val().trim()) {
+			if (isNaN(parseFloat($numVal.val(), 10))) {
+				return {
+					valid : false,
+					msg : "Please type in valid numbers."
+				};
+			}
+		}
+		return {
+			valid : true,
+			msg : null
+		};
+	};
+
+	this.init();
+}
+
+/**
+NumericRangeEditor
+ */
+
+function NumericRangeEditor(args) {
+	var $from,
+	$to;
+	var scope = this;
+
+	this.init = function () {
+		$from = $("<INPUT type=text style='width:40px' />")
+			.appendTo(args.container)
+			.bind("keydown", scope.handleKeyDown);
+
+		$(args.container).append("&nbsp; to &nbsp;");
+
+		$to = $("<INPUT type=text style='width:40px' />")
+			.appendTo(args.container)
+			.bind("keydown", scope.handleKeyDown);
+
+		scope.focus();
+	};
+
+	this.handleKeyDown = function (e) {
+		if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+			e.stopImmediatePropagation();
+		}
+	};
+
+	this.destroy = function () {
+		$(args.container).empty();
+	};
+
+	this.focus = function () {
+		$from.focus();
+	};
+
+	this.serializeValue = function () {
+		return {
+			from : parseInt($from.val(), 10),
+			to : parseInt($to.val(), 10)
+		};
+	};
+
+	this.applyValue = function (item, state) {
+		item.wtmin = state.from;
+		item.wtmax = state.to;
+	};
+
+	this.loadValue = function (item) {
+		$from.val(item.wtmin);
+		$to.val(item.wtmax);
+	};
+
+	this.isValueChanged = function () {
+		return args.item.wtmin != parseInt($from.val(), 10) || args.item.wtmax != parseInt($from.val(), 10);
+	};
+
+	this.validate = function () {
+		//alert(JSON.stringify(args.item.rateids));
+		if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
+			return {
+				valid : false,
+				msg : "Please type in valid numbers."
+			};
+		}
+
+		if (parseInt($from.val(), 10) > parseInt($to.val(), 10)) {
+			return {
+				valid : false,
+				msg : "'from' cannot be greater than 'to'"
+			};
+		}
+
+		var inRange = function(v, m, M){
+			return m <= v && v <= M;
+		};
+		
+		var gridData = GRID.getData();		
+		for(var key in gridData){
+			var row = gridData[key];
+			var myRowNum = args.item.rownum;
+			var min = row.wtmin;
+			var max = row.wtmax;
+
+			if(myRowNum > row.rownum && inRange($from.val(), min, max)){
+				//alert("Overlapping minimum");
+				return {
+					valid : false,
+					msg : "Overlapping minimum"
+				};
+			}
+			
+			if(myRowNum < row.rownum && inRange($to.val(), min, max)){
+				//alert("Overlapping maximum");
+				return {
+					valid : false,
+					msg : "Overlapping maximum"
+				};
+			}
+			
+			if($from.val() < min && $to.val() > max){
+				//alert("Range or sub-range is already defined");
+				return {
+					valid : false,
+					msg : "Range or sub-range is already defined"
+				};
+			}
+			
+			if($from.val() > min && $to.val() < max){
+				//alert("Range or super-range is already defined");
+				return {
+					valid : false,
+					msg : "Range or super-range is already defined"
+				};
+			}
+		}
+		
+		return {
+			valid : true,
+			msg : null
+		};
+	};
+
+	this.init();
+}
+
+/**
+NumericRangeFormatter
+ */
+function NumericRangeFormatter(row, cell, value, columnDef, dataContext) {
+	return dataContext.wtmin + " - " + dataContext.wtmax;
+}
+
+function my_ajax_request(section_value, optional_param, call_back_function) {
+
+	waiting_COUNT++;
+	$('#preload').show();
+
+	var data_string = "ajax=1&eventtimestamp=" + jQuery.now();
+	
+	if (optional_param)
+		data_string += '&' + optional_param;
+
+	var request_url = (section_value ? '/customer/' + section_value  : '/customer/ajax');
+
+	var charPattern = /#/g;
+	if (data_string.match(charPattern)) {
+		data_string = data_string.replace(charPattern, "%23");
+	}
+	
+	JSON_data = null;
+	$.ajax({
+		type : "POST",
+		url : request_url,
+		data : data_string,
+		//contentType : "application/json; charset=utf-8",
+		dataType : 'json',
+		success : function (data) {
+			waiting_COUNT--;
+			if (waiting_COUNT == 0)
+				$('#preload').hide();
+			JSON_data = data;
+			if (JSON_data.error)
+				showMessage("<div class='error'>" + JSON_data.error + "</div>", "Reseponse Error");
+
+			afterSuccessCallBack("JSON", "", call_back_function);
+		},
+		error : function (data) {
+			showMessage("An internal error has occurred, Please contact support. " + data, "Internal Server Error");
+			waiting_COUNT--;
+			if (waiting_COUNT == 0)
+				$('#preload').hide();
+		},
+		complete : function (data) {
+			//$('#preload').hide();
+		}
+	});
+	
+}
+</script>
+

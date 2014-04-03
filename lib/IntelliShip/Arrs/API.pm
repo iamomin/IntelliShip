@@ -128,6 +128,47 @@ sub get_carrier_list
 	return $self->APIRequest($http_request);
 	}
 
+sub get_carrier_service_list
+	{
+	my $self = shift;
+	my ($SOPID) = @_;
+
+	my $http_request = {
+		action => 'GetCarrierServiceList',
+		sopid => $SOPID		
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
+sub get_service_tariff
+	{
+        warn "########## 3";
+	my $self = shift;
+	my ($csid) = @_;
+
+	my $http_request = {
+		action => 'GetServiceTariff',
+		csid => $csid		
+		};
+
+	return $self->APIRequest($http_request);
+	}
+	
+sub save_tariff
+	{
+		warn "########## save_tariff";
+		my $self = shift;
+		my ($tariff) = @_;
+		
+		my $http_request = {
+			action => 'SaveTariff',
+			tariff => $tariff		
+		};
+
+		return $self->APIRequest($http_request);
+	}
+
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;

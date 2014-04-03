@@ -437,6 +437,45 @@ sub GetCarrierList {
 		$Ref->{'customerid'} );
 }
 
+sub GetCarrierServiceList {
+    my $self = shift;
+	my ($Ref) = @_;
+
+	# Gets a complete list of services that fall under a given sop
+
+	# sopid = customerid or sopid (r)
+	# customerid = customerid (r) - used for carrier exlusions
+
+	my $Online =
+	  new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+	return $Online->GetCarrierServiceList( $Ref->{'sopid'});
+}
+
+sub GetServiceTariff {
+    warn "########## 4";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    # Gets a complete list of services that fall under a given sop
+
+    # sopid = customerid or sopid (r)
+    # customerid = customerid (r) - used for carrier exlusions
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->GetServiceTariff( $Ref->{'csid'});
+}
+
+sub SaveTariff {
+	warn "########## SaveTariff";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->SaveTariff( $Ref->{'tariff'});
+}
+
 sub GetShipmentCosts {
 	my $self = shift;
 	my ($Ref) = @_;

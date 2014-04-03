@@ -22,6 +22,7 @@
 	use Date::Calc qw(Delta_Days);
 	use Date::Manip qw(ParseDate UnixDate);
 	use IntelliShip::MyConfig;
+        use Data::Dumper;
 
 	my $Benchmark = 0;
 	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
@@ -819,6 +820,225 @@ warn "undef etadate";
 		return $ReturnRef;
 	}
 
+        sub GetCarrierServiceList
+	{
+		my $self = shift;
+		my ($SOPID) = @_;
+
+                warn "########## GetCarrierServiceList " . $SOPID;
+
+		my $SQLString = "select 
+                                    cs.customerserviceid, 
+                                    c.carrierid, 
+                                    c.carriername, 
+                                    s.serviceid, 
+                                    s.servicename, 
+                                    cso.value
+                                from 
+                                    customerservice cs 
+                                inner join 
+                                    service s on cs.serviceid = s.serviceid 
+                                inner join 
+                                    carrier c on s.carrierid = c.carrierid 
+                                left outer join 
+                                    csoverride cso on (cs.customerserviceid = cso.customerserviceid and cso.datatypename = 'excludecs' and cso.value <> '1') 
+                                where cs.customerid = '$SOPID' 
+                                order by c.carriername, s.servicename;
+		";
+
+
+                #warn "######### \$SQLString $SQLString";
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+                
+		$sth->execute()
+			or die "Cannot execute carrier/service sql statement";
+
+                
+		my $ReturnRef = {};
+		while ( my ($csid, $cid, $carriername, $sid, $servicename, $exclude) = $sth->fetchrow_array() )
+		{
+                        #warn "######### 3";
+			if($exclude){next;}
+
+                        my $carrier = $ReturnRef->{$cid};
+                        if(!$carrier)
+                        {
+                            $carrier = {};
+                            $carrier->{'carriername'} = $carriername;                            
+                            my @arr = ();
+                            $carrier->{'csrecords'} = \@arr;
+                            $ReturnRef->{$cid} = $carrier;
+                        }
+
+                        my $csrecord = {};
+                        $csrecord->{'csid'} = $csid;
+                        $csrecord->{'sid'} = $sid;
+                        $csrecord->{'servicename'} = $servicename;
+                        push(@{$carrier->{'csrecords'}}, $csrecord);
+                        
+		}
+
+		$sth->finish();
+
+                #warn "########## ReturnRef: " . Dumper($ReturnRef);
+		return $ReturnRef;
+	}
+
+        sub GetServiceTariff 
+        {
+            warn "########## 5";
+            my $self = shift;
+            my ($csid) = @_;
+
+            warn "########## GetServiceTariff " . $csid;
+
+            my $ReturnRef = {};
+            my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
+            $CS->Load($csid);
+            warn "########## 5.1";
+
+            #Get all distinct zones for the CS
+            my $zontypeid = $CS->GetValueHashRef()->{'zonetypeid'};
+            warn "########## 5.2 : $zontypeid";
+            my $SQLString = "select distinct zonenumber, char_length(zonenumber) || zonenumber as a from zone where typeid = '$zontypeid' order by a";
+            
+            warn "########## 5.3 : $SQLString";
+            my $sth = $self->{'dbref'}->prepare($SQLString)
+                    or die "Could not prepare SQL statement";
+
+
+            $sth->execute()
+                    or die "Cannot execute carrier/service sql statement";
+
+            warn "########## 5.4";
+
+            my @arr = ();
+            while ( my ($zonenumber) = $sth->fetchrow_array() )
+            {
+                push(@arr, $zonenumber);
+            }
+
+            $sth->finish();
+            $ReturnRef->{'zonenumbers'} = \@arr;
+            warn "########## 5.5: " . Dumper(@arr);
+
+            #Get rates for the zones
+            my $ratetypeid = $CS->GetValueHashRef()->{'ratetypeid'};
+
+            warn "########## 5.6: $ratetypeid";
+
+            $SQLString = "select
+                            rateid,
+                            unitsstart, 
+                            unitsstop,
+                            zonenumber,
+                            arcost, 
+                            arcostmin,
+                            arcostperwt,
+                            arcostpermile,
+                            arcostperunit, 
+                            unittype
+                          from rate 
+                          where typeid = '$ratetypeid' 
+                          and zonenumber in 
+                          (
+                            select distinct zonenumber 
+                            from zone 
+                            where typeid = '$zontypeid'
+                            order by zonenumber
+                          ) 
+                          order by unitsstart, unitsstop, zonenumber";
+
+
+            warn "######### \$SQLString $SQLString";
+            my $sth2 = $self->{'dbref'}->prepare($SQLString)
+                    or die "Could not prepare SQL statement";
+
+
+            $sth2->execute()
+                    or die "Cannot execute carrier/service sql statement";
+
+
+            my @ratearray = ();
+            while ( my ($rateid, $unitsstart, $unitsstop, 
+                        $zonenumber, $arcost, $arcostmin, 
+                        $arcostperwt, $arcostpermile, 
+                        $arcostperunit, $unittype) = $sth2->fetchrow_array() )
+            {
+                    my $rate = {};                    
+                    $rate->{'unitsstart'} = $unitsstart;
+                    $rate->{'unitsstop'} = $unitsstop;
+                    $rate->{'zonenumber'} = $zonenumber;
+                    $rate->{'arcostmin'} = $arcostmin;
+                    $rate->{'unittype'} = $unittype;
+                    $rate->{'rateid'} = $rateid;
+					$rate->{'ratetypeid'} = $ratetypeid;
+
+                    if($arcost)
+                    {    
+                        $rate->{'actualcost'} = $arcost;
+                        $rate->{'costfield'} = 'arcost';
+                    }
+                    elsif($arcostperwt)
+                    {    
+                        $rate->{'actualcost'} = $arcostperwt;
+                        $rate->{'costfield'} = 'arcostperwt';
+                    }
+                    elsif($arcostpermile)
+                    {    
+                        $rate->{'actualcost'} = $arcostpermile;
+                        $rate->{'costfield'} = 'arcostpermile';
+                    }
+                    elsif($arcostperunit)
+                    {    
+                        $rate->{'actualcost'} = $arcostperunit;
+                        $rate->{'costfield'} = 'arcostperunit';
+                    }
+                    
+                    push(@ratearray, $rate);                    
+            }
+
+            $sth2->finish();
+            $ReturnRef->{'ratearray'} = \@ratearray;
+
+            #warn "########## ReturnRef: " . Dumper($ReturnRef);
+            return $ReturnRef;
+        }
+		
+	sub SaveTariff
+		{
+			warn "########## Online::SaveTariff";
+            my $self = shift;
+            my ($tariff) = @_;
+
+			#We don't look for changed values.
+			#We update them all
+			my $count = 0;
+			foreach my $record (@$tariff)
+			{
+				#warn "########## \$record = ".Dumper($record);
+				while(my ($zonenumber, $price) = each %$record)
+				{
+					warn "########## \$zonenumber = $zonenumber";
+					#warn "########## \$price = ".Dumper($price);
+					if(ref($price) eq "HASH")
+					{
+						my $sql = "update rate set " . $price->{'costfield'}. " = ". $price->{'actualcost'} ." where rateid = '".$price->{'rateid'}."'";
+						warn "########## \$sql= $sql";
+						my $success = $self->{'dbref'}->do($sql)
+								or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
+								
+						if($success) {$count++;}		
+					}					
+				}
+			}
+			$self->{'dbref'}->commit;
+			
+			return {'status' => 'success', 'message' => "$count records updated in RATE"};
+		}
+        
 	sub OkToShipOnShipDate
 	{
 		my $self = shift;
@@ -826,6 +1046,7 @@ warn "undef etadate";
 
 		my @ValidShipDays = split(/,/,$ValidShipDays);
 
+		my $statement = 'update rate set ';
 		foreach my $ShipDay (@ValidShipDays)
 		{
 			if ( $ShipDay == $NumericDOW )
