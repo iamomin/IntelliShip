@@ -213,11 +213,11 @@
 		var carrier = $("#carrier").val();
 		if (carrier == undefined) return;
 
-		if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
-			{
-			showError("Only FedEx/UPS/USPS is supported, please select correct carrier from list.");
-			return;
-			}
+		//if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
+		//	{
+		//	showError("Only FedEx/UPS/USPS is supported, please select correct carrier from list.");
+		//	return;
+		//	}
 
 		$("#do").val('ship');
 		$("#frm_order_sumary").submit();
