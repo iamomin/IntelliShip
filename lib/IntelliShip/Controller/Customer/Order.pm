@@ -179,20 +179,20 @@ sub setup_shipment_information :Private
 		$self->populate_order;
 		}
 
-	if ($Customer->address->country ne $CO->to_address->country)
-		{
-		$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
-		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-		$CA->context($c);
-		$CA->set_international_details;
-		$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-		$c->stash->{INTERNATIONAL} = 0;
-		}
-
 	unless ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
+
+		if ($Customer->address->country ne $CO->to_address->country)
+			{
+			$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
+			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+			$CA->context($c);
+			$CA->set_international_details;
+			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+			$c->stash->{INTERNATIONAL} = 0;
+			}
 		}
 
 	$c->stash->{default_packing_list} = $Contact->default_packing_list;

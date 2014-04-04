@@ -177,13 +177,27 @@ sub set_international_details
 	my $self = shift;
 	my $c = $self->context;
 
+	my $CO = $self->get_order;
+	my $params = $c->req->params;
+
 	$c->stash->{INTERNATIONAL} = 1;
-	$c->stash->{currencytype} = "USD";
-	$c->stash->{commodityunits} = "PCS";
-	$c->stash->{int_country} = "US";
-	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
-	$c->stash->{currencylist_loop} = $self->get_select_list('CURRENCY');
+
+	$c->stash->{countrylist_loop}   = $self->get_select_list('COUNTRY');
+	$c->stash->{currencylist_loop}  = $self->get_select_list('CURRENCY');
 	$c->stash->{dimentionlist_loop} = $self->get_select_list('UNIT_OF_MEASURE');
+
+	$c->stash->{termsofsale}          = $CO->termsofsale;
+	$c->stash->{dutyaccount}          = $CO->dutyaccount;
+	$c->stash->{dutypaytype}          = $CO->dutypaytype;
+	$c->stash->{manufacturecountry}   = $CO->manufacturecountry ? $CO->manufacturecountry : "US";
+	$c->stash->{destinationcountry}   = $CO->destinationcountry ? $CO->destinationcountry : "US";
+	$c->stash->{partiestotransaction} = $CO->partiestotransaction;
+
+	$c->stash->{commodityquantity}     = $CO->commodityquantity ? $CO->commodityquantity :"0.00" ;
+	$c->stash->{commodityunits}        = $CO->commodityunits ? $CO->commodityunits : "PCS" ;
+	$c->stash->{commoditycustomsvalue} = $CO->commoditycustomsvalue ? $CO->commoditycustomsvalue :"0.00";
+	$c->stash->{commodityunitvalue}    = $CO->commodityunitvalue;
+	$c->stash->{currencytype}          = $CO->currencytype ? $CO->currencytype : "USD";
 	}
 
 sub get_special_service_list

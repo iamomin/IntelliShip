@@ -28,12 +28,12 @@
 		</tr>
 		<tr>
 			<td><label for="dutyaccount">Duties Payer Account Number:</label><br/>
-			<input type="text" name="dutyaccount" id="dutyaccount"/>
+			<input type="text" name="dutyaccount" id="dutyaccount" value ="[% dutyaccount %]" />
 			</td>
 			<td><label for="destinationcountry">Ultimate Destination Country:</label><br/>
 			<select name="destinationcountry" id="destinationcountry">
 				[% FOREACH item IN countrylist_loop %]
-						<option value="[% item.value %]"[% (int_country == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						<option value="[% item.value %]"[% (destinationcountry == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</td>
@@ -42,7 +42,7 @@
 			<td><label for="manufacturecountry">Country of Manufacture:</label><br/>
 			<select name="manufacturecountry" id="manufacturecountry">
 				[% FOREACH item IN countrylist_loop %]
-						<option value="[% item.value %]"[% (int_country == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
+					<option value="[% item.value %]"[% (manufacturecountry == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</td>
@@ -79,12 +79,12 @@
 			</select>
 			</td>
 			<td><label for="commodityunitvalue">Unit Value:</label><br/>
-			<input type="text" name="commodityunitvalue" id="commodityunitvalue"/>
+			<input type="text" name="commodityunitvalue" id="commodityunitvalue" value ="[% commodityunitvalue %]"/>
 			</td>
 		</tr>
 		<tr>
-			<td><label for="customscommodityvalue">Customs Value:</label><br/>
-			<input type="text" name="customscommodityvalue" id="customscommodityvalue" value="0.00"/>
+			<td><label for="commoditycustomsvalue">Customs Value:</label><br/>
+			<input type="text" name="commoditycustomsvalue" id="commoditycustomsvalue" value="[% commoditycustomsvalue %]"/>
 			</td>
 			<td><label for="currencytype">Currency Type:</label><br/>
 			<select name="currencytype" id="currencytype">
@@ -99,6 +99,12 @@
 	</td>
 	</tr>
 	</table>
+	<script>
+		$("#termsofsale").val("[% termsofsale %]");
+		$("#dutypaytype").val("[% dutypaytype %]");
+		$("#commodityquantity").val("[% commodityquantity %]");
+	</script>
+
 [% END %]
 
 [% IF PKG_DETAIL_ROW %]

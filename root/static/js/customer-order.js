@@ -617,7 +617,9 @@ function checkInternationalSection() {
 			$("#intlCommoditySec").slideDown(1000, setCustomsCommodityValue);
 			return;
 			}
-		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', '', function (){
+
+		var params = 'coid=' + $("#coid").val();
+		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', params, function (){
 			$("#intlCommoditySec").slideDown(1000, setCustomsCommodityValue);
 			$("#insurance").change(setCustomsCommodityValue);
 			$("#freightinsurance").change(setCustomsCommodityValue);
