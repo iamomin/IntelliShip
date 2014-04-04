@@ -1665,6 +1665,15 @@ sub SHIP_ORDER :Private
 		$Service->{'webhandlername'} = $ShippingData->{'webhandlername'};
 		}
 
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$params->{'carrier'} = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+		{
+		$params->{'carrier'} = &CARRIER_GENERIC;
+		}
+
 	if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
 		{
 		my $BillingAddressInfo = $self->GetBillingAddressInfo(
@@ -1694,17 +1703,6 @@ sub SHIP_ORDER :Private
 		{
 		next if !$key or !$Service->{$key};
 		$ShipmentData->{$key} = $Service->{$key};
-		}
-
-	#$c->log->debug("Ship order ShippingData" . Dumper $ShipmentData);
-
-	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
-		{
-		$params->{'carrier'} = &CARRIER_EFREIGHT;
-		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
-		{
-		$params->{'carrier'} = &CARRIER_GENERIC;
 		}
 
 	###################################################################
