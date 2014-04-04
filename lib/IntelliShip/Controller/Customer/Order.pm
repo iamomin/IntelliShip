@@ -263,7 +263,7 @@ sub get_shipment_types
 	{
 	my $self = shift;
 	my $Contact = $self->contact;
-	
+
 	return unless $self->context->stash->{quickship};
 
 	my $returncapability = $Contact->get_contact_data_value('returncapability');
@@ -421,6 +421,22 @@ sub save_CO_details :Private
 	$coData->{'dimlength'} = $params->{'dimlength_1'} if $params->{'dimlength_1'};
 	$coData->{'dimwidth'} = $params->{'dimwidth_1'} if $params->{'dimwidth_1'};
 	$coData->{'dimheight'} = $params->{'dimheight_1'} if $params->{'dimheight_1'};
+
+	## International
+	$coData->{'termsofsale'} = $params->{'termsofsale'} if $params->{'termsofsale'};
+	$coData->{'dutyaccount'} = $params->{'dutyaccount'} if $params->{'dutyaccount'};
+	$coData->{'manufacturecountry'} = $params->{'manufacturecountry'} if$params->{'manufacturecountry'} ;
+	$coData->{'dutypaytype'} = $params->{'dutypaytype'} if $params->{'dutypaytype'} ;
+	$coData->{'destinationcountry'} = $params->{'destinationcountry'} if $params->{'destinationcountry'} ;
+
+	$coData->{'partiestotransaction'} = $params->{'partiestotransaction'} if $params->{'partiestotransaction'};
+
+	## Commidity
+	$coData->{'commodityquantity'} = $params->{'commodityquantity'} if $params->{'commodityquantity'};
+	$coData->{'commodityunits'} = $params->{'commodityunits'} if $params->{'commodityunits'} ;
+	$coData->{'commoditycustomsvalue'} = $params->{'commoditycustomsvalue'} if $params->{'commoditycustomsvalue'};
+	$coData->{'commodityunitvalue'} = $params->{'commodityunitvalue'} if $params->{'commodityunitvalue'};
+	$coData->{'currencytype'} = $params->{'currencytype'} if $params->{'currencytype'};
 
 	$CO->update($coData);
 	}
@@ -996,12 +1012,12 @@ sub populate_order :Private
 		$c->stash->{combine} = $CO->combine;
 		$c->stash->{customer} = $self->customer;
 		$c->stash->{customerAddress} = $self->customer->address;
-		
+
 		## Ship From Section
 		$c->stash->{fromcontact}= $CO->oacontactname;
 		$c->stash->{fromemail}  = $CO->deliverynotification;
 		$c->stash->{fromphone}  = $CO->oacontactphone;
-		
+
 		if($CO->isinbound)
 			{
 			$c->stash->{fromcustomernumber} = $CO->custnum;
@@ -1018,10 +1034,10 @@ sub populate_order :Private
 		$c->stash->{tophone} = $CO->contactphone;
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
-		
+
 		$c->stash->{tocustomernumber} = $CO->custnum;
 		$c->stash->{description} = $CO->description;
-		
+
 		$c->stash->{fromAddress} = $CO->origin_address;
 		$c->stash->{toAddress} = $CO->destination_address;
 		}
@@ -1597,6 +1613,9 @@ sub SHIP_ORDER :Private
 		{
 		($params->{'dryicewt'},$params->{'dryicewtlist'}) = $self->BuildDryIceWt;
 		}
+
+	# International field
+	$self->LoadInternationalDefaults;
 
 	# Build up shipment ref
 	my $ShipmentData = $self->BuildShipmentInfo;
@@ -2266,7 +2285,7 @@ sub SetGenericLabelData
 	my @shipmentcharge = $Shipment->shipment_charges;
 	foreach my $ShipmentCharge (@shipmentcharge)
 		{
-		if ( $ShipmentCharge->chargename !~ /Freight/i && $ShipmentCharge->chargename !~ /Fuel Surcharge/i ) 
+		if ( $ShipmentCharge->chargename !~ /Freight/i && $ShipmentCharge->chargename !~ /Fuel Surcharge/i )
 			{
 			$ExcludeNames->{$ShipmentCharge->chargename} = 1;
 			}
@@ -2574,6 +2593,61 @@ sub GetPackageRatios
 		}
 
 	return @PackageRatios;
+	}
+
+sub LoadInternationalDefaults
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $CO = $self->get_order;
+	my $myDBI = $c->model('MyDBI');
+
+	# Defaults for Int'l values
+
+	my $ToAddress = $CO->destination_address;
+	$params->{'destinationcountry'} = $params->{'destinationcountry'} ? $params->{'destinationcountry'} : $ToAddress->country;
+	my $FromAddress = $CO->origin_address;
+	$params->{'manufacturecountry'} = $params->{'manufacturecountry'} ? $params->{'manufacturecountry'} :$FromAddress->country;
+	$params->{'harmonizedcode'} = $params->{'harmonizedcode'} ? $params->{'harmonizedcode'} : $params->{'exthsc'};
+
+	if( defined($params->{'extcd'}) && $params->{'extcd'} ne '' )
+		{
+		$params->{'customsdescription'} = $params->{'extcd'};
+		}
+
+	$params->{'commoditycustomsvalue'} = $params->{'commoditycustomsvalue'} ? $params->{'commoditycustomsvalue'} : $CO->estimatedinsurance;
+	$params->{'commodityweight'} = $params->{'enteredweight'};
+	$params->{'slac'} = $params->{'slac'} ? $params->{'slac'} : $params->{'commodityquantity'};
+	$params->{'dimunits'} = ( $params->{'destinationcountry'} eq 'US' ) ? 'IN' : 'CM';
+
+	my $commoditycustomsvalue = $params->{'commoditycustomsvalue'} || 0;
+	my $commodityquantity     = $params->{'commodityquantity'} || 0;
+	if ($commoditycustomsvalue && $commodityquantity && !$params->{'commodityunitvalue'})
+		{
+		$params->{'commodityunitvalue'} = $commoditycustomsvalue / $commodityquantity;
+		}
+
+	my $manufacturecountry = $params->{'manufacturecountry'} || '';
+	my $destinationcountry = $params->{'destinationcountry'} || '';
+	if ($manufacturecountry =~ /(US|CA|MX)/ && $destinationcountry =~ /(US|CA|MX)/)
+		{
+		$params->{'naftaflag'} = 'Y';
+		}
+	else
+		{
+		$params->{'naftaflag'} = 'N';
+		}
+
+	# Set defaults across the board (Basically, whatever the interface defaults to)
+	#$params->{'termsofsale'} = $params->{'termsofsale'}  ? $params->{'termsofsale'} : 1;
+	#$params->{'dutypaytype'} = $params->{'dutypaytype'} ? $params->{'dutypaytype'} : 1;
+	#$params->{'commodityunits'} = $params->{'commodityunits'} ? $params->{'commodityunits'} : 'PCS';
+	#$params->{'partiestotransaction'} = $params->{'partiestotransaction'} ? $params->{'partiestotransaction'} : 'N';
+	#$params->{'commoditycustomsvalue'} = $params->{'commoditycustomsvalue'}  ? $params->{'commoditycustomsvalue'} : 0;
+	#$params->{'commodityunitvalue'} = $params->{'commodityunitvalue'}  ? $params->{'commodityunitvalue'} : 0;
+	#$params->{'currencytype'} = $params->{'currencytype'}  ? $params->{'currencytype'} : 'USD';
 	}
 
 sub BuildShipmentInfo

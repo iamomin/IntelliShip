@@ -33,7 +33,7 @@
 			<td><label for="destinationcountry">Ultimate Destination Country:</label><br/>
 			<select name="destinationcountry" id="destinationcountry">
 				[% FOREACH item IN countrylist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (int_country == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</td>
@@ -42,14 +42,14 @@
 			<td><label for="manufacturecountry">Country of Manufacture:</label><br/>
 			<select name="manufacturecountry" id="manufacturecountry">
 				[% FOREACH item IN countrylist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (int_country == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</td>
 			<td>
-			<label><input type="checkbox" id="relatedparties" value="1"/><span><label for="relatedparties">Related Parties</label></span></label>
+			<label><input type="checkbox" name="partiestotransaction" id="partiestotransaction" value="1"/><span><label for="partiestotransaction">Related Parties</label></span></label>
 			<br/>
-			<label><input type="checkbox" id="printcominv" value="1"/><span><label for="printcominv">Print Commercial Invoice</label></span></label>
+			<label><input type="checkbox" name="printcominv" id="printcominv" value="1"/><span><label for="printcominv">Print Commercial Invoice</label></span></label>
 			</td>
 		</tr>
 		</table>
@@ -67,17 +67,14 @@
 			</select>
 			</td>
 			<td><label for="harmonizedcode">Harmonized Code:</label><br/>
-			<select name="harmonizedcode" id="harmonizedcode">
-				<option selected value=""></option>
-			</select>
+			<input type="text" name="harmonizedcode" id="harmonizedcode"/>
 			</td>
 		</tr>
 		<tr>
 			<td><label for="commodityunits">Unit of Measure:</label><br/>
 			<select name="commodityunits" id="commodityunits">
-				<option selected value=""></option>
 				[% FOREACH item IN dimentionlist_loop %]
-						<option value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (commodityunits == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 				[% END %]
 			</select>
 			</td>
@@ -107,7 +104,7 @@
 [% IF PKG_DETAIL_ROW %]
 	[% IF one_page %]
 	<li id="new_[% DETAIL_TYPE %]_[% ROW_COUNT %]" class="ui-state-[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]">
-		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/> 
+		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
 		<table>
 		<tr>
 			<td style="width: 01%"><input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><label><input type="checkbox" id="ppd_[% ROW_COUNT %]" title="[% coid %]" value="[% DETAIL_TYPE == 'package' ? 'package' : 'product' %]"/><span></span></label></td>
