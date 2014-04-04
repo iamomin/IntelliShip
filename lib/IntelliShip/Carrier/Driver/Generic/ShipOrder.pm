@@ -224,15 +224,15 @@ sub GetCarrierTrackingNumber
 		{
 		$TrackingNumber = '122 ';
 
-		if ( $self->{'customer'}->GetValueHashRef->{'customerid'} eq '8E3BZG21YNCVE' )
+		if ( $Customer->customerid eq '8E3BZG21YNCVE' )
 			{
 			$TrackingNumber .= $self->BuildTracking('tracking_1pgl_averitt_seq');
 			}
-		elsif ( $self->{'customer'}->GetValueHashRef->{'customerid'} eq '8E3BZG5EFDB2H' )
+		elsif ( $Customer->customerid eq '8E3BZG5EFDB2H' )
 			{
 			$TrackingNumber .= $self->BuildTracking('tracking_2pgl_averitt_seq');
 			}
-		elsif ( $self->{'customer'}->GetValueHashRef->{'customerid'} eq '8E35DGQRW04C3' )
+		elsif ($Customer->customerid eq '8E35DGQRW04C3' )
 			{
 			$TrackingNumber .= $self->BuildTracking('tracking_3pgl_averitt_seq');
 			}
