@@ -1963,7 +1963,19 @@ sub setup_label_to_print
 			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
 			}
 
-		if($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+		my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+		my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+		if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+			{
+			$params->{'carrier'} = &CARRIER_EFREIGHT;
+			}
+		elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+			{
+			$params->{'carrier'} = &CARRIER_GENERIC;
+			}
+
+		if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
 			{
 			$self->SetGenericLabelData($Shipment)
 			}
@@ -2286,7 +2298,7 @@ sub SetGenericLabelData
 			$CSValueRef->{'baaddressid'}
 			);
 
-	$c->log->debug("Billing Address" . Dumper $BillingAddressInfo);
+	#$c->log->debug("Billing Address" . Dumper $BillingAddressInfo);
 
 	## if it's third party billing add the account number to the name
 	if ($Shipment->billingaccount && $Shipment->billingaccount ne 'Collect')

@@ -19,10 +19,6 @@ sub process_request
 	my $shipmentData = $self->data;
 	my $Contact = $CO->contact;
 
-	$self->log("Process eFreight Ship Order");
-
-	$self->log("Shipment Data" .Dumper($shipmentData));
-
 	my $fromzip = $shipmentData->{'branchaddresszip'};
 	my $tozip = $shipmentData->{'addresszip'};
 	# Zip needs to be 5
