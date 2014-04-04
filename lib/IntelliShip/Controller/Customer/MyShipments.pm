@@ -197,7 +197,7 @@ sub get_search_by_term_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	return unless $params->{'filter'};
+	return '' unless $params->{'filter'};
 
 	IntelliShip::Utils->hash_decode($params);
 
@@ -248,30 +248,18 @@ sub get_shipped_sql :Private
 	   $and_contactid_sql = "AND s.contactid = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
 
 	my $and_date_shipped_sql = '';
-	if ($params->{'date_apply'})
+	
+	my $view = $params->{'view_date'} ? $params->{'view_date'} : 'today';
+	my $current_timestamp_with_time_zone = IntelliShip::DateUtils->get_timestamp_with_time_zone;
+	if ($view eq 'today')
+		{
+		$and_date_shipped_sql = "AND date_trunc('day', s.dateshipped) = date_trunc('day', TIMESTAMP '$current_timestamp_with_time_zone')";
+		}
+	else
 		{
 		my $date_from = IntelliShip::DateUtils->get_db_format_date_time($params->{'datefrom'}) if $params->{'datefrom'};
 		my $date_to   = IntelliShip::DateUtils->get_db_format_date_time($params->{'dateto'}) if $params->{'dateto'};
 		$and_date_shipped_sql = "AND s.dateshipped BETWEEN  date_trunc('day', TIMESTAMP '$date_from') AND date_trunc('day', TIMESTAMP '$date_to') ";
-		}
-	else
-		{
-		my $view = $params->{'view_date'} || 'today';
-		my $current_timestamp_with_time_zone = IntelliShip::DateUtils->get_timestamp_with_time_zone;
-		if ($view eq 'this_week')
-			{
-			my $weekday = IntelliShip::DateUtils->get_day_of_week($current_timestamp_with_time_zone);
-			$and_date_shipped_sql = "AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$weekday days')";
-			}
-		elsif ($view eq 'this_month')
-			{
-			my $dd = substr($current_timestamp_with_time_zone, 8, 2) - 1;
-			$and_date_shipped_sql = "AND (date_trunc('day',TIMESTAMP '$current_timestamp_with_time_zone') - s.dateshipped) <= (interval '$dd days')";
-			}
-		else
-			{
-			$and_date_shipped_sql = "AND date_trunc('day', s.dateshipped) = date_trunc('day', TIMESTAMP '$current_timestamp_with_time_zone')";
-			}
 		}
 
 	my $CustomerID = $Customer->customerid;

@@ -346,7 +346,7 @@
 					$("#datefrom").datepicker('setDate', '-1m');
 					$("#dateto").datepicker('setDate', '+0d');
 					}
-				var query_param = "&view_date=" + vDate;
+				var query_param = "&view_date=" + vDate + "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val();
 				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 				$("#count").html("0");
 				clickCount = -1;
@@ -377,8 +377,10 @@
 			});
 
 		$("#date_apply").click(function() {
-			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&date_apply=" + $("#date_apply").val();
+			var view_date = ($("#datefrom").val() == $("#dateto").val()) ? 'today' : 'date_apply'; 
+			var query_param = "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val() + "&view_date=" + view_date;
 			send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+			$("#count").html("0");
 			});
 
 		$("#records_per_page").change(function() {
