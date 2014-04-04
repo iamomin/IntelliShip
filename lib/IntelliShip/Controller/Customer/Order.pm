@@ -44,7 +44,7 @@ sub quickship :Local
 		}
 	elsif ($do_value eq 'print')
 		{
-		$self->print_label;
+		$self->setup_label_to_print;
 		}
 	elsif ($do_value eq 'cancel')
 		{
@@ -70,7 +70,7 @@ sub setup_one_page :Private
 		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
 		$self->SHIP_ORDER;
 		return $self->display_error_details($self->errors->[0]) if $self->has_errors;
-		return $self->print_label;
+		return $self->setup_label_to_print;
 		}
 
 	$c->stash->{one_page} = 1;
@@ -1917,7 +1917,7 @@ sub generate_label :Private
 		}
 	}
 
-sub print_label
+sub setup_label_to_print
 	{
 	my $self = shift;
 

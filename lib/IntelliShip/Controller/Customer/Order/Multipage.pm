@@ -38,7 +38,7 @@ sub index :Path :Args(0) {
 		}
 	elsif ($do_value eq 'print')
 		{
-		$self->print_label;
+		$self->setup_label_to_print;
 		}
 	elsif ($do_value eq 'shipment')
 		{

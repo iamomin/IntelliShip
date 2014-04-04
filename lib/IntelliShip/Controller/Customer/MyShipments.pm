@@ -129,14 +129,9 @@ sub reprint_label :Private
 	my $LABEL_ARR = [];
 	foreach my $shipmentid (@$ShipmentIds)
 		{
-		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
-
-		next unless $Shipment;
-
 		$c->log->debug("... generate label for shipment ID: " . $shipmentid);
-
-		$self->setup_label_to_print($Shipment);
-
+		$params->{'shipmentid'} = $shipmentid;
+		$self->setup_label_to_print;
 		push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
 		}
 
