@@ -155,3 +155,11 @@ classes should alter those!
   position: absolute;
   border: 2px dashed black;
 }
+
+
+input.slick-deletebutton {
+	background: url("/static/images/trash.png") no-repeat;
+	border: none;
+	width: 16px;
+	height: 16px;
+}

@@ -1,8 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/static/css/themes/default/style.min.css"/>
 <link rel="stylesheet" type="text/css" href="/static/css/slick/slick.grid.css"/>
+<link rel="stylesheet" type="text/css" href="/static/css/slick/slick.columnpicker.css"/>
 <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
 <link rel="stylesheet" type="text/css" href="/static/css/grid.css"/>
-
 <script src="/static/jquery/jstree.min.js" type="text/javascript"></script>
 <script src="/static/jquery/jquery.event.drag-2.2.js"></script>
 <script src="/static/js/slick/slick.core.js"></script>
@@ -12,6 +12,9 @@
 <script src="/static/js/slick/plugins/slick.cellrangedecorator.js"></script>
 <script src="/static/js/slick/plugins/slick.cellrangeselector.js"></script>
 <script src="/static/js/slick/plugins/slick.cellselectionmodel.js"></script>
+<script src="/static/js/slick/plugins/slick.rowselectionmodel.js"></script>
+<script src="/static/js/slick/plugins/slick.checkboxselectcolumn.js"></script>
+<script src="/static/js/slick/controls/slick.columnpicker.js"></script>
 
 <input type="hidden" name="data" id="data"/>
 <input type="hidden" name="csid" id="csid"/>
@@ -28,7 +31,14 @@
 			<tr>
 				<td style="width: 100%; vertical-align: top">
 					<div id="operations" style="display:none">
-						<input type="button" value="Update" onclick="extractAndSubmit();"/>						
+						<input type="button" value="Update" onclick="extractAndSubmit();"/>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 100%; vertical-align: top">
+					<div id="serviceIds" style="display:none">
+						<label for="service_acctnum">Account Number: </label><input id="service_acctnum" type="text" style="width: 150px"/>&nbsp;<label for="service_meternum">Meter Number: </label><input id="service_meternum" type="text" style="width: 150px"/>
 					</div>
 				</td>
 			</tr>
@@ -113,7 +123,24 @@ function loadGrid() {
 	var columns = [];
 	var headers = JSON_data['headers'];
 	COLWIDTH = 700 / headers.length + 3;
+	
+	//Now define your buttonFormatter function
+	var buttonFormatter = function(row,cell,value,columnDef,dataContext){  
+		var button = "<input class='slick-deletebutton' type='button' id='"+ dataContext.id +"' />";
+		//the id is so that you can identify the row when the particular button is clicked
+		return button;
+		//Now the row will display your button
+	};
 
+	columns.push({
+		id:"delCol", 
+		field:'del', 
+		name:'', 
+		width: 30, 
+		formatter: buttonFormatter,
+		editable: false
+	});
+	
 	columns.push({
 		id : "title_wtrange",
 		name : "Wt. Range",
@@ -149,6 +176,22 @@ function loadGrid() {
 
 	GRID = new Slick.Grid("#myGrid", data, columns, options);
 	GRID.setSelectionModel(new Slick.CellSelectionModel());
+	//GRID.registerPlugin(checkboxSelector);
+	var columnpicker = new Slick.Controls.ColumnPicker(columns, GRID, options);
+	
+	//Now you can use jquery to hook up your delete button event
+$('.slick-deletebutton').click(function(){
+    var me = $(this), id = me.attr('id');
+	window.confirm("Deletes are irrevocable. Do you want to delete " + id + "?");
+    //assuming you have used a dataView to create your grid
+    //also assuming that its variable name is called 'dataView'
+    //use the following code to get the item to be deleted from it
+    //dataView.deleteItem(id);
+    //This is possible because in the formatter we have assigned the row id itself as the button id;
+    //now assuming your grid is called 'grid'
+    //grid.invalidate();        
+});
+	
 }
 
 function getTariff(csid) {
@@ -157,21 +200,24 @@ function getTariff(csid) {
 	send_ajax_request('', 'JSON', 'settings/tariff', 'get_service_tariff', params, function () {
 		loadGrid();
 		$('#operations').show();
+		$('#serviceIds').show();
 	});
 }
 
 function extractAndSubmit() {
-	//alert($('#csid').val());
-	var d = GRID.getData();
-	var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
-	my_ajax_request('settings/tariff/save', params, function () {
-		if(JSON_data.status == "success"){
-			showMessage(JSON_data.message);
-			GRID.invalidate();
-		}else{
-			showMessage("Failed to update");
-		}
-	});
+	if (window.confirm("Committed changes are irrevocable. Do you want to commit your changes?")) {
+		//alert($('#csid').val());
+		var d = GRID.getData();
+		var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
+		my_ajax_request('settings/tariff/save', params, function () {
+			if (JSON_data.status == "success") {
+				showMessage(JSON_data.message);
+				GRID.invalidate();
+			} else {
+				showMessage("Failed to update");
+			}
+		});
+	}
 }
 
 // Get the item column value using a custom 'fieldIdx' column param
@@ -327,7 +373,7 @@ function NumericRangeEditor(args) {
 			return m <= v && v <= M;
 		};
 		
-		var gridData = GRID.getData();		
+		var gridData = GRID.getData();
 		for(var key in gridData){
 			var row = gridData[key];
 			var myRowNum = args.item.rownum;
@@ -430,4 +476,3 @@ function my_ajax_request(section_value, optional_param, call_back_function) {
 	
 }
 </script>
-
