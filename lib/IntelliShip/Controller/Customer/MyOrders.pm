@@ -515,7 +515,7 @@ sub load_order :Private
 	my $params = $c->req->params;
 	$c->stash->{parent}    = 'myorders';
 	$c->stash->{ONLY_SHIP} = 1;
-	$params->{do} = undef;
+	$params->{do} = undef unless $self->order_can_auto_process;
 	$self->quickship;
 	}
 

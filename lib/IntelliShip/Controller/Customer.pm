@@ -9,9 +9,9 @@ use namespace::autoclean;
 
 BEGIN {
 
-	extends 'IntelliShip::Errors';
 	extends 'Catalyst::Controller';
 
+	has 'errors'           => ( is => 'rw', isa => 'ArrayRef' );
 	has 'context'          => ( is => 'rw' );
 	has 'token'            => ( is => 'rw' );
 	has 'contact'          => ( is => 'rw' );
@@ -19,6 +19,27 @@ BEGIN {
 	has 'arrs_api_context' => ( is => 'rw' );
 	has 'DB_ref'           => ( is => 'rw' );
 
+	}
+
+sub BUILD
+	{
+	my $self = shift;
+	$self->errors([]);
+	}
+
+sub has_errors
+	{
+	my $self = shift;
+	return scalar @{$self->errors};
+	}
+
+sub add_error
+	{
+	my $self = shift;
+	my $error_msg = shift;
+	return undef unless $error_msg;
+	my $err_array = $self->errors;
+	push (@$err_array, $error_msg);
 	}
 
 sub myDBI

@@ -216,7 +216,7 @@ sub country_description
 	{
 	my $self = shift;
 	my $CountryObj = $self->country_details;
-	return $CountryObj->countryname;
+	return ($CountryObj ? $CountryObj->countryname : '');
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

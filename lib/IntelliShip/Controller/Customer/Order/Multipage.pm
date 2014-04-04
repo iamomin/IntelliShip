@@ -36,9 +36,9 @@ sub index :Path :Args(0) {
 		{
 		$self->complete_step2;
 		}
-	elsif ($do_value eq 'ship')
+	elsif ($do_value eq 'print')
 		{
-		$self->SHIP_ORDER;
+		$self->print_label;
 		}
 	elsif ($do_value eq 'shipment')
 		{
@@ -97,7 +97,7 @@ sub review_order
 sub cancel_order
 	{
 	my $self = shift;
-	$self->void_shipment;
+	$self->VOID_SHIPMENT;
 	$self->setup_address;
 	}
 

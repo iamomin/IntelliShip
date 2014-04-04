@@ -96,6 +96,7 @@ nav ul ul {
 nav ul ul li {
     float: none;
     position: relative;
+    white-space: nowrap;
 }
 
 nav ul ul li a {

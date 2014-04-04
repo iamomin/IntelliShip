@@ -179,6 +179,8 @@ sub insert_shipment
 	my $date_shipped = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetoship'});
 
 	my $shipmentObj = {
+			'shipmentid' => $shipmentData->{'new_shipmentid'},
+
 			'department' => $shipmentData->{'department'},
 			'customerserviceid' => $shipmentData->{'customerserviceid'},
 			'coid' => $shipmentData->{'coid'},
@@ -222,7 +224,6 @@ sub insert_shipment
 			'extid' => $shipmentData->{'extid'},
 			'datereceived' => $shipmentData->{'datereceived'},
 			'weight' => $shipmentData->{'weight'},
-			'shipmentid' => $shipmentData->{'shipmentid'},
 			'billingpostalcode' => $shipmentData->{'billingpostalcode'},
 			'insurance' => $shipmentData->{'insurance'},
 			'currencytype' => $shipmentData->{'currencytype'},

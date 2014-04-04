@@ -22,10 +22,6 @@ sub onepage :Local
 		{
 		$self->save_new_order;
 		}
-	elsif ($do_value eq 'ship')
-		{
-		$self->SHIP_ORDER;
-		}
 	elsif ($do_value eq 'cancel')
 		{
 		$self->cancel_order;
@@ -46,9 +42,9 @@ sub quickship :Local
 		{
 		$self->save_new_order;
 		}
-	elsif ($do_value eq 'ship')
+	elsif ($do_value eq 'print')
 		{
-		$self->SHIP_ORDER;
+		$self->print_label;
 		}
 	elsif ($do_value eq 'cancel')
 		{
@@ -72,7 +68,9 @@ sub setup_one_page :Private
 	if ($self->order_can_auto_process)
 		{
 		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
-		return $self->SHIP_ORDER;
+		$self->SHIP_ORDER;
+		return $self->display_error_details($self->errors->[0]) if $self->has_errors;
+		return $self->print_label;
 		}
 
 	$c->stash->{one_page} = 1;
@@ -1441,6 +1439,8 @@ sub SHIP_ORDER :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	IntelliShip::Utils->hash_decode($params);
+
 	$c->log->debug("------- SHIP_ORDER -------");
 
 	$self->save_order unless $params->{'do'} eq 'load';
@@ -1485,9 +1485,9 @@ sub SHIP_ORDER :Private
 			}
 		}
 
+	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $Customer, $CO) unless $params->{'customerserviceid'};
+
 	my $CustomerID = $Customer->customerid;
-	my $ServiceTypeID = $self->API->get_CS_value($params->{'customerserviceid'}, 'servicetypeid', $CustomerID);
-	#$c->log->debug("API ServiceTypeID: " . Dumper $ServiceTypeID);
 
 	my $laundryArr = [];
 	$params->{'new_shipmentid'} = $self->get_token_id;
@@ -1520,6 +1520,9 @@ sub SHIP_ORDER :Private
 		$params->{'dimwidth'}      = 0;
 		$params->{'dimheight'}     = 0;
 		$params->{'extcd'}         = 0;
+
+		my $ServiceTypeID = $self->API->get_CS_value($params->{'customerserviceid'}, 'servicetypeid', $CustomerID);
+		#$c->log->debug("API ServiceTypeID: " . Dumper $ServiceTypeID);
 
 		# Process small/freight shipments (mainly FedEx freight, on the freight end)
 		if ($ServiceTypeID < 3000)
@@ -1623,8 +1626,6 @@ sub SHIP_ORDER :Private
 	# Kludge to get freightinsurance into the shipments
 	my $SaveFreightInsurance = $ShipmentData->{'freightinsurance'};
 	$ShipmentData->{'freightinsurance'} = $params->{'frtins'};
-
-	$params->{'customerserviceid'} = $self->API->get_co_customer_service({}, $Customer, $CO) unless $params->{'customerserviceid'};
 
 	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$params->{'customerserviceid'});
 	#$c->log->debug("CUSTOMERSERVICE DETAILS FOR $params->{'customerserviceid'}:" . Dumper $CustomerService);
@@ -1731,7 +1732,8 @@ sub SHIP_ORDER :Private
 		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
 		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
 		$_->delete foreach @$laundryArr; ## Flush all inserted shipment information
-		return $self->display_error_details($Response->message);
+		$self->add_error($Response->message);
+		return 0;
 		}
 
 	$c->log->debug("SHIPMENT PROCESSED SUCCESSFULLY");
@@ -1741,7 +1743,8 @@ sub SHIP_ORDER :Private
 		{
 		$c->log->debug("ERROR: No response received. " . $Response->message);
 		$_->delete foreach @$laundryArr; ## Flush all inserted shipment information
-		return $self->display_error_details($Response->message);
+		$self->add_error($Response->message);
+		return 0;
 		}
 
 	my $PrinterString = $Response->printer_string;
@@ -1809,72 +1812,173 @@ sub SHIP_ORDER :Private
 
 	#$c->log->debug("SHIPCONFIRM SAVE ASSESSORIALS....");
 
-	# Save out shipment assessorials
+	## Save out shipment assessorials
 	#$self->SaveAssessorials($params,$params->{'shipmentid'},2000);
 
-	unless ($Shipment)# $Shipment and $Shipment->tracking1 and $Shipment->shipmentid)
+	## Set shipment and order statuses (ship complete and shipped, respectively)
+	$Shipment->statusid(4);
+	$CO->statusid(5);
+
+	# Extra, carrier specific bits
+	#if ($Shipment->{'screen'} eq 'displayawb_airborne_preprint')
+	#	{
+	#	my $trackinglast3 = $Shipment->tracking1 =~ /\d+(\d{3})$/;
+	#	if ($Shipment->partiestotransaction eq 'Y')
+	#		{
+	#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;X';
+	#		}
+	#	elsif ( $Shipment->partiestotransaction eq 'N' )
+	#		{
+	#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X';
+	#		}
+	#	}
+
+	$CO->update;
+	$Shipment->update;
+
+	$params->{'shipmentid'} = $Shipment->shipmentid;
+
+	#############################################
+	# GENERATE LABEL TO PRINT
+	#############################################
+	$self->generate_label($Shipment, $Service, $PrinterString);
+
+	return $Shipment->shipmentid;
+	}
+
+sub generate_label :Private
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $Service = shift;
+	my $PrinterString = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $CO = $self->get_order;
+
+	#$c->log->debug("PrinterString    : " . $PrinterString);
+
+	## Alt SOP mangling
+	if ($params->{'usingaltsop'})
 		{
-		if (!defined($Shipment))
-			{
-			}
-		elsif (defined($Shipment->{'shipmentid'}))
-			{
-			#$Shipment->ChangeStatus(5); ######### TODO ########
-			}
-
-		 ######### TODO ########
-		# undef the shipmentid or else shipconfirm will try to display as readonly shipment
-		#$Shipment->{'shipmentid'} = undef;
-		#$CO->ChangeStatus(1);
-
-		# # Excise bad zip/zone combinations from the db.
-		# elsif ($Shipment->{'errorcode'} eq 'badzone')
-			# {
-			# my $ZoneRef = {
-				# action   => 'DeleteZone',
-				# typeid   => $CS->{'zonetypeid'},
-				# fromzip  => $Customer->{'zip'},
-				# tozip    => $ShipmentRef->{'addresszip'},
-				# };
-
-			# &APIRequest($ZoneRef);
-			# }
-
-		# if (!defined($Shipment->{'errorstring'}))
-			# {
-			# $Shipment->{'errorstring'} = 'An Error Has Occurred.  Please try again later.';
-			# }
-		 ######### TODO ########
+		$params->{'addressname'} = $self->API->get_alt_SOP_consignee_name($params->{'customerserviceid'},$params->{'addressname'});
+		}
+	if ($params->{'originalcoid'})
+		{
+		my $ParentCO = $c->model('MyDBI::CO')->find({ coid => $params->{'originalcoid'} });
+		$params->{'refnumber'} = $ParentCO->ordernumber if $ParentCO;
 		}
 	else
 		{
-		#Set shipment and order statuses (ship complete and shipped, respectively)
-		$Shipment->statusid(4);
-		$CO->statusid(5);
-
-		# Extra, carrier specific bits
-		#if ($Shipment->{'screen'} eq 'displayawb_airborne_preprint')
-		#	{
-		#	my $trackinglast3 = $Shipment->tracking1 =~ /\d+(\d{3})$/;
-		#	if ($Shipment->partiestotransaction eq 'Y')
-		#		{
-		#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;X';
-		#		}
-		#	elsif ( $Shipment->partiestotransaction eq 'N' )
-		#		{
-		#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X';
-		#		}
-		#	}
-
-		$CO->update;
-		$Shipment->update;
-
-		#############################################
-		# GENERATE LABEL TO PRINT
-		#############################################
-		$self->generate_label($Shipment, $Service, $PrinterString);
-		$c->stash(template => "templates/customer/order-label.tt");
+		$params->{'refnumber'} = $params->{'ordernumber'} || $CO->ordernumber;
 		}
+
+	if ($params->{'ponumber'})
+		{
+		$params->{'refnumber'} .= " - $params->{'ponumber'}";
+		}
+	elsif ($params->{'custnum'})
+		{
+		$params->{'refnumber'} .= " - $params->{'custnum'}";
+		}
+
+	my $LabelType = $self->contact->get_label_type;
+
+	$c->log->debug(".... Label Type: " . $LabelType);
+
+	## Save EPL Print String On Server
+	my $FileName = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
+	$self->SaveStringToFile($FileName, $PrinterString);
+
+	if ($LabelType =~ /JPG/i)
+		{
+		## Generate JPEG label image ##
+		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 270";
+		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
+		system($cmdGenerageLabel);
+
+		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
+		#my $out_file = $Shipment->shipmentid . '.jpg';
+		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file;
+		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
+
+		## Copy to Apache context path ##
+		#system($copyImgCommand);
+		}
+	else
+		{
+		if ($LabelType =~ /^zpl$/i)
+			{
+			require IntelliShip::EPL2TOZPL2;
+			my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
+			$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
+			}
+		}
+	}
+
+sub print_label
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+
+	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
+	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
+
+	$c->stash($params);
+	$c->stash($Shipment->{_column_data});
+	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{defaultcomminv}    = $self->contact->get_contact_data_value('defaultcomminv');
+
+	unless (-e $label_file)
+		{
+		$c->log->debug("... label details not found for shipment ID: " . $Shipment->shipmentid);
+		$c->stash->{MESSAGE} = 'We are sorry, label information not found.';
+		return;
+		}
+
+	if ($label_file =~ /JPG/i)
+		{
+		$c->stash->{LABEL_IMG} = '/print/label/' . $Shipment->shipmentid . '.jpg';
+		}
+	else
+		{
+		$c->stash->{fromAddress}   = $Shipment->origin_address;
+		$c->stash->{toAddress}     = $Shipment->destination_address;
+		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
+		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
+		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+		$c->stash->{enteredweight} = $Shipment->total_weight;
+		$c->stash->{totalquantity} = $Shipment->total_quantity;
+		$c->stash->{refnumber}     = $params->{'refnumber'};
+
+		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
+			{
+			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
+			}
+
+		if($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+			{
+			$self->SetGenericLabelData($Shipment)
+			}
+
+		$self->SetupPrinterStream($Shipment);
+
+		my $template = $params->{'carrier'} || $Shipment->carrier ;
+		   $template = 'default' unless $template;
+		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+		}
+
+	$c->stash->{SEND_EMAIL} = IntelliShip::Utils->is_valid_email($Shipment->deliverynotification);
+	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
+
+	$c->stash(template => "templates/customer/order-label.tt");
 	}
 
 sub GetNotificationShipments :Private
@@ -2119,148 +2223,6 @@ sub SendShipmentVoidEmail
 		}
 	}
 
-sub generate_label :Private
-	{
-	my $self = shift;
-	my $Shipment = shift;
-	my $Service = shift;
-	my $PrinterString = shift;
-
-	my $c = $self->context;
-	my $params = $c->req->params;
-	my $CO = $self->get_order;
-
-	#$c->log->debug("PrinterString    : " . $PrinterString);
-
-	my $ShipmentData = $self->BuildShipmentInfo;
-
-	## Alt SOP mangling
-	if ($params->{'usingaltsop'})
-		{
-		$params->{'addressname'} = $self->API->get_alt_SOP_consignee_name($params->{'customerserviceid'},$params->{'addressname'});
-		}
-	if ($params->{'originalcoid'})
-		{
-		my $ParentCO = $c->model('MyDBI::CO')->find({ coid => $params->{'originalcoid'} });
-		$params->{'refnumber'} = $ParentCO->ordernumber if $ParentCO;
-		}
-	else
-		{
-		$params->{'refnumber'} = $params->{'ordernumber'} || $CO->ordernumber;
-		}
-
-	if ($params->{'ponumber'})
-		{
-		$params->{'refnumber'} .= " - $params->{'ponumber'}";
-		}
-	elsif ($params->{'custnum'})
-		{
-		$params->{'refnumber'} .= " - $params->{'custnum'}";
-		}
-
-	my $CustomerLabelType = $self->contact->label_type;
-	$CustomerLabelType = $self->customer->label_type unless $CustomerLabelType;
-	$CustomerLabelType = 'JPG' unless $CustomerLabelType;
-
-	$c->log->debug(".... Customer Label Type: " . $CustomerLabelType);
-
-	## Save EPL Print String On Server
-	my $FileName = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid;
-	$self->SaveStringToFile($FileName, $PrinterString);
-
-	if ($CustomerLabelType =~ /JPG/i)
-		{
-		## Generate JPEG label image ##
-		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 270";
-		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
-		system($cmdGenerageLabel);
-
-		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
-		#my $out_file = $Shipment->shipmentid . '.jpg';
-		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file;
-		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
-
-		## Copy to Apache context path ##
-		#system($copyImgCommand);
-		}
-	else
-		{
-		if ($CustomerLabelType =~ /^zpl$/i)
-			{
-			require IntelliShip::EPL2TOZPL2;
-			my $EPL2TOZPL2 = IntelliShip::EPL2TOZPL2->new();
-			$PrinterString = $EPL2TOZPL2->ConvertStreamEPL2ToZPL2($PrinterString);
-			}
-		}
-
-	$self->setup_label_to_print($Shipment, $PrinterString, $CustomerLabelType);
-
-	$c->stash(template => "templates/customer/order-label.tt");
-	}
-
-sub setup_label_to_print
-	{
-	my $self = shift;
-	my $Shipment = shift;
-	my $PrinterString = shift;
-	my $CustomerLabelType = shift;
-
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
-	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
-
-	$c->stash($params);
-	$c->stash($Shipment->{_column_data});
-	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
-	$c->stash->{defaultcomminv}    = $self->contact->get_contact_data_value('defaultcomminv');
-
-	unless (-e $label_file)
-		{
-		$c->log->debug("... label details not found for shipment ID: " . $Shipment->shipmentid);
-		$c->stash->{MESSAGE} = 'We are sorry, label information not found.';
-		return;
-		}
-
-	if ($label_file =~ /JPG/i)
-		{
-		$c->stash->{LABEL_IMG} = '/print/label/' . $Shipment->shipmentid . '.jpg';
-		}
-	else
-		{
-		$c->stash->{fromAddress}   = $Shipment->origin_address;
-		$c->stash->{toAddress}     = $Shipment->destination_address;
-		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
-		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
-		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
-		$c->stash->{enteredweight} = $Shipment->total_weight;
-		$c->stash->{totalquantity} = $Shipment->total_quantity;
-		$c->stash->{refnumber}     = $params->{'refnumber'};
-
-		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
-			{
-			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
-			}
-
-		if($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
-			{
-			$self->SetGenericLabelData($Shipment)
-			}
-
-		$self->ProcessPrinterStream($Shipment, $PrinterString);
-
-		my $template = $params->{'carrier'} || $Shipment->carrier ;
-		   $template = 'default' unless $template;
-		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
-		}
-
-	$c->stash->{SEND_EMAIL} = IntelliShip::Utils->is_valid_email($Shipment->deliverynotification);
-	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
-	}
-
 sub SetGenericLabelData
 	{
 	my $self = shift;
@@ -2346,11 +2308,10 @@ sub SetGenericLabelData
 	$c->stash->{BillingAddressInfo} = $BillingAddressInfo;
 	}
 
-sub ProcessPrinterStream
+sub SetupPrinterStream
 	{
 	my $self = shift;
 	my $Shipment = shift;
-	my $PrinterString = shift;
 
 	my $c = $self->context;
 	my $Contact = $self->contact;
@@ -2380,26 +2341,18 @@ sub ProcessPrinterStream
 		#}
 
 	## Set Printer String Loop
-	my @PSLINES;
-	if ($PrinterString)
+	my $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid;
+
+	my $FILE = new IO::File;
+	unless (open ($FILE,$label_file))
 		{
-		@PSLINES = split(/\n/,$PrinterString);
+		$c->log->debug("*** Label File Error: " . $!);
+		return;
 		}
-	else
-		{
-		my $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid;
 
-		my $FILE = new IO::File;
-		unless (open ($FILE,$label_file))
-			{
-			$c->log->debug("*** Label File Error: " . $!);
-			return;
-			}
+	my @PSLINES = <$FILE>;
 
-		@PSLINES = <$FILE>;
-
-		close $FILE;
-		}
+	close $FILE;
 
 	my $printerstring_loop = [];
 	foreach my $line (@PSLINES)
@@ -2660,7 +2613,7 @@ sub BuildShipmentInfo
 
 	my $myDBI = $c->model('MyDBI');
 
-	my $ShipmentData = { 'shipmentid' => $params->{'new_shipmentid'} };
+	my $ShipmentData = { 'new_shipmentid' => $params->{'new_shipmentid'} };
 
 	$ShipmentData->{$_} = $params->{$_} foreach keys %$params;
 

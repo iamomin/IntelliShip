@@ -194,7 +194,7 @@ sub get_csid
 	my $request = shift;
 
 	$request->{'action'} = 'GetCSID';
-	my $CSReturnRef = IntelliShip::Arrs::API->APIRequest($request);
+	my $CSReturnRef = $self->APIRequest($request);
 	return $CSReturnRef->{'csid'};
 	}
 

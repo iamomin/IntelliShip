@@ -44,36 +44,36 @@ sub get_HTML :Private
 	my $self = shift;
 	my $c = $self->context;
 
-	my $action = $c->req->param('action');
+	my $action = $c->req->param('action') || '';
 	if ($action eq 'display_international')
 		{
 		$self->set_international_details;
 		}
-	elsif ($c->req->param('action') eq 'get_special_service_list')
+	elsif ($action eq 'get_special_service_list')
 		{
 		$self->get_special_service_list;
 		}
-	elsif ($c->req->param('action') eq 'get_carrier_service_list')
+	elsif ($action eq 'get_carrier_service_list')
 		{
 		$self->get_carrier_service_list;
 		}
-	elsif ($c->req->param('action') eq 'third_party_delivery')
+	elsif ($action eq 'third_party_delivery')
 		{
 		$self->get_third_party_delivery;
 		}
-	elsif ($c->req->param('action') eq 'get_country_states')
+	elsif ($action eq 'get_country_states')
 		{
 		$self->get_country_states;
 		}
-	elsif ($c->req->param('action') eq 'generate_packing_list')
+	elsif ($action eq 'generate_packing_list')
 		{
 		$self->generate_packing_list;
 		}
-	elsif ($c->req->param('action') eq 'generate_bill_of_lading')
+	elsif ($action eq 'generate_bill_of_lading')
 		{
 		$self->generate_bill_of_lading;
 		}
-	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
+	elsif ($action eq 'generate_commercial_invoice')
 		{
 		$self->generate_commercial_invoice;
 		}
@@ -125,7 +125,7 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->save_third_party_info;
 		}
-	elsif ($c->req->param('action') eq 'send_email_notification')
+	elsif ($action eq 'send_email_notification')
 		{
 		$dataHash = $self->send_email_notification;
 		}
@@ -141,19 +141,23 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->get_dim_weight;
 		}
-	elsif ($c->req->param('action') eq 'generate_packing_list')
+	elsif ($action eq 'generate_packing_list')
 		{
 		$dataHash = $self->prepare_packing_list_details;
 		}
-	elsif ($c->req->param('action') eq 'generate_bill_of_lading')
+	elsif ($action eq 'generate_bill_of_lading')
 		{
 		$dataHash = $self->prepare_BOL;
 		}
-	elsif ($c->req->param('action') eq 'generate_commercial_invoice')
+	elsif ($action eq 'generate_commercial_invoice')
 		{
 		$dataHash = $self->prepare_com_inv;
 		}
-	elsif ($c->req->param('action') eq 'cancel_shipment')
+	elsif ($action eq 'ship')
+		{
+		$dataHash = $self->ship_to_carrier;
+		}
+	elsif ($action eq 'cancel_shipment')
 		{
 		$dataHash = $self->cancel_shipment;
 		}
@@ -755,6 +759,16 @@ sub prepare_com_inv
 	my $HTML = $self->generate_commercial_invoice;
 	$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
 	return { ComInv => $HTML };
+	}
+
+sub ship_to_carrier
+	{
+	my $self = shift;
+	my $shipmentid = $self->SHIP_ORDER;
+	my $response = { SUCCESS => $shipmentid ? 1 : 0 };
+	$response->{shipmentid} = $shipmentid;
+	$response->{error} = $self->errors->[0] if $self->has_errors;
+	return $response;
 	}
 
 sub cancel_shipment

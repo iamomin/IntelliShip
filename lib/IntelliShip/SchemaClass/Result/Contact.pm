@@ -351,6 +351,15 @@ sub default_thermal_count
 	return $self->get_contact_data_value('defaultthermalcount') || 1;
 	}
 
+sub get_label_type
+	{
+	my $self = shift;
+	my $LabelType = $self->label_type;
+	$LabelType = $self->customer->label_type unless $LabelType;
+	$LabelType = 'JPG' unless $LabelType;
+	return $LabelType;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

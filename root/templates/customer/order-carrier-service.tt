@@ -22,6 +22,7 @@
 <form id="frm_order_sumary" name="frm_order_sumary" method="post" action="/customer/order/multipage">
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" id="shipmentid" name="shipmentid"/>
 	<input type="hidden" id="do" name="do" value="ship"/>
 
 	<div id="equal">
@@ -169,7 +170,7 @@
 		<table><tr>
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
 		<td>&nbsp;</td>
-		<td><div class="green-forward"><input type="submit" id="ship_now" value="SHIP NOW"/></div></td>
+		<td><div class="green-forward"><input type="button" id="ship_now" value="SHIP NOW"/></div></td>
 		</tr></table>
 	</div>
 </form>
@@ -213,14 +214,20 @@
 		var carrier = $("#carrier").val();
 		if (carrier == undefined) return;
 
-		//if (carrier.toUpperCase() != 'FEDEX' && carrier.toUpperCase() != 'UPS' && carrier.toUpperCase() != 'USPS')
-		//	{
-		//	showError("Only FedEx/UPS/USPS is supported, please select correct carrier from list.");
-		//	return;
-		//	}
-
 		$("#do").val('ship');
-		$("#frm_order_sumary").submit();
+
+		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_order_sumary").serialize(), function () {
+
+			if ( JSON_data.SUCCESS == 0 ) return;
+
+			$("#cancel").attr("disabled", true);
+			$("#ship_now").attr("disabled", true);
+
+			$("#shipmentid").val(JSON_data.shipmentid);
+			$("#do").val("print");
+			$("#frm_order_sumary").submit();
+			});
+
 		});
 
 [% END %]
