@@ -219,6 +219,15 @@ sub getSendmailPath
 	return $sendmail_path{getDomain()};
 	}
 
+sub getSubDomain
+	{
+	my $domain;
+
+	# Determine what machine we are running on...
+	my $hostname = uc $ENV{'HOSTNAME'};
+	return 'intelliship2';
+	}
+
 sub getBaseDomain
 	{
 	my $domain;
@@ -277,7 +286,7 @@ sub getActiveDatabaseList
 sub no_reply_email
 	{
 	my $self = shift;
-	return 'NO_REPLY@engagetechnology.com';
+	return $self->getSubDomain . '@engagetechnology.com';
 	}
 
 sub base_path

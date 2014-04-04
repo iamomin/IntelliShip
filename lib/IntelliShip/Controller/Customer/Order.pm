@@ -2056,6 +2056,7 @@ sub SendShipNotification :Private
 
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
 	$Email->subject("NOTICE: Shipment Prepared (" .$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
 
 	$Email->add_to($Shipment->shipmentnotification);
@@ -2215,7 +2216,7 @@ sub SendShipmentVoidEmail
 
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
-	$Email->from_name('NOC');
+	$Email->from_name('IntelliShip2');
 	$Email->subject($subject);
 	$Email->add_to($Customer->losspreventemail);
 
