@@ -473,7 +473,7 @@ sub SaveTariff {
 
     my $Online =
       new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
-    return $Online->SaveTariff( $Ref->{'tariff'});
+    return $Online->SaveTariff( $Ref->{'tariff'}, $Ref->{'info'});
 }
 
 sub GetShipmentCosts {

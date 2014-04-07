@@ -54,6 +54,10 @@ sub tariff_to_json
 
     my $json = {};
     $json->{'headers'} = $tariff->{'zonenumbers'};
+	$json->{'accountnumber'} = $tariff->{'accountnumber'};
+	$json->{'meternumber'} = $tariff->{'meternumber'};
+	$json->{'csid'} = $tariff->{'csid'};
+	
     $arr = $tariff->{'ratearray'};
     @ratearray = @$arr;
     
@@ -63,6 +67,8 @@ sub tariff_to_json
     my $d = {};
 	my $i = 0;
 	my $rownum = 0;
+	
+	warn "########## ratearray count: ".scalar(@ratearray);
     foreach (@ratearray)
     {
         $record = $_;
@@ -85,7 +91,9 @@ sub tariff_to_json
 										'rateid'=>$record->{'rateid'}, 
 										'costfield'=>$record->{'costfield'}
 										}; 
-		push(@rate_ids, $record->{'rateid'});
+		if($prevunitsstart == $unitsstart){
+			push(@rate_ids, $record->{'rateid'});
+		}
         $prevunitsstart = $unitsstart;
 		$i++;
     }

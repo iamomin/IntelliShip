@@ -141,11 +141,12 @@ sub save_tariff
 	{
 		warn "########## save_tariff";
 		my $self = shift;
-		my ($tariff) = @_;
+		my ($tariff, $info) = @_;
 		
 		my $http_request = {
 			action => 'SaveTariff',
-			tariff => $tariff		
+			tariff => $tariff,
+			info=> $info
 		};
 
 		return $self->APIRequest($http_request);

@@ -60,27 +60,27 @@ var GRID, COLWIDTH;
 function loadServicesTree() {
 	//alert("loadServicesTree");
 	$('#services_tree').on("changed.jstree", function (e, data) {
-	
+
 		if (data.node.original.hasOwnProperty('sid')) {
 			$('#csid').val(data.node.id);
 			getTariff(data.node.id);
 		}
-		
+
 		//alert("DATA: " + JSON.stringify(data.node));
 		var parents = data.node.parents;
 		//alert(parents);
 		var breadcrumbStr = $("#customername").val() + " / ";
-		
-		for(var i = 0; i < parents.length; i++){
+
+		for (var i = 0; i < parents.length; i++) {
 			var parentId = parents[i];
-			if(parentId != "#"){
+			if (parentId != "#") {
 				//alert(JSON.stringify($("#" + parentId)));
 				breadcrumbStr += $("#" + parentId).find("a").first().text() + " / ";
-			}	
+			}
 		}
-		breadcrumbStr += data.node.text; 
-		$('#lbl_breadcrumb').html(breadcrumbStr);			
-	
+		breadcrumbStr += data.node.text;
+		$('#lbl_breadcrumb').html(breadcrumbStr);
+
 	}).jstree({
 		"plugins" : ['themes', 'json_data', 'ui'],
 		"core" : {
@@ -108,6 +108,12 @@ if (!$('#services_tree').html()) {
 	getAllServices();
 }
 
+function loadServiceInfo() {
+	//alert(JSON.stringify(JSON_data));
+	$('#service_acctnum').val(JSON_data['accountnumber']);
+	$('#service_meternum').val(JSON_data['meternumber']);
+}
+
 function loadGrid() {
 	//alert("loadGrid");
 	$('#myGrid').empty();
@@ -123,24 +129,24 @@ function loadGrid() {
 	var columns = [];
 	var headers = JSON_data['headers'];
 	COLWIDTH = 700 / headers.length + 3;
-	
+
 	//Now define your buttonFormatter function
-	var buttonFormatter = function(row,cell,value,columnDef,dataContext){  
-		var button = "<input class='slick-deletebutton' type='button' id='"+ dataContext.id +"' />";
+	var buttonFormatter = function (row, cell, value, columnDef, dataContext) {
+		var button = "<input class='slick-deletebutton' type='button' id='" + dataContext.id + "' />";
 		//the id is so that you can identify the row when the particular button is clicked
 		return button;
 		//Now the row will display your button
 	};
 
 	columns.push({
-		id:"delCol", 
-		field:'del', 
-		name:'', 
-		width: 30, 
-		formatter: buttonFormatter,
-		editable: false
+		id : "delCol",
+		field : 'del',
+		name : '',
+		width : 30,
+		formatter : buttonFormatter,
+		editable : false
 	});
-	
+
 	columns.push({
 		id : "title_wtrange",
 		name : "Wt. Range",
@@ -178,20 +184,21 @@ function loadGrid() {
 	GRID.setSelectionModel(new Slick.CellSelectionModel());
 	//GRID.registerPlugin(checkboxSelector);
 	var columnpicker = new Slick.Controls.ColumnPicker(columns, GRID, options);
-	
+
 	//Now you can use jquery to hook up your delete button event
-$('.slick-deletebutton').click(function(){
-    var me = $(this), id = me.attr('id');
-	window.confirm("Deletes are irrevocable. Do you want to delete " + id + "?");
-    //assuming you have used a dataView to create your grid
-    //also assuming that its variable name is called 'dataView'
-    //use the following code to get the item to be deleted from it
-    //dataView.deleteItem(id);
-    //This is possible because in the formatter we have assigned the row id itself as the button id;
-    //now assuming your grid is called 'grid'
-    //grid.invalidate();        
-});
-	
+	$('.slick-deletebutton').click(function () {
+		var me = $(this),
+		id = me.attr('id');
+		window.confirm("Deletes are irrevocable. Do you want to delete " + id + "?");
+		//assuming you have used a dataView to create your grid
+		//also assuming that its variable name is called 'dataView'
+		//use the following code to get the item to be deleted from it
+		//dataView.deleteItem(id);
+		//This is possible because in the formatter we have assigned the row id itself as the button id;
+		//now assuming your grid is called 'grid'
+		//grid.invalidate();
+	});
+
 }
 
 function getTariff(csid) {
@@ -199,6 +206,7 @@ function getTariff(csid) {
 	var params = 'csid=' + csid;
 	send_ajax_request('', 'JSON', 'settings/tariff', 'get_service_tariff', params, function () {
 		loadGrid();
+		loadServiceInfo();
 		$('#operations').show();
 		$('#serviceIds').show();
 	});
@@ -208,7 +216,13 @@ function extractAndSubmit() {
 	if (window.confirm("Committed changes are irrevocable. Do you want to commit your changes?")) {
 		//alert($('#csid').val());
 		var d = GRID.getData();
-		var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
+		var info = {
+			accountnumber : $('#service_acctnum').val(),
+			meternumber : $('#service_meternum').val(),
+			csid : $('#csid').val()
+		};
+
+		var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d) + "&info=" + JSON.stringify(info);
 		my_ajax_request('settings/tariff/save', params, function () {
 			if (JSON_data.status == "success") {
 				showMessage(JSON_data.message);
@@ -354,7 +368,7 @@ function NumericRangeEditor(args) {
 	};
 
 	this.validate = function () {
-		//alert(JSON.stringify(args.item.rateids));
+		alert(JSON.stringify(args.item.rateids));
 		if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
 			return {
 				valid : false,
@@ -369,42 +383,42 @@ function NumericRangeEditor(args) {
 			};
 		}
 
-		var inRange = function(v, m, M){
+		var inRange = function (v, m, M) {
 			return m <= v && v <= M;
 		};
-		
+
 		var gridData = GRID.getData();
-		for(var key in gridData){
+		for (var key in gridData) {
 			var row = gridData[key];
 			var myRowNum = args.item.rownum;
 			var min = row.wtmin;
 			var max = row.wtmax;
 
-			if(myRowNum > row.rownum && inRange($from.val(), min, max)){
+			if (myRowNum > row.rownum && inRange($from.val(), min, max)) {
 				//alert("Overlapping minimum");
 				return {
 					valid : false,
 					msg : "Overlapping minimum"
 				};
 			}
-			
-			if(myRowNum < row.rownum && inRange($to.val(), min, max)){
+
+			if (myRowNum < row.rownum && inRange($to.val(), min, max)) {
 				//alert("Overlapping maximum");
 				return {
 					valid : false,
 					msg : "Overlapping maximum"
 				};
 			}
-			
-			if($from.val() < min && $to.val() > max){
+
+			if ($from.val() < min && $to.val() > max) {
 				//alert("Range or sub-range is already defined");
 				return {
 					valid : false,
 					msg : "Range or sub-range is already defined"
 				};
 			}
-			
-			if($from.val() > min && $to.val() < max){
+
+			if ($from.val() > min && $to.val() < max) {
 				//alert("Range or super-range is already defined");
 				return {
 					valid : false,
@@ -412,7 +426,7 @@ function NumericRangeEditor(args) {
 				};
 			}
 		}
-		
+
 		return {
 			valid : true,
 			msg : null
@@ -435,17 +449,17 @@ function my_ajax_request(section_value, optional_param, call_back_function) {
 	$('#preload').show();
 
 	var data_string = "ajax=1&eventtimestamp=" + jQuery.now();
-	
+
 	if (optional_param)
 		data_string += '&' + optional_param;
 
-	var request_url = (section_value ? '/customer/' + section_value  : '/customer/ajax');
+	var request_url = (section_value ? '/customer/' + section_value : '/customer/ajax');
 
 	var charPattern = /#/g;
 	if (data_string.match(charPattern)) {
 		data_string = data_string.replace(charPattern, "%23");
 	}
-	
+
 	JSON_data = null;
 	$.ajax({
 		type : "POST",
@@ -473,6 +487,6 @@ function my_ajax_request(section_value, optional_param, call_back_function) {
 			//$('#preload').hide();
 		}
 	});
-	
+
 }
 </script>
