@@ -80,9 +80,9 @@
 			<td><label>Total Packages:</label></td>
 			<td><input type="text" class="bold-text" style="border: none; width: 20px;" id="totalpackages" name="totalpackages" value="1" readonly /></td>
 			<td><label for="insurance">Declared Value:</label></td>
-			<td><input type="text" name="insurance" id="insurance" value="0.00" style="width: 40px;"/></td>
+			<td><input type="text" name="insurance" id="insurance" value="[% insurance ? insurance : '0.00' %]" style="width: 40px;"/></td>
 			<td><label for="freightinsurance">Freight Insurance:</label></td>
-			<td><input type="text" name="freightinsurance" id="freightinsurance" value="0.00" style="width: 40px;"/></td>
+			<td><input type="text" name="freightinsurance" id="freightinsurance" value="[% freightinsurance ? freightinsurance : '0.00' %]" style="width: 40px;"/></td>
 		</tr>
 	</table>
 	<br>

@@ -449,7 +449,7 @@
 		<form id="frm_next" action="/customer/order/ajax" method="post">
 			<input type="hidden" name="ajax" value="1"/>
 			<input type="hidden" name="type" value="HTML"/>
-			[% IF defaultcomminv %]<input type="hidden" name="action" value="generate_commercial_invoice"/>[% END %]
+			[% IF printcominv %]<input type="hidden" name="action" value="generate_commercial_invoice"/>[% END %]
 
 			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>

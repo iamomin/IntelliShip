@@ -10,19 +10,16 @@
 		<tr>
 			<td><label for="termsofsale">Terms of Sale:</label><br/>
 			<select name="termsofsale" id="termsofsale">
-				<option selected value=1>FOB/FCA</option>
-				<option value=2>CIF/CIP</option>
-				<option value=3>C&F/CPT</option>
-				<option value=4>EXW</option>
-				<option value=5>DDU</option>
-				<option value=6>DDP</option>
+				[% FOREACH item IN termsofsalelist_loop %]
+					<option value="[% item.value %]"[% (termsofsale == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
+				[% END %]
 			</select>
 			</td>
 			<td><label for="dutypaytype">Duties Pay Type:</label><br/>
 			<select name="dutypaytype" id="dutypaytype">
-				<option selected value=1>Bill</option>
-				<option value=2>Bill Recipient</option>
-				<option value=3>Bill Third Party</option>
+				[% FOREACH item IN dutypaytypelist_loop %]
+					<option value="[% item.value %]"[% (dutypaytype == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
+				[% END %]
 			</select>
 			</td>
 		</tr>
@@ -47,9 +44,9 @@
 			</select>
 			</td>
 			<td>
-			<label><input type="checkbox" name="partiestotransaction" id="partiestotransaction" value="1"/><span><label for="partiestotransaction">Related Parties</label></span></label>
+			<label><input type="checkbox" name="partiestotransaction" id="partiestotransaction" value="1" [% IF partiestotransaction %]CHECKED[% END %]/><span><label for="partiestotransaction">Related Parties</label></span></label>
 			<br/>
-			<label><input type="checkbox" name="printcominv" id="printcominv" value="1"/><span><label for="printcominv">Print Commercial Invoice</label></span></label>
+			<label><input type="checkbox" name="printcominv" id="printcominv" value="1" [% printcominv ? 'CHECKED' : ''%]/><span><label for="printcominv">Print Commercial Invoice</label></span></label>
 			</td>
 		</tr>
 		</table>
@@ -59,15 +56,10 @@
 		<caption>COMMODITY</caption>
 		<tr>
 			<td><label for="commodityquantity">Piece Count:</label><br/>
-			<select name="commodityquantity" id="commodityquantity">
-				<option selected value=""></option>
-				<option value="10">10</option>
-				<option value="20">20</option>
-				<option value="30">30</option>
-			</select>
+			<input type="text" name="commodityquantity" id="commodityquantity" value = "[% commodityquantity %]"/>
 			</td>
 			<td><label for="harmonizedcode">Harmonized Code:</label><br/>
-			<input type="text" name="harmonizedcode" id="harmonizedcode"/>
+			<input type="text" name="harmonizedcode" id="harmonizedcode" value="[% harmonizedcode %]"/>
 			</td>
 		</tr>
 		<tr>
@@ -99,11 +91,6 @@
 	</td>
 	</tr>
 	</table>
-	<script>
-		$("#termsofsale").val("[% termsofsale %]");
-		$("#dutypaytype").val("[% dutypaytype %]");
-		$("#commodityquantity").val("[% commodityquantity %]");
-	</script>
 
 [% END %]
 

@@ -182,22 +182,26 @@ sub set_international_details
 
 	$c->stash->{INTERNATIONAL} = 1;
 
-	$c->stash->{countrylist_loop}   = $self->get_select_list('COUNTRY');
-	$c->stash->{currencylist_loop}  = $self->get_select_list('CURRENCY');
-	$c->stash->{dimentionlist_loop} = $self->get_select_list('UNIT_OF_MEASURE');
+	$c->stash->{countrylist_loop}     = $self->get_select_list('COUNTRY');
+	$c->stash->{currencylist_loop}    = $self->get_select_list('CURRENCY');
+	$c->stash->{dimentionlist_loop}   = $self->get_select_list('UNIT_OF_MEASURE');
+	$c->stash->{termsofsalelist_loop} = $self->get_select_list('TERMS_OF_SALE_LIST');
+	$c->stash->{dutypaytypelist_loop} = $self->get_select_list('DUTY_PAY_TYPE_LIST');
 
-	$c->stash->{termsofsale}          = $CO->termsofsale;
-	$c->stash->{dutyaccount}          = $CO->dutyaccount;
-	$c->stash->{dutypaytype}          = $CO->dutypaytype;
-	$c->stash->{manufacturecountry}   = $CO->manufacturecountry ? $CO->manufacturecountry : "US";
-	$c->stash->{destinationcountry}   = $CO->destinationcountry ? $CO->destinationcountry : "US";
-	$c->stash->{partiestotransaction} = $CO->partiestotransaction;
+	$c->stash->{termsofsale}           = $CO->termsofsale;
+	$c->stash->{dutyaccount}           = $CO->dutyaccount;
+	$c->stash->{dutypaytype}           = $CO->dutypaytype;
+	$c->stash->{manufacturecountry}    = $CO->manufacturecountry ? $CO->manufacturecountry : "US";
+	$c->stash->{destinationcountry}    = $CO->destinationcountry ? $CO->destinationcountry : "US";
+	$c->stash->{partiestotransaction}  = $CO->partiestotransaction;
 
-	$c->stash->{commodityquantity}     = $CO->commodityquantity ? $CO->commodityquantity :"0.00" ;
+	$c->stash->{commodityquantity}     = $CO->commodityquantity;
 	$c->stash->{commodityunits}        = $CO->commodityunits ? $CO->commodityunits : "PCS" ;
 	$c->stash->{commoditycustomsvalue} = $CO->commoditycustomsvalue ? $CO->commoditycustomsvalue :"0.00";
-	$c->stash->{commodityunitvalue}    = $CO->commodityunitvalue;
+	$c->stash->{commodityunitvalue}    = $CO->commodityunitvalue ? $CO->commodityunitvalue :"0.00";
 	$c->stash->{currencytype}          = $CO->currencytype ? $CO->currencytype : "USD";
+
+	$c->stash->{printcominv}           = $self->contact->get_contact_data_value('defaultcomminv');
 	}
 
 sub get_special_service_list

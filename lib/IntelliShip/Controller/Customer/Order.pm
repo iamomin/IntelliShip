@@ -1069,7 +1069,7 @@ sub populate_order :Private
 		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total No of packages  " . @$packages);
 
-		my $rownum_id = 0;
+		my ($rownum_id,$insurance,$freightinsurance) = (0,0,0);
 		my $package_detail_section_html;
 		foreach my $Package (@$packages)
 			{
@@ -1084,7 +1084,13 @@ sub populate_order :Private
 				$rownum_id++;
 				$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
 				}
+
+			$insurance += $Package->decval;
+			$freightinsurance += $Package->frtins;
 			}
+
+		$c->stash->{insurance} = $insurance;
+		$c->stash->{freightinsurance} = $freightinsurance;
 
 		## Don't move this above foreach block
 		$c->stash->{description} = $CO->description;
@@ -1934,7 +1940,7 @@ sub setup_label_to_print
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
 	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
 	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
-	$c->stash->{defaultcomminv}    = $self->contact->get_contact_data_value('defaultcomminv');
+	$c->stash->{printcominv}       = $self->contact->get_contact_data_value('defaultcomminv');
 
 	unless (-e $label_file)
 		{
@@ -3171,9 +3177,9 @@ sub generate_packing_list
 
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
-	$c->stash->{defaultcomminv}    = $self->contact->get_contact_data_value('defaultcomminv');
+	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcountthermal');
+	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{printcominv}  = $self->contact->get_contact_data_value('defaultcomminv');
 
 	$c->stash(template => "templates/customer/order-packing-list.tt");
 
@@ -3548,7 +3554,7 @@ sub generate_bill_of_lading
 		$dataHash->{'bolstring'} = $BOL_HTML;
 		}
 
-	$c->stash->{defaultcomminv} = $self->contact->get_contact_data_value('defaultcomminv');
+	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv');
 
 	$c->stash(template => "templates/customer/order-bol.tt");
 

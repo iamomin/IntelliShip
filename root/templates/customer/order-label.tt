@@ -15,7 +15,7 @@
 	<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
 	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
 	<input type="hidden" id="billoflading" name="billoflading" value="[% billoflading %]"/>
-	<input type="hidden" id="defaultcomminv" name="defaultcomminv" value="[% defaultcomminv %]"/>
+	<input type="hidden" id="printcominv" name="printcominv" value="[% printcominv %]"/>
 
 	<div id='wbdiv' style='display:none'>
 		<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>
@@ -236,7 +236,7 @@
 		{
 		if ($('#printpackinglist').val() == 1) PrintFormSequence_[% shipmentid %].push(GeneratePrintPackingList);
 		if ($('#billoflading').val() == 1)     PrintFormSequence_[% shipmentid %].push(GenerateBillOfLading);
-		if ($('#defaultcomminv').val() == 1)   PrintFormSequence_[% shipmentid %].push(GenerateCommercialInvoice);
+		if ($('#printcominv').val() == 1)   PrintFormSequence_[% shipmentid %].push(GenerateCommercialInvoice);
 
 		PrintFormSequence_[% shipmentid %].push(MarkShipmentAsPrinted);
 

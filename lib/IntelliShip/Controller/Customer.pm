@@ -993,6 +993,25 @@ sub get_select_list
 			{ name => 'USPS'	, value => IntelliShip::Utils->get_tracking_URL('USPS', 'XXXX') },
 			];
 		}
+	elsif ($list_name eq 'TERMS_OF_SALE_LIST')
+		{
+		$list = [
+			{ name => 'FOB/FCA' , value => '1' },
+			{ name => 'CIF/CIP',  value => '2' },
+			{ name => 'C&F/CPT',  value => '3' },
+			{ name => 'EXW',      value => '4' },
+			{ name => 'DDU',      value => '5' },
+			{ name => 'DDP',      value => '6' },
+			];
+		}
+	elsif ($list_name eq 'DUTY_PAY_TYPE_LIST')
+		{
+		$list = [
+			{ name => 'Bill' ,            value => '1' },
+			{ name => 'Bill Recipient',   value => '2' },
+			{ name => 'Bill Third Party', value => '3' },
+			];
+		}
 
 	return $list;
 	}

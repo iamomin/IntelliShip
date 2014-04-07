@@ -241,7 +241,7 @@
 			[% IF billoflading %]
 			<input type="hidden" name="action" value="generate_bill_of_lading"/>
 			[% ELSE %]
-				[% IF defaultcomminv %]
+				[% IF printcominv %]
 			<input type="hidden" name="action" value="generate_commercial_invoice"/>
 				[% END %]
 			[% END %]
