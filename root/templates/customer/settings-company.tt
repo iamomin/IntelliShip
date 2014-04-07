@@ -152,17 +152,18 @@
 
 		<div id="company-settings">
 			<ul>
-			   <li><a href="#company-profile">Profile</a></li>
-			   <li><a href="#company-rules">Rules</a></li>
-                           <li><a href="#company-settings">Default Settings</a></li>
-			   <li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
-                           [% IF NOT READONLY %]<li><a id="tariff-pricing-tab" href="#tariff-pricing">Tariff Pricing</a></li>[% END %]
+				<li><a id="company-profile-tab"  href="#company-profile">Profile</a></li>
+				<li><a id="company-rules-tab"    href="#company-rules">Rules</a></li>
+				<li><a id="company-settings-tab" href="#company-settings">Default Settings</a></li>
+				<li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
+				<li><a id="company-branding-tab" href="#company-branding">Branding</a></li>
+				<li><a id="tariff-pricing-tab"   href="#tariff-pricing">Tariff Pricing</a></li>
 			</ul>
-            <div id="company-profile">
+			<div id="company-profile">
 				<table class="center-app">
 					<tr>
 						<td><label class="float-right" for="customerid">Company ID:</label></td>
-                        <td>[% customerid %]</td>
+						<td>[% customerid %]</td>
 
 						<td><label class="float-right" for="phone">Phone:</label></td>
 						<td><input type="text" class="broad-text" name="phone" id="phone" value="[% phone %]"></td>
@@ -177,10 +178,10 @@
 					<tr>
 						<td><label class="float-right" for="username">User Name:</label></td>
 						<td>
-							[% IF READONLY %]
-								[% username %]
-							[% ELSE %]
+							[% IF SUPER_USER %]
 								<input type="text" name="username" id="username" value="[% username %]" class="broad-text" onchange="validateCustomerUsername();">
+							[% ELSE %]
+								[% username %]
 							[% END %]
 						</td>
 						<td><label class="float-right" for="fax">Fax:</label></td>
@@ -189,10 +190,10 @@
 					<tr>
 						<td><label class="float-right" for="password">Password:</label></td>
 						<td>
-							[%IF READONLY %]
-								[%password%]
-							[%ELSE%]
+							[%IF SUPER_USER %]
 								<input type="text" class="broad-text" name="password" id="password" value="[% password %]"/>
+							[%ELSE%]
+								[%password%]
 							[%END%]
 						</td>
 						<td><label class="float-right" for="ssnein">EIN:</label></td>
@@ -281,6 +282,12 @@
 						<td></td>
 					</tr>
 				</table>
+
+				<center>
+					<input type="submit" class="green" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />
+					&nbsp;&nbsp;
+					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
+				</center>
 			</div>
 			<div id="company-rules">
 				<table class="center-app css3-checkboxes">
@@ -303,6 +310,12 @@
 						[% END %]
 					</tr>
 				</table>
+
+				<center>
+					<input type="submit" class="green" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />
+					&nbsp;&nbsp;
+					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
+				</center>
 			</div>
 			<div id="company-settings">
 				<table class="center-app">
@@ -635,12 +648,17 @@
 						<td></td>
 					</tr>
 				</table>
+
+				<center>
+					<input type="submit" class="green" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />
+					&nbsp;&nbsp;
+					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
+				</center>
 			</div>
 			<div id="company-contacts"></div>
-                        [% IF NOT READONLY %]<div id="tariff-pricing"></div>[% END %]
+			<div id="company-branding"><div class="notice">Under construction...</div></div>
+			<div id="tariff-pricing"></div>
 		</div>
-
-		<center><input type="submit" class="green" id="update_customer" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />&nbsp;&nbsp;<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></center>
 	</form>
 
 	<script>
@@ -667,23 +685,23 @@
 	$("#frm_setup_customer").submit(function () {
 		var requireHash = {
 			customername : { minlength: 1,		description: "Please specify customer name" },
-			username     : { minlength: 1,		description: "Please specify username" },
-			password     : { minlength: 6,		description: "Please specify password" },
-			address1     : { minlength: 1,		description: "Please specify address" },
-			city         : { minlength: 1,		description: "Please specify city" },
-			state        : { minlength: 1,		description: "Please specify state" },
-			zip          : { minlength: 5,		description: "Please specify zip" },
+			username	 : { minlength: 1,		description: "Please specify username" },
+			password	 : { minlength: 6,		description: "Please specify password" },
+			address1	 : { minlength: 1,		description: "Please specify address" },
+			city		 : { minlength: 1,		description: "Please specify city" },
+			state		: { minlength: 1,		description: "Please specify state" },
+			zip		  : { minlength: 5,		description: "Please specify zip" },
 			phone		 : { phone	  : false,	description: "Please specify phone" },
-			email		 : { email    : false,	description: "Please specify email" },
-			fax			 : { phone    : false,	description: "Please specify fax" },
+			email		 : { email	: false,	description: "Please specify email" },
+			fax			 : { phone	: false,	description: "Please specify fax" },
 			};
 
 		if (validateForm(requireHash)) {
 			$("#company-contacts-tab").tabs({ disabled: true });
 			$("#company-settings" ).tabs({ disabled: true });
 			$('#company-contacts').html('');
-			$("#update_customer").val("Please Wait...");
-			$("#update_customer").attr("disabled", true);
+			//$("#update_customer").val("Please Wait...");
+			//$("#update_customer").attr("disabled", true);
 			return true;
 			} else {
 			return false;
@@ -693,40 +711,22 @@
 	$("#phone").mask("999-999-9999");
 	$("#fax").mask("999-999-9999");
 
-	$(document).ready(function(){
-		$("#update_customer").attr("disabled", false);
-		});
-		
 	$("#company-contacts-tab").click(function() {
-		if($("#company-contacts").html().length == 0){
+		if($("#company-contacts").html().length == 0) {
 			$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
-			getCustomerContacts();
+			var params = 'customerid='+$("#customerid").val();
+			send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
 			}
 		});
 
-        
-
-	function getCustomerContacts()
-		{
-		var params = 'customerid='+$("#customerid").val();
-		send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
-		}
-        [% IF NOT READONLY %]
-        $("#tariff-pricing-tab").click(function() {            
-               
-		if($("#tariff-pricing").html().length == 0){
+	$("#tariff-pricing-tab").click(function() {
+		if($("#tariff-pricing").html().length == 0) {
 			$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
-			getTariff();
+			var params = 'customerid='+$("#customerid").val();
+			send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
 			}
-                        
 		});
 
-        function getTariff()
-		{
-		var params = 'customerid='+$("#customerid").val();
-		send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
-		}
-        [% END %]
 	</script>
 
 	[% END %]
@@ -750,7 +750,7 @@
 
 	[% UNLESS ajax %]<div id="divContactList">[% END %]
 		[% IF SHOW_PAGINATION %]
-		<table class="float-right"><tr>			
+		<table class="float-right"><tr>
 			<td><input type="button" class="green" name ="contact_add" id="contact_add" value="Add Contact" onclick="addContact();" /></td>
 			<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 			<td>

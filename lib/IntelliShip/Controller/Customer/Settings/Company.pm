@@ -162,10 +162,9 @@ sub setup :Local
 	$c->stash->{markuptype_loop}         = $self->get_select_list('MARKUP_TYPE');
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 
-	my $Contact = $self->contact;
-	$c->stash->{READONLY} =1 unless $self->contact->is_superuser;
+	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 
-	$c->stash->{SETUP_CUSTOMER}          = 1;
+	$c->stash->{SETUP_CUSTOMER} = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
 	$c->stash->{template} = "templates/customer/settings-company.tt";
 	}

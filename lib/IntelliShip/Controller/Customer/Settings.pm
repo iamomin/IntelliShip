@@ -648,8 +648,10 @@ sub contactinformation :Local
 		$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
-		$c->stash->{READONLY} = 1 unless $self->contact->is_superuser;
+		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
+
 		$self->set_required_fields;
+
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
@@ -658,13 +660,11 @@ sub contactinformation :Local
 sub set_required_fields :Private
 	{
 	my $self = shift;
-	my $Contact = $self->contact;
 	my $c = $self->context;
-
 
 	my $requiredList = [];
 
-	if ($Contact->is_superuser)
+	if ($self->contact->is_superuser)
 		{
 		push(@$requiredList, { name => 'phonebusiness',	details => "{ phone: false }"});
 		push(@$requiredList, { name => 'phonemobile',	details => "{ phone: false }"});
@@ -672,8 +672,8 @@ sub set_required_fields :Private
 	else
 		{
 		$requiredList = [
-			{ name => 'phonebusiness',	  details => "{ phone: true }"},
-			{ name => 'phonemobile',	  details => "{ phone: true }"},
+			{ name => 'phonebusiness',    details => "{ phone: true }"},
+			{ name => 'phonemobile',      details => "{ phone: true }"},
 			{ name => 'contact_address1', details => "{ minlength: 2 }"},
 			{ name => 'contact_city',     details => " { minlength: 2 }"},
 			{ name => 'contact_state',    details => "{ minlength: 2 }"},
@@ -682,13 +682,12 @@ sub set_required_fields :Private
 			];
 		}
 
-	push(@$requiredList, { name => 'contact_username',	details => "{ minlength: 1 }"});
-	push(@$requiredList, { name => 'contact_password',	details => "{ minlength: 6 }"});
-	push(@$requiredList, { name => 'phonehome',			details => "{ phone: false }"});
-	push(@$requiredList, { name => 'contact_email',     details => "{ email: false }"});
-	push(@$requiredList, { name => 'contact_fax',		details => "{ phone: false }"});
+	push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"});
+	push(@$requiredList, { name => 'contact_password', details => "{ minlength: 6 }"});
+	push(@$requiredList, { name => 'phonehome',        details => "{ phone: false }"});
+	push(@$requiredList, { name => 'contact_email',    details => "{ email: false }"});
+	push(@$requiredList, { name => 'contact_fax',      details => "{ phone: false }"});
 
-	$c->log->debug("requiredfield_list: " . Dumper $requiredList);
 	$c->stash->{requiredfield_list} = $requiredList;
 	}
 
