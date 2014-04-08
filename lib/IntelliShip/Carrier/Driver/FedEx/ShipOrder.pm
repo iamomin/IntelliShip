@@ -208,10 +208,10 @@ sub process_request
 	$ShipData{'50'} = $shipmentData->{'addresscountry'}; #Recipient Country Code
 
 	# FedEx says is obsolete (201211112)
-	##if ($shipmentData->{'international'})
-	##	{
-	##	$ShipData{'1349'} = "S";
-	##	}
+	if ($shipmentData->{'international'})
+		{
+		$ShipData{'1349'} = "S";
+		}
 
 	# International Heavy
 	$ShipData{'1271'} = $shipmentData->{'slac'}; # SLAC

@@ -680,52 +680,56 @@
 			});
 		}
 
-	$( "#company-settings" ).tabs();
-
-	$("#frm_setup_customer").submit(function () {
-		var requireHash = {
-			customername : { minlength: 1,		description: "Please specify customer name" },
-			username	 : { minlength: 1,		description: "Please specify username" },
-			password	 : { minlength: 6,		description: "Please specify password" },
-			address1	 : { minlength: 1,		description: "Please specify address" },
-			city		 : { minlength: 1,		description: "Please specify city" },
-			state		: { minlength: 1,		description: "Please specify state" },
-			zip		  : { minlength: 5,		description: "Please specify zip" },
-			phone		 : { phone	  : false,	description: "Please specify phone" },
-			email		 : { email	: false,	description: "Please specify email" },
-			fax			 : { phone	: false,	description: "Please specify fax" },
-			};
-
-		if (validateForm(requireHash)) {
-			$("#company-contacts-tab").tabs({ disabled: true });
-			$("#company-settings" ).tabs({ disabled: true });
-			$('#company-contacts').html('');
-			//$("#update_customer").val("Please Wait...");
-			//$("#update_customer").attr("disabled", true);
-			return true;
-			} else {
-			return false;
-			}
-		});
-
-	$("#phone").mask("999-999-9999");
-	$("#fax").mask("999-999-9999");
-
-	$("#company-contacts-tab").click(function() {
-		if($("#company-contacts").html().length == 0) {
-			$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
+		function displayCustomerContacts() {
 			var params = 'customerid='+$("#customerid").val();
 			send_ajax_request('company-contacts', 'HTML', 'settings/company', 'get_customer_contacts', params);
 			}
-		});
 
-	$("#tariff-pricing-tab").click(function() {
-		if($("#tariff-pricing").html().length == 0) {
-			$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
-			var params = 'customerid='+$("#customerid").val();
-			send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
-			}
-		});
+		$( "#company-settings" ).tabs();
+
+		$("#frm_setup_customer").submit(function () {
+			var requireHash = {
+				customername : { minlength: 1,		description: "Please specify customer name" },
+				username	 : { minlength: 1,		description: "Please specify username" },
+				password	 : { minlength: 6,		description: "Please specify password" },
+				address1	 : { minlength: 1,		description: "Please specify address" },
+				city		 : { minlength: 1,		description: "Please specify city" },
+				state		: { minlength: 1,		description: "Please specify state" },
+				zip		  : { minlength: 5,		description: "Please specify zip" },
+				phone		 : { phone	  : false,	description: "Please specify phone" },
+				email		 : { email	: false,	description: "Please specify email" },
+				fax			 : { phone	: false,	description: "Please specify fax" },
+				};
+
+			if (validateForm(requireHash)) {
+				$("#company-contacts-tab").tabs({ disabled: true });
+				$("#company-settings" ).tabs({ disabled: true });
+				$('#company-contacts').html('');
+				//$("#update_customer").val("Please Wait...");
+				//$("#update_customer").attr("disabled", true);
+				return true;
+				} else {
+				return false;
+				}
+			});
+
+		$("#phone").mask("999-999-9999");
+		$("#fax").mask("999-999-9999");
+
+		$("#company-contacts-tab").click(function() {
+			if($("#company-contacts").html().length == 0) {
+				$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
+				displayCustomerContacts();
+				}
+			});
+
+		$("#tariff-pricing-tab").click(function() {
+			if($("#tariff-pricing").html().length == 0) {
+				$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
+				var params = 'customerid='+$("#customerid").val();
+				send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
+				}
+			});
 
 	</script>
 

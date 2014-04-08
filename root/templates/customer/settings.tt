@@ -786,7 +786,7 @@ $(document).ready(function(){
 		<center>
 			<input type="button" class="green" id="update_contact" value="[% IF contactInfo.contactid %] Update [% ELSE %] Add [% END %] Contact" onclick="updateContact();"/>
 			&nbsp;&nbsp;
-			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %] "getCustomerContacts();" [% ELSE %] javascript:history.back(); [% END %]/>
+			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %]"displayCustomerContacts();"[% ELSE %]javascript:history.back();[% END %]/>
 		</center>
 	</form>
 
