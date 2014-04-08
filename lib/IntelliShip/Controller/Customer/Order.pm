@@ -348,7 +348,7 @@ sub save_CO_details :Private
 	$coData->{'custref2'} = $params->{'custref2'} if $params->{'custref2'};
 	$coData->{'custref3'} = $params->{'custref3'} if $params->{'custref3'};
 	$coData->{'description'} = $params->{'description'} if $params->{'description'};
-	#$coData->{'extcd'} = $params->{'comments'};
+	$coData->{'extcd'} = $params->{'description'};
 	$coData->{'extloginid'} = $self->customer->username;
 	$coData->{'contactname'} = $params->{'tocontact'} if $params->{'tocontact'};
 
@@ -419,6 +419,7 @@ sub save_CO_details :Private
 	$coData->{'dimlength'} = $params->{'dimlength_1'} if $params->{'dimlength_1'};
 	$coData->{'dimwidth'} = $params->{'dimwidth_1'} if $params->{'dimwidth_1'};
 	$coData->{'dimheight'} = $params->{'dimheight_1'} if $params->{'dimheight_1'};
+	$coData->{'estimatedinsurance'} = $params->{'insurance'};
 
 	## International
 	$coData->{'termsofsale'} = $params->{'termsofsale'} if $params->{'termsofsale'};
@@ -2581,11 +2582,7 @@ sub LoadInternationalDefaults
 	$params->{'manufacturecountry'} = $params->{'manufacturecountry'} ? $params->{'manufacturecountry'} :$FromAddress->country;
 	$params->{'harmonizedcode'} = $params->{'harmonizedcode'} ? $params->{'harmonizedcode'} : $params->{'exthsc'};
 
-	if( defined($params->{'extcd'}) && $params->{'extcd'} ne '' )
-		{
-		$params->{'customsdescription'} = $params->{'extcd'};
-		}
-
+	$params->{'customsdescription'} = $CO->extcd if !$params->{'customsdescription'} and $CO->extcd;
 	$params->{'commoditycustomsvalue'} = $params->{'commoditycustomsvalue'} ? $params->{'commoditycustomsvalue'} : $CO->estimatedinsurance;
 	$params->{'commodityweight'} = $params->{'enteredweight'};
 	$params->{'slac'} = $params->{'slac'} ? $params->{'slac'} : $params->{'commodityquantity'};
