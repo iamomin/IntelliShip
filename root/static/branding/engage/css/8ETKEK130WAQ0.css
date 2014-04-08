@@ -1,22 +1,51 @@
 #header{
     background:#fff;
 }
-#header #settings img{
+#header #settings img{ /* Gear */
     border:1px solid #ddd;
     border-radius:15px 15px;
 }
-#header input[type="text"]{
+#header input[type="text"]{/* Search Box - which seems to have been removed*/
     border:1px solid #ddd;
     box-sizing:border-box;
     -moz-box-sizing:border-box;
     padding-left:9px;
 }
-nav a span, nav ul ul li a, h2, h1, table.app caption{
-    color:#220c00;
+nav a span, nav ul ul li a, h2, h1, table.app caption, input[type=button].active{
+    color:#220c00; /* Title Text color */
 }
-h1, table.app caption{
-    background-color:#ffdd05;
+h1, table.app caption, 
+.solid-line, input[type=button].active{
+    background-color:#ffdd05; /*  Primary Accent Color  */
 }
-#header input[type="button"]{
-    background-color:#220c00
+input[type=button].active{
+    border-color:#ffdd05; /* this should be the same as the primary accent color */
+}
+#header input[type=button]{
+    background-color:#220c00;
+}
+.order-nav tbody tr td div img{ /*  Ship A Package Step Arrow - this is going to change */
+    border: 15px solid #ffdd05; /* this should be the same as the primary accent color */
+    border-radius: 15px;
+    -moz-border-radius: 15px;
+    -webkit-border-radius: 15px;
+    -o-border-radius: 15px;
+    display: block;
+    color:#fff;
+    float: left;
+    height: 0;
+    width: 0;
+    z-index: 1;
+}
+table.shipment-filter td{
+    color:#1875BA; /* Filter button text color - I don't necessarily agree that this should be the same as the header color, but here it is for you to play with'*/
+}
+input.inactive {
+    background:#98A7AF; /* Secondary accent color */
+}
+#menu a.selected{
+    background:#98A7AF; /* Current Page Nav Color */
+}
+#menu a{
+    color:#98A7AF; /* inactive header-nav link text - this may or may not be the same as the secondary accent color */
 }
