@@ -49,7 +49,7 @@
 						</tr>
 						<tr>
 							<td>City/State/Zip</td>
-							<td>[% branchcity %], [% branchstate %] [% branchzip %]</td>
+							<td>[% branchaddresscity %], [% branchaddressstate %] [% branchaddresszip %]</td>
 						</tr>
 						<tr>
 							<td>Phone:</td>
@@ -152,8 +152,6 @@
 						<tr>
 							<td colspan="4">Grand Total</td>
 							<td>[% packagetotalquantity %]</td>
-							<td></td>
-							<td></td>
 							<td>[% packagetotalweight %]</td>
 						</tr>
 					</tfoot>
@@ -161,47 +159,14 @@
 						<!-- Product Entries-->
 						[% FOREACH item IN bol_packagelist_loop %]
 						<tr>
-							<td width="8%" align="[% item.datatypeid == 2000 ? 'right' : 'center' %]">
-								<font size="1" face="Arial, Helvetica, sans-serif">
-									&nbsp;[% item.quantity %]&nbsp;
-								</font>
-							</td>
-							<td width="6%" align="center">
-								<font face="Arial, Helvetica, sans-serif" size="1">
-									<input type="checkbox" name="hazardous" value="hazardous" [% item.hazardcheck %]>
-								</font>
-							</td>
-							<td width="9%">
-								<font size="1" face="Arial, Helvetica, sans-serif">
-									&nbsp;[% item.unittype %]
-								</font>
-							</td>
-							<td width="47%">
-								<font face="Arial, Helvetica, sans-serif" size="1">
-									&nbsp;[% item.description %]
-								</font>
-							</td>
-							<td width="5%" align=center>
-								<font face="Arial, Helvetica, sans-serif" size="1">
-									&nbsp;[% item.dims %]
-								</font>
-							</td>
-							<td width="6%" align="[% item.datatypeid == 2000 ? 'right' : 'center' %]">
-								<font face="Arial, Helvetica, sans-serif" size="1">
-									&nbsp;[% item.weight %]&nbsp;
-								</font>
-							</td>
-							<td width="10%" align=center>
-								<font face="Arial, Helvetica, sans-serif" size="1">
-									&nbsp;[% item.freightclass %]&nbsp;
-								</font>
-							</td>
-							<td width="9%">
-								&nbsp;
-							</td>
+							<td>[% loop.count %]</td>
+							<td>[% item.description %]</td>
+							<td>[% item.nmfc %]</td>
+							<td>[% item.class %]</td>
+							<td colspan=3>[% item.quantity %]&nbsp;[% item.unittype %]</td>
+							<td>[% item.weight %]</td>
 						</tr>
 						[% END %]
-
 						<!-- Product Entries-->
 					</tbody>
 				</table>

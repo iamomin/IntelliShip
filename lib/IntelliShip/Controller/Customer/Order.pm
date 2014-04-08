@@ -3391,12 +3391,12 @@ sub generate_bill_of_lading
 	## Billing Address
 	if ($bol_type =~ /bolvisionship/)
 		{
-		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->custmerid);
+		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->customerid);
 		my $BillingAddressInfo = $self->GetBillingAddressInfo(
 				$Shipment->customerserviceid,
 				undef,
 				undef,
-				$Customer->custmerid,
+				$Customer->customerid,
 				$Shipment->billingaccount,
 				$Shipment->freightcharges,
 				$Shipment->addressiddestin,
@@ -3426,7 +3426,7 @@ sub generate_bill_of_lading
 				$Shipment->customerserviceid,
 				undef,
 				undef,
-				$Customer->custmerid,
+				$Customer->customerid,
 				$Shipment->billingaccount,
 				$Shipment->freightcharges,
 				$Shipment->addressiddestin
