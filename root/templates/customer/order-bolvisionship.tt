@@ -144,7 +144,7 @@
 							<th>Product Description</th>
 							<th>NMFC#</th>
 							<th>Class</th>
-							<th colspan=3># Units</th>
+							<th># Units</th>
 							<th>Weight</th>
 						</tr>
 					</thead>
@@ -163,7 +163,7 @@
 							<td>[% item.description %]</td>
 							<td>[% item.nmfc %]</td>
 							<td>[% item.class %]</td>
-							<td colspan=3>[% item.quantity %]&nbsp;[% item.unittype %]</td>
+							<td>[% item.quantity %]&nbsp;[% item.unittype %]</td>
 							<td>[% item.weight %]</td>
 						</tr>
 						[% END %]
