@@ -1938,8 +1938,7 @@ sub setup_label_to_print
 	$c->stash($params);
 	$c->stash($Shipment->{_column_data});
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcountthermal');
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('print8_5x11bol');
 	$c->stash->{printcominv}       = $self->contact->get_contact_data_value('defaultcomminv');
 
 	unless (-e $label_file)
@@ -3177,8 +3176,7 @@ sub generate_packing_list
 
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
-	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcountthermal');
-	$c->stash->{billoflading} = $self->contact->get_contact_data_value('bolcount8_5x11');
+	$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
 	$c->stash->{printcominv}  = $self->contact->get_contact_data_value('defaultcomminv');
 
 	$c->stash(template => "templates/customer/order-packing-list.tt");
@@ -3388,8 +3386,41 @@ sub generate_bill_of_lading
 		$dataHash->{'branchaddresscountry'} = $OriginatingAddress->country;
 		}
 
+	my $bol_type = $self->contact->get_contact_data_value('boltype');
+
 	## Billing Address
-	if ($Shipment->freightcharges == 1 or $Shipment->freightcharges == 2)
+	if ($bol_type =~ /bolvisionship/)
+		{
+		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->custmerid);
+		my $BillingAddressInfo = $self->GetBillingAddressInfo(
+				$Shipment->customerserviceid,
+				undef,
+				undef,
+				$Customer->custmerid,
+				$Shipment->billingaccount,
+				$Shipment->freightcharges,
+				$Shipment->addressiddestin,
+				undef,
+				$CSValueRef->{'baaddressid'}
+				);
+
+		if ($BillingAddressInfo)
+			{
+			$dataHash->{'billingname'}     = uc $BillingAddressInfo->{'addressname'};
+			$dataHash->{'billingaddress1'} = uc $BillingAddressInfo->{'address1'};
+			$dataHash->{'billingaddress2'} = uc $BillingAddressInfo->{'address2'};
+			$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
+			$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
+			$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
+			}
+
+		my $CSRef = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+		my $SRef  = $self->API->get_hashref('SERVICE',$CSRef->{'serviceid'});
+		my $CARef = $self->API->get_hashref('CARRIER',$SRef->{'carrierid'});
+
+		$dataHash->{'scac'} = $CARef->{'scac'};
+		}
+	elsif ($Shipment->freightcharges == 1 or $Shipment->freightcharges == 2)
 		{
 		my $BillingAddressInfo = $self->GetBillingAddressInfo(
 				$Shipment->customerserviceid,
@@ -3556,7 +3587,7 @@ sub generate_bill_of_lading
 
 	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv');
 
-	$c->stash(template => "templates/customer/order-bol.tt");
+	$c->stash(template => "templates/customer/order-" . $bol_type . ".tt");
 
 	return $BOL_HTML;
 	}

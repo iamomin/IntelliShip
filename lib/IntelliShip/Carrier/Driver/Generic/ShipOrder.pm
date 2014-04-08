@@ -71,6 +71,16 @@ sub process_request
 		$self->model('MyDBI::Note')->new($noteData)->insert;
 		}
 
+	my $PrinterString = $self->BuildPrinterString($Shipment,$shipmentData);
+	$self->response->printer_string($PrinterString);
+	}
+
+sub BuildPrinterString
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $shipmentData = shift;
+
 	my @packages = $Shipment->packages;
 	my ($package_count,$current_count,$PrinterString) = (0,1,'');
 	$package_count += $_->quantity foreach @packages;
@@ -87,7 +97,9 @@ sub process_request
 			}
 		}
 
-	$self->response->printer_string($PrinterString);
+	$PrinterString .= $self->get_BOL_EPL($shipmentData);
+
+	return $PrinterString;
 	}
 
 sub GetCarrierTrackingNumber

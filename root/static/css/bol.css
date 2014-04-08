@@ -1,0 +1,243 @@
+body, html{
+    border:0;
+    padding:0;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:12px;
+}
+#pageframe{
+    width:216mm;
+    height:279mm;
+    background:#fff;
+    margin:0 auto;
+}
+#header {
+    clear: both;
+    float: none;
+    height: 14mm;
+    overflow: auto;
+    width: 100%;
+}
+#header img{
+    float:left;
+    clear:none;
+}
+#header div{
+    float:right;
+    font-size:12px;
+    line-height:12px;
+}
+#title{
+    border: 1px solid #888;
+    clear: both;
+    float: none;
+    font-size: 14px;
+    font-weight: bold;
+    overflow: auto;
+    padding:1mm 2mm;
+    width: auto;
+}
+#title span{
+    float: left;
+    clear:none;
+}
+#ts1{
+    text-align: left;
+    width:55mm;
+}
+#ts2{
+    text-align: center;
+    width:100mm;
+}
+#ts3{
+    text-align: right;
+    float:right;
+    width:55mm;
+}
+#addresses {
+    clear: none;
+    float: left;
+    width: 100mm;
+    border:1px solid #888;
+    border-top:none;
+    height:92mm;
+}
+#addresses  b, #customer_order b {
+    background: #ddd;
+    color: #000;
+    display: block;
+    padding: 1mm 0;
+    text-align: center;
+    width: auto;
+}
+#addresses table{
+    width:100%;
+    font-size: 12px;
+    line-height: 11px;
+    height:24mm;
+}
+#addresses table .first{
+    width:25mm;
+}
+tfoot{
+    background:#BBBBBB;
+    font-weight:bold;
+    border-top:1px solid #888;
+}
+#carrier_info {
+    border: 0 none;
+    clear: none;
+    float: right;
+    height: 92mm;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+    width: 115mm;
+    border-right:1px solid #888;
+    border-bottom:1px solid #888;
+}
+#carrier_info div {
+    border: 1px solid #888;
+    clear: both;
+    float: left;
+    margin: 0 0 0 1mm;
+    padding: 1em;
+    width: 127mm;
+}
+#carrier_info div#ci_1 {
+    height: 31mm;
+    margin: 1mm;
+    width: 106mm;
+}
+#carrier_info div#ci_2 {
+    border-left: medium none;
+    border-right: medium none;
+    height: 8mm;
+    margin-left: 0;
+    padding-bottom: 2mm;
+    padding-top: 2mm;
+    width: 109mm;
+}
+#carrier_info div#ci_3 {
+    border-left: 0 none;
+    border-right: 0 none;
+    border-top: medium none;
+    height: 4mm;
+    margin: 0;
+    width: 109mm;
+    padding: 0.5mm 3mm;
+}
+#carrier_info div#ci_4 {
+    border: medium none;
+    bottom: 0;
+    height: 29mm;
+    width:109mm;
+    left: 0;
+    margin: 0;
+    position: absolute;
+}
+#customer_order {
+    clear: both;
+    float: none;
+    overflow: auto;
+}
+#customer_order b{
+    clear: both;
+    display: block;
+    float: none;
+    text-align: center;
+    border-left: 1px solid #888;
+    border-right: 1px solid #888;
+}
+#po_num, #note, #received{
+    width: auto; 
+    overflow: auto; 
+    border: 1px solid #888; 
+    padding: 1mm; 
+    clear: both; 
+    float: none;
+    height: 4mm;
+}
+#po_num{
+    border-top:none;
+}
+#received{
+    font-size: 10.7px;
+    height: 7mm;
+    text-align: left;
+    border-top:none;
+    border-bottom:none
+}
+#customer_order table {
+    border: 1px solid #888;
+    border-bottom:none;
+    border-top:none;
+    border-collapse: collapse;
+    width: 100%;
+}
+thead{
+    background:#bbb;
+    color:#000;
+    border-top:1px solid #888;
+}
+#customer_order table tbody td {
+    border: 1px solid #efefef;
+}
+#customer_order table tbody tr:nth-child(2n) {
+    background:#dfdfdf;
+}
+#ci_2 span {
+    font-weight: bold;
+    padding-right: 34mm;
+}
+.signatures, .comments {
+    border: 1px solid #888;
+    clear: none;
+    float: left;
+    font-size: 10px;
+    height: 48mm;
+    padding: 1mm 2mm;
+    text-align: justify;
+    width: 67.5mm;
+}
+.signatures b{
+    font-size:13px;
+}
+#sig1, #sig3{
+    line-height:10px;
+}
+#sig2 {
+    font-size: 13px;
+    border-right:none;
+    border-left:none;
+}
+#sig2 div {
+    clear: none;
+    float: left;
+    text-align: left;
+    width: 33mm;
+}
+#sig2 div b{
+    text-decoration: underline;
+}
+#sig3 {
+    float: right;
+    position: relative;
+}
+#sig3 span{
+    bottom: 0;
+    left:2mm;
+    display: block;
+    font-size: 8px;
+    font-style: italic;
+    position: absolute;
+}
+#com2 {
+    border-left: medium none;
+    float: right;
+}
+.comments {
+    border-top: medium none;
+    font-size: 14px;
+    height: 32mm;
+    width: 103mm;
+}

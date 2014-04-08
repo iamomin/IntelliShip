@@ -277,15 +277,35 @@ sub process_request
 		$Note->insert;
 		}
 
-	my $PrinterString = $self->BuildPrinterString($shipmentData);
+	my $PrinterString = $self->BuildPrinterString($Shipment,$shipmentData);
 	$self->response->printer_string($PrinterString);
 	}
 
 sub BuildPrinterString
 	{
 	my $self = shift;
+	my $Shipment = shift;
 	my $shipmentData = shift;
-	return $self->get_EPL($shipmentData);
+
+	my @packages = $Shipment->packages;
+	my ($package_count,$current_count,$PrinterString) = (0,1,'');
+	$package_count += $_->quantity foreach @packages;
+
+	$self->log("___ total package count: " . $package_count);
+
+	foreach my $Package (@packages)
+		{
+		foreach (my $count=1; $count <= $Package->quantity; $count++)
+			{
+			$shipmentData->{'quantitydisplay'} = $current_count++ . ' of ' . $package_count;
+			$shipmentData->{'weightdisplay'}   = $Package->dimweight > $Package->weight ? $Package->dimweight: $Package->weight;
+			$PrinterString .= $self->get_EPL($shipmentData);
+			}
+		}
+
+	$PrinterString .= $self->get_BOL_EPL($shipmentData);
+
+	return $PrinterString;
 	}
 
 __PACKAGE__->meta()->make_immutable();

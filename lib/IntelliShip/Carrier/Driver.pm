@@ -125,6 +125,22 @@ sub get_EPL
 	return $EPL;
 	}
 
+sub get_BOL_EPL
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $BOL_string = '';
+	if ($self->contact->get_contact_data_value('printthermalbol'))
+		{
+		my $bolcountthermal = $self->contact->get_contact_data_value('bolcountthermal') || 1;
+		my $EPL = IntelliShip::Carrier::EPLTemplates->get_BOL_EPL($DATA);
+		$BOL_string = $EPL x $bolcountthermal;
+		}
+
+	return $BOL_string;
+	}
+
 sub TagPrinterString
 	{
 	my $self = shift;
