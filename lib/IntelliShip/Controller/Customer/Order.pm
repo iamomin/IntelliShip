@@ -3509,8 +3509,8 @@ sub generate_bill_of_lading
 		}
 
 	## Global Order Info
-	$dataHash->{'branchphone'}   = $CO->dropphone ? $CO->dropphone : $Customer->phone;
-	$dataHash->{'branchcontact'} = $CO->dropcontact ? $CO->dropcontact : $Customer->contact;
+	$dataHash->{'branchphone'}   = $CO->dropphone ? $CO->dropphone : $Shipment->oacontactphone;
+	$dataHash->{'branchcontact'} = $CO->dropcontact ? $CO->dropcontact : $Shipment->oacontactname;
 	$dataHash->{'extcustnum'}    = $CO->extcustnum if $CO->extcustnum;
 
 	#$dataHash->{'dateshipped'} =~ s/(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}:\d{2}.*/$2\/$3\/$1/;
