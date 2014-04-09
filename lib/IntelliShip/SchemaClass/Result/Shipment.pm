@@ -991,29 +991,13 @@ sub get_charges
 	return $charge_sum;
 	}
 
-=as
-sub sum_shipment_package_value
+sub is_international
 	{
 	my $self = shift;
-	my $value_type = shift;
-
-	my $rs = $self->resultset('Packprodata')->search(
-				{
-					ownerid => $self->shipmentid,
-					ownertypeid => 2000,
-					datatypeid => 1000,
-				},
-				{
-				   select => [ { sum => $value_type } ],
-				   as     => [ 'total' ], # remember this 'as' is for DBIx::Class::ResultSet not SQL
-				}
-			  );
-
-	my $value_sum = $rs->first->get_column('total');
-
-	return $value_sum;
+	my $OA = $self->origin_address;
+	my $DA = $self->destination_address;
+	return ($OA->country ne $DA->country);
 	}
-=cut
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

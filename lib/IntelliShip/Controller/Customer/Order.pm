@@ -1939,14 +1939,33 @@ sub setup_label_to_print
 	$c->stash($params);
 	$c->stash($Shipment->{_column_data});
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
-	$c->stash->{billoflading}      = $self->contact->get_contact_data_value('print8_5x11bol');
-	$c->stash->{printcominv}       = $self->contact->get_contact_data_value('defaultcomminv');
+
+	## print commercial invoice only for international shipment
+	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
 
 	unless (-e $label_file)
 		{
 		$c->log->debug("... label details not found for shipment ID: " . $Shipment->shipmentid);
 		$c->stash->{MESSAGE} = 'We are sorry, label information not found.';
 		return;
+		}
+
+	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$params->{'carrier'} = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+		{
+		$params->{'carrier'} = &CARRIER_GENERIC;
+		}
+
+	## print BOL only for Generic and eFreight
+	if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+		{
+		$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
 		}
 
 	if ($label_file =~ /JPG/i)
@@ -1967,18 +1986,6 @@ sub setup_label_to_print
 		if ($Shipment->dimlength and $Shipment->dimwidth and $Shipment->dimheight)
 			{
 			$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;
-			}
-
-		my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
-		my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
-
-		if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
-			{
-			$params->{'carrier'} = &CARRIER_EFREIGHT;
-			}
-		elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
-			{
-			$params->{'carrier'} = &CARRIER_GENERIC;
 			}
 
 		if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
