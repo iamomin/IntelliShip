@@ -223,7 +223,7 @@
 		{
 		try
 			{
-			if (isLoaded())
+			if (!isLoaded())
 				{
 				showMessage("Printer is not loaded, please try again.","Print Label");
 				return;
