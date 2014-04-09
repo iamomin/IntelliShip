@@ -117,19 +117,33 @@ sub populate_package_detail_section
 
 	$request->{'productcount'} = @packages;
 
+	my ($quantity,$weight) = (0,0);
+	my (@weight,@quantity,@unittype,@dimlength,@dimwidth,@dimheight,@datatype);
+
 	foreach my $PackProData (@packages)
 		{
-		$request->{'weightlist'}     .= $PackProData->weight . ",";
-		$request->{'quantitylist'}   .= $PackProData->quantity . ",";
-		$request->{'unittypelist'}   .= 12 . ",";
-		$request->{'dimlengthlist'}  .= $PackProData->dimlength . ",";
-		$request->{'dimwidthlist'}   .= $PackProData->dimwidth . ",";
-		$request->{'dimheightlist'}  .= $PackProData->dimheight . ",";
-		$request->{'datatypeidlist'} .= $PackProData->datatypeid . ",";
+		push(@weight,$PackProData->weight);
+		push(@quantity,$PackProData->quantity);
+		push(@unittype,$PackProData->unittypeid);
+		push(@dimlength,$PackProData->dimlength);
+		push(@dimwidth,$PackProData->dimwidth);
+		push(@dimheight,$PackProData->dimheight);
+		push(@datatype,$PackProData->datatypeid);
 
-		$request->{'totalquantity'} += $PackProData->quantity;
-		$request->{'aggregateweight'} += $PackProData->weight;
+		$quantity += $PackProData->quantity;
+		$weight += $PackProData->weight;
 		}
+
+	$request->{'weightlist'}     = join(',',@weight);
+	$request->{'quantitylist'}   = join(',',@quantity);
+	$request->{'unittypelist'}   = join(',',@unittype);
+	$request->{'dimlengthlist'}  = join(',',@dimlength);
+	$request->{'dimwidthlist'}   = join(',',@dimwidth);
+	$request->{'dimheightlist'}  = join(',',@dimheight);
+	$request->{'datatypeidlist'} = join(',',@datatype);
+
+	$request->{'totalquantity'}   = $quantity;
+	$request->{'aggregateweight'} = $weight;
 	}
 
 sub get_aggregate_freight_class

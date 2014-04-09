@@ -1,4 +1,7 @@
 
+<script type="text/javascript" src="/static/js/deployJava.js"></script>
+<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
+
 [% UNLESS REPRINT_LABEL %]
 <h2 class="DoNotPrint">SHIP A PACKAGE</h2>
 [% END %]
@@ -181,13 +184,65 @@
 	[% IF printerstring_loop %]
 	function PrintEplLabel_[% shipmentid %]()
 		{
+		if (notReady()) { return alert("Printer not Ready"); }
+
+		// Send characters/raw commands to qz using "append"
+		// This example is for EPL.  Please adapt to your printer language
+		// Hint:  Carriage Return = \r, New Line = \n, Escape Double Quotes= \"
+		[% FOREACH line IN printerstring_loop %]
+		qz.append("[% line %]\n");[% END %]
+
+		qz.print();
+
+		CheckAfterLabelPrintActivities_[% shipmentid %]();
+		}
+	[% END %]
+
+	[% IF LABEL_IMG %]
+	function PrintImageLabel_[% shipmentid %]()
+		{
+		if (notReady()) { return alert("Printer not Ready"); }
+
+		qz.appendImage(getPath() + '/' + $('#lblimg').attr('src'));
+
+		// Automatically gets called when "qz.appendImage()" is finished.
+		window['qzDoneAppending'] = function() {
+			// Tell the applet to print PostScript.
+			qz.printPS();
+
+			// Check print call back activities.
+			CheckAfterLabelPrintActivities_[% shipmentid %]();
+
+			// Remove reference to this function
+			window['qzDoneAppending'] = null;
+			};
+		}
+	[% END %]
+
+	function PrintThermalLabel_[% shipmentid %]()
+		{
 		try
 			{
-			var fso = new ActiveXObject("Scripting.FileSystemObject");
-			var a = fso.CreateTextFile("[% label_port %]:", true);
-			[% FOREACH line IN printerstring_loop %]
-			a.Writeline("[% line %]");[% END %]
-			a.Close();
+			if (isLoaded())
+				{
+				showMessage("Printer is not loaded, please try again.","Print Label");
+				return;
+				}
+
+			useDefaultPrinter(function() {
+
+				var label_print_count = [% label_print_count ? label_print_count : 0 %];
+
+				for (var count=0; count < label_print_count; ++count)
+					{
+					[% IF printerstring_loop %]
+						PrintEplLabel_[% shipmentid %]();
+					[% END %]
+					[% IF LABEL_IMG %]
+						PrintImageLabel_[% shipmentid %]();
+					[% END %]
+					}
+				});
 			}
 
 		catch(err)
@@ -197,38 +252,6 @@
 			showMessage(messageStr, "Label Print Error");
 			[% END %]
 			return false;
-			}
-
-		CheckAfterLabelPrintActivities_[% shipmentid %]();
-		}
-	[% END %]
-
-	[% IF LABEL_IMG %]
-	function PrintImageLabel_[% shipmentid %]()
-		{
-		var wb = "<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>";
-		var strScript = "<script" + ">" + "document.getElementById('lblimg').onload = function(){ var WB = document.getElementById('WB'); WB.ExecWB(6,2,1); window.close(); }" + "</" + "script" + ">";
-		var lbl = "<html><head></head><body>" + wb + " " + $("#label").html() + " " + strScript + "</body></html>";
-
-		var printWin = window.open('', '', 'left=0,top=0,width=900,height=500,status=0');
-		printWin.document.write(lbl);
-
-		printWin.onafterprint = CheckAfterLabelPrintActivities_[% shipmentid %];
-		}
-	[% END %]
-
-	function PrintThermalLabel_[% shipmentid %]()
-		{
-		var label_print_count = [% label_print_count ? label_print_count : 0 %];
-
-		for (var count=0; count < label_print_count; ++count)
-			{
-			[% IF printerstring_loop %]
-				PrintEplLabel_[% shipmentid %]();
-			[% END %]
-			[% IF LABEL_IMG %]
-				PrintImageLabel_[% shipmentid %]();
-			[% END %]
 			}
 		}
 

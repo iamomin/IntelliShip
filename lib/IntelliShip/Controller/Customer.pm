@@ -107,6 +107,13 @@ sub help :Path
 	return 1;
 	}
 
+sub printdemo :Path
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/customer/applet-print-demo.html");
+	return 1;
+	}
+
 sub flush_expired_tokens :Private
 	{
 	my $self = shift;
