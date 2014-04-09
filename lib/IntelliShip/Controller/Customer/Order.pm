@@ -1499,6 +1499,37 @@ sub SHIP_ORDER :Private
 	my $laundryArr = [];
 	$params->{'new_shipmentid'} = $self->get_token_id;
 
+	## Save out all shipment packages. Give them a dummy shipmentid, pass that around for continuity.
+	my @packages = $CO->packages;
+	foreach my $Package (@packages)
+		{
+		my $ShipmentPackage = $c->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
+		$ShipmentPackage->ownertypeid(2000); # 2000 = shipment
+		$ShipmentPackage->ownerid($params->{'new_shipmentid'});
+		$ShipmentPackage->packprodataid($self->get_token_id);
+		$ShipmentPackage->shippedqty($ShipmentPackage->quantity);
+		$ShipmentPackage->insert;
+
+		push(@$laundryArr, $ShipmentPackage);
+
+		$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
+
+		my @products = $Package->products;
+		foreach my $Product (@products)
+			{
+			my $ShipmentProduct = $c->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
+			$ShipmentProduct->ownertypeid(3000); # 3000 = Product (for Packages)
+			$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
+			$ShipmentProduct->packprodataid($self->get_token_id);
+			$ShipmentProduct->shippedqty($ShipmentProduct->quantity);
+			$ShipmentProduct->insert;
+
+			push(@$laundryArr, $ShipmentProduct);
+
+			$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
+			}
+		}
+
 	## 'OTHER' carriers
 	if ($params->{'customerserviceid'} =~ m/OTHER_/)
 		{
@@ -1538,37 +1569,6 @@ sub SHIP_ORDER :Private
 			if ($params->{'fcchanged'} and $params->{'fcoverride'})
 				{
 				$self->ProcessFCOverride;
-				}
-
-			# Save out all shipment packages. Give them a dummy shipmentid, pass that around for continuity.
-			my @packages = $CO->packages;
-			foreach my $Package (@packages)
-				{
-				my $ShipmentPackage = $c->model('MyDBI::Packprodata')->new($Package->{'_column_data'});
-				$ShipmentPackage->ownertypeid(2000); # 2000 = shipment
-				$ShipmentPackage->ownerid($params->{'new_shipmentid'});
-				$ShipmentPackage->packprodataid($self->get_token_id);
-				$ShipmentPackage->shippedqty($ShipmentPackage->quantity);
-				$ShipmentPackage->insert;
-
-				push(@$laundryArr, $ShipmentPackage);
-
-				$c->log->debug("___ new shipment package insert: " . $ShipmentPackage->packprodataid);
-
-				my @products = $Package->products;
-				foreach my $Product (@products)
-					{
-					my $ShipmentProduct = $c->model('MyDBI::Packprodata')->new($Product->{'_column_data'});
-					$ShipmentProduct->ownertypeid(3000); # 3000 = Product (for Packages)
-					$ShipmentProduct->ownerid($ShipmentPackage->packprodataid);
-					$ShipmentProduct->packprodataid($self->get_token_id);
-					$ShipmentProduct->shippedqty($ShipmentProduct->quantity);
-					$ShipmentProduct->insert;
-
-					push(@$laundryArr, $ShipmentProduct);
-
-					$c->log->debug("___ new shipment product insert: " . $ShipmentProduct->packprodataid);
-					}
 				}
 
 			my @special_services = $CO->assessorials;
