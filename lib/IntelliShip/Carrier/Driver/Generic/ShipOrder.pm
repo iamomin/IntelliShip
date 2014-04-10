@@ -55,9 +55,25 @@ sub process_request
 
 	$self->log("___ Zone Nubmer: " . $shipmentData->{'zonenumber'});
 
+	## Create Shipment Record
 	my $Shipment = $self->insert_shipment($shipmentData);
 
+	$shipmentData->{'dims'}  = $shipmentData->{'dimlength'};
+	$shipmentData->{'dims'} .= 'x' . $shipmentData->{'dimwidth'} if $shipmentData->{'dims'} and $shipmentData->{'dimwidth'};
+	$shipmentData->{'dims'} .= 'x' . $shipmentData->{'dimheight'} if $shipmentData->{'dims'} and $shipmentData->{'dimheight'};
+	$shipmentData->{'dims'}  = '' unless $shipmentData->{'dims'};
+
 	$shipmentData->{'chargeamount'} = $Shipment->total_charge;
+
+	if (my @packages = $Shipment->packages)
+		{
+		my $Pkg = $packages[0];
+
+		$shipmentData->{'productdescr'} = $Pkg->description;
+		$shipmentData->{'density'}      = $Pkg->density;
+		$shipmentData->{'dimweight'}    = $Pkg->dimweight;
+		$shipmentData->{'originalcoid'} = $Pkg->originalcoid;
+		}
 
 	# Note user supplied tracking numbers
 	if ( defined($shipmentData->{'manualtrackingflag'}) && $shipmentData->{'manualtrackingflag'} == 1 )

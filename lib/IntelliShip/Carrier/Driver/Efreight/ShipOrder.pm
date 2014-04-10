@@ -253,10 +253,24 @@ sub process_request
 			}
 		}
 
-	IntelliShip::Utils->generate_UCC_128_barcode($shipmentData->{'tracking1'});
-
 	## Create Shipment Record
 	my $Shipment = $self->insert_shipment($shipmentData);
+
+	IntelliShip::Utils->generate_UCC_128_barcode($shipmentData->{'tracking1'});
+	$shipmentData->{'dims'}  = $shipmentData->{'dimlength'};
+	$shipmentData->{'dims'} .= 'x' . $shipmentData->{'dimwidth'} if $shipmentData->{'dims'} and $shipmentData->{'dimwidth'};
+	$shipmentData->{'dims'} .= 'x' . $shipmentData->{'dimheight'} if $shipmentData->{'dims'} and $shipmentData->{'dimheight'};
+	$shipmentData->{'dims'}  = '' unless $shipmentData->{'dims'};
+
+	if (my @packages = $Shipment->packages)
+		{
+		my $Pkg = $packages[0];
+
+		$shipmentData->{'productdescr'} = $Pkg->description;
+		$shipmentData->{'density'}      = $Pkg->density;
+		$shipmentData->{'dimweight'}    = $Pkg->dimweight;
+		$shipmentData->{'originalcoid'} = $Pkg->originalcoid;
+		}
 
 	#$Shipment->{'action'} = $CgiRef->{'errorstring'};
 	#$Shipment->{'errorstring'} = $shipmentData->{'errorstring'};
