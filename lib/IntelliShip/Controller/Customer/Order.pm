@@ -1677,7 +1677,7 @@ sub SHIP_ORDER :Private
 		{
 		$params->{'carrier'} = &CARRIER_EFREIGHT;
 		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
 		{
 		$params->{'carrier'} = &CARRIER_GENERIC;
 		}
@@ -1957,7 +1957,7 @@ sub setup_label_to_print
 		{
 		$params->{'carrier'} = &CARRIER_EFREIGHT;
 		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
 		{
 		$params->{'carrier'} = &CARRIER_GENERIC;
 		}
@@ -2127,7 +2127,7 @@ sub VOID_SHIPMENT :Private
 		{
 		$carrier = &CARRIER_EFREIGHT;
 		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/)
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
 		{
 		$carrier = &CARRIER_GENERIC;
 		}
@@ -3180,8 +3180,26 @@ sub generate_packing_list
 
 	$self->SaveStringToFile($PackListFileName, $PackListHTML);
 
-	$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
-	$c->stash->{printcominv}  = $self->contact->get_contact_data_value('defaultcomminv');
+	## print commercial invoice only for international shipment
+	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
+
+	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$params->{'carrier'} = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
+		{
+		$params->{'carrier'} = &CARRIER_GENERIC;
+		}
+
+	## print BOL only for Generic and eFreight
+	if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+		{
+		$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
+		}
 
 	$c->stash(template => "templates/customer/order-packing-list.tt");
 
@@ -3589,7 +3607,8 @@ sub generate_bill_of_lading
 		$dataHash->{'bolstring'} = $BOL_HTML;
 		}
 
-	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv');
+	## print commercial invoice only for international shipment
+	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
 
 	$c->stash(template => "templates/customer/order-" . $bol_type . ".tt");
 
