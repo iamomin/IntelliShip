@@ -7,8 +7,10 @@
 	<meta name=Generator content="Microsoft Word 10">
 	<meta name=Originator content="Microsoft Word 10">
 
-	<script src="/static/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
-	<script src="/static/js/customer.js"></script>
+	<script type="text/javascript" src="/static/jquery/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="/static/js/customer.js"></script>
+	<script type="text/javascript" src="/static/js/deployJava.js"></script>
+	<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
 	<link rel=File-List href="commercial_invoice_files/filelist.xml">
 	<link rel=Edit-Time-Data href="commercial_invoice_files/editdata.mso">
@@ -180,8 +182,6 @@
 	</head>
 
 	<body lang=EN-US style='tab-interval:.5in'>
-		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" width=0 height=0></OBJECT>
-
 		<p class=MsoNormal>
 		<![if !vml]>
 		<span style='mso-ignore:vglayout;position:relative;z-index:1'>
@@ -195,7 +195,7 @@
 						<table cellpadding=0 cellspacing=0 width="100%">
 							<tr>
 								<td><![endif]>
-									<img src="/static/branding/[% branding_id %]/images/header/report-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
+									<img id="logo" src="/static/branding/[% branding_id %]/images/header/report-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
 									<![if !mso]></td>
 							</tr>
 						</table>
@@ -655,22 +655,27 @@
 		</table>
 
 		<p class=MsoNormal><o:p>&nbsp;</o:p></p>
-
-		</div>
-
 	</body>
 
 	<script>
-		window.onload = function () {
-			var WebBrowser = document.getElementById('WebBrowser');
-			WebBrowser.ExecWB(6,2);
-			//window.print();
-			};
-		window.onafterprint = function() {
+	$(document).ready(function() {
+
+		$("#logo").attr("src",getPath()+$("#logo").attr("src"));
+		alert($("#logo").attr("src"));
+
+		qz.appendHTML(fixHTML($('body').html()));
+
+		qz.printHTML();
+
+		window['qzDonePrinting'] = function() {
 			var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
 			send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
 				window.location.href = '/customer/order/quickship';
 				});
+
+			// Remove reference to this function
+			window['qzDonePrinting'] = null;
 			};
+		});
 	</script>
 </html>

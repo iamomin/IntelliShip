@@ -68,171 +68,173 @@
 	-->
 	</style>
 
-	<script src="/static/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
-	<script src="/static/js/customer.js"></script>
+	<script type="text/javascript" src="/static/jquery/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="/static/js/customer.js"></script>
+	<script type="text/javascript" src="/static/js/deployJava.js"></script>
+	<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
 	</head>
 
 	<body>
-		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2" width=0 height=0></OBJECT>
-		<!-- Vendor Data -->
-		<div class="addressfieldname" style="top: .25in; left: .25in; width: 1.5in; height: .20in;">
-			Vendor Name:
-		</div>
-		<div class="addressfield" style="top: .5in; left: .25in; width: 3.3125in; height: 1.20in;">
-			[% shipperaddress %]
-		</div>
+		<div id="print-content">
+			<!-- Vendor Data -->
+			<div class="addressfieldname" style="top: .25in; left: .25in; width: 1.5in; height: .20in;">
+				Vendor Name:
+			</div>
+			<div class="addressfield" style="top: .5in; left: .25in; width: 3.3125in; height: 1.20in;">
+				[% shipperaddress %]
+			</div>
 
-		<!-- Header -->
-		<table style="position: absolute; top: .5in; left: 4.4375in; width: 3.125in; height: .875in;">
-			<tr style="height: .375in;">
-				<td colspan=2 style="text-align: left; padding-left: 10px; font: bold; font-size: 14pt;">
-					Packing Slip
-				</td>
-			</tr>
-			<tr style="height: .25in;">
-				<td class="header" style="width: 50%;">
-					Date Shipped
-				</td>
-				<td class="header" style="width: 50%;">
-					Order Number
-				</td>
-			</tr>
-			<tr style="height: .25in;">
-				<td style="width:50%;">
-					[% dateshipped %]
-				</td>
-				<td style="width:50%;">
-					[% ordernumber %]
-				</td>
-			</tr>
-		</table>
+			<!-- Header -->
+			<table style="position: absolute; top: .5in; left: 4.4375in; width: 3.125in; height: .875in;">
+				<tr style="height: .375in;">
+					<td colspan=2 style="text-align: left; padding-left: 10px; font: bold; font-size: 14pt;">
+						Packing Slip
+					</td>
+				</tr>
+				<tr style="height: .25in;">
+					<td class="header" style="width: 50%;">
+						Date Shipped
+					</td>
+					<td class="header" style="width: 50%;">
+						Order Number
+					</td>
+				</tr>
+				<tr style="height: .25in;">
+					<td style="width:50%;">
+						[% dateshipped %]
+					</td>
+					<td style="width:50%;">
+						[% ordernumber %]
+					</td>
+				</tr>
+			</table>
 
-		<!-- Bill To Data -->
-		<div class="addressfieldname" style="top: 2in; left: .25in; width: 1.5in; height: .20in;">
-			Bill To:
-		</div>
-		<div class="addressfield" style="top: 2.25in; left: .25in; width: 3.3125in; height: 1.25in;">
-			[% billingaddress %]
-		</div>
+			<!-- Bill To Data -->
+			<div class="addressfieldname" style="top: 2in; left: .25in; width: 1.5in; height: .20in;">
+				Bill To:
+			</div>
+			<div class="addressfield" style="top: 2.25in; left: .25in; width: 3.3125in; height: 1.25in;">
+				[% billingaddress %]
+			</div>
 
-		<!-- Ship To Data -->
-		<div class="addressfieldname" style="top: 2in; left: 4.4375in; width: 1.5in; height: .20in;">
-			Ship To:
-		</div>
-		<div class="addressfield" style="top: 2.25in; left: 4.4375in; width: 3.3125in; height: 1.25in;">
-			[% consigneeaddress %]
-		</div>
+			<!-- Ship To Data -->
+			<div class="addressfieldname" style="top: 2in; left: 4.4375in; width: 1.5in; height: .20in;">
+				Ship To:
+			</div>
+			<div class="addressfield" style="top: 2.25in; left: 4.4375in; width: 3.3125in; height: 1.25in;">
+				[% consigneeaddress %]
+			</div>
 
-		<!-- Middle Four Fields -->
-		<div class="fieldname" style="top: 3.875in; left: .5in; width: 1.375in; height: .20in;">
-			Order Number
-		</div>
-		<div class="field" style="top: 4.125in; left: .5in; width: 1.375in; height: .25in;">
-			[% ordernumber %]
-		</div>
+			<!-- Middle Four Fields -->
+			<div class="fieldname" style="top: 3.875in; left: .5in; width: 1.375in; height: .20in;">
+				Order Number
+			</div>
+			<div class="field" style="top: 4.125in; left: .5in; width: 1.375in; height: .25in;">
+				[% ordernumber %]
+			</div>
 
-		<div class="fieldname" style="top: 3.875in; left: 2in; width: 1.5in; height: .20in;">
-			Sales Rep
-		</div>
-		<div class="field" style="top: 4.125in; left: 2in; width: 1.5in; height: .25in;">
-		</div>
+			<div class="fieldname" style="top: 3.875in; left: 2in; width: 1.5in; height: .20in;">
+				Sales Rep
+			</div>
+			<div class="field" style="top: 4.125in; left: 2in; width: 1.5in; height: .25in;">
+			</div>
 
-		<div class="fieldname" style="top: 3.875in; left: 3.625in; width: 2in; height: .20in;">
-			Ship Via
-		</div>
-		<div class="field" style="top: 4.125in; left: 3.625in; width: 2in; height: .25in;">
-			[% carrierservice %]
-		</div>
+			<div class="fieldname" style="top: 3.875in; left: 3.625in; width: 2in; height: .20in;">
+				Ship Via
+			</div>
+			<div class="field" style="top: 4.125in; left: 3.625in; width: 2in; height: .25in;">
+				[% carrierservice %]
+			</div>
 
-		<div class="fieldname" style="top: 3.875in; left: 5.75in; width: 1.875in; height: .20in;">
-			Tracking Number
-		</div>
-		<div class="field" style="top: 4.125in; left: 5.75in; width: 1.875in; height: .25in;">
-			[% tracking1 %]
-		</div>
+			<div class="fieldname" style="top: 3.875in; left: 5.75in; width: 1.875in; height: .20in;">
+				Tracking Number
+			</div>
+			<div class="field" style="top: 4.125in; left: 5.75in; width: 1.875in; height: .25in;">
+				[% tracking1 %]
+			</div>
 
-		<!-- Content Description -->
-		<table style="top: 4.625in; left: .5in; width: 7.25in; height: 2.875in;">
-			<tr style="height: .3125in;">
-				<td class="header" style="width: .25in;">
-					X
-				</td>
-				<td class="header" style="width: .6875in;">
-					Product Number
-				</td>
-				<td class="header" style="width: .8125in;">
-					Quantity Ordered
-				</td>
-				<td class="header" style="width: .75in;">
-					Quantity Shipped
-				</td>
-				<td class="header" style="width: 1.125in;">
-					Quantity Back Ordered
-				</td>
-				<td class="header" style="width: 3.625in;">
-					Description of Products
-				</td>
-			</tr>
-		<!-- Package Detail Start -->
-			<var type=section name=packinglist_detail maxperpage=14 maxperoverflow=56 filltomax=1>
-			[% FOREACH item IN packinglist_loop %]
-			<tr style="height: .1875in;">
-				<td>&nbsp;</td>
-				<td>[% item.partnumber %]</td>
-				<td>[% item.orderedqty %]</td>
-				<td>[% item.shippedqty %]</td>
-				<td>[% item.remainingqty %]</td>
-				<td style="text-align: left; padding-left: 5px;">[% item.productdescription %]</td>
-			</tr>
-			[% END %]
+			<!-- Content Description -->
+			<table style="top: 4.625in; left: .5in; width: 7.25in; height: 2.875in;">
+				<tr style="height: .3125in;">
+					<td class="header" style="width: .25in;">
+						X
+					</td>
+					<td class="header" style="width: .6875in;">
+						Product Number
+					</td>
+					<td class="header" style="width: .8125in;">
+						Quantity Ordered
+					</td>
+					<td class="header" style="width: .75in;">
+						Quantity Shipped
+					</td>
+					<td class="header" style="width: 1.125in;">
+						Quantity Back Ordered
+					</td>
+					<td class="header" style="width: 3.625in;">
+						Description of Products
+					</td>
+				</tr>
+			<!-- Package Detail Start -->
+				[% FOREACH item IN packinglist_loop %]
+				<tr style="height: .1875in;">
+					<td>&nbsp;</td>
+					<td>[% item.partnumber %]</td>
+					<td>[% item.orderedqty %]</td>
+					<td>[% item.shippedqty %]</td>
+					<td>[% item.remainingqty %]</td>
+					<td style="text-align: left; padding-left: 5px;">[% item.productdescription %]</td>
+				</tr>
+				[% END %]
 
-		<!-- Package Detail Stop -->
-		</table>
+			<!-- Package Detail Stop -->
+			</table>
 
-		<!-- Bottom Fields -->
-		<div class="fieldname" style="top: 7.875in; left: .5in; width: 1.875in; height: .20in;">
-			Shipped By
-		</div>
-		<div class="field" style="top: 8.125in; left: .5in; width: 1.875in; height: .25in;">
-			[% oacontactname %]
-		</div>
+			<!-- Bottom Fields -->
+			<div class="fieldname" style="top: 7.875in; left: .5in; width: 1.875in; height: .20in;">
+				Shipped By
+			</div>
+			<div class="field" style="top: 8.125in; left: .5in; width: 1.875in; height: .25in;">
+				[% oacontactname %]
+			</div>
 
-		<div class="fieldname" style="top: 8.5625in; left: .5in; width: 1.875in; height: .20in;">
-			Number of Packages
-		</div>
-		<div class="field" style="top: 8.8125in; left: .5in; width: 1.875in; height: .25in;">
-			[% quantity %]
-		</div>
+			<div class="fieldname" style="top: 8.5625in; left: .5in; width: 1.875in; height: .20in;">
+				Number of Packages
+			</div>
+			<div class="field" style="top: 8.8125in; left: .5in; width: 1.875in; height: .25in;">
+				[% quantity %]
+			</div>
 
-		<div class="fieldname" style="top: 9.25in; left: .5in; width: 1.875in; height: .20in;">
-			Total Weight
-		</div>
-		<div class="field" style="top: 9.5in; left: .5in; width: 1.875in; height: .25in;">
-			[% grossweight %]
-		</div>
+			<div class="fieldname" style="top: 9.25in; left: .5in; width: 1.875in; height: .20in;">
+				Total Weight
+			</div>
+			<div class="field" style="top: 9.5in; left: .5in; width: 1.875in; height: .25in;">
+				[% grossweight %]
+			</div>
 
-		<div class="fieldname" style="top: 7.875in; left: 2.5in; width: 1.875in; height: .20in;">
-			Received By
-		</div>
-		<div class="field" style="top: 8.125in; left: 2.5in; width: 1.875in; height: .25in;">
-			[% contactname %]
-		</div>
+			<div class="fieldname" style="top: 7.875in; left: 2.5in; width: 1.875in; height: .20in;">
+				Received By
+			</div>
+			<div class="field" style="top: 8.125in; left: 2.5in; width: 1.875in; height: .25in;">
+				[% contactname %]
+			</div>
 
-		<div class="fieldname" style="top: 8.5625in; left: 2.5in; width: 1.875in; height: .20in;">
-			Order Complete
-		</div>
-		<div class="field" style="top: 8.8125in; left: 2.5in; width: 1.875in; height: .25in;">
-			[% datefullfilled %]
-		</div>
+			<div class="fieldname" style="top: 8.5625in; left: 2.5in; width: 1.875in; height: .20in;">
+				Order Complete
+			</div>
+			<div class="field" style="top: 8.8125in; left: 2.5in; width: 1.875in; height: .25in;">
+				[% datefullfilled %]
+			</div>
 
-		<div style="top: 7.70in; left: 4.625in; font: bold; padding: 0;">Comments:</div>
-		<div class="field" style="text-align: left; padding: 5px 0px 5px 5px; top: 7.875in; left: 4.625in; width: 3in; height: 1.875in;">
-			[% description %]
-		</div>
+			<div style="top: 7.70in; left: 4.625in; font: bold; padding: 0;">Comments:</div>
+			<div class="field" style="text-align: left; padding: 5px 0px 5px 5px; top: 7.875in; left: 4.625in; width: 3in; height: 1.875in;">
+				[% description %]
+			</div>
 
-		<div style="top: 10.60in; width: 8.5in; text-align: center;">
-			Page [% currentpage %] of [% totalpages %]
+			<div style="top: 10.60in; width: 8.5in; text-align: center;">
+				Page [% currentpage %] of [% totalpages %]
+			</div>
 		</div>
 
 		<form id="frm_next" action="/customer/order/ajax">
@@ -252,19 +254,28 @@
 	</body>
 
 	<script>
-		window.onload = function () {
-			var WebBrowser = document.getElementById('WebBrowser');
-			WebBrowser.ExecWB(6,2);
-			//window.print();
-			};
-		window.onafterprint = function() {
+	$(document).ready(function() {
+
+		qz.appendHTML(fixHTML($('#print-content').html()));
+
+		qz.printHTML();
+
+		window['qzDonePrinting'] = function() {
+			// After print functionality
 			if ($('input[name=action]').length > 0)
 				document.getElementById('frm_next').submit();
 			else
+				{
 				var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
 				send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
 					window.parent.location.href = '/customer/order/quickship';
 					});
+				}
+
+			// Remove reference to this function
+			window['qzDonePrinting'] = null;
 			};
+		});
+
 	</script>
 </html>
