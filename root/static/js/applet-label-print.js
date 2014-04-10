@@ -144,5 +144,5 @@ function getPath() {
 *   3.  The hyphen/dash autoflows and breaks formatting
 */
 function fixHTML(html) {
-	return html.replace(/ /g, "&nbsp;").replace(/’/g, "'").replace(/-/g,"&#8209;");
+	return html.replace(/\n/g, "").replace(/ /g, "&nbsp;").replace(/’/g, "'").replace(/-/g,"&#8209;");
 }
