@@ -146,3 +146,33 @@ function getPath() {
 function fixHTML(html) {
 	return html.replace(/\n/g, "").replace(/ /g, "&nbsp;").replace(/’/g, "'").replace(/-/g,"&#8209;");
 }
+
+
+/***************************************************************************
+* Prototype function for printing an HTML screenshot of the existing page
+* Usage: (identical to appendImage(), but uses html2canvas for png rendering)
+*    qz.setPaperSize("8.5in", "11.0in");  // US Letter
+*    qz.setAutoSize(true);
+*    qz.appendImage($("canvas")[0].toDataURL('image/png'));
+***************************************************************************/
+function printHTML5Page() {
+	$("body").html2canvas({
+		canvas: hidden_screenshot,
+		onrendered: function() {
+			if (notReady()) { return; }
+			// Optional, set up custom page size.  These only work for PostScript printing.
+			// setPaperSize() must be called before setAutoSize(), setOrientation(), etc.
+			qz.setPaperSize("8.5in", "11.0in");  // US Letter
+			qz.setAutoSize(true);
+			qz.appendImage($("canvas")[0].toDataURL('image/png'));
+			// Automatically gets called when "qz.appendFile()" is finished.
+			window['qzDoneAppending'] = function() {
+				// Tell the applet to print.
+				qz.printPS();
+
+				// Remove reference to this function
+				window['qzDoneAppending'] = null;
+			};
+		}
+	});
+}

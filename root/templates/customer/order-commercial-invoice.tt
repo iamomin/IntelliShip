@@ -11,6 +11,8 @@
 	<script type="text/javascript" src="/static/js/customer.js"></script>
 	<script type="text/javascript" src="/static/js/deployJava.js"></script>
 	<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
+	<script type="text/javascript" src="/static/js/html2canvas/html2canvas.js"></script>
+	<script type="text/javascript" src="/static/js/html2canvas/jquery.plugin.html2canvas.js"></script>
 
 	<link rel=File-List href="commercial_invoice_files/filelist.xml">
 	<link rel=Edit-Time-Data href="commercial_invoice_files/editdata.mso">
@@ -655,27 +657,33 @@
 		</table>
 
 		<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+		<canvas id="hidden_screenshot" style="display:none;"></canvas>
 	</body>
 
 	<script>
 	$(document).ready(function() {
 
 		$("#logo").attr("src",getPath()+$("#logo").attr("src"));
-		alert($("#logo").attr("src"));
 
-		qz.appendHTML(fixHTML($('body').html()));
+		useDefaultPrinter(function() {
 
-		qz.printHTML();
+			if (!isLoaded())
+				{
+				alert("Printer is not loaded, please try again.");
+				return;
+				}
 
-		window['qzDonePrinting'] = function() {
-			var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
-			send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
-				window.location.href = '/customer/order/quickship';
-				});
+			window['qzDonePrinting'] = function() {
+				var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
+				send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
+					window.location.href = '/customer/order/quickship';
+					});
 
-			// Remove reference to this function
-			window['qzDonePrinting'] = null;
-			};
+				// Remove reference to this function
+				window['qzDonePrinting'] = null;
+				};
+			printHTML5Page();
+			});
 		});
 	</script>
 </html>

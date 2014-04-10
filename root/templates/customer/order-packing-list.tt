@@ -251,31 +251,37 @@
 			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
 		</form>
+		<canvas id="hidden_screenshot" style="display:none;"></canvas>
 	</body>
 
 	<script>
 	$(document).ready(function() {
 
-		qz.appendHTML(fixHTML($('#print-content').html()));
+		useDefaultPrinter(function() {
 
-		qz.printHTML();
-
-		window['qzDonePrinting'] = function() {
-			// After print functionality
-			if ($('input[name=action]').length > 0)
-				document.getElementById('frm_next').submit();
-			else
+			if (!isLoaded())
 				{
-				var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
-				send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
-					window.parent.location.href = '/customer/order/quickship';
-					});
+				alert("Printer is not loaded, please try again.");
+				return;
 				}
 
-			// Remove reference to this function
-			window['qzDonePrinting'] = null;
-			};
-		});
+			window['qzDonePrinting'] = function() {
+				// After print functionality
+				if ($('input[name=action]').length > 0)
+					document.getElementById('frm_next').submit();
+				else
+					{
+					var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
+					send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
+						window.parent.location.href = '/customer/order/quickship';
+						});
+					}
 
+				// Remove reference to this function
+				window['qzDonePrinting'] = null;
+				};
+			printHTML5Page();
+			});
+		});
 	</script>
 </html>

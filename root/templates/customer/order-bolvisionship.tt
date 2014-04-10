@@ -248,9 +248,6 @@
 
 			$("#logo").attr("src",getPath()+$("#logo").attr("src"));
 
-			//var css = '<link rel="stylesheet" type="text/css" href="https://dintelliship2.engagetechnology.com/static/css/bol.css"/>';
-			//qz.appendHTML('<HTML><HEAD>'+css+'</HEAD><BODY>'+fixHTML($('#pageframe').html()) + '</BODY></HTML>');
-
 			window['qzDonePrinting'] = function() {
 				if ($('input[name=action]').length > 0)
 					document.getElementById('frm_next').submit();
@@ -265,27 +262,7 @@
 				// Remove reference to this function
 				window['qzDonePrinting'] = null;
 				};
-
-			$("body").html2canvas({
-				canvas: hidden_screenshot,
-				onrendered: function() {
-					if (notReady()) { return; }
-					// Optional, set up custom page size.  These only work for PostScript printing.
-					// setPaperSize() must be called before setAutoSize(), setOrientation(), etc.
-					qz.setPaperSize("8.5in", "11.0in");  // US Letter
-					qz.setAutoSize(true);
-					qz.appendImage($("canvas")[0].toDataURL('image/png'));
-					// Automatically gets called when "qz.appendFile()" is finished.
-					window['qzDoneAppending'] = function() {
-						// Tell the applet to print.
-						qz.printPS();
-
-						// Remove reference to this function
-						window['qzDoneAppending'] = null;
-						};
-					}
-				});
-
+			printHTML5Page();
 			});
 		});
 	</script>
