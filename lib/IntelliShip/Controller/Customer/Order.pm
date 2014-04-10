@@ -1677,7 +1677,7 @@ sub SHIP_ORDER :Private
 		{
 		$params->{'carrier'} = &CARRIER_EFREIGHT;
 		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $params->{'carrier'} ne &CARRIER_USPS)
 		{
 		$params->{'carrier'} = &CARRIER_GENERIC;
 		}
