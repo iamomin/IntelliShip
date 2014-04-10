@@ -20,10 +20,6 @@
 	<input type="hidden" id="billoflading" name="billoflading" value="[% billoflading %]"/>
 	<input type="hidden" id="printcominv" name="printcominv" value="[% printcominv %]"/>
 
-	<div id='wbdiv' style='display:none'>
-		<object id='WB' width='0' height='0' classid='CLSID:8856F961-340A-11D0-A96B-00C04FD705A2'></object>
-	</div>
-
 	[% UNLESS REPRINT_LABEL %]
 	<table class="center DoNotPrint">
 		<tr>
@@ -39,7 +35,6 @@
 	</table>
 	[% END %]
 
-	<div id="label" class="Print">
 	<center>
 	[% IF LABEL_IMG %]
 		<img id="lblimg" src="[% LABEL_IMG %]"/>
@@ -47,7 +42,6 @@
 		[% LABEL %]
 	[% END %]
 	</center>
-	</div>
 
 </form>
 </div>
