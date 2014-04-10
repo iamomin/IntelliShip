@@ -348,7 +348,7 @@ sub save_CO_details :Private
 	$coData->{'custref2'} = $params->{'custref2'} if $params->{'custref2'};
 	$coData->{'custref3'} = $params->{'custref3'} if $params->{'custref3'};
 	$coData->{'description'} = $params->{'description'} if $params->{'description'};
-	$coData->{'extcd'} = $params->{'description'};
+	$coData->{'extcd'} = $params->{'description_1'} if $params->{'description_1'};
 	$coData->{'extloginid'} = $self->customer->username;
 	$coData->{'contactname'} = $params->{'tocontact'} if $params->{'tocontact'};
 
