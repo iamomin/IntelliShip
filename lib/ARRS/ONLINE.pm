@@ -897,6 +897,9 @@ warn "undef etadate";
             my $ReturnRef = {};
             my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
             $CS->Load($csid);
+			$ReturnRef->{'accountnumber'} = $CS->GetValueHashRef()->{'webaccount'};
+			$ReturnRef->{'meternumber'} = $CS->GetValueHashRef()->{'meternumber'};
+			$ReturnRef->{'csid'} = $csid;
             warn "########## 5.1";
 
             #Get all distinct zones for the CS
@@ -997,7 +1000,7 @@ warn "undef etadate";
                         $rate->{'costfield'} = 'arcostperunit';
                     }
                     
-                    push(@ratearray, $rate);                    
+                    push(@ratearray, $rate);
             }
 
             $sth2->finish();
@@ -1011,32 +1014,55 @@ warn "undef etadate";
 		{
 			warn "########## Online::SaveTariff";
             my $self = shift;
-            my ($tariff) = @_;
+            my ($tariff, $info) = @_;
 
+			warn "########## \$tariff = ".Dumper($tariff);
 			#We don't look for changed values.
 			#We update them all
-			my $count = 0;
+			my $rate_count = 0;
+			my $range_count = 0;
 			foreach my $record (@$tariff)
 			{
 				#warn "########## \$record = ".Dumper($record);
-				while(my ($zonenumber, $price) = each %$record)
+				while(my ($key, $val) = each %$record)
 				{
-					warn "########## \$zonenumber = $zonenumber";
-					#warn "########## \$price = ".Dumper($price);
-					if(ref($price) eq "HASH")
+					warn "########## \$key = $key";					
+					if(ref($val) eq "HASH" && exists $val->{'costfield'})
 					{
-						my $sql = "update rate set " . $price->{'costfield'}. " = ". $price->{'actualcost'} ." where rateid = '".$price->{'rateid'}."'";
+						my $sql = "update rate set " . $val->{'costfield'}. " = ". $val->{'actualcost'} ." where rateid = '".$val->{'rateid'}."'";
 						warn "########## \$sql= $sql";
 						my $success = $self->{'dbref'}->do($sql)
 								or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
 								
-						if($success) {$count++;}		
-					}					
+						if($success) {$rate_count++;}		
+					}
+
+					if($key eq "rateids")
+					{
+						warn "######### Updating range";
+						warn "########## \$val = ".Dumper($val);
+						foreach my $rateid (@$val)
+						{
+							my $sql = "update rate set unitsstart = '". $record->{'wtmin'} ."', unitsstop = '". $record->{'wtmax'} ."' where rateid = '" . $rateid . "'";
+							warn "########## \$sql= $sql";
+							#my $success = $self->{'dbref'}->do($sql)
+									#or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
+							#if($success) {$range_count++;}	
+						}
+					}
 				}
 			}
+			
+			if($info){
+				my $sql = "update customerservice set webaccount = '". $info->{'accountnumber'} ."', meternumber= '". $info->{'meternumber'} ."' where customerserviceid = '". $info->{'csid'}. "'";
+				warn "########## \$sql= $sql";
+				my $success = $self->{'dbref'}->do($sql)
+								or die "Could not execute statement: ".$self->{'dbref'}->errstr;
+			}
+			
 			$self->{'dbref'}->commit;
 			
-			return {'status' => 'success', 'message' => "$count records updated in RATE"};
+			return {'status' => 'success', 'message' => "$rate_count records updated for rate, $range_count records updated for range"};
 		}
         
 	sub OkToShipOnShipDate

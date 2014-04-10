@@ -76,9 +76,10 @@ sub save :Local
         my ( $self, $c, $data ) = @_;
 		my $params = $c->req->params;			
 		my $tariff = $JSONUTIL->from_json($params->{'data'});
+		my $info = $JSONUTIL->from_json($params->{'info'});
 		#warn "######### tariff: ".Dumper($tariff);
 		
-		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->save_tariff($tariff));
+		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->save_tariff($tariff, $info));
         $c->stash(template => "templates/customer/json.tt");
     }
 
