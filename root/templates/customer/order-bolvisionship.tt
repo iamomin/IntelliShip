@@ -15,211 +15,213 @@
 	</head>
 
 	<body>
-		<div id="header">
-			<img id="logo" src="/static/branding/[% branding_id %]/images/header/report-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
-			<div>
-				<b>Visionship Operations</b><br/>
-				<b>OPERATIONS@MYVISIONSHIP.COM</b><br/>
-					<b>877-993-6787 EXT 502</b>
+		<div id="pageframe">
+			<div id="header">
+				<img id="logo" src="/static/branding/[% branding_id %]/images/header/report-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
+				<div>
+					<b>Visionship Operations</b><br/>
+					<b>OPERATIONS@MYVISIONSHIP.COM</b><br/>
+						<b>877-993-6787 EXT 502</b>
+				</div>
 			</div>
-		</div>
 
-		<div id="title">
-			<span id="ts1">Date: [% dateshipped %]</span>
-			<span id="ts2">BILL OF LADING</span>
-			<span id="ts3">BOL#:[% tracking1 %]</span>
-		</div>
+			<div id="title">
+				<span id="ts1">Date: [% dateshipped %]</span>
+				<span id="ts2">BILL OF LADING</span>
+				<span id="ts3">BOL#:[% tracking1 %]</span>
+			</div>
 
-		<div id="addresses">
-			<b>SHIP FROM</b>
-			<table>
-				<tbody>
-					<tr>
-						<td class="first">Company:</td>
-						<td class="second">[% shipasname %]</td>
-					</tr>
-					<tr>
-						<td>Contact:</td>
-						<td>[% branchcontact %]</td>
-					</tr>
-					<tr>
-						<td>Address 1:</td>
-						<td>[% branchaddress1 %]</td>
-					</tr>
-					<tr>
-						<td>Address 2:</td>
-						<td>[% branchaddress2 %]</td>
-					</tr>
-					<tr>
-						<td>City/State/Zip</td>
-						<td>[% branchaddresscity %], [% branchaddressstate %] [% branchaddresszip %]</td>
-					</tr>
-					<tr>
-						<td>Phone:</td>
-						<td>[% branchphone %]</td>
-					</tr>
-				</tbody>
-			</table>
-			<b>SHIP TO</b>
-			<table>
-				<tbody>
-					<tr>
-						<td class="first">Company:</td>
-						<td class="second">[% addressname %]</td>
-					</tr>
-					<tr>
-						<td>Contact:</td>
-						<td>[% contactname %]</td>
-					</tr>
-					<tr>
-						<td>Address 1:</td>
-						<td>[% address1 %]</td>
-					</tr>
-					<tr>
-						<td>Address 2:</td>
-						<td>[% address2 %]</td>
-					</tr>
-					<tr>
-						<td>City/State/Zip</td>
-						<td>[% addresscity %], [% addressstate %] [% addresszip %]</td>
-					</tr>
-					<tr>
-						<td>Phone:</td>
-						<td>[% contactphone %]</td>
-					</tr>
-				</tbody>
-			</table>
-			<b>BILL TO</b>
-			<table>
-				<tbody>
-					<tr>
-						<td class="first">Name</td>
-						<td class="second">[% billingname %]</td>
-					</tr>
-					<tr>
-						<td>Address 1:</td>
-						<td>[% billingaddress1 %]</td>
-					</tr>
-					<tr>
-						<td>Address 2:</td>
-						<td>[% billingaddress2 %]</td>
-					</tr>
-					<tr>
-						<td>City/State/Zip</td>
-						<td>[% billingcity %], [% billingstate %] [% billingzip %]</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<div id="carrier_info">
-			<div id="ci_1">
-				Carrier Name: [% carrier %]<br/>
-				SCAC: [% scac %]<br/>
-				PRO#: [% tracking1 %]<br/>
-				Trailer #: <br/>
-				Seal #(s): <br/>
-				PO#: [% ponumber %]<br/>
-				SO#: [% ordernumber %]<br/>
-				Ref: [% customernumber %]<br/>
+			<div id="addresses">
+				<b>SHIP FROM</b>
+				<table>
+					<tbody>
+						<tr>
+							<td class="first">Company:</td>
+							<td class="second">[% shipasname %]</td>
+						</tr>
+						<tr>
+							<td>Contact:</td>
+							<td>[% branchcontact %]</td>
+						</tr>
+						<tr>
+							<td>Address 1:</td>
+							<td>[% branchaddress1 %]</td>
+						</tr>
+						<tr>
+							<td>Address 2:</td>
+							<td>[% branchaddress2 %]</td>
+						</tr>
+						<tr>
+							<td>City/State/Zip</td>
+							<td>[% branchaddresscity %], [% branchaddressstate %] [% branchaddresszip %]</td>
+						</tr>
+						<tr>
+							<td>Phone:</td>
+							<td>[% branchphone %]</td>
+						</tr>
+					</tbody>
+				</table>
+				<b>SHIP TO</b>
+				<table>
+					<tbody>
+						<tr>
+							<td class="first">Company:</td>
+							<td class="second">[% addressname %]</td>
+						</tr>
+						<tr>
+							<td>Contact:</td>
+							<td>[% contactname %]</td>
+						</tr>
+						<tr>
+							<td>Address 1:</td>
+							<td>[% address1 %]</td>
+						</tr>
+						<tr>
+							<td>Address 2:</td>
+							<td>[% address2 %]</td>
+						</tr>
+						<tr>
+							<td>City/State/Zip</td>
+							<td>[% addresscity %], [% addressstate %] [% addresszip %]</td>
+						</tr>
+						<tr>
+							<td>Phone:</td>
+							<td>[% contactphone %]</td>
+						</tr>
+					</tbody>
+				</table>
+				<b>BILL TO</b>
+				<table>
+					<tbody>
+						<tr>
+							<td class="first">Name</td>
+							<td class="second">[% billingname %]</td>
+						</tr>
+						<tr>
+							<td>Address 1:</td>
+							<td>[% billingaddress1 %]</td>
+						</tr>
+						<tr>
+							<td>Address 2:</td>
+							<td>[% billingaddress2 %]</td>
+						</tr>
+						<tr>
+							<td>City/State/Zip</td>
+							<td>[% billingcity %], [% billingstate %] [% billingzip %]</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
-			<div id="ci_2">
-				<b>Freight Charge Terms:</b><br/>
-					<span>Pre-paid <input type=checkbox [% freightcharges == 0 ? 'CHECKED' : '' %]/></span>
-					<span>Collect  <input type=checkbox [% freightcharges == 1 ? 'CHECKED' : '' %]/></span>
-			</div>
-			<div id="ci_3">
-				<b>Pickup Window:</b>
-			</div>
-			<div id="ci_4">
-				<b>Special Services:</b>
+			<div id="carrier_info">
+				<div id="ci_1">
+					Carrier Name: [% carrier %]<br/>
+					SCAC: [% scac %]<br/>
+					PRO#: [% tracking1 %]<br/>
+					Trailer #: <br/>
+					Seal #(s): <br/>
+					PO#: [% ponumber %]<br/>
+					SO#: [% ordernumber %]<br/>
+					Ref: [% customernumber %]<br/>
+				</div>
+				<div id="ci_2">
+					<b>Freight Charge Terms:</b><br/>
+						<span>Pre-paid <input type=checkbox [% freightcharges == 0 ? 'CHECKED' : '' %]/></span>
+						<span>Collect  <input type=checkbox [% freightcharges == 1 ? 'CHECKED' : '' %]/></span>
+				</div>
+				<div id="ci_3">
+					<b>Pickup Window:</b>
+				</div>
+				<div id="ci_4">
+					<b>Special Services:</b>
 
+				</div>
 			</div>
-		</div>
-		<div id="po_num">
-			 ACTL WGT [% packagetotalweight %] [% weighttype %]
-		</div>
-		<div id="customer_order">
-			<b>CUSTOMER ORDER / CARRIER INFORMATION</b>
-			<table>
-				<thead>
-					<tr>
-						<th>Item</th>
-						<th>Product Description</th>
-						<th>NMFC#</th>
-						<th>Class</th>
-						<th># Units</th>
-						<th>Weight</th>
-					</tr>
-				</thead>
-				<tfoot>
-					<tr>
-						<td colspan="4">Grand Total</td>
-						<td>[% packagetotalquantity %]</td>
-						<td>[% packagetotalweight %]</td>
-					</tr>
-				</tfoot>
-				<tbody>
-					<!-- Product Entries-->
-					[% FOREACH item IN bol_packagelist_loop %]
-					<tr>
-						<td>[% loop.count %]</td>
-						<td>[% item.description %]</td>
-						<td>[% item.nmfc %]</td>
-						<td>[% item.class %]</td>
-						<td>[% item.quantity %]&nbsp;[% item.unittype %]</td>
-						<td>[% item.weight %]</td>
-					</tr>
-					[% END %]
-					<!-- Product Entries-->
-				</tbody>
-			</table>
-		</div>
-		<div id="note">
-			<b>NOTE Liability Limitations for loss or damage in this
-				shipment may be applicable. See 49 U.S.C - Sec. 14706(c)(1)(A) and (B).</b>
-		</div>
-		<div id="received">
-			RECEIVED, subject to individually determined rates or contracts
-			that have been agreed upon in writing between the carrier and
-			shipper, if applicable, otherwise to the rates, classifications
-			and rules that have been established by the carrier and are
-			available to the shipper, on request, and to all applicable
-			state and federal regulations.
-		</div>
-		<div class="signatures" id="sig1">
-			<b>SHIPPER SIGNATURE / DATE</b><br/>
-			This is to certify that the above named materials are properly
-			classified, described, packaged, marked and labeled, and are in
-			proper condition for transportation according to the applicable
-			regulations of the U.S. Department of Transportation.
-		</div>
-		<div class="signatures" id="sig2">
-			<div>
-				<b>Trailer Load</b><br/><br/>
-				<input type="checkbox"/> By Shipper<br/><br/>
-				<input type="checkbox"/> By Driver<br/><br/>
+			<div id="po_num">
+				 ACTL WGT [% packagetotalweight %] [% weighttype %]
 			</div>
-			<div>
-				<b>Freight Counted</b><br/><br/>
-				<input type="checkbox"/> By Shipper<br/><br/>
-				<input type="checkbox"/> By Driver/Pallets said to be contain<br/><br/>
-				<input type="checkbox"/> By Driver/Pieces<br/><br/>
+			<div id="customer_order">
+				<b>CUSTOMER ORDER / CARRIER INFORMATION</b>
+				<table>
+					<thead>
+						<tr>
+							<th>Item</th>
+							<th>Product Description</th>
+							<th>NMFC#</th>
+							<th>Class</th>
+							<th># Units</th>
+							<th>Weight</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<td colspan="4">Grand Total</td>
+							<td>[% packagetotalquantity %]</td>
+							<td>[% packagetotalweight %]</td>
+						</tr>
+					</tfoot>
+					<tbody>
+						<!-- Product Entries-->
+						[% FOREACH item IN bol_packagelist_loop %]
+						<tr>
+							<td>[% loop.count %]</td>
+							<td>[% item.description %]</td>
+							<td>[% item.nmfc %]</td>
+							<td>[% item.class %]</td>
+							<td>[% item.quantity %]&nbsp;[% item.unittype %]</td>
+							<td>[% item.weight %]</td>
+						</tr>
+						[% END %]
+						<!-- Product Entries-->
+					</tbody>
+				</table>
 			</div>
-		</div>
-		<div class="signatures" id="sig3">
-			<b>CARRIER SIGNATURE / PICKUP DATE</b>
-			Carrier acknowledges receipt of packages and required placards.
-			Carrier certifies emergency response information was made
-			available and/or carrier has the U.S. Department of Transportation emergency response
-			guidebook or equivalent documentation in the vehicle.
-			<span>Property described above is received in good order, except as noted.</span>
-		</div>
-		<div class="comments" id="com1">
-			<b>Shipper Comments:</b><br/>
-			[% description %]
-		</div>
-		<div class="comments" id="com2">
-			<b>Carrier Comments:</b>
+			<div id="note">
+				<b>NOTE Liability Limitations for loss or damage in this
+					shipment may be applicable. See 49 U.S.C - Sec. 14706(c)(1)(A) and (B).</b>
+			</div>
+			<div id="received">
+				RECEIVED, subject to individually determined rates or contracts
+				that have been agreed upon in writing between the carrier and
+				shipper, if applicable, otherwise to the rates, classifications
+				and rules that have been established by the carrier and are
+				available to the shipper, on request, and to all applicable
+				state and federal regulations.
+			</div>
+			<div class="signatures" id="sig1">
+				<b>SHIPPER SIGNATURE / DATE</b><br/>
+				This is to certify that the above named materials are properly
+				classified, described, packaged, marked and labeled, and are in
+				proper condition for transportation according to the applicable
+				regulations of the U.S. Department of Transportation.
+			</div>
+			<div class="signatures" id="sig2">
+				<div>
+					<b>Trailer Load</b><br/><br/>
+					<input type="checkbox"/> By Shipper<br/><br/>
+					<input type="checkbox"/> By Driver<br/><br/>
+				</div>
+				<div>
+					<b>Freight Counted</b><br/><br/>
+					<input type="checkbox"/> By Shipper<br/><br/>
+					<input type="checkbox"/> By Driver/Pallets said to be contain<br/><br/>
+					<input type="checkbox"/> By Driver/Pieces<br/><br/>
+				</div>
+			</div>
+			<div class="signatures" id="sig3">
+				<b>CARRIER SIGNATURE / PICKUP DATE</b>
+				Carrier acknowledges receipt of packages and required placards.
+				Carrier certifies emergency response information was made
+				available and/or carrier has the U.S. Department of Transportation emergency response
+				guidebook or equivalent documentation in the vehicle.
+				<span>Property described above is received in good order, except as noted.</span>
+			</div>
+			<div class="comments" id="com1">
+				<b>Shipper Comments:</b><br/>
+				[% description %]
+			</div>
+			<div class="comments" id="com2">
+				<b>Carrier Comments:</b>
+			</div>
 		</div>
 
 		<form id="frm_next" action="/customer/order/ajax" method="post">
@@ -264,7 +266,7 @@
 				window['qzDonePrinting'] = null;
 				};
 
-			$("#content").html2canvas({
+			$("body").html2canvas({
 				canvas: hidden_screenshot,
 				onrendered: function() {
 					if (notReady()) { return; }
