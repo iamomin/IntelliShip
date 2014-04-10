@@ -2,7 +2,6 @@
 <html>
 	<head>
 		<title>Bill Of Lading</title>
-		<OBJECT ID="WebBrowser" CLASSID="CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"></OBJECT>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 		<link rel="stylesheet" type="text/css" href="/static/css/bol.css" media="screen"/>
 		<link rel="stylesheet" type="text/css" href="/static/css/bol.css" media="print"/>
@@ -16,7 +15,7 @@
 	<body>
 		<div id="pageframe">
 			<div id="header">
-				<img id="logo" src="https://dintelliship2.engagetechnology.com/static/branding/[% branding_id %]/images/header/report-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
+				<img id="logo" src="/static/branding/[% branding_id %]/images/header/report-logo.png" valign=top height="[% bol_logo_height %]">[% bol_url_phone %]
 				<div>
 					<b>Visionship Operations</b><br/>
 					<b>OPERATIONS@MYVISIONSHIP.COM</b><br/>
