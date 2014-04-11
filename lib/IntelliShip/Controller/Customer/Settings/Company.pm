@@ -75,6 +75,7 @@ sub setup :Local
 	my $Customer = $self->get_customer;
 	if ($Customer)
 		{
+		$params->{'customerid'} = $Customer->customerid unless $params->{'customerid'};
 		#$c->log->debug("CUSTOMER DUMP: " . Dumper $Customer->{'_column_data'});
 		$c->stash($Customer->{'_column_data'});
 		$c->stash->{customerAddress} = $Customer->address;
