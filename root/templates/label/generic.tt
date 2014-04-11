@@ -119,7 +119,7 @@
 			 	</td>
 			 	<td align=left width=75%>
 					<font face="Arial, Helvetica, sans-serif" size="-1">
-							[% description %]
+							[% extcd %]
 						</font>
 			 	</td>
 			</tr>
@@ -131,7 +131,7 @@
 			 	</td>
 			 	<td align=left width=75%>
 					<font face="Arial, Helvetica, sans-serif" size="-1">
-							[% comments %]
+							[% description %]
 						</font>
 			 	</td>
 			</tr>

@@ -1937,7 +1937,6 @@ sub setup_label_to_print
 	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
 
 	$c->stash($params);
-	$c->stash($Shipment->{_column_data});
 	$c->stash->{label_print_count} = $self->contact->default_thermal_count;
 
 	## print commercial invoice only for international shipment
@@ -1974,6 +1973,9 @@ sub setup_label_to_print
 		}
 	else
 		{
+		$c->stash($Shipment->{_column_data});
+		$c->stash($Shipment->CO->{_column_data});
+
 		$c->stash->{fromAddress}   = $Shipment->origin_address;
 		$c->stash->{toAddress}     = $Shipment->destination_address;
 		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
