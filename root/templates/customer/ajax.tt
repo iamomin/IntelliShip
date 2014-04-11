@@ -5,13 +5,12 @@
 	<table class="css3-checkboxes"><tr>
 	[% FOREACH item IN CARRIER_LIST %]
 		[% count=count+1 %]
-		[% IF count == 5 %]
-			</tr><tr>
-		[% count = 0 %]
-		[% ELSE %]
 			<td nowrap>
 			<label><input type="checkbox" name="carriers" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">&nbsp;[% item.name %]</label></span></label>
 			</td>
+		[% IF count == 4 %]
+			</tr><tr>
+		[% count = 0 %]
 		[% END %]
 	[% END %]
 	</tr></table>
@@ -22,13 +21,12 @@
 	<table class="css3-checkboxes"><tr>
 	[% FOREACH item IN COSTATUS_LIST %]
 		[% count=count+1 %]
-		[% IF count == 5 %]
-			</tr><tr>
-		[% count = 0 %]
-		[% ELSE %]
 			<td nowrap>
 			<label><input type="checkbox" name="costatus" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">&nbsp;[% item.name %]</label></span></label>
 			</td>
+		[% IF count == 4 %]
+			</tr><tr>
+		[% count = 0 %]
 		[% END %]
 	[% END %]
 	</tr></table>

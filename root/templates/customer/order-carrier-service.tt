@@ -103,13 +103,12 @@
 		<tr>
 		[% FOREACH item IN specialservice_loop %]
 		[% count=count+1 %]
-			[% IF count == 7 %]
-				</tr><tr>
-			[% count = 0 %]
-			[% ELSE %]
-				<td>
+			<td>
 				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked %] onclick='resetCSList();'/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
-				</td>
+			</td>
+			[% IF count == 7 %]
+			</tr><tr>
+			[% count = 0 %]
 			[% END %]
 		[% END %]
 		</tr>

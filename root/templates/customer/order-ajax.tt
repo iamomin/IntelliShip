@@ -248,19 +248,18 @@
 	-->
 	<div id="sc_error"></div>
 	<table class="app css3-checkboxes">
-		[% count=0 %]
+		[% sscount=0 %]
 		<tr>
 		[% FOREACH item IN specialservice_loop %]
-		[% count=count+1 %]
-			[% IF count == 5 %]
-				</tr><tr>
-			[% count = 0 %]
-			[% ELSE %]
-				<td id="td_[% item.value %]">
-				[% UNLESS item.checked %]
+			[% sscount=sscount+1 %]
+			<td id="td_[% item.value %]">
+			[% UNLESS item.checked %]
 				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
-				[% END %]
-				</td>
+			[% END %]
+			</td>
+			[% IF sscount == 4 %]
+			</tr><tr>
+			[% sscount = 0 %]
 			[% END %]
 		[% END %]
 		</tr>

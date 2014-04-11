@@ -358,13 +358,13 @@
 							<tr>
 								[% FOREACH item IN assessorial_loop %]
 								[% count=count+1 %]
-									[% IF count == 6 %]
-										</tr><tr>
+									<td id="td_[% item.value %]">
+										<span id="blah"><font size="1" face="Arial, Helvetica, sans-serif"><input type="checkbox" id="[% item.name %]" name="[% item.name %]" value="1" [% item.checked ? 'CHECKED' : '' %]/>&nbsp;[% item.displayname %]&nbsp;&nbsp;</font></span>
+									</td>
+									[% IF count == 5 %]
+									</tr><tr>
 										[% count = 1 %]
 									[% END %]
-								<td id="td_[% item.value %]">
-								<span id="blah"><font size="1" face="Arial, Helvetica, sans-serif"><input type="checkbox" id="[% item.name %]" name="[% item.name %]" value="1" [% item.checked ? 'CHECKED' : '' %]/>&nbsp;[% item.displayname %]&nbsp;&nbsp;</font></span>
-								</td>
 								[% END %]
 							</tr>
 						</table>
