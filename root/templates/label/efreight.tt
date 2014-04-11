@@ -61,7 +61,7 @@
 							[% contactname %]<br>
 							[% contactphone %]<br>
 							PO: [% ponumber %]<br>
-							ETA: [% duedate %]<br>
+							ETA: [% dateneeded %]<br>
 							Airport Code: 
 						</font>
 					</td>
