@@ -372,21 +372,21 @@ sub save_CO_details :Private
 		}
 
 	$coData->{'estimatedweight'} = $params->{'totalweight'};
-	$coData->{'density'} = $params->{'density'};
+	$coData->{'density'} = $params->{'density_1'};
 	$coData->{'volume'} = $params->{'volume'};
-	$coData->{'class'} = $params->{'class'};
+	$coData->{'class'} = $params->{'class_1'};
 
 	# Sort out volume/density/class issues - if we have volume (and of course weight), and nothing
 	# else, calculate density.  If we have density and no class, get class.
 	# Volume assumed to be in cubic feet - density would of course be #/cubic foot
-	if ($params->{'estimatedweight'} and $params->{'volume'} and !$params->{'density'} )
+	if ($coData->{'estimatedweight'} and $coData->{'volume'} and !$coData->{'density'} )
 		{
-		$coData->{'density'} = int($params->{'estimatedweight'} / $params->{'volume'});
+		$coData->{'density'} = int($coData->{'estimatedweight'} / $coData->{'volume'});
 		}
 
-	if ($params->{'density'} and !$params->{'class'})
+	if ($coData->{'density'} and !$coData->{'class'})
 		{
-		$coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($params->{'estimatedweight'}, undef, undef, undef, $params->{'density'});
+		$coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($coData->{'estimatedweight'}, undef, undef, undef, $coData->{'density'});
 		}
 
 	$coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
