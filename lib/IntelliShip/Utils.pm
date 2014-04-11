@@ -460,6 +460,14 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Include All Email For All Notification ',       value => 'combineemail',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	];
 
+my $CUSTOM_CSS_STYLES = [
+	{ name => 'Site Top Header',			bgcolor => 'site-top-hdr-bgcolor',			font => 'site-top-hdr-font',			size => 'site-top-hdr-size', 			section => '#header'},
+	{ name => 'Primary Section Headers',	bgcolor => 'primary-section-hdr-bgcolor',	font => 'primary-section-hdr-font',		size => 'primary-section-hdr-size',		section => '#primary-section-header'},
+	{ name => 'Secondary Section Headers',	bgcolor => 'secondary-section-hdr-bgcolor',	font => 'secondary-section-hdr-font',	size => 'secondary-section-hdr-size',	section => '#secondary-section-header'},
+	{ name => 'Title Headers',				bgcolor => 'title-hdr-bgcolor',				font => 'title-hdr-font',				size => 'title-hdr-size',				section => '#title-header'},
+	{ name => 'Menu Buttons',				bgcolor => 'mnu-btn-bgcolor',				font => 'mnu-btn-font',					size => 'mnu-btn-size',					section => '#menu-button-size'},
+	];
+
 sub get_rules
 	{
 	my $self = shift;
@@ -484,6 +492,11 @@ sub get_tracking_URL
 	$tracking_url =~ s/XXXX/$tracking_number/g;
 
 	return $tracking_url;
+	}
+
+sub get_custome_css_style_hash
+	{
+	return $CUSTOM_CSS_STYLES;
 	}
 
 sub get_bill_to_name

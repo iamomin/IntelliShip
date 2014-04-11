@@ -1,0 +1,130 @@
+<!-- File Upload jQuery Plugin http://www.uploadify.com -->
+<script type="text/javascript" src="/static/jquery/uploadify/jquery.uploadify.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/jquery/uploadify/uploadify.css">
+
+<!-- Color Picker Plugin http://www.colpick.com/plugin -->
+<script type="text/javascript" src="/static/jquery/color-picker/colpick.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/jquery/color-picker/colpick.css"/>
+
+<div id="message"></div>
+<p class="validateTips"></p>
+<table class="center-app">
+	<tr>
+		<td>
+			<label class="float-left">Logo (Light Background): </label>
+		</td>
+		<td>
+			<label class="float-left">Logo (Dark Background): </label>
+		</td>
+	</tr>
+	<tr>
+		<td style="width: 50%;">
+			<form><div id="queue"></div><input id="logo-light-background" type="file" multiple="true"/></form>
+		</td>
+		<td>
+			<form><div id="queue"></div><input id="logo-dark-background" type="file" multiple="true"/></form>
+		</td>
+	</tr>
+</table>
+
+<form id="frm_company_branding">
+<table class="center-app">
+	<tr>
+		<td>
+			<table>
+				<tr>
+					<td style="width:425px; vertical-align:top;">
+						<table>
+							<tr>
+								<td>&nbsp;</td>
+								<td><strong>Background</strong></td>
+								<td><strong>Font</strong></td>
+								<td><strong>Size</strong></td>
+							</tr>
+
+							[% FOREACH item IN stylesetting_loop %]
+							<tr>
+								<td><label for="[% item.bgcolor %]" class="float-left">[% item.name %]: </label></td>
+								<td><input type="text" class="colorpicker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"></input></td>
+								<td><input type="text" class="colorpicker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"></input></td>
+								<td>
+								[% IF item.size %]
+								<label>
+									<select name="[% item.size %]" id="[% item.size %]" style="width: 45px;">
+										[% FOREACH font IN fontsize_loop %]
+											<option value="[% font.value %]" [% IF font.value == item.values.size %]SELECTED[% END %]>[% font.name %]</option>
+										[% END %]
+									</select>
+								</label>
+								[% END %]
+								</td>
+							</tr>
+							[% END %]
+
+						</table>
+					</td>
+					<td style="width:575px; vertical-align:top;">
+						<table>
+							<tr>
+								<td><label for="custom-style-sheet">Custom Style Sheet (CSS3): </label></td>
+							</tr>
+							<tr>
+								<td><textarea rows="17" id="custom-style-sheet" name="custom-style-sheet" cols="62" style="resize: none">[% BRANDING_CSS %]</textarea>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<center>
+	<input type="button" class="green" value="Update Branding" onClick="updateCompanyBranding();"/>
+</center>
+</form>
+
+<script>
+
+	$(document).ready(function() {
+		$('#logo-light-background').uploadify({
+			'formData'     : {
+				'timestamp'  : jQuery.now(),
+				'type'       : 'light',
+				'customerid' : '[% customerid %]'
+				},
+			'swf'      : '/static/jquery/uploadify/uploadify.swf',
+			'uploader' : '/customer/settings/company/upload'
+			});
+
+		$('#logo-dark-background').uploadify({
+			'formData'     : {
+				'timestamp' : jQuery.now(),
+				'type'     : 'dark',
+				'customerid' : '[% customerid %]'
+				},
+			'swf'      : '/static/jquery/uploadify/uploadify.swf',
+			'uploader' : '/customer/settings/company/upload'
+			});
+
+		/* Set Initial colors */
+		[% FOREACH item IN stylesetting_loop %]
+			$("#[% item.bgcolor %]").css({'border-color':'#' + $("#[% item.bgcolor %]").val()});
+			$("#[% item.font %]").css({'border-color':'#' + $("#[% item.font %]").val()});
+		[% END %]
+
+		$('.colorpicker').colpick({
+			layout:'hex',
+			submit:0,
+			colorScheme:'dark',
+			onChange:function(hsb,hex,rgb,el,bySetColor) {
+				$(el).css('border-color','#'+hex);
+				// Fill the text box just if the color was set using the picker, and not the colpickSetColor function.
+				if(!bySetColor) $(el).val(hex);
+				}
+			}).keyup(function(){
+				$(this).colpickSetColor(this.value);
+				});
+		});
+</script>
