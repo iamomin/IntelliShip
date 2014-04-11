@@ -372,7 +372,7 @@ sub save_CO_details :Private
 		}
 
 	$coData->{'estimatedweight'} = $params->{'totalweight'};
-	$coData->{'density'} = $params->{'density_1'};
+	$coData->{'density'} = $params->{'density_1'} || 0.00;
 	$coData->{'volume'} = $params->{'volume'};
 	$coData->{'class'} = $params->{'class_1'};
 
@@ -2729,7 +2729,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
 	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
 	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
-	$ShipmentData->{'density'} = $params->{'density'};
+	$ShipmentData->{'density'} = $CO->density;
 	$ShipmentData->{'ipaddress'} = $params->{'ipaddress'};
 	$ShipmentData->{'custnum'} = $params->{'custnum'};
 
