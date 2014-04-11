@@ -388,6 +388,34 @@ sub get_alt_SOP_consignee_name
 	return $ConsigneeName;
 	}
 
+sub get_cost_and_zone
+	{
+	my $self = shift;
+	my ($fromzip,$tozip,$weight,$fromstate,$tostate,$fromcountry,$tocountry,$dimlength,$dimwidth,$dimheight,$csid) = @_;
+
+	my $http_request = {
+		intelliship => 1,
+		fromzip     => $fromzip,
+		tozip       => $tozip,
+		weight      => $weight,
+		fromstate   => $fromstate,
+		tostate     => $tostate,
+		fromcountry => $fromcountry,
+		tocountry   => $tocountry,
+		dimlength   => $dimlength,
+		dimwidth    => $dimwidth,
+		dimheight   => $dimheight,
+		csid        => $csid,
+		action      => 'GetCost'
+		};
+
+	my $response = $self->APIRequest($http_request);
+
+	my ($Cost, $Zone) = ($response->{'cost'},$response->{'zone'});
+
+	return($Cost,$Zone);
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
