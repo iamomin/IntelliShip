@@ -817,12 +817,71 @@ warn "undef etadate";
 		return $ReturnRef;
 	}
 
-        sub GetCarrierServiceList
+	sub GetCarrierServices
+	{
+		my $self = shift;
+		my ($carrierid, $customerid) = @_;
+		warn "########## GetCarrierServices " . $carrierid;
+		
+		my $SQLString = "select 
+								serviceid, 
+								carrierid, 
+								servicename, 
+								international, 
+								heavy, 
+								servicecode
+							from 
+								service 
+							where carrierid = '$carrierid'
+							and serviceid not in 
+								(
+									select 
+										serviceid 
+									from
+										customerservice
+									where
+										customerid = '$customerid'
+								)
+							order by servicename, international, heavy";
+
+
+        warn "######### \$SQLString $SQLString";
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+                
+		$sth->execute()
+			or die "Cannot execute carrier/service sql statement";
+
+                
+		my $ReturnRef = {};
+		my @arr = ();
+		while ( my ($serviceid, $carrierid, $servicename, $international, $heavy, $servicecode) = $sth->fetchrow_array() )
+		{
+			my $csrecord = {};
+
+			$csrecord->{'serviceid'} = $serviceid;
+			$csrecord->{'carrierid'} = $carrierid;
+			$csrecord->{'servicename'} = $servicename;
+			$csrecord->{'international'} = $international == 0 ? "no": "yes" ;
+			$csrecord->{'heavy'} = $heavy == 0 ? "no": "yes";
+			$csrecord->{'servicecode'} = $servicecode;
+			push(@arr, $csrecord);                        
+		}
+		$ReturnRef->{'services'} = \@arr;
+
+		$sth->finish();
+
+        warn "########## ReturnRef: " . Dumper($ReturnRef);
+		return $ReturnRef;
+	}
+	
+    sub GetCustomerServiceList
 	{
 		my $self = shift;
 		my ($SOPID) = @_;
 
-                warn "########## GetCarrierServiceList " . $SOPID;
+                warn "########## GetCustomerServiceList " . $SOPID;
 
 		my $SQLString = "select 
                                     cs.customerserviceid, 
@@ -1026,7 +1085,7 @@ warn "undef etadate";
 					warn "########## \$key = $key";					
 					if(ref($val) eq "HASH" && exists $val->{'costfield'})
 					{
-						my $sql = "update rate set " . $val->{'costfield'}. " = ". $val->{'actualcost'} ." where rateid = '".$val->{'rateid'}."'";
+						my $sql = "update rate set " . $val->{'costfield'}. " = ". $val->{'actualcost'} ." where rateid = '". $val->{'rateid'}."'";
 						warn "########## \$sql= $sql";
 						my $success = $self->{'dbref'}->do($sql)
 								or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
@@ -1061,7 +1120,15 @@ warn "undef etadate";
 			
 			return {'status' => 'success', 'message' => "$rate_count records updated for rate, $range_count records updated for range"};
 		}
-        
+    
+	sub DeleteAllTariffRows
+	{
+		warn "########## Online::DeleteAllTariffRows";
+		my $self = shift;
+		my ($tariff) = @_;
+		
+	}
+    
 	sub OkToShipOnShipDate
 	{
 		my $self = shift;
