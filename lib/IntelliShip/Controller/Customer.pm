@@ -1023,10 +1023,6 @@ sub get_select_list
 		{
 		$list = [
 			{ name =>  '',  value =>  '0' },
-			{ name =>  '6', value =>  '6' },
-			{ name =>  '7', value =>  '7' },
-			{ name =>  '8', value =>  '8' },
-			{ name =>  '9', value =>  '9' },
 			{ name => '10', value => '10' },
 			{ name => '11', value => '11' },
 			{ name => '12', value => '12' },
@@ -1036,11 +1032,6 @@ sub get_select_list
 			{ name => '16', value => '16' },
 			{ name => '18', value => '18' },
 			{ name => '20', value => '20' },
-			{ name => '22', value => '22' },
-			{ name => '24', value => '24' },
-			{ name => '26', value => '26' },
-			{ name => '28', value => '28' },
-			{ name => '32', value => '32' },
 			];
 		}
 
