@@ -166,7 +166,7 @@ sub setup :Local
 	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 
 	$self->get_branding_settings;
-	$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/company-branding.tt" ]);;
+	$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);;
 
 	$c->stash->{SETUP_CUSTOMER} = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
@@ -584,7 +584,7 @@ sub get_branding_settings :Private
 
 	$c->stash->{BRANDING_CSS} = $BRANDING_CSS;
 
-	$c->stash(template => "templates/customer/company-branding.tt");
+	$c->stash(template => "templates/customer/settings-company-branding.tt");
 	}
 
 sub get_style_setting_list
@@ -644,16 +644,16 @@ sub update_branding_settings :Private
 
 	print $FILE $CSS_CONTENT;
 
-	print $FILE "/*custom_css_start*/";
+	print $FILE "\n/*custom_css_start*/\n";
 
 	my $css_contents;
 	my $CUSTOM_CSS_RULES = IntelliShip::Utils->get_custome_css_style_hash;
 	foreach my $style (@$CUSTOM_CSS_RULES)
 		{
 		$css_contents = $style->{section} . "{";
-		$css_contents .= "$_\n" . "\tbackground:#" . $params->{"$style->{bgcolor}"} . ";" if $params->{"$style->{bgcolor}"};
-		$css_contents .= "$_\n" . "\tcolor:#" . $params->{"$style->{font}"} . ";" if $params->{"$style->{font}"};
-		$css_contents .= "$_\n" . "\tsize:" . $params->{"$style->{size}"} . ";" if $params->{"$style->{size}"};
+		$css_contents .= "$_\n" . "\tbackground: #" . $params->{"$style->{bgcolor}"} . ";" if $params->{"$style->{bgcolor}"};
+		$css_contents .= "$_\n" . "\tcolor: #" . $params->{"$style->{font}"} . ";" if $params->{"$style->{font}"};
+		$css_contents .= "$_\n" . "\tsize: " . $params->{"$style->{size}"} . ";" if $params->{"$style->{size}"};
 
 		unless ($css_contents eq $style->{section} . "{")
 			{
@@ -663,7 +663,7 @@ sub update_branding_settings :Private
 			}
 		}
 
-	print $FILE "/*custom_css_end*/";
+	print $FILE "\n/*custom_css_end*/\n";
 	close $FILE;
 
 	return { SUCCESS => 1, MESSAGE => "Updated successfully..." };

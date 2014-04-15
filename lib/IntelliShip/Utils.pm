@@ -461,11 +461,11 @@ my $CUSTOMER_CONTACT_RULES = [
 	];
 
 my $CUSTOM_CSS_STYLES = [
-	{ name => 'Site Top Header',			bgcolor => 'site-top-hdr-bgcolor',			font => 'site-top-hdr-font',			size => 'site-top-hdr-size', 			section => '#header'},
-	{ name => 'Primary Section Headers',	bgcolor => 'primary-section-hdr-bgcolor',	font => 'primary-section-hdr-font',		size => 'primary-section-hdr-size',		section => '#primary-section-header'},
-	{ name => 'Secondary Section Headers',	bgcolor => 'secondary-section-hdr-bgcolor',	font => 'secondary-section-hdr-font',	size => 'secondary-section-hdr-size',	section => '#secondary-section-header'},
-	{ name => 'Title Headers',				bgcolor => 'title-hdr-bgcolor',				font => 'title-hdr-font',				size => 'title-hdr-size',				section => '#title-header'},
-	{ name => 'Menu Buttons',				bgcolor => 'mnu-btn-bgcolor',				font => 'mnu-btn-font',					size => 'mnu-btn-size',					section => '#menu-button-size'},
+	{ name => 'Site Top Header',           bgcolor => 'header-bgcolor', font => 'header-font', size => 'header-size', section => '#header' },
+	{ name => 'Primary Section Headers',   bgcolor => 'h1',             font => 'h1-font',     size => 'h1-size',     section => 'h1' },
+	{ name => 'Secondary Section Headers', bgcolor => 'h2',             font => 'h2-font',     size => 'h2-size',     section => 'h2' },
+	{ name => 'Title Headers',             bgcolor => 'title-bgcolor',  font => 'title-font',  size => 'title-size',  section => '#title' },
+	{ name => 'Menu Buttons',              bgcolor => 'menu-bgcolor',   font => 'menu-font',   size => 'menu-size',   section => '#menu' },
 	];
 
 sub get_rules
