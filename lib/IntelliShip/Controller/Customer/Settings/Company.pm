@@ -608,15 +608,18 @@ sub get_style_setting_list
 				my @attribute_arr = split(/:/, $element);
 				if ($attribute_arr[0] eq 'background')
 					{
-					$values->{bgcolor} = substr($attribute_arr[1], 1);
+					$values->{bgcolor} = $attribute_arr[1];
+					$values->{bgcolor} =~ s/\ *#//;
 					}
 				elsif ($attribute_arr[0] eq 'color')
 					{
-					$values->{color} = substr($attribute_arr[1], 1);
+					$values->{color} = $attribute_arr[1];
+					$values->{color} =~ s/\ *#//;
 					}
 				elsif ($attribute_arr[0] eq 'size')
 					{
 					$values->{size} = $attribute_arr[1];
+					$values->{size} =~ s/px//;
 					}
 				}
 			$style->{values} = $values;
