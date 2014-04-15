@@ -1175,6 +1175,46 @@ sub ImportProducts
 		my $CO;
 		if ( $export_flag == 0 )
 			{
+			## if missing info, see if the customer has sku data in our db
+			if ($CustRef->{'unittypeid'} &&
+				(!$CustRef->{'productweight'} || !$CustRef->{'dimlength'} || !$CustRef->{'dimwidth'} || !$CustRef->{'dimheight'})
+				)
+				{
+				my $sth = $c->myDBI->select("SELECT 1 FROM productsku WHERE customerid = '$CustomerID' AND unittypeid = '" . $CustRef->{'unitttypeid'} . "'");
+				if ($sth->numrows)
+					{
+					$c->log->debug("... LOOKUP SKU DATA based on $CustRef->{'unittypeid'} and $CustRef->{'partnumber'} and $CustomerID");
+
+					my $sql;
+					my $FILTER  = "upper(customerskuid) = upper('$CustRef->{partnumber}') AND unittypeid = '$CustRef->{unittypeid}' AND customerid = '$CustomerID'";
+					if ( $CustRef->{'unittypeid'} == 3 )
+						{
+						$sql = "SELECT weight wt, length ln, width wd, height ht FROM productsku WHERE $FILTER LIMIT 1";
+						}
+					elsif ( $CustRef->{'unittypeid'} == 2 )
+						{
+						$sql = "SELECT weight wt, caselength ln, casewidth wd, caseheight ht FROM productsku WHERE $FILTER LIMIT 1";
+						}
+					elsif ( $CustRef->{'unittypeid'} == 1 )
+						{
+						$sql = "SELECT palletweight wt, palletlength ln, palletwidth wd, palletheight ht FROM productsku WHERE FILTER LIMIT 1";
+						}
+
+					my $STH = $self->myDBI->select($sql);
+
+					my ($weight, $length, $width, $height) = (0, 0, 0, 0);
+					if ($STH->numrows)
+						{
+						my $d = $STH->fetchrow(0);
+						($weight, $length, $width, $height) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht});
+						}
+					$CustRef->{'productweight'} = $weight * $CustRef->{'productquantity'} if $weight;
+					$CustRef->{'dimlength'} = $length if $length;
+					$CustRef->{'dimwidth'} = $width if $width;
+					$CustRef->{'dimheight'} = $height if $height;
+					}
+				}
+
 			## if it's the 1st hit on a particular order then delete any existing product records
 			if ( $LineCount== 1 || ($LastCOID ne $CustRef->{'coid'}) )
 				{
