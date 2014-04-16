@@ -17,7 +17,24 @@ body {
     color: #4B4B4B;
 }
 
+ol, ul {
+    list-style: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: "";
+}
+
+blockquote, q {
+    quotes: "" "";
+}
+
 a {
+    /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
+    -webkit-transition: all 0.3s ease-in; 
+    -moz-transition: all 0.3s ease-in;
+    -o-transition: all 0.3s ease-in; 
     text-decoration: none;
     color: #1875BA;
 }
@@ -25,6 +42,11 @@ a {
 a:hover {
     text-decoration: underline;
     color: #555;
+    outline: 0;
+}
+
+a:focus {
+    outline: thin dotted;
 }
 
 a:active { /* Improves readability when focused and also mouse hovered in all browsers people.opera.com/patrickl/experiments/keyboard/test */
@@ -34,6 +56,10 @@ a:active { /* Improves readability when focused and also mouse hovered in all br
 img { border: none; vertical-align: middle }
 
 #wrapper {
+}
+
+#clear {
+    clear:both;
 }
 
 #preload {
@@ -55,6 +81,10 @@ img { border: none; vertical-align: middle }
 
 .require {
     color: #A22827;
+}
+
+.site-branding {
+    display:none;
 }
 
 /* Centered 1000 pixel content of all section body */
@@ -98,6 +128,87 @@ img { border: none; vertical-align: middle }
     cursor: pointer;
     background-color: #98A7AF;
     position:absolute;
+}
+
+
+#header nav {
+    margin: 15px 25px;
+    max-width: 500px;
+    float: right;
+}
+
+#header nav ul ul {
+    display: none;
+    background-color: #FFF;
+}
+
+#header nav ul li:hover > ul {
+    display: block;
+}
+
+#header nav a {
+    display: block;
+    color: #1875BA;
+    font: bold 10px Arial;
+    text-decoration: none;
+}
+
+#header nav a span {
+    font: bold 12px Arial;
+    padding: 0 10px; 
+    color: #FFF;
+}
+
+#header nav a:hover {
+    text-decoration: none;
+}
+
+#header nav ul {
+    position: relative;
+    display: inline-table;
+}
+
+#header nav ul:after {
+    content: ""; clear: both; display: block;
+}
+
+#header nav ul li {
+    float: left;
+}
+
+#header nav ul li a {
+    padding-bottom: 10px 30px 10px 10px;
+}
+
+#header nav ul ul {
+    border: 1px solid #1875BA;
+    position: absolute;
+    top: 100%;
+}
+
+#header nav ul ul li {
+    float: none;
+    position: relative;
+    white-space: nowrap;
+}
+
+#header nav ul ul li a {
+    padding: 10px 20px;
+}
+
+#header nav ul ul li a:hover {
+    color: #9AA4AD;
+    background: #F5F5F5;
+}
+
+#header nav ul ul li hr {
+    margin: 0 auto;
+    color: #CCC;
+    width: 90%;
+}
+
+#header nav ul ul ul {
+    position: absolute; left: 100%; top:0;
 }
 
 /* Menu */

@@ -46,7 +46,6 @@
 
 		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
 		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/style.css"/>
-		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/menu.css"/>
 		[% IF CUSTOMER_OVERRIDE %]
 		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.customerid %].css"/>
 		[% END %]
