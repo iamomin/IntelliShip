@@ -156,7 +156,7 @@ function validPhoneNumber( Phone ) {
 	if (Phone == undefined) return false;
 	Phone = Phone.replace(/\D+/g,"");
 	//alert("validPhoneNumber, Phone = " + Phone + ", length = " + Phone.length);
-	return (Phone.length == 10);
+	return (Phone.length == 15);
 	}
 
 function validNumericField( Numeric )

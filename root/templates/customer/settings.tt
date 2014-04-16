@@ -252,7 +252,7 @@ $(document).ready(function(){
 				<td>Hazardous:</td>
 				<td><select name="hazardous" id="hazardous">
 						[% FOREACH item IN yesno_list %]
-						<option [% IF hazardous == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (hazardous == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				<td>SKU NMFC Code:</td>
@@ -263,7 +263,7 @@ $(document).ready(function(){
 				<td><select name="unitofmeasure" id="unitofmeasure">
 
 						[% FOREACH item IN unitofmeasure_list %]
-						<option [% IF unitofmeasure == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (unitofmeasure == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				<td>Balance on Hand:</td>
@@ -273,7 +273,7 @@ $(document).ready(function(){
 				<td>Unit Type:</td>
 				<td><select name="unittypeid" id="unittypeid">
 						[% FOREACH item IN unittype_list %]
-						<option [% IF unittypeid == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (unittypeid == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				<td></td>
@@ -355,29 +355,7 @@ $(document).ready(function(){
 
 	<script>
 	$("#frm_setup_sku").submit(function () {
-		var requireHash = {
-			customerskuid : { minlength: 1, description: "Please specify customer sku ID" },
-			description : { minlength: 1, description: "Please specify sku description" },
-			upccode : { minlength: 1, description: "Please specify UPC code" },
-			manufacturecountry : { minlength: 1, description: "Please specify manufacture country" },
-			value : { minlength: 1, description: "Please specify sku item value" },
-			class : { minlength: 1, description: "Please specify sku class" },
-			nmfc : { minlength: 1, description: "Please specify sku nmfc code" },
-			balanceonhand : { minlength: 1, description: "Please specify balance on hand" },
-			weight : { minlength: 1, description: "Please specify dim weight" },
-			length : { minlength: 1, description: "Please specify dim length" },
-			width : { minlength: 1, description: "Please specify dim width" },
-			height : { minlength: 1, description: "Please specify dim height" },
-			caseweight : { minlength: 1, description: "Please specify case dim weight" },
-			caselength : { minlength: 1, description: "Please specify case dim length" },
-			casewidth : { minlength: 1, description: "Please specify case dim width" },
-			caseheight : { minlength: 1, description: "Please specify case dim height" },
-			skupercase : { minlength: 1, description: "Please specify skus per case" },
-			palletweight : { minlength: 1, description: "Please specify pallet dim weight" },
-			palletlength : { minlength: 1, description: "Please specify pallet dim length" },
-			palletwidth : { minlength: 1, description: "Please specify pallet dim width" },
-			palletheight : { minlength: 1, description: "Please specify pallet dim height" },
-			casesperpallet : { minlength: 1, description: "Please specify cases per pallet" }
+		var requireHash = { customerskuid : { minlength: 1, description: "Please specify customer sku ID" }
 			};
 		if (validateForm(requireHash)) {
 			$("#update_productsku").val("Please Wait...");
