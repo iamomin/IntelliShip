@@ -60,6 +60,7 @@
 <input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 
 [% IF one_page %]
+	<h2>Package Detail</h2>
 	<table class="css3-radios css3-checkboxes">
 		<tr>
 			<td><input type="button" id="add_package_product" class="add" value="ADD"/></td>

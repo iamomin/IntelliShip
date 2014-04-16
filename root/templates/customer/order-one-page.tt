@@ -15,10 +15,8 @@
 	<input type="hidden" name="parent" value="[% parent %]"/>
 	[% END %]
 
-	<h2>Address Information</h2>
 	[% ADDRESS_SECTION %]
 
-	<h2>Package Detail</h2>
 	[% SHIPMENT_SECTION %]
 
 	[% CARRIER_SERVICE_SECTION %]

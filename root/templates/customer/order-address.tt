@@ -1,28 +1,29 @@
 [% UNLESS one_page %]
-<h2>SHIP A PACKAGE</h2>
+	<h2>SHIP A PACKAGE</h2>
 
-<table class="order-nav">
-	<tr>
-	<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
-	<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="$('#frm_address').submit();"/></td>
-	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="reviewOrder();"/></td>
-	</tr>
-	<tr>
-	<td colspan="3">
-		<div style="position: relative;">
-			<hr class="solid-line"/>
-			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/branding/[% branding_id %]/images/navigation-down.png">
-		</div>
-	</td>
-	</tr>
-</table>
+	<table class="order-nav">
+		<tr>
+		<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
+		<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="$('#frm_address').submit();"/></td>
+		<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="reviewOrder();"/></td>
+		</tr>
+		<tr>
+		<td colspan="3">
+			<div style="position: relative;">
+				<hr class="solid-line"/>
+				<img style="z-index: 1; float: left; margin-left:14%;" src="/static/branding/[% branding_id %]/images/navigation-down.png">
+			</div>
+		</td>
+		</tr>
+	</table>
 
-<form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
-	<input type="hidden" id="do" name="do" value="step1"/>
-	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
+	<form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
+		<input type="hidden" id="do" name="do" value="step1"/>
+		<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+		<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
 [% IF one_page %]
+	<h2>Address Information</h2>
 	<table width="100%">
 		<tr>
 			<td width="9%">
