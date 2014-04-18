@@ -156,7 +156,7 @@
 		</tr>
 	</table>
 
-	<div id="service-level-summary">[% SERVICE_LEVEL_SUMMARY %]</div>
+	<div id="carrier-service-list">[% SERVICE_LEVEL_SUMMARY %]</div>
 
 	<div style="clear: both;">&nbsp;</div>
 

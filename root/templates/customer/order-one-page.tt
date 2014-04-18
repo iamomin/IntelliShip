@@ -21,7 +21,7 @@
 
 	[% CARRIER_SERVICE_SECTION %]
 
-	<div style="clear: both;">&nbsp;</div>
+	<div id="clear">&nbsp;</div>
 
 	<div class="float-left">
 		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/>

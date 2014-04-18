@@ -58,7 +58,7 @@ sub quickship :Local
 		}
 	}
 
-sub setup_one_page :Private
+sub _setup_one_page :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -82,12 +82,41 @@ sub setup_one_page :Private
 	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
 
 	$self->setup_shipment_information;
-	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment.tt" ]));
+	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]));
 
 	$self->setup_carrier_service;
 	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
 
 	$c->stash(template => "templates/customer/order-one-page.tt");
+	}
+
+sub setup_one_page :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CO = $self->get_order;
+
+	if ($self->order_can_auto_process)
+		{
+		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
+		$self->SHIP_ORDER;
+		return $self->display_error_details($self->errors->[0]) if $self->has_errors;
+		return $self->setup_label_to_print;
+		}
+
+	$c->stash->{one_page} = 1;
+
+	#DYNAMIC FIELD VALIDATIONS
+	$self->set_required_fields;
+
+	$self->setup_address;;
+	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+
+	$self->setup_shipment_information;
+	$self->setup_carrier_service;
+
+	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 
 sub order_can_auto_process
@@ -167,6 +196,7 @@ sub setup_shipment_information :Private
 	my $c = $self->context;
 
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION');
 
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;

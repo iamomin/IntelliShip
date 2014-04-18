@@ -136,6 +136,102 @@
 
 [% END %]
 
+[% #---------------------------------------------------------- %]
+[% # New PACKAGE details section - START %]
+[% #---------------------------------------------------------- %]
+[% IF PACKAGE_DETAIL_ROW %]
+<table class="package" id="package-[% ROW_COUNT %]">
+	<tr>
+		<td><a href="javascript:void(0);" onclick="$(this).parent().parent().parent().remove();" class="round-black-button">X</a>&nbsp;PALLET QUANTITY:</td>
+		<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="1"/></td>
+		<th colspan="10"><div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]"/></div></th>
+	</tr>
+	<tr>
+		<td colspan="2"><button type="button" id="weight_per_unit_[% ROW_COUNT %]" class="left-rounded-gray-btn">Weight Per Pallet</button><button type="button" id="package_weight_[% ROW_COUNT %]" class="right-rounded-green-btn">Total Weight</button></td>
+		<td class="spacer">Length</td>
+		<td >&nbsp;</td>
+		<td>Width</td>
+		<td>&nbsp;</td>
+		<td>Height</td>
+		<td>Units</td>
+		<td class="spacer">NMFC</td>
+		<td>Class</td>
+		<td>Description</td>
+		<td>$ Total Value</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="package"/>
+			<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
+			<input type="text" style="width: 150px;" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]"/>
+		</td>
+		<td class="spacer"><input type="text" class="small-text" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]"/></td>
+		<td style="padding: 0;">X</td>
+		<td><input type="text" class="small-text" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]"/></td>
+		<td style="padding: 0;">X</td>
+		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]1" id="dimheight_[% ROW_COUNT %]"/></td>
+		<td><select class="small-text" name="unit_[% ROW_COUNT %]" id="unit_[% ROW_COUNT %]">[% FOREACH item IN measureunit_loop %]<option [% IF item.value == 1 %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+		<td class="spacer"><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]"/></td>
+		<td><select name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]"><option val="100">100</option></select></td>
+		<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]"/></td>
+		<td><input type="text" class="small-text" name="totalvalue_[% ROW_COUNT %]" id="totalvalue_[% ROW_COUNT %]" value="[% insurance ? insurance : '0.00' %]"/></td>
+	</tr>
+	<tr>
+		<td colspan="12" class="product">
+		<div class="float-left full-width"><table><tr><td><a href="javascript:void(0);" onclick="addNewPackageProduct([% ROW_COUNT %],'product');" class="round-green-button">+</a></td><td><green>Add Product Details</green></td></tr></table>
+
+			<table class="app">
+				<tr>
+					<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
+				</tr>
+				<tr id="product-[% ROW_COUNT+1 %]">
+					<td>
+						<input type="hidden" name="type_[% ROW_COUNT+1 %]" id="type_[% ROW_COUNT+1 %]" value="product"/>
+						<input type="hidden" id="rownum_id_[% ROW_COUNT+1 %]" name="rownum_id_[% ROW_COUNT+1 %]" value="[% ROW_COUNT+1 %]"/>
+						<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
+					</td>
+					<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT+1 %]" id="quantity_[% ROW_COUNT+1 %]" value="1"/></td>
+					<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT+1 %]" id="sku_[% ROW_COUNT+1 %]"/></td>
+					<td><input type="text" class="broad-text" name="description_[% ROW_COUNT+1 %]" id="description_[% ROW_COUNT+1 %]"/></td>
+					<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT+1 %]" id="nmfc_[% ROW_COUNT+1 %]"/></td>
+					<td><input type="text" class="small-text" name="class_[% ROW_COUNT+1 %]" id="class_[% ROW_COUNT+1 %]"/></td>
+					<td><input type="text" class="small-text" name="weight_[% ROW_COUNT+1 %]" id="weight_[% ROW_COUNT+1 %]"/></td>
+					<td><input type="text" class="small-text" name="decval_[% ROW_COUNT+1 %]" id="decval_[% ROW_COUNT+1 %]" value="0.00"/></td>
+				</tr>
+			</table>
+			</div>
+		</td>
+	</tr>
+</table>
+[% END %]
+[% #---------------------------------------------------------- %]
+[% # New PACKAGE_DETAIL_ROW details section  - END %]
+[% #---------------------------------------------------------- %]
+
+[% #---------------------------------------------------------- %]
+[% # New PRODUCT details section - START %]
+[% #---------------------------------------------------------- %]
+[% IF PRODUCT_DETAIL_ROW %]
+
+<tr id="product-[% ROW_COUNT %]">
+	<td>
+		<input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="product"/>
+		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
+		<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
+	</td>
+	<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="1"/></td>
+	<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]"/></td>
+	<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]"/></td>
+	<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]"/></td>
+	<td><input type="text" class="small-text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]"/></td>
+	<td><input type="text" class="small-text" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]"/></td>
+	<td><input type="text" class="small-text" name="decval_[% ROW_COUNT %]" id="decval_[% ROW_COUNT %]" value="0.00"/></td>
+</tr>
+[% END %]
+[% #---------------------------------------------------------- %]
+[% # New PRODUCT details section  - END %]
+[% #---------------------------------------------------------- %]
+
 [% IF THIRD_PARTY_DELIVERY %]
 	<form id="frm_TP">
 	<!-- <p class="validateTips"></p> -->
@@ -268,7 +364,7 @@
 
 [% END %]
 
-[% IF CARRIERSERVICE_LIST %]
+[% IF CARRIER_SERVICE_LIST %]
 
   [% IF ONLY_TABLE %]
 	<table class="app css3-radios">
@@ -318,7 +414,7 @@
 
 	<input type="hidden" id="carrier" name="carrier"/>
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
-	<div id="carrier-service-list">
+	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
 			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
 			<li><a href="#freight-charges-list-2">TRANSIT DAYS</a></li>
@@ -362,7 +458,7 @@
 
 		$(document).ready(function() {
 
-			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+			$("#carrier-service-list-tabs").tabs({ beforeActivate: function( event, ui ) {
 					var panelID = $(ui.newPanel).prop('id');
 					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
 					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {

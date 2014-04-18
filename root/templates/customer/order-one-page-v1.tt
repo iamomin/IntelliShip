@@ -1,0 +1,267 @@
+
+<h1>[% quickship ? 'Quick Ship Order' : 'New Order' %]</h1>
+
+<script src="/static/js/customer-order.js"></script>
+
+<form id="frm_order" name="frm_order" method="post" action="/customer/order/[% quickship ? 'quickship' : 'onepage' %]">
+	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" id="shipmentid" name="shipmentid"/>
+	<input type="hidden" id="do" name="do" value="save"/>
+	[% IF AUTO_PROCESS %]
+	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
+	[% END %]
+	[% IF parent %]
+	<input type="hidden" name="parent" value="[% parent %]"/>
+	[% END %]
+
+	[% ADDRESS_SECTION %]
+
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
+
+	<h4>SHIPMENT TYPE: <select name="unittype" id="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == 1 %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></h4>
+
+	<table class="package" id="package-1">
+		<tr>
+			<td>PALLET QUANTITY:</td>
+			<td><input type="text" class="small-text" name="quantity_1" id="quantity_1" value="1"/></td>
+			<th colspan="10"><div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_1" id="dimweight_1"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_1" id="density_1"/></div></th>
+		</tr>
+		<tr>
+			<td colspan="2"><button type="button" id="weight_per_unit" class="left-rounded-gray-btn">Weight Per Pallet</button><button type="button" id="package_weight" class="right-rounded-green-btn">Total Weight</button></td>
+			<td class="spacer">Length</td>
+			<td >&nbsp;</td>
+			<td>Width</td>
+			<td>&nbsp;</td>
+			<td>Height</td>
+			<td>Units</td>
+			<td class="spacer">NMFC</td>
+			<td>Class</td>
+			<td>Description</td>
+			<td>$ Total Value</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<input type="hidden" name="type_1" id="type_1" value="package"/>
+				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+				<input type="text" style="width: 150px;" name="weight_1" id="weight_1"/>
+			</td>
+			<td class="spacer"><input type="text" class="small-text" name="dimlength_1" id="dimlength_1"/></td>
+			<td style="padding: 0;">X</td>
+			<td><input type="text" class="small-text" name="dimwidth_1" id="dimwidth_1"/></td>
+			<td style="padding: 0;">X</td>
+			<td><input type="text" class="small-text" name="dimheight_1" id="dimheight_1"/></td>
+			<td><select name="unit_1" id="unit_1">[% FOREACH item IN measureunit_loop %]<option [% IF item.value == 1 %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+			<td class="spacer"><input type="text" class="small-text" name="nmfc_1" id="nmfc_1"/></td>
+			<td><select name="class_1" id="class_1"><option val="100">100</option></select></td>
+			<td><input type="text" class="broad-text" name="description_1" id="description_1"/></td>
+			<td><input type="text" class="small-text" name="totalvalue_1" id="totalvalue_1" value="[% insurance ? insurance : '0.00' %]"/></td>
+		</tr>
+		<tr>
+			<td colspan="12" class="product">
+			<div class="float-left full-width"><table><tr><td><a href="javascript:void(0);" onclick="addNewPackageProduct(1,'product');" class="round-green-button">+</a></td><td><green>Add Product Details</green></td></tr></table>
+
+				<table class="app">
+					<tr>
+						<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
+					</tr>
+					<tr id="product-1">
+						<td>
+							<input type="hidden" name="type_2" id="type_2" value="product"/>
+							<input type="hidden" id="rownum_id_2" name="rownum_id_2" value="2"/>
+							<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
+						</td>
+						<td><input type="text" class="small-text" name="quantity_2" id="quantity_2" value="1"/></td>
+						<td><input type="text" class="small-text sku_id" name="sku_2" id="sku_2"/></td>
+						<td><input type="text" class="broad-text" name="description_2" id="description_2"/></td>
+						<td><input type="text" class="small-text" name="nmfc_2" id="nmfc_2"/></td>
+						<td><input type="text" class="small-text" name="class_2" id="class_2"/></td>
+						<td><input type="text" class="small-text" name="weight_2" id="weight_2"/></td>
+						<td><input type="text" class="small-text" name="decval_2" id="decval_2" value="0.00"/></td>
+					</tr>
+				</table>
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<br>
+	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
+	<br>
+
+	<div id="clear">&nbsp;</div>
+
+	<div style="border: 4px solid #9BA7AF">
+		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd">+</a></td><td><green>Add Special Services</green></td></tr></table>
+		<div id="special-services" style="display: [% special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes"></div>
+	</div>
+
+	<table class="shipment-summary">
+		<tr>
+			<th>SHIPMENT SUMMARY</th>
+			<td class="total">&nbsp;</td>
+			<td class="total">TOTAL SHIPMENT BILLABLE WEIGHT:</td>
+			<td class="total"><input type="text" class="small-text" name="totalweight" id="totalweight"/> lbs</td>
+			<td class="total">TOTAL SHIPMENT VALUE:</td>
+			<td class="total">$<input type="text" class="small-text" name="shipment_value" id="shipment_value" value="[% shipment_value ? shipment_value : '0.00' %]"/></td>
+		</tr>
+		<tr>
+			<td colspan="6" class="details">
+			<div id="shipment-summary" class="float-left"></div>
+				<button type="button" class="long-rounded-button float-right" onclick="get_customer_service_list('frm_order');">
+					<reload></reload>
+					&nbsp;&nbsp;ROUTE NOW&nbsp;&nbsp;
+					<reload></reload>
+				</button>
+			</td>
+		</tr>
+	</table>
+
+	<div id="intlCommoditySec" style="border: 4px solid #9BA7AF"></div>
+
+	<div id="clear">&nbsp;</div>
+
+	<h1>SERVICE LEVEL SUMMARY</h1>
+
+	<div style="border: 4px solid #9BA7AF">
+	<table>
+		<tr>
+		[% IF SHOW_NEW_OTHER_CARRIER %]
+		<td><label for="othercarrier" class="float-right">New Other Carrier:</label></td>
+		<td><input type="text" class="text" name="othercarrier" id="othercarrier"/></td>
+		[% END %]
+		</tr>
+	</table>
+	<div id="carrier-service-list"></div>
+	</div>
+
+	<div style="clear: both;">&nbsp;</div>
+
+	<div class="float-right">
+		[% UNLESS ONLY_SHIP %]<input type="button" class="green" id="save" value="SAVE"/>[% END %]
+		[% IF quickship %]<input type="button" class="green" id="ship_now" value="SHIP"/>[% END %]
+		<input type="button" class="gray" id="cancel" value="CANCEL"/>
+	</div>
+
+</form>
+
+<script>
+
+	[% FOREACH item IN requiredfield_list %]
+		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
+	$("#ordernumber").change(function() {
+
+		if ($(this).val().length == 0) return;
+
+		var query_param = "coid=" + $("#coid").val() + "&ordernumber=" + $("#ordernumber").val();
+
+		send_ajax_request('', 'JSON', 'order', 'search_ordernumber', query_param, function () {
+			if ( JSON_data.ORDER_FOUND == 0 ) return;
+			requiredFieldHash = {},
+			$("#coid").val(JSON_data.COID);
+			$("#do").val('');
+			$('#frm_order').submit();
+			});
+		});
+
+	$("#tocountry").change(function() {
+		checkInternationalSection();
+		});
+
+	$('#save').click(function() {
+		delete requiredFieldHash['package-detail-list'];
+		$("#frm_order").submit();
+		});
+
+	$('#special-services-cmd').click(function() {
+
+		var linkObject = $(this);
+		if ($('#special-services').html().length > 0)
+			{
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			$("#special-services").slideToggle("slow");
+			return;
+			}
+
+		var params = 'coid=' + $("#coid").val();
+		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
+			$( "#special-services" ).slideToggle( "slow" );
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			});
+		});
+
+	$("#ship_now").click(function() {
+
+		update_package_product_sequence();
+
+		if (validateForm(requiredFieldHash) == false) return;
+
+		var carrier     = $("#carrier").val();
+		var totalweight = $("#totalweight").val();
+
+		if ($('#autoprocess').val() == 1)
+			{
+			if (totalweight == undefined || totalweight == 0) return;
+			if (carrier == undefined || carrier == '')
+				{
+				$('#route').click();
+				return;
+				}
+			}
+
+		if (carrier == undefined) return;
+
+		$("#do").val("ship");
+		$("#ship_now").val("Please wait...");
+
+		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_order").serialize(), function () {
+
+			if ( JSON_data.SUCCESS == 0 ) {
+				$("#ship_now").val("SHIP");
+				return;
+				}
+
+			$("#save").attr("disabled", true);
+			$("#cancel").attr("disabled", true);
+			$("#ship_now").attr("disabled", true);
+
+			$("#shipmentid").val(JSON_data.shipmentid);
+			$("#do").val("print");
+			$("#frm_order").submit();
+			});
+		});
+
+	$('#cancel').click(function() {
+		requiredFieldHash = {};
+		$("#do").val("cancel");
+		$("#frm_order").submit();
+		});
+
+	$("#frm_order").submit(function() {
+		update_package_product_sequence();
+		return validateForm(requiredFieldHash);
+		});
+
+	[% IF tooltips %]
+		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+		setToolTip();
+	[% END %]
+
+	$(document).ready(function() {
+		calculate_total_packages();
+		calculate_total_weight();
+		checkInternationalSection();
+
+		if(requiredFieldHash) {
+			markRequiredFields(requiredFieldHash);
+			}
+
+		if ($('#autoprocess').val() == 1) {
+			$("#ship_now").click();
+			}
+		});
+
+</script>
