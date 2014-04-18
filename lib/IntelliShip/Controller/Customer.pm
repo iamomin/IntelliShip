@@ -983,6 +983,12 @@ sub get_select_list
 			{ name => '50%', value => '1.5'  },
 			];
 		}
+	elsif ($list_name eq 'CLASS')
+		{
+		push @$list, { name => '', value => '0'};
+		my @classes = qw(50 55 60 65 70 75.5 85 92.5 100 110 125 150 175 200 250 300 400 500);
+		push @$list, { name => $_, value => $_} foreach @classes;
+		}
 	elsif ($list_name eq 'LABEL_TYPE')
 		{
 		$list = [

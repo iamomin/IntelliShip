@@ -317,14 +317,14 @@ sub default_package_type
 	{
 	my $self = shift;
 	my $type = shift;
-	$self->get_contact_data_value('defaultpackageunittype');
+	return $self->get_contact_data_value('defaultpackageunittype');
 	}
 
 sub default_product_type
 	{
 	my $self = shift;
 	my $type = shift;
-	$self->get_contact_data_value('defaultproductunittype');
+	return $self->get_contact_data_value('defaultproductunittype');
 	}
 
 sub label_type

@@ -197,6 +197,7 @@ sub setup_shipment_information :Private
 
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION');
+	$c->stash->{classlist_loop} = $self->get_select_list('CLASS');
 
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
@@ -226,8 +227,13 @@ sub setup_shipment_information :Private
 		}
 
 	$c->stash->{default_packing_list} = $Contact->default_packing_list;
-	$c->stash->{default_package_type} = $Contact->default_package_type;
-	$c->stash->{default_product_type} = $Contact->default_product_type;
+
+	if (my $unit_type_id = $Contact->default_package_type)
+		{
+		$c->stash->{default_package_type} = $unit_type_id;
+		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
+		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
+		}
 
 	$c->stash->{AUTO_QUANTITYxWEIGHT_SELECT} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
 
@@ -792,7 +798,7 @@ sub save_package_product_details :Private
 		$PackProDataObj->packprodataid($self->get_token_id);
 		$PackProDataObj->insert;
 
-		$c->log->debug("New Packprodata Inserted, ID: " . $PackProDataObj->packprodataid);
+		$c->log->debug("New " . uc($params->{'type_'.$PackageIndex}) . " Inserted, ID: " . $PackProDataObj->packprodataid);
 
 		$last_package_id = $PackProDataObj->packprodataid if ($params->{'type_' . $PackageIndex } eq 'package');
 		}
@@ -3383,8 +3389,12 @@ sub GetComInvPackData
 	$product_data->{'packagedescription'} .= ", $product_data->{'nmfc'}" if $product_data->{'nmfc'};
 	$product_data->{'packagedescription'} .= ", " . $ManufactureCountry if $ManufactureCountry;
 
-	$STH = $self->myDBI->select("SELECT unittypename FROM unittype WHERE unittypeid = '$product_data->{'unittypeid'}'");
-	my $UnitTypeName = ($STH->numrows ? $STH->fetchrow(0)->{'unittypename'} : '');
+	my $UnitTypeName = '';
+	if ($product_data->{'unittypeid'})
+		{
+		$STH = $self->myDBI->select("SELECT unittypename FROM unittype WHERE unittypeid = '$product_data->{'unittypeid'}'");
+		$UnitTypeName = ($STH->numrows ? $STH->fetchrow(0)->{'unittypename'} : '');
+		}
 
 	$product_data->{'packagequantity'}  = $product_data->{'shippedqty'};
 	$product_data->{'packagequantity'} .= " " . $UnitTypeName;
