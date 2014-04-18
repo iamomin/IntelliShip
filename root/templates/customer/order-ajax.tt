@@ -142,7 +142,7 @@
 [% IF PACKAGE_DETAIL_ROW %]
 <table class="package" id="package-[% ROW_COUNT %]">
 	<tr>
-		<td><a href="javascript:void(0);" onclick="$(this).parent().parent().parent().remove();" class="round-black-button">X</a>&nbsp;PALLET QUANTITY:</td>
+		<td style="text-align: right;"><a href="javascript:void(0);" onclick="$(this).parent().parent().parent().parent().remove();" class="round-black-button">X</a>&nbsp;[% PACKAGE_TYPE %] QUANTITY:</td>
 		<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="1"/></td>
 		<th colspan="10"><div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]"/></div></th>
 	</tr>
@@ -161,8 +161,10 @@
 	</tr>
 	<tr>
 		<td colspan="2">
-			<input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="package"/>
+			<input type="hidden" id="type_[% ROW_COUNT %]" name="type_[% ROW_COUNT %]" value="package"/>
 			<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
+			<input type="hidden" id="unittype_[% ROW_COUNT %]" name="unittype_[% ROW_COUNT %]" value="[% unittype %]"/>
+
 			<input type="text" style="width: 150px;" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]"/>
 		</td>
 		<td class="spacer"><input type="text" class="small-text" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]"/></td>
@@ -180,7 +182,7 @@
 		<td colspan="12" class="product">
 		<div class="float-left full-width"><table><tr><td><a href="javascript:void(0);" onclick="addNewPackageProduct([% ROW_COUNT %],'product');" class="round-green-button">+</a></td><td><green>Add Product Details</green></td></tr></table>
 
-			<table class="app">
+			<table id="product-list-[% ROW_COUNT %]" class="app">
 				<tr>
 					<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
 				</tr>
@@ -203,6 +205,9 @@
 		</td>
 	</tr>
 </table>
+<script>
+	$("#shipment-summary-list").append("<tr><td id='ss-class-[% ROW_COUNT %]'>NA</td><td id='ss-quantity-[% ROW_COUNT %]'>1</td><td id='ss-weight-[% ROW_COUNT %]'>0.00</td><td id='ss-value-[% ROW_COUNT %]'>0.00</td></tr>");
+</script>
 [% END %]
 [% #---------------------------------------------------------- %]
 [% # New PACKAGE_DETAIL_ROW details section  - END %]

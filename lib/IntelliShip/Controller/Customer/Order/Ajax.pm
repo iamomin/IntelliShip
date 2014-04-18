@@ -665,6 +665,12 @@ sub add_package_product_row :Private
 
 	my $flag = uc($params->{'detail_type'}) . '_DETAIL_ROW';
 
+	$c->stash($params);
+	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittype'} }))
+		{
+		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename if $UnitType;
+		}
+
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION');
 	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
 	$c->stash->{one_page} = 1;

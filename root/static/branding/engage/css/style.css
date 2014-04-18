@@ -402,8 +402,8 @@ table a { text-align: center; }
 green { color: #5DBD53; font-weight: normal; }
 
 table.package { width: 1000px; margin: 10px 0; padding: 0; border-spacing: 0px; text-align: center; font-weight: bold; background: #9BA7AF; }
-table.package th { padding: 5px; color: #9BA7AF; background: #EEE; text-transform: capitalize; white-space: nowrap }
-table.package td { padding: 5px; color: #FFF; text-transform: capitalize; white-space: nowrap }
+table.package th { padding: 5px; color: #9BA7AF; background: #EEE; text-align: left; text-transform: capitalize; white-space: nowrap }
+table.package td { padding: 5px; color: #FFF; text-align: left; text-transform: capitalize; white-space: nowrap }
 table.package td.spacer { border-left: 1px solid #bbb }
 table.package td.product { background: #FFF; border: 4px solid #9BA7AF }
 table.package a :hover { text-decoration: none }
@@ -413,6 +413,10 @@ table.shipment-summary th { padding: 5px; color: #FFF; background: #5DBD53; text
 table.shipment-summary td { padding: 10px; white-space: nowrap }
 table.shipment-summary td.details { border: 4px solid #5DBD53;}
 table.shipment-summary td.total { background: #EEE;}
+
+#shipment-summary-div table { background: #FFF; border-spacing: 0px; text-align: left; white-space: nowrap }
+#shipment-summary-div table th { padding: 5px; background: #FFF; color: #5DBD53; text-transform: capitalize }
+#shipment-summary-div table td { padding: 0 5px }
 
 .small-text { width: 50px; }
 .full-width { width: 100% }

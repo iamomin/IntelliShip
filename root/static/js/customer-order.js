@@ -905,9 +905,13 @@ function addNewPackageProduct(package_id,type)
 	{
 	var pkg_detail_row_count=0;
 	var product_table_id = 'product-list-' + package_id;
-	$('input[name^="type_"]').each(function() { var arr = this.id.split('_'); pkg_detail_row_count = (arr[1] > pkg_detail_row_count ? arr[1] : pkg_detail_row_count); });
+	$('input[name^="rownum_id_"]').each(function() {
+		var arr = this.id.split('_');
+		var count = +arr[2];
+		pkg_detail_row_count = ( count > pkg_detail_row_count ? count : pkg_detail_row_count);
+		});
 
-	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + type;
+	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + type + '&unittype=' + $("#unittype").val();
 
 	send_ajax_request('', 'JSON', 'order', 'add_package_product_row', query_param, function (){
 
@@ -924,13 +928,11 @@ function updatePackageProductSequence()
 
 	$('input[id^=rownum_id_]').each(function( index ) {
 		var row_id = this.id;
-		alert("row_id : " + row_id);
 
 		var row_num = row_id.split('_')[2];
 		$("#rownum_id_"+row_num).val(index+1);
 		pkg_detail_row_count++;
 		});
 
-	alert("pkg_detail_row_count:  " + pkg_detail_row_count);
 	$("#pkg_detail_row_count").val(pkg_detail_row_count);
 	}
