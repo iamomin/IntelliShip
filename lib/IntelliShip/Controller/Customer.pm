@@ -506,7 +506,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'WEIGHT_TYPE')
 		{
-		my @records = $c->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypename'});
+		my @records = $c->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypeid'});
 		foreach my $WeightType (@records)
 			{
 			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });

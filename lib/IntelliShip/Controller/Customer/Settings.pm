@@ -153,6 +153,9 @@ sub skumanagement :Local
 	my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
 	#$c->log->debug("TOTAL SKUS: " . @productskus);
 
+	my %measures = map { $_->{value} => $_->{name} } @{$self->get_select_list('UNIT_OF_MEASURE')};
+	$_->unitofmeasure($measures{$_->unitofmeasure}) foreach @productskus;
+
 	$c->stash->{productskulist} = \@productskus;
 	$c->stash->{productsku_count} = scalar @productskus;
 	$c->stash->{productskus_batches} = $productskus_batches;
@@ -272,7 +275,9 @@ sub productskusetup :Local
 			}
 
 		$c->log->debug(($ProductSku ? "EDIT (ID: " . $ProductSku->productskuid . ")" : "SETUP NEW") . " PRODUCT SKU SETUP");
-
+		$c->stash->{hazardous} = '0' unless $c->stash->{hazardous}; ## No
+		$c->stash->{unitofmeasure} = 'EA' unless $c->stash->{unitofmeasure}; ## Each
+		$c->stash->{unittypeid} = '3' unless $c->stash->{unittypeid}; ## Each
 		$c->stash->{dimention_list} = $self->get_select_list('DIMENTION');
 		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE');
 		$c->stash->{yesno_list} = $self->get_select_list('YES_NO_NUMERIC');
@@ -289,40 +294,40 @@ sub productskusetup :Local
 		{
 		$ProductSku = $c->model('MyDBI::Productsku')->new({}) unless $ProductSku;
 
-		$ProductSku->description($params->{description});
-		$ProductSku->customerskuid($params->{customerskuid});
-		$ProductSku->upccode($params->{upccode});
-		$ProductSku->manufacturecountry($params->{manufacturecountry});
-		$ProductSku->value($params->{value});
-		$ProductSku->class($params->{class});
+		$ProductSku->customerskuid($params->{customerskuid}) if $params->{customerskuid};
+		$ProductSku->description($params->{description}) if $params->{description};
+		$ProductSku->upccode($params->{upccode}) if $params->{upccode};
+		$ProductSku->manufacturecountry($params->{manufacturecountry}) if $params->{manufacturecountry};
+		$ProductSku->value($params->{value} ? $params->{value} : undef);
+		$ProductSku->class($params->{class} ? $params->{class} : undef);
 		$ProductSku->hazardous($params->{hazardous});
-		$ProductSku->nmfc($params->{nmfc});
-		$ProductSku->unitofmeasure($params->{unitofmeasure});
-		$ProductSku->balanceonhand($params->{balanceonhand});
-		$ProductSku->unittypeid($params->{unittypeid});
+		$ProductSku->nmfc($params->{nmfc} ? $params->{nmfc} : undef);
+		$ProductSku->unitofmeasure($params->{unitofmeasure}) if $params->{unitofmeasure};
+		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : undef);
+		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : undef);
 		## SKU
-		$ProductSku->weight($params->{weight});
-		$ProductSku->weighttype($params->{weighttype});
-		$ProductSku->length($params->{length});
-		$ProductSku->width($params->{width});
-		$ProductSku->height($params->{height});
-		$ProductSku->dimtype($params->{dimtype});
-		## CASE
-		$ProductSku->caseweight($params->{caseweight});
-		$ProductSku->caseweighttype($params->{caseweighttype});
-		$ProductSku->caselength($params->{caselength});
-		$ProductSku->casewidth($params->{casewidth});
-		$ProductSku->caseheight($params->{caseheight});
-		$ProductSku->casedimtype($params->{casedimtype});
-		$ProductSku->skupercase($params->{skupercase});
-		## PALLET
-		$ProductSku->palletweight($params->{palletweight});
-		$ProductSku->palletweighttype($params->{palletweighttype});
-		$ProductSku->palletlength($params->{palletlength});
-		$ProductSku->palletwidth($params->{palletwidth});
-		$ProductSku->palletheight($params->{palletheight});
-		$ProductSku->palletdimtype($params->{palletdimtype});
-		$ProductSku->casesperpallet($params->{casesperpallet});
+		$ProductSku->weight($params->{weight} ? $params->{weight} : undef);
+		$ProductSku->weighttype($params->{weighttype}) if $params->{weighttype};
+		$ProductSku->length($params->{length} ? $params->{length} : undef);
+		$ProductSku->width($params->{width} ? $params->{width} : undef);
+		$ProductSku->height($params->{height} ? $params->{height} : undef);
+		$ProductSku->dimtype($params->{dimtype}) if $params->{dimtype} ;
+		# CASE
+		$ProductSku->caseweight($params->{caseweight} ? $params->{caseweight} : undef);
+		$ProductSku->caseweighttype($params->{caseweighttype})  if $params->{caseweighttype};
+		$ProductSku->caselength($params->{caselength} ? $params->{caselength} : undef);
+		$ProductSku->casewidth($params->{casewidth} ? $params->{casewidth} : undef);
+		$ProductSku->caseheight($params->{caseheight} ? $params->{caseheight} : undef);
+		$ProductSku->casedimtype($params->{casedimtype})    if $params->{casedimtype};
+		$ProductSku->skupercase($params->{skupercase} ? $params->{skupercase} : undef);
+		# PALLET
+		$ProductSku->palletweight($params->{palletweight} ? $params->{palletweight} : undef);
+		$ProductSku->palletweighttype($params->{palletweighttype} ? $params->{palletweighttype} : undef);
+		$ProductSku->palletlength($params->{palletlength} ? $params->{palletlength} : undef);
+		$ProductSku->palletwidth($params->{palletwidth} ? $params->{palletwidth} : undef);
+		$ProductSku->palletheight($params->{palletheight} ? $params->{palletheight} : undef);
+		$ProductSku->palletdimtype($params->{palletdimtype} ? $params->{palletdimtype} : undef);
+		$ProductSku->casesperpallet($params->{casesperpallet} ? $params->{casesperpallet} : undef);
 
 		my $msg;
 		if ($ProductSku->productskuid)
@@ -575,7 +580,7 @@ sub contactinformation :Local
 	foreach my $ruleHash (@$CONTACT_RULES)
 		{
 		#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
-		if($params->{$ruleHash->{value}})
+		if ($params->{$ruleHash->{value}})
 			{
 			my $customerContactData = {
 				ownertypeid	=> 2,

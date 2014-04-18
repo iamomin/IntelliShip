@@ -480,12 +480,13 @@ function setSkuDetails(row_ID, sku_id)
 				clear_product_details(row_ID);
 				} else {
 				$("#description_"+row_ID).val(JSON_data.description);
+				$("#unittype_"+row_ID).val(JSON_data.unittypeid);
 				$("#weight_"+row_ID).val(JSON_data.weight);
 				$("#dimlength_"+row_ID).val(JSON_data.length);
 				$("#dimwidth_"+row_ID).val(JSON_data.width);
 				$("#dimheight_"+row_ID).val(JSON_data.height);
 				$("#nmfc_"+row_ID).val(JSON_data.nmfc);
-				//$("#class_"+row_ID).val(JSON_data.class);
+				$("#class_"+row_ID).val(JSON_data.class);
 				if (JSON_data.unittypeid != "") $("#unittype_"+row_ID+" option:selected").val(JSON_data.unittypeid);
 				}
 			});

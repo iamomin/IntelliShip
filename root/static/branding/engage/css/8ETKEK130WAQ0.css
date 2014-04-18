@@ -1,6 +1,11 @@
 #header{
     background:#fff;
 }
+
+#header nav a span {
+    color: #000000;
+}
+
 #header #settings img{ /* Gear */
     border:1px solid #ddd;
     border-radius:15px 15px;
