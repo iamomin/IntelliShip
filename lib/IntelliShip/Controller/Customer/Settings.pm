@@ -298,36 +298,36 @@ sub productskusetup :Local
 		$ProductSku->description($params->{description}) if $params->{description};
 		$ProductSku->upccode($params->{upccode}) if $params->{upccode};
 		$ProductSku->manufacturecountry($params->{manufacturecountry}) if $params->{manufacturecountry};
-		$ProductSku->value($params->{value} ? $params->{value} : 0);
-		$ProductSku->class($params->{class} ? $params->{class} : 0);
-		$ProductSku->hazardous($params->{hazardous}) if $params->{hazardous};
-		$ProductSku->nmfc($params->{nmfc} ? $params->{nmfc} : 0);
+		$ProductSku->value($params->{value} ? $params->{value} : undef);
+		$ProductSku->class($params->{class} ? $params->{class} : undef);
+		$ProductSku->hazardous($params->{hazardous});
+		$ProductSku->nmfc($params->{nmfc} ? $params->{nmfc} : undef);
 		$ProductSku->unitofmeasure($params->{unitofmeasure}) if $params->{unitofmeasure};
-		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : 0);
-		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : 0);
+		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : undef);
+		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : undef);
 		## SKU
-		$ProductSku->weight($params->{weight} ? $params->{weight} : 0);
+		$ProductSku->weight($params->{weight} ? $params->{weight} : undef);
 		$ProductSku->weighttype($params->{weighttype}) if $params->{weighttype};
-		$ProductSku->length($params->{length} ? $params->{length} : 0);
-		$ProductSku->width($params->{width} ? $params->{width} : 0);
-		$ProductSku->height($params->{height} ? $params->{height} : 0);
+		$ProductSku->length($params->{length} ? $params->{length} : undef);
+		$ProductSku->width($params->{width} ? $params->{width} : undef);
+		$ProductSku->height($params->{height} ? $params->{height} : undef);
 		$ProductSku->dimtype($params->{dimtype}) if $params->{dimtype} ;
 		# CASE
-		$ProductSku->caseweight($params->{caseweight} ? $params->{caseweight} : 0);
+		$ProductSku->caseweight($params->{caseweight} ? $params->{caseweight} : undef);
 		$ProductSku->caseweighttype($params->{caseweighttype})  if $params->{caseweighttype};
-		$ProductSku->caselength($params->{caselength} ? $params->{caselength} : 0);
-		$ProductSku->casewidth($params->{casewidth} ? $params->{casewidth} : 0);
-		$ProductSku->caseheight($params->{caseheight} ? $params->{caseheight} : 0);
+		$ProductSku->caselength($params->{caselength} ? $params->{caselength} : undef);
+		$ProductSku->casewidth($params->{casewidth} ? $params->{casewidth} : undef);
+		$ProductSku->caseheight($params->{caseheight} ? $params->{caseheight} : undef);
 		$ProductSku->casedimtype($params->{casedimtype})    if $params->{casedimtype};
-		$ProductSku->skupercase($params->{skupercase} ? $params->{skupercase} : 0);
+		$ProductSku->skupercase($params->{skupercase} ? $params->{skupercase} : undef);
 		# PALLET
-		$ProductSku->palletweight($params->{palletweight} ? $params->{palletweight} : 0);
-		$ProductSku->palletweighttype($params->{palletweighttype} ? $params->{palletweighttype} : 0);
-		$ProductSku->palletlength($params->{palletlength} ? $params->{palletlength} : 0);
-		$ProductSku->palletwidth($params->{palletwidth} ? $params->{palletwidth} : 0);
-		$ProductSku->palletheight($params->{palletheight} ? $params->{palletheight} : 0);
-		$ProductSku->palletdimtype($params->{palletdimtype} ? $params->{palletdimtype} : 0);
-		$ProductSku->casesperpallet($params->{casesperpallet} ? $params->{casesperpallet} : 0);
+		$ProductSku->palletweight($params->{palletweight} ? $params->{palletweight} : undef);
+		$ProductSku->palletweighttype($params->{palletweighttype} ? $params->{palletweighttype} : undef);
+		$ProductSku->palletlength($params->{palletlength} ? $params->{palletlength} : undef);
+		$ProductSku->palletwidth($params->{palletwidth} ? $params->{palletwidth} : undef);
+		$ProductSku->palletheight($params->{palletheight} ? $params->{palletheight} : undef);
+		$ProductSku->palletdimtype($params->{palletdimtype} ? $params->{palletdimtype} : undef);
+		$ProductSku->casesperpallet($params->{casesperpallet} ? $params->{casesperpallet} : undef);
 
 		my $msg;
 		if ($ProductSku->productskuid)

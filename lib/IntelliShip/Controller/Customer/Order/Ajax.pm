@@ -572,6 +572,7 @@ sub get_sku_detail :Private
 	if ($SkuObj)
 		{
 		$response_hash->{'description'} = $SkuObj->description;
+		$response_hash->{'unittypeid'} = $SkuObj->unittypeid;
 		$response_hash->{'weight'} = $SkuObj->weight;
 		$response_hash->{'length'} = $SkuObj->length;
 		$response_hash->{'width'} = $SkuObj->width;
