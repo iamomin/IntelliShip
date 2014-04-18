@@ -105,6 +105,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->add_pkg_detail_row;
 		}
+	elsif ($action eq 'add_package_product_row')
+		{
+		$dataHash = $self->add_package_product_row;
+		}
 	elsif ($action eq 'get_freight_class')
 		{
 		$dataHash = $self->get_freight_class;
@@ -354,7 +358,7 @@ sub get_carrier_service_list
 		($detail_hash->{'shipment_charge'} =~ /\d+/ and $detail_hash->{'shipment_charge'} > 0) ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
-	$c->stash->{CARRIERSERVICE_LIST} = 1;
+	$c->stash->{CARRIER_SERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
 	#$c->log->debug("CS_list_1: ". Dumper($CS_list_1));
@@ -648,6 +652,26 @@ sub add_pkg_detail_row :Private
 	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	#$c->log->debug("add_pkg_detail_row : " . $row_HTML);
 	$c->stash->{PKG_DETAIL_ROW} = 0;
+
+	return { rowHTML => $row_HTML };
+	}
+
+sub add_package_product_row :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $flag = uc($params->{'detail_type'}) . '_DETAIL_ROW';
+
+	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION');
+	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
+	$c->stash->{one_page} = 1;
+	$c->stash->{$flag} = 1;
+
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	$c->stash->{$flag} = 0;
 
 	return { rowHTML => $row_HTML };
 	}

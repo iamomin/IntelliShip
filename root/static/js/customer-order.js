@@ -807,20 +807,20 @@ function checkDeliveryMethodSection()
 var has_FC=false;
 function get_customer_service_list(form_name)
 	{
-	var origVal = $("#route").val();
-	$("#route").attr("disabled",true);
-	$("#route").val("Please Wait...");
+	//var origVal = $("#route").val();
+	//$("#route").attr("disabled",true);
+	//$("#route").val("Please Wait...");
 
-	$("#service-level-summary").slideUp(1000, function() {
+	$("#carrier-service-list").slideUp(1000, function() {
 
-		$('#service-level-summary').empty();
+		$('#carrier-service-list').empty();
 
 		var params = $("#"+form_name).serialize();
 
-		send_ajax_request('service-level-summary', 'HTML', 'order', 'get_carrier_service_list', params, function() {
+		send_ajax_request('carrier-service-list', 'HTML', 'order', 'get_carrier_service_list', params, function() {
 
-			$("#route").attr("disabled",false);
-			$("#route").val(origVal);
+			//$("#route").attr("disabled",false);
+			//$("#route").val(origVal);
 			has_FC=true;
 
 			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
@@ -832,7 +832,7 @@ function get_customer_service_list(form_name)
 					}
 				});
 
-			$("#service-level-summary").slideDown(1000);
+			$("#carrier-service-list").slideDown(1000);
 			});
 		});
 	}
@@ -842,7 +842,7 @@ function resetCSList()
 	$("#customerserviceid").val('');
 	$("#carrier").val('');
 
-	if (has_FC) $("#service-level-summary").slideUp(1000);
+	if (has_FC) $("#carrier-service-list").slideUp(1000);
 	}
 
 function addCheckBox(container_ID, control_ID, control_Value, control_Label)
@@ -898,4 +898,38 @@ function CalculateDimentionalWeight(customerserviceid)
 			$("#dimweight_" + JSON_data.row).val(JSON_data.dimweight);
 			});
 		}
+	}
+
+function addNewPackageProduct(package_id,type)
+	{
+	var pkg_detail_row_count=0;
+	var product_table_id = 'product-list-' + package_id;
+	$('input[name^="type_"]').each(function() { var arr = this.id.split('_'); pkg_detail_row_count = (arr[1] > pkg_detail_row_count ? arr[1] : pkg_detail_row_count); });
+
+	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + type;
+
+	send_ajax_request('', 'JSON', 'order', 'add_package_product_row', query_param, function (){
+
+			if (type == 'package') $('#add-package-btn').before(JSON_data.rowHTML);
+			if (type == 'product') $('#'+product_table_id+' > tbody:last').append(JSON_data.rowHTML);
+
+			updatePackageProductSequence();
+			});
+	}
+
+function updatePackageProductSequence()
+	{
+	var pkg_detail_row_count=0;
+
+	$('input[id^=rownum_id_]').each(function( index ) {
+		var row_id = this.id;
+		alert("row_id : " + row_id);
+
+		var row_num = row_id.split('_')[2];
+		$("#rownum_id_"+row_num).val(index+1);
+		pkg_detail_row_count++;
+		});
+
+	alert("pkg_detail_row_count:  " + pkg_detail_row_count);
+	$("#pkg_detail_row_count").val(pkg_detail_row_count);
 	}

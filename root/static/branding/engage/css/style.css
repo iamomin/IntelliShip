@@ -30,6 +30,8 @@ blockquote, q {
     quotes: "" "";
 }
 
+button { cursor: pointer }
+
 a {
     /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
     -webkit-transition: all 0.3s ease-in; 
@@ -59,7 +61,7 @@ img { border: none; vertical-align: middle }
 }
 
 #clear {
-    clear:both;
+    clear: both;
 }
 
 #preload {
@@ -366,6 +368,14 @@ h3 {
     font-size: 14px;
 }
 
+h4 {
+    color: #FFF;
+    padding: 5px;
+    font-size: 14px;
+    text-transform: uppercase;
+    background-color: #1875BA;
+}
+
 label {
     white-space: nowrap;
 }
@@ -385,9 +395,106 @@ table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform:
 table td { padding: 3px; }
 table a { text-align: center; }
 
-#package-detail-list table {padding: 10px 0;border-spacing: 0px; text-align: center}
+#package-detail-list table {padding: 10px 0; border-spacing: 0px; text-align: center}
 #package-detail-list table th {color: #FFF; background: #9BA7AF; text-transform: uppercase; white-space: nowrap}
 #package-detail-list table td {padding: 0; text-align: center}
+
+green { color: #5DBD53; font-weight: normal; }
+
+table.package { width: 1000px; margin: 10px 0; padding: 0; border-spacing: 0px; text-align: center; font-weight: bold; background: #9BA7AF; }
+table.package th { padding: 5px; color: #9BA7AF; background: #EEE; text-transform: capitalize; white-space: nowrap }
+table.package td { padding: 5px; color: #FFF; text-transform: capitalize; white-space: nowrap }
+table.package td.spacer { border-left: 1px solid #bbb }
+table.package td.product { background: #FFF; border: 4px solid #9BA7AF }
+table.package a :hover { text-decoration: none }
+
+table.shipment-summary { width: 1000px; margin: 10px 0; border-spacing: 0px; text-align: center}
+table.shipment-summary th { padding: 5px; color: #FFF; background: #5DBD53; text-transform: capitalize; white-space: nowrap }
+table.shipment-summary td { padding: 10px; white-space: nowrap }
+table.shipment-summary td.details { border: 4px solid #5DBD53;}
+table.shipment-summary td.total { background: #EEE;}
+
+.small-text { width: 50px; }
+.full-width { width: 100% }
+.left-rounded-green-btn   { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #FFF; background: #5DBD53; -moz-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; font: bold 11px Arial; cursor: pointer }
+.left-rounded-gray-btn   { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; font: bold 11px Arial; cursor: pointer }
+.right-rounded-green-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #FFF; background: #5DBD53; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
+.right-rounded-gray-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
+
+.round-black-button { 
+    padding: 1px 4px;
+    display: inline;
+    width:10px;
+    height:10px;
+    border: 2px solid #f5f5f5;
+    border-radius: 50%;
+    color:#f5f5f5;
+    text-align:center;
+    text-decoration:none;
+    background: #464646;
+    box-shadow: 0 0 3px gray;
+    font: bold 11px Arial;
+}
+.round-black-button:hover { background: #262626 }
+.round-green-button {
+    padding: 1px 4px;
+    display: inline;
+    width:15px;
+    height:15px;
+    line-height:10px;
+    border-radius: 50%;
+    color: #FFF;
+    text-align:center;
+    background: #5DBD53;
+    font: bold 14px Arial;
+}
+.round-green-button:hover {
+    background: #296F32;
+    color: #FFF;
+}
+
+.long-rounded-button {
+    padding: 5px 10px 5px 5px;
+    height: 30px;
+    display: inline;
+    border: 2px solid #FFF;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    color: #FFF;
+    text-align: center;
+    text-decoration:none;
+    background: #5DBD53;
+    box-shadow: 0 0 3px gray;
+    font: bold 11px Arial;
+}
+
+.long-rounded-button span {
+    display: inline;
+    padding: 0 3px;
+    width:15px;
+    height:15px;
+    line-height:10px;
+    border-radius: 50%;
+    color: #5DBD53;
+    text-align:center;
+    background: #FFF;
+    font: bold 14px Arial;
+}
+
+.long-rounded-button:hover {
+    background: #296F32;
+    color: #FFF;
+}
+
+.long-rounded-button reload {
+    width: 24px;
+    height: 18px;
+    padding: 0;
+    color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    background: url("/static/branding/engage/images/command-refresh-24.png") no-repeat center center;
+}
 
 table.center { width: auto; padding: 10px; margin: 10px auto; text-align: center; }
 
