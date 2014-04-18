@@ -598,7 +598,7 @@ sub get_style_setting_list
 
 	foreach my $style (@$CUSTOM_CSS_RULES)
 		{
-		if ($CUSTOM_STYLE_DATA =~ /$style->{section}\{(.*?)\}/s) {
+		if ($CUSTOM_STYLE_DATA =~ /$style->{section}[0]\{(.*?)\}/s) {
 			$css_contents = $1;
 			$css_contents =~ s/\n\t\s*//g; # Remove new line character, tabs and spaces
 			$c->log->debug("css_contents:" . $css_contents);
@@ -616,10 +616,11 @@ sub get_style_setting_list
 					$values->{color} = $attribute_arr[1];
 					$values->{color} =~ s/\ *#//;
 					}
-				elsif ($attribute_arr[0] eq 'size')
+				elsif ($attribute_arr[0] eq 'font-size')
 					{
 					$values->{size} = $attribute_arr[1];
-					$values->{size} =~ s/px//;
+					$values->{size} =~ s/\s*px//;
+					$values->{size} =~ s/^\s+//;
 					}
 				}
 			$style->{values} = $values;
@@ -651,18 +652,21 @@ sub update_branding_settings :Private
 
 	my $css_contents;
 	my $CUSTOM_CSS_RULES = IntelliShip::Utils->get_custome_css_style_hash;
-	foreach my $style (@$CUSTOM_CSS_RULES)
+	foreach my $style_list (@$CUSTOM_CSS_RULES)
 		{
-		$css_contents = $style->{section} . "{";
-		$css_contents .= "$_\n" . "\tbackground: #" . $params->{"$style->{bgcolor}"} . ";" if $params->{"$style->{bgcolor}"};
-		$css_contents .= "$_\n" . "\tcolor: #" . $params->{"$style->{font}"} . ";" if $params->{"$style->{font}"};
-		$css_contents .= "$_\n" . "\tsize: " . $params->{"$style->{size}"} . ";" if $params->{"$style->{size}"};
-
-		unless ($css_contents eq $style->{section} . "{")
+		foreach my $style (@{ $style_list->{section }})
 			{
-			$css_contents .= "$_\n" . "}$_\n\n";
-			print $FILE $css_contents ;
-			$css_contents = '';
+			$css_contents = $style . "{";
+			$css_contents .= "$_\n" . "\tbackground: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
+			$css_contents .= "$_\n" . "\tcolor: " . $params->{"$style_list->{font}"} . ";" if $params->{"$style_list->{font}"};
+			$css_contents .= "$_\n" . "\tfont-size: " . $params->{"$style_list->{size}"} . "px;" if $params->{"$style_list->{size}"};
+
+			unless ($css_contents eq $style . "{")
+				{
+				$css_contents .= "$_\n" . "}$_\n\n";
+				print $FILE $css_contents ;
+				$css_contents = '';
+				}
 			}
 		}
 

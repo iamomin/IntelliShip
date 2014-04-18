@@ -2,9 +2,12 @@
 <script type="text/javascript" src="/static/jquery/uploadify/jquery.uploadify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/jquery/uploadify/uploadify.css">
 
-<!-- Color Picker Plugin http://www.colpick.com/plugin -->
+<!-- Color Picker Plugin http://www.colpick.com/plugin 
 <script type="text/javascript" src="/static/jquery/color-picker/colpick.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/jquery/color-picker/colpick.css"/>
+-->
+<script src="/static/jquery/colorpicker-master/evol.colorpicker.js" type="text/javascript" charset="utf-8"></script>
+<link href="/static/jquery/colorpicker-master/evol.colorpicker.css" rel="stylesheet" type="text/css" />
 
 <div id="message"></div>
 <p class="validateTips"></p>
@@ -45,8 +48,8 @@
 							[% FOREACH item IN stylesetting_loop %]
 							<tr>
 								<td><label for="[% item.bgcolor %]" class="float-left">[% item.name %]: </label></td>
-								<td><input type="text" class="colorpicker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"></input></td>
-								<td><input type="text" class="colorpicker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"></input></td>
+								<td><input type="text" class="color-picker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"></input></td>
+								<td><input type="text" class="color-picker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"></input></td>
 								<td>
 								[% IF item.size %]
 								<label>
@@ -110,10 +113,22 @@
 
 		/* Set Initial colors */
 		[% FOREACH item IN stylesetting_loop %]
-			$("#[% item.bgcolor %]").css({'border-color':'#' + $("#[% item.bgcolor %]").val()});
-			$("#[% item.font %]").css({'border-color':'#' + $("#[% item.font %]").val()});
+			//$("#[% item.bgcolor %]").css({'border-color':'#' + $("#[% item.bgcolor %]").val()});
+			//$("#[% item.font %]").css({'border-color':'#' + $("#[% item.font %]").val()});
+
+			$("#" + "[% item.bgcolor %]").colorpicker({
+					color: "#" + "[% item.values.bgcolor %]" 
+				});
+			$("#" + "[% item.font %]").colorpicker({
+					color: "#" + "[% item.values.color %]" 
+				});
 		[% END %]
 
+		$(".color-picker").colorpicker({
+			strings: "Theme Colors,Standard Colors,More Colors,Less Colors"
+    	});
+
+		/*
 		$('.colorpicker').colpick({
 			layout:'hex',
 			submit:0,
@@ -126,5 +141,6 @@
 			}).keyup(function(){
 				$(this).colpickSetColor(this.value);
 				});
+		*/
 		});
 </script>
