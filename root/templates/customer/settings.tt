@@ -100,6 +100,7 @@ $(document).ready(function(){
 				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
 				<td><input type="button" class="blue" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="green" id="sku_add" value="Add New" /></td>
+				<td><input type="button" class="red" id="sku_delete" value="Delete" /></td>
 				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
 				<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 				<td>
@@ -128,6 +129,7 @@ $(document).ready(function(){
 	<table class="report">
 		<tr>
 			<th>&nbsp;</th>
+			<th>&nbsp;</th>
 			<th>Description</th>
 			<th>UPC</th>
 			<th>hazardous</th>
@@ -143,6 +145,7 @@ $(document).ready(function(){
 		[% FOREACH item IN productskulist %]
 			<tr>
 				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
+				<td><a href="javascript:deleteProductSku('[% item.productskuid %]');">DELETE</a></td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
 				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
@@ -164,6 +167,12 @@ $(document).ready(function(){
 
 	function editProductSku(productskuid) {
 		$("#productsku").val("");
+		$("#productskuid").val(productskuid);
+		$("#frm_sku_management").submit();
+		}
+	
+	function deleteProductSku(productskuid) {
+		$("#do").val('delete');
 		$("#productskuid").val(productskuid);
 		$("#frm_sku_management").submit();
 		}
@@ -190,6 +199,13 @@ $(document).ready(function(){
 			});
 
 		$("#sku_edit").click(function() {
+			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+				$("#frm_sku_management").submit();
+				}
+			});
+		
+		$("#sku_delete").click(function() {
+			$("#do").val('delete');
 			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
 				$("#frm_sku_management").submit();
 				}

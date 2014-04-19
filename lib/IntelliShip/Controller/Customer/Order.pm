@@ -220,6 +220,7 @@ sub setup_shipment_information :Private
 			$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
 			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
 			$CA->context($c);
+			$CA->contact($self->contact);
 			$CA->set_international_details;
 			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 			$c->stash->{INTERNATIONAL} = 0;

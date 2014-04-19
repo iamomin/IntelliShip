@@ -294,31 +294,31 @@ sub productskusetup :Local
 		{
 		$ProductSku = $c->model('MyDBI::Productsku')->new({}) unless $ProductSku;
 
-		$ProductSku->customerskuid($params->{customerskuid}) if $params->{customerskuid};
-		$ProductSku->description($params->{description}) if $params->{description};
-		$ProductSku->upccode($params->{upccode}) if $params->{upccode};
-		$ProductSku->manufacturecountry($params->{manufacturecountry}) if $params->{manufacturecountry};
+		$ProductSku->customerskuid($params->{customerskuid}) if($params->{customerskuid});
+		$ProductSku->description($params->{description}? $params->{description} :undef);
+		$ProductSku->upccode($params->{upccode} ? $params->{upccode} :undef );
+		$ProductSku->manufacturecountry($params->{manufacturecountry} ? $params->{manufacturecountry} :undef);
 		$ProductSku->value($params->{value} ? $params->{value} : undef);
 		$ProductSku->class($params->{class} ? $params->{class} : undef);
 		$ProductSku->hazardous($params->{hazardous});
 		$ProductSku->nmfc($params->{nmfc} ? $params->{nmfc} : undef);
-		$ProductSku->unitofmeasure($params->{unitofmeasure}) if $params->{unitofmeasure};
+		$ProductSku->unitofmeasure($params->{unitofmeasure});
 		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : undef);
 		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : undef);
 		## SKU
 		$ProductSku->weight($params->{weight} ? $params->{weight} : undef);
-		$ProductSku->weighttype($params->{weighttype}) if $params->{weighttype};
+		$ProductSku->weighttype($params->{weighttype});
 		$ProductSku->length($params->{length} ? $params->{length} : undef);
 		$ProductSku->width($params->{width} ? $params->{width} : undef);
 		$ProductSku->height($params->{height} ? $params->{height} : undef);
-		$ProductSku->dimtype($params->{dimtype}) if $params->{dimtype} ;
+		$ProductSku->dimtype($params->{dimtype});
 		# CASE
 		$ProductSku->caseweight($params->{caseweight} ? $params->{caseweight} : undef);
-		$ProductSku->caseweighttype($params->{caseweighttype})  if $params->{caseweighttype};
+		$ProductSku->caseweighttype($params->{caseweighttype});
 		$ProductSku->caselength($params->{caselength} ? $params->{caselength} : undef);
 		$ProductSku->casewidth($params->{casewidth} ? $params->{casewidth} : undef);
 		$ProductSku->caseheight($params->{caseheight} ? $params->{caseheight} : undef);
-		$ProductSku->casedimtype($params->{casedimtype})    if $params->{casedimtype};
+		$ProductSku->casedimtype($params->{casedimtype});
 		$ProductSku->skupercase($params->{skupercase} ? $params->{skupercase} : undef);
 		# PALLET
 		$ProductSku->palletweight($params->{palletweight} ? $params->{palletweight} : undef);
@@ -346,6 +346,12 @@ sub productskusetup :Local
 			}
 
 		$c->stash->{MESSAGE} = $msg;
+		$c->detach("skumanagement",$params);
+		}
+	elsif ($params->{'do'} eq 'delete')
+		{
+		$ProductSku->delete;
+		$c->stash->{MESSAGE} = "Product sku deleted successfully!";
 		$c->detach("skumanagement",$params);
 		}
 
