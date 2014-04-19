@@ -691,7 +691,7 @@ sub save_package_product_details :Private
 
 	unless ($total_row_count)
 		{
-		$c->log->debug("... package/product details not found in request");
+		$c->log->debug("... package/product row count not found in request");
 		return;
 		}
 
@@ -767,24 +767,26 @@ sub save_package_product_details :Private
 		my $decval    = $params->{'decval_' . $PackageIndex}   || 0;
 		my $frtins    = $params->{'frtins_'.$PackageIndex}     || 0;
 		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+		my $unitofmeasure = $params->{'unitofmeasure_' . $PackageIndex} || 0;
 
 		my $PackProData = {
-				ownertypeid => $ownertypeid,
-				ownerid     => $ownerid,
-				datatypeid  => $datatypeid,
-				boxnum      => $quantity,
-				quantity    => $quantity,
-				unittypeid  => $params->{'unittype_' . $PackageIndex },
-				weight      => sprintf("%.2f", $weight),
-				dimweight   => sprintf("%.2f", $dimweight),
-				dimlength   => sprintf("%.2f", $dimlength),
-				dimwidth    => sprintf("%.2f", $dimwidth),
-				dimheight   => sprintf("%.2f", $dimheight),
-				density     => sprintf("%.2f", $density),
-				class       => sprintf("%.2f", $class),
-				decval      => sprintf("%.2f", $decval),
-				frtins      => sprintf("%.2f", $frtins),
-				dryicewt    => int $dryicewt,
+				ownertypeid   => $ownertypeid,
+				ownerid       => $ownerid,
+				datatypeid    => $datatypeid,
+				boxnum        => $quantity,
+				quantity      => $quantity,
+				unitofmeasure => $unitofmeasure,
+				unittypeid    => $params->{'unittype_' . $PackageIndex },
+				weight        => sprintf("%.2f", $weight),
+				dimweight     => sprintf("%.2f", $dimweight),
+				dimlength     => sprintf("%.2f", $dimlength),
+				dimwidth      => sprintf("%.2f", $dimwidth),
+				dimheight     => sprintf("%.2f", $dimheight),
+				density       => sprintf("%.2f", $density),
+				class         => sprintf("%.2f", $class),
+				decval        => sprintf("%.2f", $decval),
+				frtins        => sprintf("%.2f", $frtins),
+				dryicewt      => int $dryicewt,
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
@@ -1080,8 +1082,9 @@ sub populate_order :Private
 	## Package Details
 	if (!$populate or $populate eq 'shipment')
 		{
+		$c->stash->{'ROW_COUNT'} = 0;
 		$c->stash->{'totalweight'} = 0;
-		$c->stash->{'totalpackages'} = 0;
+		$c->stash->{'CURRENT_PACKAGE_COUNT'} = 0;
 
 		my $packages = [];
 		if ($params->{'coids'})
@@ -1106,21 +1109,11 @@ sub populate_order :Private
 		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total No of packages  " . @$packages);
 
-		my ($rownum_id,$insurance,$freightinsurance) = (0,0,0);
-		my $package_detail_section_html;
+		my ($insurance,$freightinsurance) = (0,0);
+		my $package_detail_section_html = '';
 		foreach my $Package (@$packages)
 			{
-			$rownum_id++;
-			$c->stash->{'totalpackages'}++;
-			$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $Package);
-
-			# Step 2: Find Product belog to Package
-			my @products = $Package->products;
-			foreach my $Packprodata (@products)
-				{
-				$rownum_id++;
-				$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
-				}
+			$package_detail_section_html .= $self->add_package_detail_row($Package);
 
 			$insurance += $Package->decval;
 			$freightinsurance += $Package->frtins;
@@ -1132,17 +1125,8 @@ sub populate_order :Private
 		## Don't move this above foreach block
 		$c->stash->{description} = $CO->description;
 
-		# Step 3: Find product belog to Order
-		my @products = $CO->co_products;
-		foreach my $ProductData (@products)
-			{
-			$rownum_id++;
-			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
-			}
-
 		#$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
-		$c->stash->{package_detail_section} = $package_detail_section_html;
-		$c->stash->{package_detail_row_count} = $rownum_id;
+		$c->stash->{PACKAGE_DETAIL_SECTION} = $package_detail_section_html;
 		}
 
 	if ($populate eq 'summary')
@@ -1244,10 +1228,63 @@ sub add_detail_row :Private
 	$c->stash->{'dimheight'}   = $PackProData->dimheight;
 	$c->stash->{'density'}     = $PackProData->density;
 
-	$c->stash->{PKG_DETAIL_ROW} = 1;
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+	my $flag = uc($type) . '_DETAIL_ROW';
+	$c->stash->{$flag} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	$c->stash->{PKG_DETAIL_ROW} = 0;
+	$c->stash->{$flag} = 0;
+
+	return $HTML;
+	}
+
+sub add_package_detail_row :Private
+	{
+	my $self = shift;
+	my $Package = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{'CURRENT_PACKAGE_COUNT'}++;
+
+	## Find Product belog to Package
+	my @products = $Package->products;
+	my $product_HTML = '';
+	foreach my $Product (@products)
+		{
+		$c->stash->{'ROW_COUNT'}++;
+		$c->stash($Product->{_column_data});
+
+		$c->stash->{PRODUCT_DETAIL_ROW} = 1;
+		$product_HTML .= $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		$c->stash->{PRODUCT_DETAIL_ROW} = 0;
+		}
+
+	## Shipment Automation Has Entered Weight, Set Package Weight
+	if ($params->{'enteredweight'} and $params->{'enteredweight'} > 0 and $Package->datatypeid == 1000)
+		{
+		$Package->weight($params->{'enteredweight'});
+		}
+	## Shipment Automation Has Entered Package Quantity, Set Package Quantity
+	if ($params->{'quantity'} and $params->{'quantity'} > 0 and $Package->datatypeid == 1000)
+		{
+		$Package->quantity($params->{'quantity'});
+		}
+
+	$c->stash($Package->{_column_data});
+	$c->stash->{'coid'} = $Package->ownerid;
+
+	if (my $UnitType = $Package->unittype)
+		{
+		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
+		}
+
+	$c->stash->{'ROW_COUNT'}++;
+	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
+
+	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{PACKAGE_DETAIL_ROW} = 0;
+
 	return $HTML;
 	}
 

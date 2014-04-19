@@ -273,7 +273,7 @@ function calculate_total_weight(event_row_ID)
 
 		if (type == 'package')
 			{
-			if (ParentPackageID > 0) $("#weight_"+ParentPackageID).val(TotalProductWeight);
+			if (ParentPackageID > 0) $("#weight_"+ParentPackageID).val(TotalProductWeight.toFixed(2));
 			ParentPackageID=row_ID;
 			var PackageWeight = parseInt($("#weight_"+row_ID).val());
 			if (isNaN(PackageWeight)) PackageWeight=0;
@@ -286,7 +286,7 @@ function calculate_total_weight(event_row_ID)
 		});
 
 	if (ParentPackageID > 0 && TotalProductWeight > 0) {
-		$("#weight_"+ParentPackageID).val(TotalProductWeight);
+		$("#weight_"+ParentPackageID).val(TotalProductWeight.toFixed(2));
 		}
 
 	$('#package-detail-list li').each(function() {
@@ -911,13 +911,14 @@ function addNewPackageProduct(package_id,type)
 		pkg_detail_row_count = ( count > pkg_detail_row_count ? count : pkg_detail_row_count);
 		});
 
-	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + type + '&unittype=' + $("#unittype").val();
+	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + type + '&unittypeid=' + $("#unittype").val();
 
 	send_ajax_request('', 'JSON', 'order', 'add_package_product_row', query_param, function (){
 
 			if (type == 'package') $('#add-package-btn').before(JSON_data.rowHTML);
 			if (type == 'product') $('#'+product_table_id+' > tbody:last').append(JSON_data.rowHTML);
 
+			configureShipmentDetails();
 			updatePackageProductSequence();
 			});
 	}
@@ -934,5 +935,208 @@ function updatePackageProductSequence()
 		pkg_detail_row_count++;
 		});
 
+	//alert("pkg_detail_row_count: " + pkg_detail_row_count);
 	$("#pkg_detail_row_count").val(pkg_detail_row_count);
+	}
+
+function calculateTotalWeight(event_row_ID)
+	{
+	if (!isNaN(event_row_ID) && $("#type_"+event_row_ID).val() == 'package')
+		{
+		updateShipmentSummary();
+		return;
+		}
+
+	var ParentPackageID=TotalPackageWeight=TotalProductWeight=0;
+
+	$('input[id^=rownum_id_]').each(function() {
+
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		if (type == 'package')
+			{
+			var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
+			if (ParentPackageID > 0) $("#weight_"+ParentPackageID).val(OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+			ParentPackageID=row_ID;
+			var PackageWeight = parseInt($("#weight_"+row_ID).val());
+			if (isNaN(PackageWeight)) PackageWeight=0;
+			TotalProductWeight=0;
+			}
+		else
+			{
+			TotalProductWeight += +$("#weight_"+row_ID).val();
+			}
+		});
+
+	if (ParentPackageID > 0 && TotalProductWeight > 0) {
+		var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
+		$("#weight_"+ParentPackageID).val(OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+		}
+
+	$('input[id^=rownum_id_]').each(function() {
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		if (type != 'package') return;
+
+		var PackageWeight = parseInt($("#weight_"+row_ID).val());
+		if (isNaN(PackageWeight)) PackageWeight=0;
+
+		if ($("#quantityxweight").is(':checked'))
+			{
+			var Quantity = +$("#quantity_"+row_ID).val();
+			TotalPackageWeight += PackageWeight * Quantity;
+			}
+		else
+			{
+			TotalPackageWeight += PackageWeight;
+			}
+		});
+
+	$("#totalweight").val(TotalPackageWeight.toFixed(2));
+	}
+
+function calculateTotalDeclaredValueInsurance()
+	{
+	var ParentPackageID=TotalDeclaredInsurance=TotalProductDeclaredInsurance=0;
+
+	$('input[id^=rownum_id_]').each(function() {
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		if (type == 'package')
+			{
+			if (ParentPackageID > 0) $("#decval_"+ParentPackageID).val(TotalProductDeclaredInsurance);
+			TotalProductDeclaredInsurance=0
+			ParentPackageID=row_ID;
+			}
+		else
+			{
+			TotalProductDeclaredInsurance += +$("#decval_"+row_ID).val();
+			}
+		});
+
+	if (ParentPackageID > 0 && TotalProductDeclaredInsurance > 0) $("#decval_"+ParentPackageID).val(TotalProductDeclaredInsurance);
+
+	$('input[id^=rownum_id_]').each(function() {
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		if (type != 'package') return;
+
+		TotalDeclaredInsurance += +$("#decval_"+row_ID).val();
+		});
+
+	$('#insurance').val(TotalDeclaredInsurance.toFixed(2));
+	}
+
+function distributeInsuranceAmongProducts()
+	{
+	var insurance_value = +$("#insurance").val();
+
+	if (insurance_value == 0) return;
+
+	var PackageProductsCountDetails = {};
+	var TotalPackageCount=TotalProductCount=PackageProductCount=ParentPackageID=ValuePerPackage=ValuePerProduct=0;
+
+	var control_type = 'decval';
+
+	$('input[id^=rownum_id_]').each(function() {
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		if (type == 'package')
+			{
+			if (ParentPackageID > 0) {
+				//alert("Package ID: " + ParentPackageID + ", PackageProductCount: " + PackageProductCount);
+				PackageProductsCountDetails[ParentPackageID] = +PackageProductCount;
+				}
+			ParentPackageID=row_ID;
+			PackageProductCount=0
+			++TotalPackageCount;
+			}
+		else
+			{
+			++PackageProductCount;
+			++TotalProductCount;
+			}
+		});
+
+	if (TotalProductCount==0) TotalProductCount = 1; //Set default product count to 1 if no product
+	if (PackageProductCount==0) PackageProductCount = 1; //Set default package product count to 1 if no product
+
+	if (ParentPackageID > 0) {
+		//alert("Package ID: " + ParentPackageID + ", PackageProductCount: " + PackageProductCount);
+		PackageProductsCountDetails[ParentPackageID] = +PackageProductCount;
+		}
+
+	ValuePerProduct = +insurance_value / +TotalProductCount;
+
+	$('input[id^=rownum_id_]').each(function() {
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		//alert("Row ID: " + row_ID);
+		if (type == 'package')
+			{
+			ValuePerPackage = +ValuePerProduct * +PackageProductsCountDetails[row_ID];
+			//alert("ValuePerProduct: " + ValuePerProduct + ", PackageProductsCountDetails: " + PackageProductsCountDetails[row_ID] + ", ValuePerPackage: " + ValuePerPackage);
+			$("#"+control_type+"_"+row_ID).val(ValuePerPackage.toFixed(2));
+			}
+		else
+			{
+			$("#"+control_type+"_"+row_ID).val(ValuePerProduct.toFixed(2));
+			}
+		});
+	}
+
+function updateShipmentSummary()
+	{
+	$('input[id^=rownum_id_]').each(function() {
+
+		var res = this.id.split('_');
+		var row_ID = res[2];
+		var type = $("#type_"+row_ID).val();
+
+		if (type != 'package') return;
+
+		var packageClass = $("#class_"+row_ID).val();
+		var packageQuantity = $("#quantity_"+row_ID).val();
+		var packageWeight = $("#weight_"+row_ID).val();
+		var packageValue = $("#decval_"+row_ID).val();
+
+		$("#ss-class-"+row_ID).text(packageClass == '' ? 'NA' :packageClass);
+		$("#ss-quantity-"+row_ID).text(packageQuantity == '' ? '0' : packageQuantity);
+		$("#ss-weight-"+row_ID).text(packageWeight == '' ? '0.00' : packageWeight);
+		$("#ss-decval-"+row_ID).text(packageValue == '' ? '0.00' : packageValue);
+		});
+	}
+
+function removePackageDetails(row_ID)
+	{
+	$("#package-"+row_ID).remove();
+	$("#ss-row-"+row_ID).remove();
+	}
+
+function configureShipmentDetails()
+	{
+	resetCSList();
+	calculateTotalWeight();
+	distributeInsuranceAmongProducts();
+	calculateTotalDeclaredValueInsurance();
+	setCustomsCommodityValue();
+	updateShipmentSummary();
 	}
