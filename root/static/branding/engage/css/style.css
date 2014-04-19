@@ -410,7 +410,7 @@ table.package a :hover { text-decoration: none }
 
 table.shipment-summary { width: 1000px; margin: 10px 0; border-spacing: 0px; text-align: center}
 table.shipment-summary th { padding: 5px; color: #FFF; background: #5DBD53; text-transform: capitalize; white-space: nowrap }
-table.shipment-summary td { padding: 10px; white-space: nowrap }
+table.shipment-summary td { padding: 10px; white-space: nowrap; text-align: right }
 table.shipment-summary td.details { border: 4px solid #5DBD53;}
 table.shipment-summary td.total { background: #EEE;}
 
