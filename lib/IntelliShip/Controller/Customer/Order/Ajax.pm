@@ -744,6 +744,11 @@ sub mark_shipment_as_printed
 	$Shipment->statusid('100'); ## Printed
 	$Shipment->update;
 
+	if ($Shipment->has_pickup_request)
+		{
+		$self->send_pickup_request($Shipment);
+		}
+
 	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
 
 	#$self->SendShipNotification($Shipment);

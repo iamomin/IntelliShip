@@ -999,6 +999,13 @@ sub is_international
 	return ($OA->country ne $DA->country);
 	}
 
+sub has_pickup_request
+	{
+	my $self = shift;
+	my $RS = $self->assdata({ assname => 'pickupreq' });
+	return $RS->count;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

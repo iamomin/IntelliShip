@@ -1157,7 +1157,7 @@ sub populate_order :Private
 			}
 		else
 			{
-			$c->stash($$packages->[0]->{_column_data}) if @$packages;
+			$c->stash($packages->[0]->{_column_data}) if @$packages;
 			$c->stash->{comments} = $CO->description; ##**
 			}
 		}
@@ -3984,6 +3984,46 @@ sub generate_commercial_invoice
 	$c->stash(template => "templates/customer/order-commercial-invoice.tt");
 
 	return $ComInvHTML;
+	}
+
+sub send_pickup_request
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	my $c = $self->context;
+	my $CO = $Shipment->CO;
+
+	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+	my $Service         = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+	my $carrier = $Shipment->carrier;
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$carrier = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
+		{
+		$carrier = &CARRIER_GENERIC;
+		}
+
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_PICKUP_REQUEST);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->contact($self->contact);
+	$Handler->carrier($carrier);
+	$Handler->customerservice($CustomerService);
+	$Handler->service($Service);
+	$Handler->CO($CO);
+	$Handler->API($self->API);
+	$Handler->SHIPMENT($Shipment);
+
+	my $Response = $Handler->process_request({
+			NO_TOKEN_OPTION => 1
+			});
+
+	$c->log->debug("....Response: " . $Response);
 	}
 
 __PACKAGE__->meta->make_immutable;
