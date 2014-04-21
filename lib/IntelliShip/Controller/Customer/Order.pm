@@ -180,7 +180,14 @@ sub setup_address :Private
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
 	$c->stash->{fromphone}  = $Contact->phonebusiness unless $c->stash->{fromphone};
 
-	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+	if ($c->action =~ /multipage/)
+		{
+		$c->stash(template => "templates/customer/order-address.tt");
+		}
+	else
+		{
+		$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+		}
 	}
 
 sub setup_shipment_information :Private
@@ -224,6 +231,7 @@ sub setup_shipment_information :Private
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
 		$c->stash->{default_package_type} = $unit_type_id;
+		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
 		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
@@ -235,16 +243,23 @@ sub setup_shipment_information :Private
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	unless ($c->stash->{PACKAGE_DETAIL_SECTION})
+	if ($c->action =~ /multipage/)
 		{
-		$c->log->debug("... setup new package shipment details");
-		$params->{'unittypeid'} = $c->stash->{default_package_type};
-		$params->{'detail_type'} = 'package';
-		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-		$CA->context($c);
-		$CA->contact($self->contact);
-		my $data = $CA->add_package_product_row;
-		$c->stash->{PACKAGE_DETAIL_SECTION} = $data->{rowHTML};
+		$c->stash(template => "templates/customer/order-shipment.tt");
+		}
+	else
+		{
+		unless ($c->stash->{PACKAGE_DETAIL_SECTION})
+			{
+			$c->log->debug("... setup new package shipment details");
+			$params->{'unittypeid'} = $c->stash->{default_package_type};
+			$params->{'detail_type'} = 'package';
+			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+			$CA->context($c);
+			$CA->contact($self->contact);
+			my $data = $CA->add_package_product_row;
+			$c->stash->{PACKAGE_DETAIL_SECTION} = $data->{rowHTML};
+			}
 		}
 	}
 
@@ -292,7 +307,15 @@ sub setup_carrier_service :Private
 		}
 
 	$c->stash->{tooltips} = $self->get_tooltips;
-	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
+
+	if ($c->action =~ /multipage/)
+		{
+		$c->stash(template => "templates/customer/order-carrier-service.tt");
+		}
+	else
+		{
+		$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
+		}
 	}
 
 sub get_shipment_types
@@ -1109,26 +1132,36 @@ sub populate_order :Private
 		$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
 
 		push @$packages, $_ foreach @CoPackages;
-		$c->log->debug("Total No of packages  " . @$packages);
+		$c->log->debug("Total number of packages  " . @$packages);
 
-		my ($insurance,$freightinsurance) = (0,0);
-		my $package_detail_section_html = '';
-		foreach my $Package (@$packages)
+		if ($c->stash->{one_page})
 			{
-			$package_detail_section_html .= $self->add_package_detail_row($Package);
+			my ($insurance,$freightinsurance) = (0,0);
+			my $package_detail_section_html = '';
+			foreach my $Package (@$packages)
+				{
+				$package_detail_section_html .= $self->add_package_detail_row($Package);
 
-			$insurance += $Package->decval;
-			$freightinsurance += $Package->frtins;
+				$insurance += $Package->decval;
+				$freightinsurance += $Package->frtins;
+				}
+
+			$c->stash->{insurance} = $insurance;
+			$c->stash->{freightinsurance} = $freightinsurance;
+
+			## Don't move this above foreach block
+			$c->stash->{description} = $CO->description;
+
+			#$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
+			$c->stash->{PACKAGE_DETAIL_SECTION} = $package_detail_section_html;
 			}
+		else
+			{
+			 my $Package = $packages->[0];
+			$c->stash($Package->{_column_data});
 
-		$c->stash->{insurance} = $insurance;
-		$c->stash->{freightinsurance} = $freightinsurance;
-
-		## Don't move this above foreach block
-		$c->stash->{description} = $CO->description;
-
-		#$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
-		$c->stash->{PACKAGE_DETAIL_SECTION} = $package_detail_section_html;
+			$c->stash->{comments} = $CO->description; ##**
+			}
 		}
 
 	if ($populate eq 'summary')
@@ -1246,6 +1279,8 @@ sub add_package_detail_row :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
+	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
 	$c->stash->{'CURRENT_PACKAGE_COUNT'}++;
 
 	## Find Product belog to Package
@@ -1257,7 +1292,7 @@ sub add_package_detail_row :Private
 		$c->stash($Product->{_column_data});
 
 		$c->stash->{PRODUCT_DETAIL_ROW} = 1;
-		$product_HTML .= $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		$product_HTML .= $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
 		$c->stash->{PRODUCT_DETAIL_ROW} = 0;
 		}
 
@@ -1284,7 +1319,7 @@ sub add_package_detail_row :Private
 	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
-	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
 	$c->stash->{PACKAGE_DETAIL_ROW} = 0;
 
 	return $HTML;
@@ -3058,7 +3093,7 @@ sub set_required_fields :Private
 			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $customerRules{'reqdateneeded'};
 			}
 
-		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validate_package_details }"})
+		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validatePackageDetails }"})
 		}
 
 	#$c->log->debug("requiredfield_list: " . Dumper $requiredList);

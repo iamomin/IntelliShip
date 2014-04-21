@@ -325,7 +325,7 @@ $("#tozip").change(function() {
 
 $("#dateneeded").change(function() {
 	resetCSList();
-	check_due_date();
+	checkDueDate();
 	});
 
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
