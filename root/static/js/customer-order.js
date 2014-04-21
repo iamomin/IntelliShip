@@ -473,7 +473,7 @@ function setSkuDetails(row_ID, sku_id)
 	{
 	var query_param = '&sku_id='+sku_id;
 
-	if (sku_id > 0) {
+	if (sku_id.length > 0) {
 		$("#description_"+row_ID).val('');
 		send_ajax_request('', 'JSON', 'order', 'get_sku_detail', query_param, function () {
 			if (JSON_data.error) {
@@ -488,6 +488,7 @@ function setSkuDetails(row_ID, sku_id)
 				$("#nmfc_"+row_ID).val(JSON_data.nmfc);
 				$("#class_"+row_ID).val(JSON_data.class);
 				if (JSON_data.unittypeid != "") $("#unittype_"+row_ID+" option:selected").val(JSON_data.unittypeid);
+				configureShipmentDetails();
 				}
 			});
 

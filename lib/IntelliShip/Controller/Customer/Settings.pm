@@ -282,6 +282,7 @@ sub productskusetup :Local
 		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE');
 		$c->stash->{yesno_list} = $self->get_select_list('YES_NO_NUMERIC');
 		$c->stash->{weighttype_list} = $self->get_select_list('WEIGHT_TYPE');
+		$c->stash->{class_list} = $self->get_select_list('CLASS');
 		$c->stash->{unitofmeasure_list} = $self->get_select_list('UNIT_OF_MEASURE');
 
 		#my $unit_type_description = {};

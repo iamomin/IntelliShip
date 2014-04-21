@@ -262,7 +262,7 @@ $(document).ready(function(){
 				<td>SKU Item Value:</td>
 				<td><input type="text" name="value" id="value" value="[%value%]" size="30" maxlength="50"></td>
 				<td>SKU Class:</td>
-				<td><input type="text" name="class" id="class" value="[%class%]" size="30" maxlength="50"></td>
+				<td><select name="class" id="class">[% FOREACH item IN class_list %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
 			</tr>
 			<tr>
 				<td>Hazardous:</td>
