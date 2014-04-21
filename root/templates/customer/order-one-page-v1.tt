@@ -145,7 +145,7 @@
 
 	$("#ship_now").click(function() {
 
-		update_package_product_sequence();
+		updatePackageProductSequence();
 
 		if (validateForm(requiredFieldHash) == false) return;
 
