@@ -20,75 +20,8 @@
 
 	<h4>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></h4>
 
-	[% IF PACKAGE_DETAIL_SECTION %]
-		[% PACKAGE_DETAIL_SECTION %]
-	[% ELSE %]
-	<table class="package" id="package-1">
-		<tr>
-			<td style="text-align: right;">[% default_package_type_text %] QUANTITY:</td>
-			<td><input type="text" class="small-text shipment-details" name="quantity_1" id="quantity_1" value="1"/></td>
-			<th colspan="10"><div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_1" id="dimweight_1"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_1" id="density_1"/></div></th>
-		</tr>
-		<tr>
-			<td colspan="2"><button type="button" id="weight_per_unit" class="left-rounded-gray-btn">Weight Per [% default_package_type_text %]</button><button type="button" id="package_weight" class="right-rounded-green-btn">Total Weight</button></td>
-			<td class="spacer">Length</td>
-			<td >&nbsp;</td>
-			<td>Width</td>
-			<td>&nbsp;</td>
-			<td>Height</td>
-			<td>Units</td>
-			<td class="spacer">NMFC</td>
-			<td>Class</td>
-			<td>Description</td>
-			<td>$ Total Value</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<input type="hidden" name="type_1" id="type_1" value="package"/>
-				<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
-				<input type="hidden" name="unittype_1" id="unittype_1" value="[% default_package_type %]"/>
+	[% PACKAGE_DETAIL_SECTION %]
 
-				<input type="text" style="width: 150px;" name="weight_1" id="weight_1" onchange="calculateTotalWeight(1);" value="0.00"/>
-			</td>
-			<td class="spacer"><input type="text" class="small-text" name="dimlength_1" id="dimlength_1"/></td>
-			<td style="padding: 0;">X</td>
-			<td><input type="text" class="small-text" name="dimwidth_1" id="dimwidth_1"/></td>
-			<td style="padding: 0;">X</td>
-			<td><input type="text" class="small-text" name="dimheight_1" id="dimheight_1"/></td>
-			<td><select name="unitofmeasure_1" id="unitofmeasure_1">[% FOREACH item IN measureunit_loop %]<option [% item.value == 1 ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-			<td class="spacer"><input type="text" class="small-text" name="nmfc_1" id="nmfc_1"/></td>
-			<td><select class="small-text shipment-details" name="class_1" id="class_1">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-			<td><input type="text" class="broad-text" name="description_1" id="description_1"/></td>
-			<td><input type="text" class="small-text shipment-details" name="decval_1" id="decval_1" value="[% insurance ? insurance : '0.00' %]"/></td>
-		</tr>
-		<tr>
-			<td colspan="12" class="product">
-			<div class="float-left full-width"><table><tr><td><a href="javascript:void(0);" onclick="addNewPackageProduct(1,'product');" class="round-green-button">+</a></td><td><green>Add Product Details</green></td></tr></table>
-
-				<table id="product-list-1" class="app">
-					<tr>
-						<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
-					</tr>
-					<tr id="product-1">
-						<td>
-							<input type="hidden" name="type_2" id="type_2" value="product"/>
-							<input type="hidden" id="rownum_id_2" name="rownum_id_2" value="2"/>
-							<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
-						</td>
-						<td><input type="text" class="small-text" name="quantity_2" id="quantity_2" value="1"/></td>
-						<td><input type="text" class="small-text sku_id" name="sku_2" id="sku_2"/></td>
-						<td><input type="text" class="broad-text" name="description_2" id="description_2"/></td>
-						<td><input type="text" class="small-text" name="nmfc_2" id="nmfc_2"/></td>
-						<td><select class="small-text" name="class_2" id="class_2">[% FOREACH item IN classlist_loop %]<option [% IF item.value == '' %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-						<td><input type="text" class="small-text shipment-details" name="weight_2" id="weight_2"/></td>
-						<td><input type="text" class="small-text shipment-details" name="decval_2" id="decval_2" value="0.00"/></td>
-					</tr>
-				</table>
-				</div>
-			</td>
-		</tr>
-	</table>
-	[% END %]
 	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
 
 	<div id="clear">&nbsp;</div>

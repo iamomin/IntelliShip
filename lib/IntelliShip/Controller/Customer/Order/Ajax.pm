@@ -673,11 +673,11 @@ sub add_package_product_row :Private
 
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
 	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
-	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
+	$c->stash->{ROW_COUNT} = $params->{'row_ID'} || 1;
 	$c->stash->{one_page} = 1;
 	$c->stash->{$flag} = 1;
 
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
 
 	$c->stash->{$flag} = 0;
 

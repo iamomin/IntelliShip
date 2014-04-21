@@ -79,13 +79,8 @@ sub _setup_one_page :Private
 	$self->set_required_fields;
 
 	$self->setup_address;
-	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
-
 	$self->setup_shipment_information;
-	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]));
-
 	$self->setup_carrier_service;
-	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
 
 	$c->stash(template => "templates/customer/order-one-page.tt");
 	}
@@ -111,8 +106,6 @@ sub setup_one_page :Private
 	$self->set_required_fields;
 
 	$self->setup_address;;
-	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
-
 	$self->setup_shipment_information;
 	$self->setup_carrier_service;
 
@@ -187,17 +180,16 @@ sub setup_address :Private
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
 	$c->stash->{fromphone}  = $Contact->phonebusiness unless $c->stash->{fromphone};
 
-	$c->stash(template => "templates/customer/order-address.tt");
+	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
 	}
 
 sub setup_shipment_information :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION');
-	$c->stash->{classlist_loop} = $self->get_select_list('CLASS');
 
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
@@ -243,7 +235,17 @@ sub setup_shipment_information :Private
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	$c->stash(template => "templates/customer/order-shipment.tt");
+	unless ($c->stash->{PACKAGE_DETAIL_SECTION})
+		{
+		$c->log->debug("... setup new package shipment details");
+		$params->{'unittypeid'} = $c->stash->{default_package_type};
+		$params->{'detail_type'} = 'package';
+		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+		$CA->context($c);
+		$CA->contact($self->contact);
+		my $data = $CA->add_package_product_row;
+		$c->stash->{PACKAGE_DETAIL_SECTION} = $data->{rowHTML};
+		}
 	}
 
 sub setup_carrier_service :Private
@@ -290,8 +292,7 @@ sub setup_carrier_service :Private
 		}
 
 	$c->stash->{tooltips} = $self->get_tooltips;
-
-	$c->stash(template => "templates/customer/order-carrier-service.tt");
+	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
 	}
 
 sub get_shipment_types
