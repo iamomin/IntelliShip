@@ -1132,7 +1132,7 @@ sub populate_order :Private
 		$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
 
 		push @$packages, $_ foreach @CoPackages;
-		$c->log->debug("Total number of packages  " . @$packages);
+		$c->log->debug("Total number of packages " . @$packages);
 
 		if ($c->stash->{one_page})
 			{
@@ -1157,9 +1157,7 @@ sub populate_order :Private
 			}
 		else
 			{
-			 my $Package = $packages->[0];
-			$c->stash($Package->{_column_data});
-
+			$c->stash($$packages->[0]->{_column_data}) if @$packages;
 			$c->stash->{comments} = $CO->description; ##**
 			}
 		}
