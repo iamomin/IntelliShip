@@ -469,6 +469,9 @@ function checkDeliveryMethodSection()
 var has_FC=false;
 function getCarrierServiceList(form_name)
 	{
+	$('#loading-1').css('background', 'url(/static/branding/engage/images/route-preload-white.GIF) no-repeat center center');
+	$('#loading-2').css('background', 'url(/static/branding/engage/images/route-preload-white.GIF) no-repeat center center');
+
 	$("#carrier-service-list").slideUp(1000, function() {
 
 		updatePackageProductSequence();
@@ -477,6 +480,9 @@ function getCarrierServiceList(form_name)
 		var params = $("#"+form_name).serialize();
 
 		send_ajax_request('carrier-service-list', 'HTML', 'order', 'get_carrier_service_list', params, function() {
+
+			$('#loading-1').css('background', 'url(/static/branding/engage/images/command-refresh-24.png) no-repeat center center');
+			$('#loading-2').css('background', 'url(/static/branding/engage/images/command-refresh-24.png) no-repeat center center');
 
 			has_FC=true;
 
