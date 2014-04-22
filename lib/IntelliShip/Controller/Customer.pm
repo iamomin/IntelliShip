@@ -837,9 +837,9 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => '0' , name => 'Prepaid' },
-			{ value => '1' , name => 'Collect' },
-			{ value => '2' , name => '3rd Party' },
+			{ value => '0' , name => 'Bill To Shipper (Prepaid)' },
+			{ value => '1' , name => 'Bill To Recipient (Collect)' },
+			{ value => '2' , name => 'Bill To 3rd Party (3rd Party)' },
 			];
 		}
 	elsif ($list_name eq 'RECORDS_PER_PAGE')

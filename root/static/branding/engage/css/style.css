@@ -414,6 +414,8 @@ table.shipment-summary td { padding: 10px; white-space: nowrap; text-align: righ
 table.shipment-summary td.details { border: 4px solid #5DBD53;}
 table.shipment-summary td.total { background: #EEE;}
 
+table.shipment-summary table td { padding: 0 }
+
 #shipment-summary-div table { background: #FFF; border-spacing: 0px; text-align: left; white-space: nowrap }
 #shipment-summary-div table th { padding: 5px; background: #FFF; color: #5DBD53; text-transform: capitalize }
 #shipment-summary-div table td { padding: 0 5px }

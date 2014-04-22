@@ -34,11 +34,14 @@
 	<table class="shipment-summary">
 		<tr>
 			<th>SHIPMENT SUMMARY</th>
-			<td class="total" style="width: 40%;">&nbsp;</td>
-			<td class="total">TOTAL SHIPMENT BILLABLE WEIGHT:</td>
-			<td class="total"><input type="text" class="small-text" name="totalweight" id="totalweight" value="[% totalweight ? totalweight : 0.00 %]"/> lbs</td>
-			<td class="total">TOTAL SHIPMENT VALUE:</td>
-			<td class="total">$<input type="text" class="small-text" name="insurance" id="insurance" value="[% insurance ? insurance : 0.00 %]"/></td>
+			<td class="total" colspan="5">
+			<table class="float-right">
+				<tr>
+				<td><green><strong>TOTAL SHIPMENT BILLABLE WEIGHT:</strong></green><strong>&nbsp;<input type="text" class="small-text" name="totalweight" id="totalweight" value="[% totalweight ? totalweight : 0.00 %]"/> [% WEIGHT_TYPE %]</strong></td>
+				<td style="width: 30px">&nbsp;</td>
+				<td><green><strong>TOTAL SHIPMENT VALUE:</strong></green><strong>&nbsp;$</strong><input type="text" class="small-text" name="insurance" id="insurance" value="[% insurance ? insurance : 0.00 %]"/></td>
+				</tr>
+			</table>
 		</tr>
 		<tr>
 			<td colspan="6" class="details">
