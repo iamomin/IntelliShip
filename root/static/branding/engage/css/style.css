@@ -420,10 +420,10 @@ table.shipment-summary td.total { background: #EEE;}
 
 .small-text { width: 50px; }
 .full-width { width: 100% }
-.left-rounded-green-btn   { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #FFF; background: #5DBD53; -moz-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; font: bold 11px Arial; cursor: pointer }
-.left-rounded-gray-btn   { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; font: bold 11px Arial; cursor: pointer }
-.right-rounded-green-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #FFF; background: #5DBD53; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
-.right-rounded-gray-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
+
+button.left-rounded-btn   { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; font: bold 11px Arial; cursor: pointer }
+button.right-rounded-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
+button.green { color: #FFF; background: #5DBD53 }
 
 .round-black-button { 
     padding: 1px 4px;
@@ -840,6 +840,8 @@ input {
     vertical-align: inherit;
 }
 
+input, select, textarea { color: #595959 }
+
 input.text {
     width: 160px;
 }
@@ -851,6 +853,27 @@ input.broad-text {
 input.invisible {
     border: none;
 }
+
+#weight-with-unit input {
+    display: block;
+    float: left;
+    background: #FFF;
+    width: 200px;
+    margin-left: 30px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-appearance: textfield;
+    }
+
+#weight-with-unit label {
+    margin: 2px 0 0 133px;
+    position: absolute;
+    display: block;
+    padding: 1px 10px;
+    background: #EEE;
+    color: #9BA7AF;
+    }
 
 /* Buttons */
 

@@ -236,7 +236,8 @@ sub setup_shipment_information :Private
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
 
-	$c->stash->{AUTO_QUANTITYxWEIGHT_SELECT} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
+	$c->stash->{WEIGHT_TYPE} = $Customer->weighttype || 'LBS';
+	$c->stash->{QUANTITY_x_WEIGHT} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
 
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
@@ -1109,7 +1110,7 @@ sub populate_order :Private
 		{
 		$c->stash->{'ROW_COUNT'} = 0;
 		$c->stash->{'totalweight'} = 0;
-		$c->stash->{'CURRENT_PACKAGE_COUNT'} = 0;
+		$c->stash->{'PACKAGE_INDEX'} = 0;
 
 		my $packages = [];
 		if ($params->{'coids'})
@@ -1279,7 +1280,7 @@ sub add_package_detail_row :Private
 
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
 	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
-	$c->stash->{'CURRENT_PACKAGE_COUNT'}++;
+	$c->stash->{'PACKAGE_INDEX'}++;
 
 	## Find Product belog to Package
 	my @products = $Package->products;

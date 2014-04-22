@@ -117,6 +117,27 @@
 		setSkuDetails(row_num, this.value)
 		});
 
+	$(document).on('click', '.calculate-package-weight', function() {
+		var arr = this.id.split("-");
+		var type = arr[0];
+		var ID = arr[1];
+
+		$(this).addClass("green",1000);
+
+		if (type == 'weightperpackage')
+			{
+			$('#totalweight-'+ID).removeClass("green",1000);
+			$('#quantityxweight-'+ID).val(0);
+			}
+		else
+			{
+			$('#weightperpackage-'+ID).removeClass("green",1000);
+			$('#quantityxweight-'+ID).val(1);
+			}
+
+		calculateTotalWeight();
+		});
+
 	$('#unittype').change(function() {
 		$("#add-package-btn").html('<span class="round-green-button">+</span>&nbsp;&nbsp;ADD ' + $("#unittype option:selected").text().toUpperCase());
 		});

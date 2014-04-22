@@ -671,8 +671,10 @@ sub add_package_product_row :Private
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		}
 
+	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
 	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
+	$c->stash->{PACKAGE_INDEX} = $params->{'row_ID'} || 1;
 	$c->stash->{ROW_COUNT} = $params->{'row_ID'} || 1;
 	$c->stash->{one_page} = 1;
 	$c->stash->{$flag} = 1;

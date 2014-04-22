@@ -555,7 +555,8 @@ function calculateTotalWeight(event_row_ID)
 		return;
 		}
 
-	var ParentPackageID=TotalPackageWeight=TotalProductWeight=0;
+	var ParentPackageID=BillablePackageWeight=TotalProductWeight=0;
+	var packageWeights = {};
 
 	$('input[id^=rownum_id_]').each(function() {
 
@@ -575,6 +576,8 @@ function calculateTotalWeight(event_row_ID)
 			}
 		else
 			{
+			if (packageWeights[ParentPackageID] == undefined) packageWeights[ParentPackageID] = 0;
+			packageWeights[ParentPackageID] = +packageWeights[ParentPackageID] + +$("#weight_"+row_ID).val();
 			TotalProductWeight += +$("#weight_"+row_ID).val();
 			}
 		});
@@ -592,21 +595,24 @@ function calculateTotalWeight(event_row_ID)
 
 		if (type != 'package') return;
 
-		var PackageWeight = parseInt($("#weight_"+row_ID).val());
+		var PackageWeight = parseInt(packageWeights[row_ID]);
+		$("#weight_"+row_ID).val(PackageWeight.toFixed(2));
+
 		if (isNaN(PackageWeight)) PackageWeight=0;
 
-		if ($("#quantityxweight").is(':checked'))
+		if ($("#quantityxweight-"+row_ID).val() == 1)
 			{
-			var Quantity = +$("#quantity_"+row_ID).val();
-			TotalPackageWeight += PackageWeight * Quantity;
+			var TotalPackageWeight = (+$("#quantity_"+row_ID).val() * PackageWeight);
+			$("#weight_"+row_ID).val(TotalPackageWeight.toFixed(2));
+			BillablePackageWeight += TotalPackageWeight;
 			}
 		else
 			{
-			TotalPackageWeight += PackageWeight;
+			BillablePackageWeight += PackageWeight;
 			}
 		});
 
-	$("#totalweight").val(TotalPackageWeight.toFixed(2));
+	$("#totalweight").val(BillablePackageWeight.toFixed(2));
 	}
 
 function calculateTotalDeclaredValueInsurance()
@@ -723,13 +729,13 @@ function updateShipmentSummary()
 
 		var packageClass = $("#class_"+row_ID).val();
 		var packageQuantity = $("#quantity_"+row_ID).val();
-		var packageWeight = $("#weight_"+row_ID).val();
-		var packageValue = $("#decval_"+row_ID).val();
+		var packageWeight = +$("#weight_"+row_ID).val();
+		var packageValue = +$("#decval_"+row_ID).val();
 
 		$("#ss-class-"+row_ID).text(packageClass == '' ? 'NA' :packageClass);
 		$("#ss-quantity-"+row_ID).text(packageQuantity == '' ? '0' : packageQuantity);
-		$("#ss-weight-"+row_ID).text(packageWeight == '' ? '0.00' : packageWeight);
-		$("#ss-decval-"+row_ID).text(packageValue == '' ? '0.00' : packageValue);
+		$("#ss-weight-"+row_ID).text(packageWeight == '' ? '0.00' : packageWeight.toFixed(2));
+		$("#ss-decval-"+row_ID).text(packageValue == '' ? '0.00' : packageValue.toFixed(2));
 		});
 	}
 
