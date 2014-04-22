@@ -243,14 +243,8 @@ sub findsku :Local
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	#$c->log->debug("FIND SKU: " . Dumper $params);
 
-	#my $WHERE = { customerid => $self->customer->customerid };
-	#$WHERE->{description} = { like => $params->{'term'} };
-	#my $rs = $c->model('MyDB')->search($WHERE, { select => ['productskuid'],  as => ['productskuid'], order_by => 'description' });
-	#$c->log->debug("productskus: " . Dumper $rs);
-
-	my $sql = "SELECT description FROM productsku WHERE customerid = '" . $self->customer->customerid . "' AND description LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
+	my $sql = "SELECT customerskuid FROM productsku WHERE customerid = '" . $self->customer->customerid . "' AND customerskuid LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
 	my $sth = $c->model('MyDBI')->select($sql);
 	#$c->log->debug("query_data: " . Dumper $sth->query_data);
 	my $arr = [];
@@ -274,7 +268,8 @@ sub productskusetup :Local
 			$c->stash($ProductSku->{'_column_data'});
 			}
 
-		$c->log->debug(($ProductSku ? "EDIT (ID: " . $ProductSku->productskuid . ")" : "SETUP NEW") . " PRODUCT SKU SETUP");
+		$c->log->debug(($ProductSku ? "EDIT (ID: " . $ProductSku->productskuid . ")" : "SETUP NEW") . " PRODUCT SKU");
+
 		$c->stash->{hazardous} = '0' unless $c->stash->{hazardous}; ## No
 		$c->stash->{unitofmeasure} = 'EA' unless $c->stash->{unitofmeasure}; ## Each
 		$c->stash->{unittypeid} = '3' unless $c->stash->{unittypeid}; ## Each
@@ -367,16 +362,18 @@ sub get_product_sku
 	my $params = $c->req->params;
 
 	my $WHERE = {};
+
 	if (length $params->{'productskuid'})
 		{
 		$WHERE->{productskuid} = $params->{'productskuid'};
 		}
-	elsif (length $params->{'productsku'})
+	elsif (length $params->{'customerskuid'})
 		{
-		$WHERE->{description} = $params->{'productsku'};
+		$WHERE->{customerskuid} = $params->{'customerskuid'};
 		}
 
 	return undef unless scalar keys %$WHERE;
+
 	return $c->model('MyDBI::Productsku')->find($WHERE);
 	}
 

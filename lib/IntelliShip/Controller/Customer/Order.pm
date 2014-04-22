@@ -783,14 +783,14 @@ sub save_package_product_details :Private
 		my $ownertypeid = ($params->{'type_' . $PackageIndex } eq 'product' ? '3000' : '1000');
 
 		my $quantity  = $params->{'quantity_' . $PackageIndex} || 0;
-		my $weight    = $params->{'weight_'.$PackageIndex}     || 0;
-		my $dimweight = $params->{'dimweight_'.$PackageIndex}  || 0;
-		my $dimlength = $params->{'dimlength_'.$PackageIndex}  || 0;
-		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex}   || 0;
-		my $dimheight = $params->{'dimheight_'.$PackageIndex}  || 0;
-		my $density   = $params->{'density_' . $PackageIndex}  || 0;
+		my $weight    = $params->{'weight_'.$PackageIndex}     || undef;
+		my $dimweight = $params->{'dimweight_'.$PackageIndex}  || undef;
+		my $dimlength = $params->{'dimlength_'.$PackageIndex}  || undef;
+		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex}   || undef;
+		my $dimheight = $params->{'dimheight_'.$PackageIndex}  || undef;
+		my $density   = $params->{'density_' . $PackageIndex}  || undef;
 		my $class     = $params->{'class_' . $PackageIndex}    || 0;
-		my $decval    = $params->{'decval_' . $PackageIndex}   || 0;
+		my $decval    = $params->{'decval_' . $PackageIndex}   || undef;
 		my $frtins    = $params->{'frtins_'.$PackageIndex}     || 0;
 		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
 		my $unitofmeasure = $params->{'unitofmeasure_' . $PackageIndex} || 0;
@@ -2089,7 +2089,7 @@ sub setup_label_to_print
 		$c->stash->{toAddress}     = $Shipment->destination_address;
 		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
 		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
-		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+		$c->stash->{dimweight}     = $Shipment->dimweight;
 		$c->stash->{enteredweight} = $Shipment->total_weight;
 		$c->stash->{totalquantity} = $Shipment->total_quantity;
 		$c->stash->{refnumber}     = $params->{'refnumber'};

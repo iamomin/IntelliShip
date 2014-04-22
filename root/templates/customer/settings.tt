@@ -96,12 +96,12 @@ $(document).ready(function(){
 			<input type="hidden" id="productskuid" name="productskuid"/>
 			<div class="float-right">
 			<table><tr>
-				<td><label class="float-right" for="productsku">SKU:</td>
-				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
+				<td><label class="float-right" for="customerskuid">SKU:</td>
+				<td><input type="text" class="text" id="customerskuid" name="customerskuid" /></td>
 				<td><input type="button" class="blue" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="green" id="sku_add" value="Add New" /></td>
 				<td><input type="button" class="red" id="sku_delete" value="Delete" /></td>
-				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
+				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="window.location.href='/customer/settings'"/></td>
 				<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 				<td>
 					<select name="records_per_page" id="records_per_page">
@@ -130,6 +130,7 @@ $(document).ready(function(){
 		<tr>
 			<th>&nbsp;</th>
 			<th>&nbsp;</th>
+			<th>SKU</th>
 			<th>Description</th>
 			<th>UPC</th>
 			<th>hazardous</th>
@@ -146,6 +147,7 @@ $(document).ready(function(){
 			<tr>
 				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
 				<td><a href="javascript:deleteProductSku('[% item.productskuid %]');">DELETE</a></td>
+				<td>[% item.customerskuid %]</td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
 				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
@@ -166,22 +168,36 @@ $(document).ready(function(){
 	<script>
 
 	function editProductSku(productskuid) {
-		$("#productsku").val("");
+		$("#customerskuid").val("");
 		$("#productskuid").val(productskuid);
 		$("#frm_sku_management").submit();
 		}
-	
+
 	function deleteProductSku(productskuid) {
-		$("#do").val('delete');
-		$("#productskuid").val(productskuid);
-		$("#frm_sku_management").submit();
+
+		$("#dialog-message").dialog( {
+			title: "Delete Product SKU",
+			width: '400px',
+			buttons: {
+				Ok: function() {
+					$("#do").val('delete');
+					$("#productskuid").val(productskuid);
+					$("#sku_page").prop('disabled','disabled');
+					$("#frm_sku_management").submit();
+					},
+				Cancel: function() { $( this ).dialog( "close" ); }
+				}
+			});
+
+		$("#dialog-message").html("<div class='notice'>Are you sure you want to delete SKU?</div>");
+		$("#dialog-message").dialog("open");
 		}
 
 	var cachedProductSkus = {};
 
 	$(document).ready(function(){
 
-		$("#productsku").autocomplete({
+		$("#customerskuid").autocomplete({
 			minLength: 2,
 			source: function ( request, response ) {
 					var term = request.term;
@@ -198,23 +214,27 @@ $(document).ready(function(){
 					}
 			});
 
-		$("#sku_edit").click(function() {
-			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
-				$("#frm_sku_management").submit();
-				}
+		$("#sku_add").click(function() {
+			$("#do").val('setup');
+			$("#productskuid").val("");
+			$("#customerskuid").val("");
+			$("#sku_page").prop('disabled','disabled');
+			$("#frm_sku_management").submit();
 			});
-		
-		$("#sku_delete").click(function() {
-			$("#do").val('delete');
-			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+
+		$("#sku_edit").click(function() {
+			if (validateForm({ customerskuid : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+				$("#do").val('setup');
+				$("#sku_page").prop('disabled','disabled');
 				$("#frm_sku_management").submit();
 				}
 			});
 
-		$("#sku_add").click(function() {
-			$("#productsku").val("");
-			$("#productskuid").val("");
-			$("#frm_sku_management").submit();
+		$("#sku_delete").click(function() {
+			$("#do").val('delete');
+			if (validateForm({ customerskuid : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+				deleteProductSku();
+				}
 			});
 
 		$("#records_per_page").change(function() {
@@ -365,7 +385,7 @@ $(document).ready(function(){
 		<center>
 			<input type="submit" class="green" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />
 			&nbsp;&nbsp;
-			<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/>
+			<input type="button" class="button" id="cancel" value="Cancel" onclick="window.location.href='/customer/settings/skumanagement'"/>
 		</center>
 	</form>
 
