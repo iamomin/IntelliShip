@@ -152,12 +152,12 @@ sub setup_address :Private
 
 	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
 	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
-	$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
 
 	if ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') ;
+		$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
 		}
 
 	$c->stash->{tooltips} = $self->get_tooltips;

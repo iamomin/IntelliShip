@@ -368,17 +368,16 @@ h3 {
     font-size: 14px;
 }
 
-h4 {
-    color: #FFF;
-    padding: 5px;
-    font-size: 14px;
-    text-transform: uppercase;
-    background-color: #1875BA;
-}
-
 label {
     white-space: nowrap;
 }
+
+table { margin: 0; padding: 0; border-spacing: 0px; }
+table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
+table td { padding: 3px; }
+table a { text-align: center; }
+
+h1 table { font-size: 12px; font-weight: normal }
 
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}
@@ -389,11 +388,6 @@ label {
 #row div.ship-from {display: table-cell; padding-right: 10px;vertical-align: top}
 #row div.ship-to {display: table-cell; padding: 0 10px;vertical-align: top}
 #row div.ship-info {display: table-cell; padding-left: 10px;vertical-align: top}
-
-table { margin: 0; padding: 0; border-spacing: 0px; }
-table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
-table td { padding: 3px; }
-table a { text-align: center; }
 
 #package-detail-list table {padding: 10px 0; border-spacing: 0px; text-align: center}
 #package-detail-list table th {color: #FFF; background: #9BA7AF; text-transform: uppercase; white-space: nowrap}

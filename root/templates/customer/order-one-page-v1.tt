@@ -1,5 +1,21 @@
 
-<h1>[% quickship ? 'Quick Ship Order' : 'New Order' %]</h1>
+<h1>
+	[% quickship ? 'Quick Ship Order' : 'New Order' %]
+	<table class="float-right css3-radios">
+		<tr>
+			<td><label for="ordernumber" class="small_title">Order Number:</label></td>
+			<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/></td>
+			[% FOREACH item IN shipmenttype_loop %]
+			<td>
+				<label>
+					<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
+					<span><label for="[% item.value %]">[% item.name %]</label></span>
+				</label>
+			</td>
+			[% END %]
+		<tr>
+	</table>
+</h1>
 
 <script src="/static/js/customer-order.js"></script>
 
@@ -18,7 +34,7 @@
 
 	[% ADDRESS_SECTION %]
 
-	<h4>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></h4>
+	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></h1>
 
 	[% PACKAGE_DETAIL_SECTION %]
 
@@ -74,6 +90,8 @@
 		[% IF SHOW_NEW_OTHER_CARRIER %]
 		<td><label for="othercarrier" class="float-right">New Other Carrier:</label></td>
 		<td><input type="text" class="text" name="othercarrier" id="othercarrier"/></td>
+		[% ELSE %]
+		<td>&nbsp;</td>
 		[% END %]
 		</tr>
 	</table>

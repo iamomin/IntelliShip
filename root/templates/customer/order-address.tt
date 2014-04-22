@@ -22,34 +22,9 @@
 		<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 		<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
+
 [% IF one_page %]
 	<h2>Address Information</h2>
-	<table width="100%">
-		<tr>
-			<td width="9%">
-			<label for="ordernumber" class="small_title">Order Number:</label>
-			</td>
-			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/>
-			</td>
-			[% IF shipmenttype_loop %]
-			<td>
-				<table class="float-right css3-radios">
-					<tr>
-					[% FOREACH item IN shipmenttype_loop %]
-						<td>
-						<label>
-						<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
-						<span><label for="[% item.value %]">[% item.name %]</label></span>
-						</label>
-						</td>
-					[% END %]
-					</tr>
-				</table>
-			</td>
-			[% END %]
-		<tr>
-	</table>
 [% END %]
 	<!--
 		<div class="notice">Enter the recipient's (SHIP TO) address [% one_page ? 'and Shipment ' : '' %]details</div>
