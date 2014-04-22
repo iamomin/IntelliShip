@@ -53,7 +53,7 @@
 					[% END %]
 				</table>
 			</div>
-			<button type="button" class="long-rounded-button float-right" onclick="get_customer_service_list('frm_order');">
+			<button type="button" class="long-rounded-button float-right" onclick="getCarrierServiceList('frm_order');">
 				<reload></reload>
 				&nbsp;&nbsp;ROUTE NOW&nbsp;&nbsp;
 				<reload></reload>
