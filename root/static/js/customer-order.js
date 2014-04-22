@@ -734,9 +734,11 @@ function updateShipmentSummary()
 		if (type != 'package') return;
 
 		var packageClass = $("#class_"+row_ID).val();
-		var packageQuantity = $("#quantity_"+row_ID).val();
+		var packageQuantity = +$("#quantity_"+row_ID).val();
 		var packageWeight = +$("#weight_"+row_ID).val();
 		var packageValue = +$("#decval_"+row_ID).val();
+
+		if ($("#quantityxweight-"+row_ID).val() == 0) packageWeight = (packageQuantity * packageWeight);
 
 		$("#ss-class-"+row_ID).text(packageClass == '' ? 'NA' :packageClass);
 		$("#ss-quantity-"+row_ID).text(packageQuantity == '' ? '0' : packageQuantity);
