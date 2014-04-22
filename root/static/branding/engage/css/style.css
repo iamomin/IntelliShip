@@ -377,7 +377,7 @@ table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform:
 table td { padding: 3px; }
 table a { text-align: center; }
 
-h1 table { font-size: 12px; font-weight: normal }
+h1 table td { font-size: 12px; font-weight: normal }
 
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}

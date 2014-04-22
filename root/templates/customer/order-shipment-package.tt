@@ -10,8 +10,8 @@
 	</tr>
 	<tr>
 		<td colspan="2">
-			<input type="hidden" id="quantityxweight-[% ROW_COUNT %]" value="[% QUANTITY_x_WEIGHT ? 1 : 0 %]"/>
-			<button type="button" id="weightperpackage-[% ROW_COUNT %]" class="left-rounded-btn calculate-package-weight [% QUANTITY_x_WEIGHT ? '' : 'green' %]">Weight Per [% PACKAGE_TYPE %]</button><button type="button" id="totalweight-[% ROW_COUNT %]" class="right-rounded-btn calculate-package-weight [% QUANTITY_x_WEIGHT ? 'green' : '' %]">Total Weight</button>
+			<input type="hidden" id="quantityxweight-[% ROW_COUNT %]" name="quantityxweight_[% ROW_COUNT %]" value="[% quantityxweight ? 1 : 0 %]"/>
+			<button type="button" id="weightperpackage-[% ROW_COUNT %]" class="left-rounded-btn calculate-package-weight [% quantityxweight ? '' : 'green' %]">Weight Per [% PACKAGE_TYPE %]</button><button type="button" id="totalweight-[% ROW_COUNT %]" class="right-rounded-btn calculate-package-weight [% quantityxweight ? 'green' : '' %]">Total Weight</button>
 		</td>
 		<td class="spacer">Length</td>
 		<td >&nbsp;</td>
@@ -39,7 +39,7 @@
 		<td style="padding: 0;">X</td>
 		<td><input type="text" class="small-text" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" value="[% dimwidth %]"/></td>
 		<td style="padding: 0;">X</td>
-		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]1" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]"/></td>
+		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]"/></td>
 		<td><select class="small-text" name="unitofmeasure_[% ROW_COUNT %]" id="unitofmeasure_[% ROW_COUNT %]">[% FOREACH item IN measureunit_loop %]<option [% item.value == unitofmeasure ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 		<td class="spacer"><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 		<td><select class="small-text shipment-details" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>

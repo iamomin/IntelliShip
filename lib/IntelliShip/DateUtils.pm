@@ -4,6 +4,7 @@ use Moose;
 use DateTime;
 use Date::Business;
 use Date::Calendar;
+use Time::HiRes qw/gettimeofday/;
 use Date::Manip qw(ParseDate UnixDate);
 use Date::Calc qw(Date_to_Text_Long check_date Delta_Days Add_Delta_Days Delta_DHMS Add_Delta_DHMS Day_of_Week Add_Delta_YMDHMS Timezone);
 
@@ -181,11 +182,11 @@ sub get_db_format_date_time_with_timezone
 	$mm = '0' . $mm if length $mm == 1;
 	$dd = '0' . $dd if length $dd == 1;
 
-	my $microsecond = '9526';
+	my ($seconds, $microseconds) = gettimeofday;
 	my $timezone = Timezone();
 
 	$time = $self->current_time unless $time;
-	my $returnVal = "$yy-$mm-$dd $time.$microsecond-$timezone";
+	my $returnVal = "$yy-$mm-$dd $time.$microseconds-$timezone";
 
 	$date = undef;
 	$time = undef;
@@ -243,10 +244,10 @@ sub get_timestamp_with_time_zone
 	$min	= substr($timestamp, 10, 2);
 	$sec	= substr($timestamp, 12, 2);
 
-	my $microsecond = '9526';
+	my ($seconds, $microseconds) = gettimeofday;
 	my $timezone = Timezone();
 
-	$timestamp = $year.'-'.$month.'-'.$day.' '.$hours.':'.$min.':'.$sec.'.'.$microsecond.'-'.$timezone;
+	$timestamp = $year.'-'.$month.'-'.$day.' '.$hours.':'.$min.':'.$sec.'.'.$microseconds.'-'.$timezone;
 
 	return $timestamp;
 	}

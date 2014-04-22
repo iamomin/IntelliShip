@@ -877,14 +877,14 @@ sub packages
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '1000', datatypeid => '1000' };
-	return $self->packprodata($WHERE);
+	return $self->packprodata($WHERE, { order_by => 'datecreated' });
 	}
 
 sub co_products
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '1000', datatypeid => '2000' };
-	return $self->packprodata($WHERE);
+	return $self->packprodata($WHERE, { order_by => 'datecreated' });
 	}
 
 sub package_details

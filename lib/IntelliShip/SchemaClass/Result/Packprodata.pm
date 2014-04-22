@@ -261,6 +261,11 @@ __PACKAGE__->table("packprodata");
   is_nullable: 1
   size: 4
 
+=head2 quantityxweight
+
+  data_type: 'integer'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -344,6 +349,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 4 },
   "dgpackinggroup",
   { data_type => "varchar", is_nullable => 1, size => 4 },
+  "quantityxweight",
+  { data_type => "integer", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -423,7 +430,7 @@ sub products
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '3000', datatypeid => '2000' };
-	return $self->packprochilds($WHERE);
+	return $self->packprochilds($WHERE, { order_by => 'datecreated' });
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

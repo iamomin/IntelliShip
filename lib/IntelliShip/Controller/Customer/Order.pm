@@ -236,9 +236,6 @@ sub setup_shipment_information :Private
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
 
-	$c->stash->{WEIGHT_TYPE} = $Customer->weighttype || 'LBS';
-	$c->stash->{QUANTITY_x_WEIGHT} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
-
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 
@@ -262,6 +259,9 @@ sub setup_shipment_information :Private
 			$c->stash->{PACKAGE_DETAIL_SECTION} = $data->{rowHTML};
 			}
 		}
+
+	$c->stash->{WEIGHT_TYPE} = $Customer->weighttype || 'LBS';
+	$c->stash->{quantityxweight} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
 	}
 
 sub setup_carrier_service :Private
@@ -794,25 +794,27 @@ sub save_package_product_details :Private
 		my $frtins    = $params->{'frtins_'.$PackageIndex}     || 0;
 		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
 		my $unitofmeasure = $params->{'unitofmeasure_' . $PackageIndex} || 0;
+		my $quantityxweight = $params->{'quantityxweight_' . $PackageIndex} || 0;
 
 		my $PackProData = {
-				ownertypeid   => $ownertypeid,
-				ownerid       => $ownerid,
-				datatypeid    => $datatypeid,
-				boxnum        => $quantity,
-				quantity      => $quantity,
-				unitofmeasure => $unitofmeasure,
-				unittypeid    => $params->{'unittype_' . $PackageIndex },
-				weight        => sprintf("%.2f", $weight),
-				dimweight     => sprintf("%.2f", $dimweight),
-				dimlength     => sprintf("%.2f", $dimlength),
-				dimwidth      => sprintf("%.2f", $dimwidth),
-				dimheight     => sprintf("%.2f", $dimheight),
-				density       => sprintf("%.2f", $density),
-				class         => sprintf("%.2f", $class),
-				decval        => sprintf("%.2f", $decval),
-				frtins        => sprintf("%.2f", $frtins),
-				dryicewt      => int $dryicewt,
+				ownertypeid     => $ownertypeid,
+				ownerid         => $ownerid,
+				datatypeid      => $datatypeid,
+				boxnum          => $quantity,
+				quantity        => $quantity,
+				unitofmeasure   => $unitofmeasure,
+				unittypeid      => $params->{'unittype_' . $PackageIndex },
+				weight          => sprintf("%.2f", $weight),
+				dimweight       => sprintf("%.2f", $dimweight),
+				dimlength       => sprintf("%.2f", $dimlength),
+				dimwidth        => sprintf("%.2f", $dimwidth),
+				dimheight       => sprintf("%.2f", $dimheight),
+				density         => sprintf("%.2f", $density),
+				class           => sprintf("%.2f", $class),
+				decval          => sprintf("%.2f", $decval),
+				frtins          => sprintf("%.2f", $frtins),
+				dryicewt        => int $dryicewt,
+				quantityxweight => $quantityxweight
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
