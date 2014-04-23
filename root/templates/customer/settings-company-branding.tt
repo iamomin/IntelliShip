@@ -9,35 +9,63 @@
 <script src="/static/jquery/colorpicker-master/evol.colorpicker.js" type="text/javascript" charset="utf-8"></script>
 <link href="/static/jquery/colorpicker-master/evol.colorpicker.css" rel="stylesheet" type="text/css" />
 
+<style>
+.ui-tabs-vertical .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 11em; height:500px; }
+.ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0; }
+.ui-tabs-vertical .ui-tabs-nav li a { display:block; }
+.ui-tabs-vertical .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-bottom-width: 1px; border-right-width: 1px; }
+.ui-tabs-vertical .ui-tabs-panel { padding: 2em; float: left; width: 55em;}
+.ui-tabs-vertical .ui-widget-header { background:#bfbfbf !important; }
+</style>
+
 <div id="message"></div>
 <p class="validateTips"></p>
-<table class="center-app">
-	<tr>
-		<td>
-			<label class="float-left">Logo (Light Background): </label>
-		</td>
-		<td>
-			<label class="float-left">Logo (Dark Background): </label>
-		</td>
-	</tr>
-	<tr>
-		<td style="width: 50%;">
-			<form><div id="queue"></div><input id="logo-light-background" type="file" multiple="true"/></form>
-		</td>
-		<td>
-			<form><div id="queue"></div><input id="logo-dark-background" type="file" multiple="true"/></form>
-		</td>
-	</tr>
-</table>
 
-<form id="frm_company_branding">
-<table class="center-app">
+
+<table >
 	<tr>
 		<td>
-			<table>
-				<tr>
-					<td style="width:425px; vertical-align:top;">
-						<table>
+			<div id="tabs">
+				<ul class="grindyMenu">
+				<li><a href="#branding-logo">Branding Logo's</a></li>
+				<li><a href="#color-picker">Set Colors</a></li>
+				<li><a href="#branding-css-content">Edit Branding CSS</a></li>
+				
+				<li><a id="view-demo-link" href="#view-page">View Demo</a></li>
+				</ul>
+
+				<div id="branding-logo">
+					<table class="center-app">
+						<tr>
+							<td>
+								<div id="show-light-logo"><img id="light-logo" src='/static/branding/[%branding_id%]/images/header/[%branding_id%]-light-logo.png' height='120px' width='150px' /></div>
+							</td>
+							<td>
+								<label class="float-left">Logo (Light Background): </label>
+							</td>
+							<td style="width: 50%;">
+								<form id="light-background-logo"><input id="logo-light-background" type="file" multiple="true"/></form>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="3"><div style="clear: both;">&nbsp;<hr/>&nbsp;</div></td>
+						</tr>
+						<tr>
+							<td>
+								<div id="show-dark-logo"><img id="dark-logo" src='/static/branding/[%branding_id%]/images/header/[%branding_id%]-dark-logo.png' height='120px' width='150px' /></div>
+							</td>
+							<td>
+								<label class="float-left">Logo (Dark Background): </label>
+							</td>
+							<td>
+								<form id="dark-background-logo"><input id="logo-dark-background" type="file" multiple="true"/></form>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<form id="frm_company_branding" style="width:950px;">
+					<div id="color-picker">
+						<table class="center-app">
 							<tr>
 								<td>&nbsp;</td>
 								<td><strong>Background</strong></td>
@@ -65,20 +93,24 @@
 							[% END %]
 
 						</table>
-					</td>
-					<td style="width:575px; vertical-align:top;">
-						<table>
+					</div>
+					<div id="branding-css-content">
+						<table class="center-app">
 							<tr>
 								<td><label for="custom-style-sheet">Custom Style Sheet (CSS3): </label></td>
 							</tr>
 							<tr>
-								<td><textarea rows="17" id="custom-style-sheet" name="custom-style-sheet" cols="62" style="resize: none">[% BRANDING_CSS %]</textarea>
+								<td><textarea rows="25" id="custom-style-sheet" name="custom-style-sheet" cols="85" style="resize: none">[% BRANDING_CSS %]</textarea>
 								</td>
 							</tr>
 						</table>
-					</td>
-				</tr>
-			</table>
+					</div>
+				</form>
+				<div id="view-page">
+					<iframe id="viewchange" name="viewchange" frameBorder="0" width="732" height="450" src="[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]" >
+					</iframe>
+				</div>
+			</div>
 		</td>
 	</tr>
 </table>
@@ -86,7 +118,6 @@
 <center>
 	<input type="button" class="green" value="Update Branding" onClick="updateCompanyBranding();"/>
 </center>
-</form>
 
 <script>
 
@@ -98,7 +129,14 @@
 				'customerid' : '[% customerid %]'
 				},
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
-			'uploader' : '/customer/settings/company/upload'
+			'uploader' : '/customer/settings/company/upload',
+			'fileDesc': 'Image Files',
+			'fileExt': '*.jpg;*.jpeg;*.gif;*.png',
+			'multi': false,
+			'auto': true,
+			'onUploadSuccess': function(file, data, response){
+				$('#light-logo').attr('src', $('#light-logo').attr('src') + '?' + Math.random());
+				},
 			});
 
 		$('#logo-dark-background').uploadify({
@@ -108,7 +146,10 @@
 				'customerid' : '[% customerid %]'
 				},
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
-			'uploader' : '/customer/settings/company/upload'
+			'uploader' : '/customer/settings/company/upload',
+			'onUploadSuccess': function(file, data, response){
+				$('#dark-logo').attr('src', $('#dark-logo').attr('src') + '?' + Math.random());
+				},
 			});
 
 		/* Set Initial colors */
@@ -142,5 +183,32 @@
 				$(this).colpickSetColor(this.value);
 				});
 		*/
+		
+	});
+
+	$("#view-demo-link").click(function() {
+		$('iframe').attr('src', $('iframe').attr('src'));
+		return;
 		});
+	
+	/**** LOAD BRANDING SUB-TABS ****/
+	$(function() {
+		$( "#tabs" ).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
+		$( "#tabs li" ).removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+	});
+
+	/**** SET LOGO TAB ACTIVE ONLOAD ****/
+	$("#tabs").tabs({ active: 0 });
+	
+	/**** DISABLE IFRAME CONTENTS ****/
+	$("iframe").load(function() {
+		$('#viewchange').contents().find('a').each(function() {
+			$(this).replaceWith($('<span>' + this.innerHTML + '</span>'));
+		});
+
+		$('#viewchange').contents().find('input').each(function() {
+			$(this).prop('disabled', 'disabled');
+		});
+	});
+
 </script>

@@ -159,14 +159,17 @@ sub end : Private {
 
 sub check_css_overrides :Private
 	{
-	my $self = shift;
-	my $context = shift;
-	my $Controller = $context->controller;
+	my ($self, $c) = @_;
+	my $params = $c->req->params;
+	my $Controller = $c->controller;
+
+	return if $c->stash->{BRANDING_DEMO_CSS};
 	return unless $Controller->contact;
+
 	my $CustomerCss = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->customerid . '.css';
 	my $ContactCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->contactid . '.css';
-	$context->stash->{CUSTOMER_OVERRIDE} = (-e $CustomerCss);
-	$context->stash->{CONTACT_OVERRIDE}  = (-e $ContactCss);
+	$c->stash->{CUSTOMER_OVERRIDE} = (-e $CustomerCss);
+	$c->stash->{CONTACT_OVERRIDE}  = (-e $ContactCss);
 	}
 
 my $DEFAULT_MENU_SELECTED = {

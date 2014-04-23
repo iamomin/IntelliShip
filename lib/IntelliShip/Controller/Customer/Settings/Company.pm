@@ -583,7 +583,7 @@ sub get_branding_settings :Private
 	$BRANDING_CSS =~ s/\Q$custom_styles\E//g;
 
 	$c->stash->{BRANDING_CSS} = $BRANDING_CSS;
-
+	$c->stash->{BASE_URL} = $c->request->base;
 	$c->stash(template => "templates/customer/settings-company-branding.tt");
 	}
 
@@ -674,6 +674,22 @@ sub update_branding_settings :Private
 	close $FILE;
 
 	return { SUCCESS => 1, MESSAGE => "Updated successfully..." };
+	}
+
+sub brandingdemo :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{BRANDING_DEMO_CSS} = $params->{'id'};
+
+	my $CO = IntelliShip::Controller::Customer::Order->new;
+	$CO->context($c);
+	$CO->contact($self->contact);
+	$CO->customer($self->contact->customer);
+	$CO->quickship;
+	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 
 sub upload :Local
