@@ -1155,12 +1155,10 @@ sub ImportProducts
 
 			my $unittypeid = $STH->fetchrow(0)->{'unittypeid'} if $STH->numrows;
 			$CustRef->{'unittypeid'} = $unittypeid;
-
-			$c->log->debug("... unittypeid:  " . $unittypeid);
 			}
 		else
 			{
-			$CustRef->{'unitttypeid'} = 3;
+			$CustRef->{'unittypeid'} = 3;
 			}
 
 		if ($CustRef->{'weighttype'} && $CustRef->{'weighttype'} =~ /(KG|KGS)/i)
@@ -1172,18 +1170,21 @@ sub ImportProducts
 			$CustRef->{'weighttypeid'} = 1;
 			}
 
+		$c->log->debug("... unittypeid:  " . $CustRef->{'unittypeid'});
+
 		my $CO;
 		if ( $export_flag == 0 )
 			{
 			## if missing info, see if the customer has sku data in our db
-			if ($CustRef->{'unittypeid'} &&
-				(!$CustRef->{'productweight'} || !$CustRef->{'dimlength'} || !$CustRef->{'dimwidth'} || !$CustRef->{'dimheight'})
-				)
+			if ($CustRef->{'unittypeid'} && (!$CustRef->{'productweight'} || !$CustRef->{'dimlength'} || !$CustRef->{'dimwidth'} || !$CustRef->{'dimheight'}))
 				{
-				my $sth = $c->myDBI->select("SELECT 1 FROM productsku WHERE customerid = '$CustomerID' AND unittypeid = '" . $CustRef->{'unitttypeid'} . "'");
+				my $SQL = "SELECT 1 FROM productsku WHERE customerid = '$CustomerID' AND unittypeid = '" . $CustRef->{'unittypeid'} . "'";
+				#$c->log->debug("... SQL : " . $SQL);
+
+				my $sth = $self->myDBI->select($SQL);
 				if ($sth->numrows)
 					{
-					$c->log->debug("... LOOKUP SKU DATA based on $CustRef->{'unittypeid'} and $CustRef->{'partnumber'} and $CustomerID");
+					$c->log->debug("... LOOKUP SKU DATA based on Unit Type: '$CustRef->{unittypeid}', Part: '$CustRef->{partnumber}', CustomerID: '$CustomerID'");
 
 					my $sql;
 					my $FILTER  = "upper(customerskuid) = upper('$CustRef->{partnumber}') AND unittypeid = '$CustRef->{unittypeid}' AND customerid = '$CustomerID'";
@@ -1205,6 +1206,7 @@ sub ImportProducts
 					my ($weight, $length, $width, $height) = (0, 0, 0, 0);
 					if ($STH->numrows)
 						{
+						$c->log->debug("... SKU found, get weight, length, width and height");
 						my $d = $STH->fetchrow(0);
 						($weight, $length, $width, $height) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht});
 						}
@@ -1239,7 +1241,7 @@ sub ImportProducts
 			my @packages = $CO->packages if $CO;
 			if (@packages)
 				{
-				$c->log->debug("... package found, packprodataid: " . $packages[0]->packprodataid);
+				$c->log->debug("... package '" . $packages[0]->packprodataid . "'found for order, insert product into package");
 				$productData->{'ownerid'}     = $packages[0]->packprodataid;
 				$productData->{'ownertypeid'} = '3000';
 				}

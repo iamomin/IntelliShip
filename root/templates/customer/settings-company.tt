@@ -347,7 +347,7 @@
 						<td><label class="float-right" for="cust_sopid">Weight Type:</label></td>
 						<td>
 						<label>
-							<select name="weighttype" id="weighttype">
+							<select name="weighttype" id="weighttype" style="width: 50px">
 								[% FOREACH item IN weighttype_loop %]
 									<option value="[% item.value %]" [% (item.value == weighttype) ? 'SELECTED' : '' %]>[% item.name %]</option>
 								[% END %]

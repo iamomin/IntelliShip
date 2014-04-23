@@ -374,6 +374,8 @@ sub get_product_sku
 
 	return undef unless scalar keys %$WHERE;
 
+	$WHERE->{customerid} = $self->customer->customerid;
+
 	return $c->model('MyDBI::Productsku')->find($WHERE);
 	}
 
