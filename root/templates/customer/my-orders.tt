@@ -138,10 +138,11 @@
 		});
 
 	$('#filter').keyup(function(event) {
-		var keycode = (event.keyCode ? event.keyCode : event.which);
-		if(keycode == '13') {
-			send_ajax_request('myOrders', 'HTML', 'myorders', '', $("#frm_my_ordres").find("input[type='checkbox'], #filter, #view").serialize());
-			}
+		$("#frm_my_ordres").submit();
+		//var keycode = (event.keyCode ? event.keyCode : event.which);
+		//if(keycode == '13') {
+		//	send_ajax_request('myOrders', 'HTML', 'myorders', '', $("#frm_my_ordres").find("input[type='checkbox'], #filter, #view").serialize());
+		//	}
 		});
 
 	$("#instant-filter-columns").click(function() {

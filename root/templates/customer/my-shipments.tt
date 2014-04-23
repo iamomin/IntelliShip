@@ -146,11 +146,11 @@
 
 	<script>
 
-		$('#filter').keypress(function(event) {
-			var keycode = (event.keyCode ? event.keyCode : event.which);
-			if(keycode == '13') {
+		$('#filter').keyup(function(event) {
+			//var keycode = (event.keyCode ? event.keyCode : event.which);
+			//if(keycode == '13') {
 				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', $("#frm_my_shipments").serialize());
-				}
+			//	}
 			});
 
 		$("#quick_ship").click(function() {
