@@ -555,17 +555,10 @@ function addNewPackageProduct(package_id,type)
 
 function calculateTotalWeight(event_row_ID)
 	{
-	if (!isNaN(event_row_ID) && $("#type_"+event_row_ID).val() == 'package')
-		{
-		updateShipmentSummary();
-		return;
-		}
-
-	var ParentPackageID=BillablePackageWeight=TotalProductWeight=0;
 	var packageWeights = {};
+	var ParentPackageID=BillablePackageWeight=TotalProductWeight=0;
 
 	$('input[id^=rownum_id_]').each(function() {
-
 
 		var res = this.id.split('_');
 		var row_ID = res[2];
@@ -588,10 +581,22 @@ function calculateTotalWeight(event_row_ID)
 			}
 		});
 
-	if (ParentPackageID > 0 && TotalProductWeight > 0) {
-		var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
-		$("#weight_"+ParentPackageID).val(OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+	if (!isNaN(event_row_ID) && event_row_ID == ParentPackageID && TotalProductWeight == 0 && $("#weight_"+event_row_ID).val() > 0)
+		{
+		TotalProductWeight = +$("#weight_"+event_row_ID).val();
 		}
+
+	//alert("ParentPackageID : " + ParentPackageID + ", event_row_ID: " + event_row_ID + ", TotalProductWeight: " + TotalProductWeight);
+
+	if (ParentPackageID > 0 && TotalProductWeight > 0)
+		{
+		var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
+
+		if (packageWeights[ParentPackageID] == undefined) packageWeights[ParentPackageID] = 0;
+		packageWeights[ParentPackageID] = (OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+		}
+
+	//alert("packageWeights : " + JSON.stringify(packageWeights));
 
 	$('input[id^=rownum_id_]').each(function() {
 
@@ -602,23 +607,27 @@ function calculateTotalWeight(event_row_ID)
 		if (type != 'package') return;
 
 		var PackageWeight = parseInt(packageWeights[row_ID]);
-		$("#weight_"+row_ID).val(PackageWeight.toFixed(2));
+		if (isNaN(event_row_ID)) $("#weight_"+row_ID).val(PackageWeight.toFixed(2));
 
 		if (isNaN(PackageWeight)) PackageWeight=0;
 
-		if ($("#quantityxweight-"+row_ID).val() == 1)
+		//alert("PackageWeight: " + PackageWeight + ", quantity_: " + $("#quantity_"+row_ID).val());
+
+		var TotalPackageWeight = (+$("#quantity_"+row_ID).val() * PackageWeight);
+
+		if (isNaN(event_row_ID) && $("#quantityxweight-"+row_ID).val() == 1)
 			{
-			var TotalPackageWeight = (+$("#quantity_"+row_ID).val() * PackageWeight);
 			$("#weight_"+row_ID).val(TotalPackageWeight.toFixed(2));
-			BillablePackageWeight += TotalPackageWeight;
 			}
-		else
-			{
-			BillablePackageWeight += PackageWeight;
-			}
+
+		//alert("TotalPackageWeight: " + TotalPackageWeight + ", BillablePackageWeight: " + BillablePackageWeight);
+
+		BillablePackageWeight += TotalPackageWeight;
 		});
 
 	$("#totalweight").val(BillablePackageWeight.toFixed(2));
+
+	if (!isNaN(event_row_ID) && $("#type_"+event_row_ID).val() == 'package') updateShipmentSummary();
 	}
 
 function calculateTotalDeclaredValueInsurance()

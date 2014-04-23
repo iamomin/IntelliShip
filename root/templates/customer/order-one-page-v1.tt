@@ -149,6 +149,13 @@
 			{
 			$('#totalweight-'+ID).removeClass("green",1000);
 			$('#quantityxweight-'+ID).val(0);
+
+			var TotalWeight = $('#weight_'+ID).val();
+			var PackageQuantity = $('#quantity_'+ID).val();
+			if (TotalWeight > 0 && PackageQuantity > 1)
+				{
+				$('#weight_'+ID).val(TotalWeight/PackageQuantity);
+				}
 			}
 		else
 			{
