@@ -778,22 +778,22 @@ sub save_package_product_details :Private
 
 		$c->log->debug("PackageIndex: " . $PackageIndex);
 
-		my $ownerid     = ($params->{'type_' . $PackageIndex } eq 'product' ? $last_package_id : $CO->coid);
-		my $datatypeid  = ($params->{'type_' . $PackageIndex } eq 'product' ? '2000' : '1000');
-		my $ownertypeid = ($params->{'type_' . $PackageIndex } eq 'product' ? '3000' : '1000');
+		my $ownerid         = ($params->{'type_' . $PackageIndex } eq 'product' ? $last_package_id : $CO->coid);
+		my $datatypeid      = ($params->{'type_' . $PackageIndex } eq 'product' ? '2000' : '1000');
+		my $ownertypeid     = ($params->{'type_' . $PackageIndex } eq 'product' ? '3000' : '1000');
 
-		my $quantity  = $params->{'quantity_' . $PackageIndex} || 0;
-		my $weight    = $params->{'weight_'.$PackageIndex}     || undef;
-		my $dimweight = $params->{'dimweight_'.$PackageIndex}  || undef;
-		my $dimlength = $params->{'dimlength_'.$PackageIndex}  || undef;
-		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex}   || undef;
-		my $dimheight = $params->{'dimheight_'.$PackageIndex}  || undef;
-		my $density   = $params->{'density_' . $PackageIndex}  || undef;
-		my $class     = $params->{'class_' . $PackageIndex}    || 0;
-		my $decval    = $params->{'decval_' . $PackageIndex}   || undef;
-		my $frtins    = $params->{'frtins_'.$PackageIndex}     || 0;
-		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
-		my $unitofmeasure = $params->{'unitofmeasure_' . $PackageIndex} || 0;
+		my $quantity        = $params->{'quantity_' . $PackageIndex} || 0;
+		my $weight          = ( $params->{'weight_'.$PackageIndex}    ? sprintf("%.2f",$params->{'weight_'.$PackageIndex}):     undef);
+		my $dimweight       = ( $params->{'dimweight_'.$PackageIndex} ? sprintf("%.2f",$params->{'dimweight_'.$PackageIndex}) : undef);
+		my $dimlength       = ( $params->{'dimlength_'.$PackageIndex} ? sprintf("%.2f",$params->{'dimlength_'.$PackageIndex}):  undef);
+		my $dimwidth        = ( $params->{'dimwidth_'.$PackageIndex}  ? sprintf("%.2f",$params->{'dimwidth_'.$PackageIndex}) :  undef);
+		my $dimheight       = ( $params->{'dimheight_'.$PackageIndex} ? sprintf("%.2f",$params->{'dimheight_'.$PackageIndex}) : undef);
+		my $density         = ( $params->{'density_' . $PackageIndex} ? sprintf("%.2f",$params->{'density_' . $PackageIndex}) : undef);
+		my $class           = $params->{'class_' . $PackageIndex} || 0;
+		my $decval          = ( $params->{'decval_' . $PackageIndex}  ? sprintf("%.2f",$params->{'decval_' . $PackageIndex}) :  undef);
+		my $frtins          = $params->{'frtins_'.$PackageIndex} || 0;
+		my $dryicewt        = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+		my $unitofmeasure   = $params->{'unitofmeasure_' . $PackageIndex} || 0;
 		my $quantityxweight = $params->{'quantityxweight_' . $PackageIndex} || 0;
 
 		my $PackProData = {
@@ -804,15 +804,15 @@ sub save_package_product_details :Private
 				quantity        => $quantity,
 				unitofmeasure   => $unitofmeasure,
 				unittypeid      => $params->{'unittype_' . $PackageIndex },
-				weight          => sprintf("%.2f", $weight),
-				dimweight       => sprintf("%.2f", $dimweight),
-				dimlength       => sprintf("%.2f", $dimlength),
-				dimwidth        => sprintf("%.2f", $dimwidth),
-				dimheight       => sprintf("%.2f", $dimheight),
-				density         => sprintf("%.2f", $density),
-				class           => sprintf("%.2f", $class),
-				decval          => sprintf("%.2f", $decval),
-				frtins          => sprintf("%.2f", $frtins),
+				weight          => $weight,
+				dimweight       => $dimweight,
+				dimlength       => $dimlength,
+				dimwidth        => $dimwidth,
+				dimheight       => $dimheight,
+				density         => $density,
+				class           => $class,
+				decval          => $decval,
+				frtins          => $frtins,
 				dryicewt        => int $dryicewt,
 				quantityxweight => $quantityxweight
 			};

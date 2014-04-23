@@ -101,8 +101,8 @@
 	<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
 	<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 	<td><select class="small-text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option [% item.value == class ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
-	<td><input type="text" class="small-text shipment-details" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight ? weight : 0.00 %]"/></td>
-	<td><input type="text" class="small-text shipment-details" name="decval_[% ROW_COUNT %]" id="decval_[% ROW_COUNT %]" value="[% decval ? decval : 0.00 %]"/></td>
+	<td><input type="text" class="small-text shipment-details" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>
+	<td><input type="text" class="small-text shipment-details" name="decval_[% ROW_COUNT %]" id="decval_[% ROW_COUNT %]" value="[% decval %]"/></td>
 </tr>
 [% END %]
 [% #---------------------------------------------------------- %]

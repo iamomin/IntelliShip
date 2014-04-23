@@ -581,12 +581,12 @@ function calculateTotalWeight(event_row_ID)
 			}
 		});
 
-	if (!isNaN(event_row_ID) && event_row_ID == ParentPackageID && TotalProductWeight == 0 && $("#weight_"+event_row_ID).val() > 0)
-		{
-		TotalProductWeight = +$("#weight_"+event_row_ID).val();
-		}
-
 	//alert("ParentPackageID : " + ParentPackageID + ", event_row_ID: " + event_row_ID + ", TotalProductWeight: " + TotalProductWeight);
+
+	if (TotalProductWeight == 0 && $("#weight_"+ParentPackageID).val() > 0)
+		{
+		TotalProductWeight = +$("#weight_"+ParentPackageID).val();
+		}
 
 	if (ParentPackageID > 0 && TotalProductWeight > 0)
 		{
