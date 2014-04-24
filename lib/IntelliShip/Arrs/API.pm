@@ -147,19 +147,47 @@ sub get_carrier_list
 	return $self->APIRequest($http_request);
 	}
 
-sub get_carrier_service_list
+sub get_customer_service_list
 	{
 	my $self = shift;
 	my ($SOPID) = @_;
 
 	my $http_request = {
-		action => 'GetCarrierServiceList',
-		sopid => $SOPID		
+		action => 'GetCustomerServiceList',
+		sopid => $SOPID
 		};
 
 	return $self->APIRequest($http_request);
 	}
 
+sub get_carrier_services
+	{
+	my $self = shift;
+	my ($carrierid, $customerid) = @_;
+
+	my $http_request = {
+		action => 'GetCarrierServices',
+		carrierid => $carrierid,
+		customerid => $customerid
+	};
+
+	return $self->APIRequest($http_request);
+	}
+
+sub add_services
+	{
+	my $self = shift;
+	my ($serviceids, $customerid) = @_;
+
+	my $http_request = {
+		action => 'AddServices',
+		carrierid => $serviceids,
+		customerid => $customerid
+	};
+
+	return $self->APIRequest($http_request);
+	}
+	
 sub get_service_tariff
 	{
         warn "########## 3";
@@ -189,6 +217,20 @@ sub save_tariff
 		return $self->APIRequest($http_request);
 	}
 
+sub delete_all_tariff_rows
+	{
+		warn "########## save_tariff";
+		my $self = shift;
+		my ($tariff, $info) = @_;
+		
+		my $http_request = {
+			action => 'DeleteAllTariffRows',
+			tariff => $tariff
+		};
+
+		return $self->APIRequest($http_request);
+	}
+	
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;
