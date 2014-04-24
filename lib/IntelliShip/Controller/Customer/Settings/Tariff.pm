@@ -18,9 +18,9 @@ sub ajax :Local
         my $params = $c->req->params;
 
         $c->log->debug("######### Tariff Pricing: ". Dumper($params));
-        if($params->{'action'} eq 'get_customer_service_list' )
+        if($params->{'action'} eq 'get_carrier_service_list' )
         {
-            $self->get_customer_service_list($c, $params->{'customerid'});
+            $self->get_carrier_service_list($c, $params->{'customerid'});
         }
 
         if($params->{'action'} eq 'get_service_tariff' )
@@ -47,10 +47,10 @@ sub get_template :Local
         $c->stash(template => "templates/customer/settings-tariff.tt"); 
     }
 
-sub get_customer_service_list :Local
+sub get_carrier_service_list :Local
     {
         my ( $self, $c, $customerid ) = @_;
-        my $servicelist = $self->API->get_customer_service_list($customerid);
+        my $servicelist = $self->API->get_carrier_service_list($customerid);
 
         #warn "########## servicelist in Tariff.pm". Dumper($servicelist);
         
@@ -82,49 +82,5 @@ sub save :Local
 		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->save_tariff($tariff, $info));
         $c->stash(template => "templates/customer/json.tt");
     }
-	
-sub deleteAllTariffRows: Local
-	{
-		warn "########## deleteAllTariffRows";
-        my ( $self, $c) = @_;
-		my $params = $c->req->params;
-		my $tariff = $JSONUTIL->from_json($params->{'data'});
-		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->delete_all_tariff_rows($tariff));
-        $c->stash(template => "templates/customer/json.tt");
-	}
-	
-sub delete: Local
-	{
-		warn "########## delete";
-        my ( $self, $c) = @_;
-		my $params = $c->req->params;
-		my $row = $JSONUTIL->from_json($params->{'data'});
-		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->delete_tariff_row($row));
-        $c->stash(template => "templates/customer/json.tt");
-	}
-	
-sub get_carrier_services: Local
-{
-	my ( $self, $c ) = @_;
-	my $params = $c->req->params;
-	my $servicelist = $self->API->get_carrier_services($params->{'carrierid'}, $params->{'customerid'});
 
-	warn "########## servicelist in get_carrier_services". Dumper($servicelist);
-	
-	$c->stash->{'JSON'} = $JSONUTIL->to_json($servicelist);
-	$c->stash(template => "templates/customer/json.tt"); 
-}
-
-sub add_services: Local
-{
-	my ( $self, $c ) = @_;
-	my $params = $c->req->params;
-	my $serviceids = $JSONUTIL->from_json($params->{'serviceids'});
-	my $result = $self->API->add_services($serviceids, $params->{'customerid'});
-
-	warn "########## servicelist in get_carrier_services". Dumper($result);
-	
-	$c->stash->{'JSON'} = $JSONUTIL->to_json($result);
-	$c->stash(template => "templates/customer/json.tt"); 
-}
 1;

@@ -43,7 +43,8 @@ sub services_to_json
         push(@json, $carriernode);
     }
 
-    return encode_json(\@json);    
+    return encode_json(\@json);
+    
 }
 
 sub tariff_to_json
