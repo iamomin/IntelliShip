@@ -1074,6 +1074,14 @@ input.orange  {
 #carrier-service-list.ui-tabs-nav { margin: 0; padding: 0; }
 #carrier-service-list.ui-widget-header { background-color: #FFF; border: none; }
 
+/* Company Management Setup - Branding Tab Styling */
+#branding .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 11em; height: 500px }
+#branding .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0 }
+#branding .ui-tabs-nav li a { display: block }
+#branding .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-bottom-width: 1px; border-right-width: 1px }
+#branding .ui-tabs-panel { padding: 1em; float: left; width: 55em }
+#branding .ui-widget-header { background:#bfbfbf !important }
+
 .float-right {float: right;}
 .float-left {float: left;}
 

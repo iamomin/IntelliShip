@@ -159,7 +159,7 @@
 			$('#quantityxweight-'+ID).val(1);
 			}
 
-		calculateTotalWeight();
+		calculateTotalWeight(ID);
 		});
 
 	$('#unittype').change(function() {

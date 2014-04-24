@@ -689,6 +689,9 @@ sub brandingdemo :Local
 	$CO->contact($self->contact);
 	$CO->customer($self->contact->customer);
 	$CO->quickship;
+
+	$self->customer($c->model('MyDBI::Customer')->find({ customerid => $params->{'id'} }));
+
 	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 

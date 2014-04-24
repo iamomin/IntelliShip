@@ -567,7 +567,7 @@ function calculateTotalWeight(event_row_ID)
 		if (type == 'package')
 			{
 			var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
-			if (ParentPackageID > 0) $("#weight_"+ParentPackageID).val(OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+			if (ParentPackageID > 0) packageWeights[ParentPackageID] = (OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
 			ParentPackageID=row_ID;
 			var PackageWeight = parseInt($("#weight_"+row_ID).val());
 			if (isNaN(PackageWeight)) PackageWeight=0;
