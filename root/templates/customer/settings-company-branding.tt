@@ -85,7 +85,7 @@
 		</table>
 	</div>
 	<div id="branding-demo">
-		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]"></iframe>
+		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="">Please wait...</iframe>
 	</div>
 </div>
 <br/>
@@ -148,8 +148,9 @@
 		});
 
 	$("#branding-demo-link").click(function() {
+		$('#branding-demo-iframe').attr('src','');
 		updateCompanyBranding(function() {
-			$('#branding-demo-iframe').attr('src', $('#branding-demo-iframe').attr('src'));
+			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
 			});
 		});
 
