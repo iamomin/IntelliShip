@@ -128,3 +128,11 @@ input.editor-text {
   padding: 0;
 
 }
+
+.ui-icon-add-service{
+	background-image: url(/static/images/truck_add.png);
+}
+
+.ui-icon-delete-service{
+	background-image: url(/static/images/truck_cross.png);
+}
