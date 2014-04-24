@@ -335,6 +335,7 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
+			$self->calculate_special_seevices_charge($SHIPMENT_CHARGE_DETAILS,$customerserviceid,$freightcharges);
 			$CS_charge_details->{$customerserviceid} = "Freight Charge:$freightcharges|Fuel Surcharge:$fuelcharges|Declared Value Insurance Charge:$DVI_Charge|Freight Insurance Charge:$FI_Charge";
 
 			#$detail_hash->{'freight_charge'} = $freightcharges || '0';
@@ -558,6 +559,32 @@ sub calculate_freight_insurance
 		return $FreightInsuranceCharge;
 		}
 
+	return 0;
+	}
+
+sub calculate_special_seevices_charge
+	{
+	my $self = shift;
+	my $SHIPMENT_CHARGE_DETAILS = shift;
+	my $csid = shift;
+	my $freightcharges = shift;
+
+	my $c = $self->context;
+	my $Customer = $self->customer;
+	my $params = $c->req->params;
+	
+	my $CO = $self->get_order;
+
+	my @special_services = $CO->assessorials;
+	my %serviceHash =  map { $_->assname => 1 } @special_services;
+	my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
+	my @selected_special_service_loop = grep { $serviceHash{$_->{'value'}} } @$special_service_loop;
+
+	foreach my $assname ( @selected_special_service_loop )
+		{
+			my $Ass_Charge= $self->API->GetAssessorialCharge($csid,$CO->total_weight,$CO->total_quantity,$assname->{'value'},$Customer->customerid,$freightcharges);
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => $assname->{'name'} , value => '$' . sprintf("%.2f",$Ass_Charge->{'value'}) });
+		}
 	return 0;
 	}
 
