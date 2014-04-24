@@ -367,14 +367,14 @@ function deleteAllTariffRows() {
 	if (window.confirm("WARNING: You are about to delete ALL the tariff rows for the service. This will not delete the customer-service association. Do you want to proceed?")) {
 		var d = GRID.getData();
 		var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
-		my_ajax_request('settings/tariff/deleteAllTariffRows', params, function () {
+		/*my_ajax_request('settings/tariff/deleteAllTariffRows', params, function () {
 			if (JSON_data.status == "success") {
 				showMessage(JSON_data.message);
 				getTariff($('#csid').val());
 			} else {
 				showMessage("Failed to update");
 			}
-		});
+		});*/
 	}
 }
 
