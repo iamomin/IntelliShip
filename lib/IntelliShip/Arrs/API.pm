@@ -137,6 +137,19 @@ sub get_carrier_services
 	return $self->APIRequest($http_request);
 	}
 
+sub add_services
+	{
+	my $self = shift;
+	my ($serviceids, $customerid) = @_;
+
+	my $http_request = {
+		action => 'AddServices',
+		carrierid => $serviceids,
+		customerid => $customerid
+	};
+
+	return $self->APIRequest($http_request);
+	}
 	
 sub get_service_tariff
 	{

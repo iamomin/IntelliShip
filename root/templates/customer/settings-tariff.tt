@@ -210,10 +210,30 @@ function toggleToolbarButtons() {
 	}
 }
 
+/*
+	ENTRY POINT !
+*/
 if (!$('#services_tree').html()) {
 	//alert("Loading....");
 	initToolbar();
 	getAllServices();
+}
+
+function doAddSelectedServices(){
+	var selectedIndexes = CSGRID.getSelectedRows();
+	var selectedServiceIds = [];
+	jQuery.each(selectedIndexes, function (index, value) {
+	  selectedServiceIds.push(CSGRID.getData()[value].serviceid);
+	});
+	var params = "serviceids=" + JSON.stringify(selectedServiceIds) + "&customerid="+ $("#customerid").val();
+	my_ajax_request('settings/tariff/add_services', params, function () {
+		if (JSON_data.status == "success") {
+			showMessage(JSON_data.message);
+			GRID.invalidate();
+		} else {
+			showMessage("Failed to update");
+		}
+	});
 }
 
 function loadServiceInfo() {

@@ -1065,7 +1065,220 @@ warn "undef etadate";
             #warn "########## ReturnRef: " . Dumper($ReturnRef);
             return $ReturnRef;
         }
-		
+	
+	sub AddServices
+		{
+			warn "########## Online::AddServices";
+            my $self = shift;
+            my ($serviceids, $customerid) = @_;
+			
+			my @arr = @$serviceids;
+			
+			foreach my $serviceid (@arr)
+			{
+				my $SQLString = 	"select 
+										fscrate, 
+										dimfactor, 
+										decvalinsrate, 
+										decvalinsmin, 
+										decvalinsmax, 
+										freightinsrate, 
+										decvalinsmincharge, 
+										freightinsincrement, 
+										decvalinsmaxperlb, 
+										carrieremail, 
+										pickuprequest, 
+										servicetypeid, 
+										allowcod, 
+										codfee, 
+										collectfreightcharge, 
+										guaranteeddelivery, 
+										saturdaysunday, 
+										liftgateservice, 
+										podservice, 
+										constructionsite, 
+										insidepickupdelivery, 
+										singleshipment, 
+										valuedependentrate, 
+										thirdpartyacct, 
+										callforappointment, 
+										aggregateweightcost, 
+										discountpercent, 
+										extservicecode, 
+										serviceicon, 
+										weekendupcharge, 
+										amc, 
+										cutofftime, 
+										sattransit, 
+										suntransit, 
+										maxtruckweight, 
+										alwaysshow, 
+										modetypeid, 
+										defaultzonetypeid, 
+										servicecode, 
+										class
+									from 
+										service 
+									where serviceid='$serviceid'";
+				warn "########## 5.3 : $SQLString";
+				my $sth = $self->{'dbref'}->prepare($SQLString)
+						or die "Could not prepare SQL statement";
+
+				$sth->execute()
+						or die "Cannot execute carrier/service sql statement";
+
+				my $customerserviceid = $self->{"dbref"}->gettokenid();
+			
+				while ( my ($fscrate, 
+					$dimfactor, 
+					$decvalinsrate, 
+					$decvalinsmin, 
+					$decvalinsmax, 
+					$freightinsrate, 
+					$decvalinsmincharge, 
+					$freightinsincrement, 
+					$decvalinsmaxperlb, 
+					$carrieremail, 
+					$pickuprequest, 
+					$servicetypeid, 
+					$allowcod, 
+					$codfee, 
+					$collectfreightcharge, 
+					$guaranteeddelivery, 
+					$saturdaysunday, 
+					$liftgateservice, 
+					$podservice, 
+					$constructionsite, 
+					$insidepickupdelivery, 
+					$singleshipment, 
+					$valuedependentrate, 
+					$thirdpartyacct, 
+					$callforappointment, 
+					$aggregateweightcost, 
+					$discountpercent, 
+					$extservicecode, 
+					$serviceicon, 
+					$weekendupcharge, 
+					$amc, 
+					$cutofftime, 
+					$sattransit, 
+					$suntransit, 
+					$maxtruckweight, 
+					$alwaysshow, 
+					$modetypeid, 
+					$defaultzonetypeid, 
+					$servicecode, 
+					$class) = $sth->fetchrow_array() )
+				{
+					$SQLString = "insert into customerservice(
+										customerserviceid, 
+										zonetypeid,
+										ratetypeid, 
+										serviceid, 
+										customerid,
+										fscrate, 
+										dimfactor, 
+										decvalinsrate, 
+										decvalinsmin, 
+										decvalinsmax, 
+										freightinsrate, 
+										decvalinsmincharge, 
+										freightinsincrement, 
+										decvalinsmaxperlb, 
+										carrieremail, 
+										pickuprequest, 
+										servicetypeid, 
+										allowcod, 
+										codfee, 
+										collectfreightcharge, 
+										guaranteeddelivery, 
+										saturdaysunday, 
+										liftgateservice, 
+										podservice, 
+										constructionsite, 
+										insidepickupdelivery, 
+										singleshipment, 
+										valuedependentrate, 
+										thirdpartyacct, 
+										callforappointment, 
+										aggregateweightcost, 
+										discountpercent, 
+										extservicecode, 
+										serviceicon, 
+										weekendupcharge, 
+										amc, 
+										cutofftime, 
+										sattransit, 
+										suntransit, 
+										maxtruckweight, 
+										alwaysshow, 
+										modetypeid, 
+										defaultzonetypeid, 
+										servicecode, 
+										class
+									) values (
+										'$customerserviceid',
+										'$defaultzonetypeid',
+										'',
+										'$serviceid',
+										'$customerid',
+										'$fscrate', 
+										'$dimfactor', 
+										'$decvalinsrate', 
+										'$decvalinsmin', 
+										'$decvalinsmax', 
+										'$freightinsrate', 
+										'$decvalinsmincharge', 
+										'$freightinsincrement', 
+										'$decvalinsmaxperlb', 
+										'$carrieremail', 
+										'$pickuprequest', 
+										'$servicetypeid', 
+										'$allowcod', 
+										'$codfee', 
+										'$collectfreightcharge', 
+										'$guaranteeddelivery', 
+										'$saturdaysunday', 
+										'$liftgateservice', 
+										'$podservice', 
+										'$constructionsite', 
+										'$insidepickupdelivery', 
+										'$singleshipment', 
+										'$valuedependentrate', 
+										'$thirdpartyacct', 
+										'$callforappointment', 
+										'$aggregateweightcost', 
+										'$discountpercent', 
+										'$extservicecode', 
+										'$serviceicon', 
+										'$weekendupcharge', 
+										'$amc', 
+										'$cutofftime', 
+										'$sattransit', 
+										'$suntransit', 
+										'$maxtruckweight', 
+										'$alwaysshow', 
+										'$modetypeid', 
+										'$defaultzonetypeid', 
+										'$servicecode', 
+										'$class'
+									)";
+				warn "########## 5.3 : $SQLString";
+				my $sth2 = $self->{'dbref'}->prepare($SQLString)
+						or die "Could not prepare SQL statement";
+
+				$sth2->execute()
+						or die "Cannot execute carrier/service sql statement";
+				#$sth2->finish();
+				}
+				
+				
+			}
+			
+            
+            
+		}
+	
 	sub SaveTariff
 		{
 			warn "########## Online::SaveTariff";
