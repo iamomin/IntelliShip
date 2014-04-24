@@ -613,11 +613,15 @@ function calculateTotalWeight(event_row_ID)
 
 		//alert("PackageWeight: " + PackageWeight + ", quantity_: " + $("#quantity_"+row_ID).val());
 
-		var TotalPackageWeight = (+$("#quantity_"+row_ID).val() * PackageWeight);
+		var TotalPackageWeight = 0;
 
-		if (isNaN(event_row_ID) && $("#quantityxweight-"+row_ID).val() == 1)
+		if ($("#quantityxweight-"+row_ID).val() == 1)
 			{
-			$("#weight_"+row_ID).val(TotalPackageWeight.toFixed(2));
+			TotalPackageWeight = +$("#weight_"+row_ID).val();
+			}
+		else
+			{
+			TotalPackageWeight = +$("#quantity_"+row_ID).val() * PackageWeight;
 			}
 
 		//alert("TotalPackageWeight: " + TotalPackageWeight + ", BillablePackageWeight: " + BillablePackageWeight);
@@ -627,7 +631,7 @@ function calculateTotalWeight(event_row_ID)
 
 	$("#totalweight").val(BillablePackageWeight.toFixed(2));
 
-	if (!isNaN(event_row_ID) && $("#type_"+event_row_ID).val() == 'package') updateShipmentSummary();
+	updateShipmentSummary();
 	}
 
 function calculateTotalDeclaredValueInsurance()
