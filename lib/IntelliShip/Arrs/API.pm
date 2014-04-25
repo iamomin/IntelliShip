@@ -182,7 +182,7 @@ sub save_tariff
 
 sub delete_all_tariff_rows
 	{
-		warn "########## save_tariff";
+		warn "########## delete_all_tariff_rows";
 		my $self = shift;
 		my ($tariff, $info) = @_;
 		
@@ -194,6 +194,19 @@ sub delete_all_tariff_rows
 		return $self->APIRequest($http_request);
 	}
 	
+sub delete_customer_service
+	{
+		warn "########## delete_customer_service";
+		my $self = shift;
+		my ($csid) = @_;
+		
+		my $http_request = {
+			action => 'DeleteCustomerService',
+			csid => $csid
+		};
+
+		return $self->APIRequest($http_request);
+	}
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;

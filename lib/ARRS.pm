@@ -501,6 +501,16 @@ sub DeleteAllTariffRows {
     return $Online->DeleteAllTariffRows( $Ref->{'tariff'});
 }
 
+sub DeleteCustomerService{
+	warn "########## DeleteCustomerService";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->DeleteCustomerService( $Ref->{'csid'});
+}
+
 sub GetShipmentCosts {
 	my $self = shift;
 	my ($Ref) = @_;

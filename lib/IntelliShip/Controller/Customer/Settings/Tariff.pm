@@ -103,6 +103,15 @@ sub delete: Local
         $c->stash(template => "templates/customer/json.tt");
 	}
 	
+sub delete_customer_service: Local
+	{
+		warn "########## delete_customer_service";
+        my ( $self, $c) = @_;
+		my $params = $c->req->params;
+		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->delete_customer_service($params->{'csid'}));
+        $c->stash(template => "templates/customer/json.tt");
+	}
+	
 sub get_carrier_services: Local
 {
 	my ( $self, $c ) = @_;

@@ -1341,6 +1341,24 @@ warn "undef etadate";
 		my ($tariff) = @_;
 		
 	}
+	
+	sub DeleteCustomerService
+	{
+		warn "########## Online::DeleteCustomerService";
+		my $self = shift;
+		my ($csid) = @_;
+		my $sql = "delete from customerservice where customerserviceid = '$csid'";
+		warn "########## \$sql= $sql";
+		my $success = $self->{'dbref'}->do($sql)
+				or die "Could not execute statement: ".$self->{'dbref'}->errstr;
+		if($success){
+			$self->{'dbref'}->commit;
+			return {'status' => 'success', 'message' => "1 service deleted"};
+		}else{
+			$self->{'dbref'}->rollback;
+			return {'status' => 'failure', 'message' => "Could not delete service"};
+		}
+	}
     
 	sub OkToShipOnShipDate
 	{

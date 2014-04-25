@@ -70,8 +70,8 @@
 			<tr>
 				<td>
 					<div id="tree_operations">
-						<input type="button" value="Add" onclick="addService();"/>&nbsp;
-						<input type="button" value="Delete" onclick="deleteService();"/>
+						<input type="button" value="Add" onclick="addCustomerService();"/>&nbsp;
+						<input type="button" value="Delete" onclick="deleteCustomerService();"/>
 					</div>
 				</td>
 			</tr>
@@ -230,17 +230,22 @@ function doAddSelectedServices(){
 		if (JSON_data.status == "success") {
 			var msg = JSON_data.message;
 			$('#div_add_service').slideUp('slow');
-			TREE.destroy();
-			$('#services_tree').html("");
-			$('#operations').hide();
-			$('#serviceIds').hide();
-			$('#myGrid').empty();
-			getAllServices();
+			reloadUI();
 			showMessage(msg);
 		} else {
 			showMessage("Failed to update");
 		}
 	});
+}
+
+function reloadUI() {
+	$('#div_add_service').slideUp('slow');
+	$('#services_tree').jstree('destroy');
+	$('#services_tree').html("");
+	$('#operations').hide();
+	$('#serviceIds').hide();
+	$('#myGrid').empty();
+	getAllServices();
 }
 
 function loadServiceInfo() {
@@ -385,7 +390,8 @@ function deleteAllTariffRows() {
 	}
 }
 
-function addService() {
+function addCustomerService() {
+	TREE = $('#services_tree').jstree(true);
 	var carrierNode = TREE.get_node(TREE.get_selected());
 	if (carrierNode) {
 		if (carrierNode.original.hasOwnProperty('sid')) {
@@ -402,9 +408,25 @@ function addService() {
 	}
 }
 
-function deleteService() {
+function deleteCustomerService() {
 	if (window.confirm("WARNING: You are about to delete a customer-service association. Do you want to proceed?")) {
-		//delete selected service
+		var csids = $("#services_tree").jstree("get_selected");
+		var selectednode = $("#services_tree").jstree("get_node", csids[0]);
+		if(selectednode && selectednode.original.hasOwnProperty('sid')){
+			//alert("Deleting " + csids[0]);
+			var params = "csid=" + csids[0];
+			my_ajax_request('settings/tariff/delete_customer_service', params, function () {
+				if (JSON_data.status == "success") {
+					var msg = JSON_data.message;
+					reloadUI();
+					showMessage(msg);
+				} else {
+					showMessage("Failed to delete");
+				}
+			});
+		}else{
+			showMessage("Please select a service to delete");
+		}
 	}
 }
 
