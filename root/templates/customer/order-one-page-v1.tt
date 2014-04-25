@@ -35,9 +35,12 @@
 	[% ADDRESS_SECTION %]
 
 	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
+	[% IF default_packing_list == 1 %]
 	<div class="float-right css3-checkboxes">
-		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span style="color:#FFFFFF;"><label for="printpackinglist">Print Packing List</label></span></label>
+		<label><input type="checkbox" name="printpackinglist" value="1"/><span><label for="printpackinglist">Print Packing List</label></span></label>
 	</div>
+	[% END %]
+	[% IF default_packing_list > 1 %]<input type="hidden" name="printpackinglist" value="1"/>[% END %]
 	</h1>
 	[% PACKAGE_DETAIL_SECTION %]
 
