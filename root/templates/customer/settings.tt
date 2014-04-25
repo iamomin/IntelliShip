@@ -799,6 +799,10 @@ $(document).ready(function(){
 		[% END %]
 		<center>
 			<input type="button" class="green" id="update_contact" value="[% IF contactInfo.contactid %] Update [% ELSE %] Add [% END %] Contact" onclick="updateContact();"/>
+			[% IF ajax AND contactInfo.contactid %]
+			&nbsp;&nbsp;
+			<input type="button" class="red" value="Delete" onclick="deleteContact();"/>
+			[% END %]
 			&nbsp;&nbsp;
 			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %]"displayCustomerContacts();"[% ELSE %]javascript:history.back();[% END %]/>
 		</center>
@@ -839,6 +843,11 @@ $(document).ready(function(){
 				$("#frm_setup_contact").submit();
 				}
 			}
+		}
+
+	function deleteContact()
+		{
+		send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '', 'do=delete&contactid='+$('#contactid').val());
 		}
 
 	function validateContactDetials()

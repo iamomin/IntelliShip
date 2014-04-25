@@ -514,7 +514,13 @@ sub contactinformation :Local
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
-	if ($params->{'do'} eq 'configure')
+	if ($params->{'do'} eq 'delete')
+		{
+		my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+		$Contact->delete;
+		$self->get_customer_contacts($Contact->customerid);
+		}
+	elsif ($params->{'do'} eq 'configure')
 		{
 		IntelliShip::Utils->hash_decode($params);
 
