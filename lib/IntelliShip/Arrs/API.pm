@@ -458,6 +458,24 @@ sub get_cost_and_zone
 	return($Cost,$Zone);
 	}
 
+sub get_assessorial_charge
+	{
+	my $self = shift;
+	my ($csid,$weight,$quantity,$ass_name,$customerid,$freight_cost) = @_;
+
+	my $http_request = {
+		action       => 'GetAssCharge',
+		csid         => $csid,
+		ass_name     => $ass_name,
+		weight       => $weight,
+		quantity     => $quantity,
+		customerid   => $customerid,
+		freight_cost => $freight_cost,
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
