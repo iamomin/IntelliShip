@@ -575,16 +575,15 @@ sub calculate_special_seevices_charge
 	
 	my $CO = $self->get_order;
 
-	my @special_services = $CO->assessorials;
-	my %serviceHash =  map { $_->assname => 1 } @special_services;
-	my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
-	my @selected_special_service_loop = grep { $serviceHash{$_->{'value'}} } @$special_service_loop;
+	my @arr = $CO->assessorials;
 
-	foreach my $assname ( @selected_special_service_loop )
+	foreach my $AssData (@arr)
 		{
-			my $Ass_Charge= $self->API->GetAssessorialCharge($csid,$CO->total_weight,$CO->total_quantity,$assname->{'value'},$Customer->customerid,$freightcharges);
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => $assname->{'name'} , value => '$' . sprintf("%.2f",$Ass_Charge->{'value'}) });
+		$self->context->log->debug("AssData: ". $AssData->assname);
+		my $Ass_Charge= $self->API->get_assessorial_charge($csid,$CO->total_weight,$CO->total_quantity,$AssData->assname,$Customer->customerid,$freightcharges);
+		push(@$SHIPMENT_CHARGE_DETAILS, { text => $AssData->assdisplay, value => '$' . sprintf("%.2f",$Ass_Charge->{'value'}) });
 		}
+
 	return 0;
 	}
 
