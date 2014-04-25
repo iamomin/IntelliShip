@@ -43,7 +43,7 @@ sub get_carrier_service_name
 	my $http_request = {
 		action	=> 'GetCarrierServiceName',
 		csid	=> $CSID,
-		};
+	};
 
 	my $response = $self->APIRequest($http_request);
 
@@ -221,11 +221,11 @@ sub delete_tariff_rows
 	{
 		warn "########## delete_tariff_rows";
 		my $self = shift;
-		my ($tariff, $info) = @_;
+		my ($rateids) = @_;
 		
 		my $http_request = {
-			action => 'DeleteAllTariffRows',
-			tariff => $tariff
+			action => 'DeleteTariffRows',
+			rateids => $rateids
 		};
 
 		return $self->APIRequest($http_request);
