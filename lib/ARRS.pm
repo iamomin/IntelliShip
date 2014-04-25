@@ -491,14 +491,24 @@ sub SaveTariff {
     return $Online->SaveTariff( $Ref->{'tariff'}, $Ref->{'info'});
 }
 
-sub DeleteAllTariffRows {
-	warn "########## DeleteAllTariffRows";
+sub DeleteTariffRows {
+	warn "########## DeleteTariffRows";
     my $self = shift;
     my ($Ref) = @_;
 
     my $Online =
       new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
-    return $Online->DeleteAllTariffRows( $Ref->{'tariff'});
+    return $Online->DeleteTariffRows( $Ref->{'rateids'});
+}
+
+sub DeleteCustomerService{
+	warn "########## DeleteCustomerService";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->DeleteCustomerService( $Ref->{'csid'});
 }
 
 sub GetShipmentCosts {
