@@ -120,9 +120,10 @@ sub add_services: Local
 	my ( $self, $c ) = @_;
 	my $params = $c->req->params;
 	my $serviceids = $JSONUTIL->from_json($params->{'serviceids'});
+	warn "########## serviceids in add_services ". Dumper($serviceids);
 	my $result = $self->API->add_services($serviceids, $params->{'customerid'});
 
-	warn "########## servicelist in get_carrier_services". Dumper($result);
+	warn "########## servicelist in add_services ". Dumper($result);
 	
 	$c->stash->{'JSON'} = $JSONUTIL->to_json($result);
 	$c->stash(template => "templates/customer/json.tt"); 

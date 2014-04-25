@@ -141,7 +141,7 @@ function loadServicesTree() {
 			$('#lbl_breadcrumb').html(breadcrumbStr);
 
 		}).jstree({
-			"plugins" : ['themes', 'json_data', 'ui'],
+			"plugins" : ['themes', 'json_data', 'ui', 'state'],
 			"core" : {
 				"animation" : 0,
 				"check_callback" : true,
@@ -228,8 +228,15 @@ function doAddSelectedServices(){
 	var params = "serviceids=" + JSON.stringify(selectedServiceIds) + "&customerid="+ $("#customerid").val();
 	my_ajax_request('settings/tariff/add_services', params, function () {
 		if (JSON_data.status == "success") {
-			showMessage(JSON_data.message);
-			GRID.invalidate();
+			var msg = JSON_data.message;
+			$('#div_add_service').slideUp('slow');
+			TREE.destroy();
+			$('#services_tree').html("");
+			$('#operations').hide();
+			$('#serviceIds').hide();
+			$('#myGrid').empty();
+			getAllServices();
+			showMessage(msg);
 		} else {
 			showMessage("Failed to update");
 		}

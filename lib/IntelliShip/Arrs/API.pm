@@ -144,7 +144,7 @@ sub add_services
 
 	my $http_request = {
 		action => 'AddServices',
-		carrierid => $serviceids,
+		serviceids => $serviceids,
 		customerid => $customerid
 	};
 
