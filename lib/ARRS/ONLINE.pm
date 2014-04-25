@@ -1334,11 +1334,33 @@ warn "undef etadate";
 			return {'status' => 'success', 'message' => "$rate_count records updated for rate, $range_count records updated for range"};
 		}
     
-	sub DeleteAllTariffRows
+	sub DeleteTariffRows
 	{
 		warn "########## Online::DeleteAllTariffRows";
 		my $self = shift;
-		my ($tariff) = @_;
+		my ($rateids) = @_;
+		my @arr = @$rateids;
+		
+		my $row_count = 0;
+		foreach my $rateid (@arr){
+			my $sql = "delete from rate where rateid = '$rateid'";
+			warn "########## \$sql= $sql";
+			my $success = $self->{'dbref'}->do($sql)
+					or die "Could not execute statement: ".$self->{'dbref'}->errstr;
+			#my $success = 1;
+			if($success){
+				$self->{'dbref'}->commit;
+				$row_count++;
+			}else{
+				$self->{'dbref'}->rollback;
+			}
+		}
+		
+		if($row_count == scalar(@arr)){
+			return {'status' => 'success', 'message' => "$row_count rows deleted"};
+		}else{
+			return {'status' => 'failure', 'message' => "Could not delete " + (scalar(@arr) - $row_count) + " rows" };
+		}
 		
 	}
 	

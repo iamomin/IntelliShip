@@ -83,13 +83,13 @@ sub save :Local
         $c->stash(template => "templates/customer/json.tt");
     }
 	
-sub deleteAllTariffRows: Local
+sub deleteTariffRows: Local
 	{
-		warn "########## deleteAllTariffRows";
+		warn "########## deleteTariffRows";
         my ( $self, $c) = @_;
 		my $params = $c->req->params;
-		my $tariff = $JSONUTIL->from_json($params->{'data'});
-		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->delete_all_tariff_rows($tariff));
+		my $rateids = $JSONUTIL->from_json($params->{'rateids'});
+		$c->stash->{'JSON'} = $JSONUTIL->to_json($self->API->delete_tariff_rows($rateids));
         $c->stash(template => "templates/customer/json.tt");
 	}
 	
