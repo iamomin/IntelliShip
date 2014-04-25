@@ -509,6 +509,8 @@ sub createImage()
 		########################################
 		#system("/usr/bin/convert $outdir/$file.jpg -bordercolor opaque -border 2 $outdir/$file.jpg");
 
+		#system("/usr/bin/convert -border 1x1 -bordercolor black /opt/engage/intelliship/html/$file.jpg /opt/engage/intelliship/html/$file.jpg");
+
 		if($sizeGot < 2)
 		{
 ############### Code here to rotate and format type for Single input streams##############
@@ -575,9 +577,9 @@ sub mergeImage()
 		my $size = @filename;
 		my $imagesize = "";
 		if($size eq 3){
-					$imagesize = "1215x675";
+					$imagesize = "1215x680";
 		}elsif($size eq 2){
-					$imagesize = "810x675";
+					$imagesize = "810x680";
 		}else{
 		}
 		warn "mergeImage =$mainFileName,@filename";
@@ -590,19 +592,19 @@ sub mergeImage()
 					my $img1 =  Image::Magick->new;
 					$img1->Read(filename => "$outdir/$filename[0].jpg");
 					$image2->Composite(image => $img1,
-										geometry => '+10+10');
+										geometry => '+5+0');
 					unlink "$outdir/$filename[0].jpg";
 					my $img2 =  Image::Magick->new;
 					$img2->Read(filename => "$outdir/$filename[1].jpg");
 					$image2->Composite(image => $img2,
-										geometry => '+410+10');
+										geometry => '+405+0');
 					unlink "$outdir/$filename[1].jpg";
 
 					if($size eq 3){
 								my $img3 = Image::Magick->new;
 								$img3->Read(filename => "$outdir/$filename[2].jpg");
 								$image2->Composite(image => $img3,
-													geometry => '+815+10');
+													geometry => '+810+0');
 								unlink "$outdir/$filename[2].jpg";
 					}
 
@@ -725,6 +727,3 @@ sub mergeImage()
 		}else{
 		}
 }
-
-
-

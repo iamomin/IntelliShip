@@ -156,7 +156,9 @@
 				<li><a id="company-rules-tab"    href="#company-rules">Rules</a></li>
 				<li><a id="company-settings-tab" href="#company-settings">Default Settings</a></li>
 				<li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
+				[% IF customerid %]
 				<li><a id="company-branding-tab" href="#company-branding">Branding</a></li>
+				[% END %]
 				<li><a id="tariff-pricing-tab"   href="#tariff-pricing">Tariff Pricing</a></li>
 			</ul>
 			<div id="company-profile">
@@ -345,7 +347,7 @@
 						<td><label class="float-right" for="cust_sopid">Weight Type:</label></td>
 						<td>
 						<label>
-							<select name="weighttype" id="weighttype">
+							<select name="weighttype" id="weighttype" style="width: 50px">
 								[% FOREACH item IN weighttype_loop %]
 									<option value="[% item.value %]" [% (item.value == weighttype) ? 'SELECTED' : '' %]>[% item.name %]</option>
 								[% END %]
@@ -656,7 +658,7 @@
 				</center>
 			</div>
 			<div id="company-contacts"></div>
-			<div id="company-branding"><div class="notice">Under construction...</div></div>
+			<div id="company-branding">[% COMPANY_BRANDING_HTML %]</div>
 			<div id="tariff-pricing"></div>
 		</div>
 	</form>
@@ -722,6 +724,23 @@
 				displayCustomerContacts();
 				}
 			});
+
+		$("#company-branding-tab").click(function() {
+			if($("#company-branding").html().length == 0) {
+				$("#company-branding").prepend($('<div class="notice"> Please Wait... </div>'));
+				editCompanyBranding();
+				}
+			});
+
+		function editCompanyBranding(){
+			var params = 'customerid='+$("#customerid").val();
+			send_ajax_request('company-branding', 'HTML', 'settings/company', 'get_branding_settings', params);
+			}
+
+		function updateCompanyBranding(call_back_fn){
+			var params = 'customerid='+$("#customerid").val() + '&custom-style-sheet=' + $("#custom-style-sheet").val() + '&' + $("#color-picker :input").serialize();
+			send_ajax_request('company-branding', 'JSON', 'settings/company', 'update_branding_settings', params, call_back_fn);
+			}
 
 		$("#tariff-pricing-tab").click(function() {
 			if($("#tariff-pricing").html().length == 0) {

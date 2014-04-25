@@ -437,18 +437,23 @@ sub GetCarrierList {
 		$Ref->{'customerid'} );
 }
 
-sub GetCarrierServiceList {
+sub GetCustomerServiceList {
     my $self = shift;
 	my ($Ref) = @_;
 
-	# Gets a complete list of services that fall under a given sop
+	my $Online =
+	  new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+	return $Online->GetCustomerServiceList( $Ref->{'sopid'});
+}
 
-	# sopid = customerid or sopid (r)
-	# customerid = customerid (r) - used for carrier exlusions
+sub GetCarrierServices{
+
+	my $self = shift;
+	my ($Ref) = @_;
 
 	my $Online =
 	  new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
-	return $Online->GetCarrierServiceList( $Ref->{'sopid'});
+	return $Online->GetCarrierServices( $Ref->{'carrierid'}, $Ref->{'customerid'});
 }
 
 sub GetServiceTariff {
@@ -466,6 +471,16 @@ sub GetServiceTariff {
     return $Online->GetServiceTariff( $Ref->{'csid'});
 }
 
+sub AddServices {
+	warn "########## AddServices";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->AddServices( $Ref->{'serviceids'}, $Ref->{'customerid'});
+}
+
 sub SaveTariff {
 	warn "########## SaveTariff";
     my $self = shift;
@@ -474,6 +489,16 @@ sub SaveTariff {
     my $Online =
       new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
     return $Online->SaveTariff( $Ref->{'tariff'}, $Ref->{'info'});
+}
+
+sub DeleteAllTariffRows {
+	warn "########## DeleteAllTariffRows";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->DeleteAllTariffRows( $Ref->{'tariff'});
 }
 
 sub GetShipmentCosts {

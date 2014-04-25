@@ -147,19 +147,47 @@ sub get_carrier_list
 	return $self->APIRequest($http_request);
 	}
 
-sub get_carrier_service_list
+sub get_customer_service_list
 	{
 	my $self = shift;
 	my ($SOPID) = @_;
 
 	my $http_request = {
-		action => 'GetCarrierServiceList',
-		sopid => $SOPID		
+		action => 'GetCustomerServiceList',
+		sopid => $SOPID
 		};
 
 	return $self->APIRequest($http_request);
 	}
 
+sub get_carrier_services
+	{
+	my $self = shift;
+	my ($carrierid, $customerid) = @_;
+
+	my $http_request = {
+		action => 'GetCarrierServices',
+		carrierid => $carrierid,
+		customerid => $customerid
+	};
+
+	return $self->APIRequest($http_request);
+	}
+
+sub add_services
+	{
+	my $self = shift;
+	my ($serviceids, $customerid) = @_;
+
+	my $http_request = {
+		action => 'AddServices',
+		carrierid => $serviceids,
+		customerid => $customerid
+	};
+
+	return $self->APIRequest($http_request);
+	}
+	
 sub get_service_tariff
 	{
         warn "########## 3";
@@ -189,6 +217,20 @@ sub save_tariff
 		return $self->APIRequest($http_request);
 	}
 
+sub delete_all_tariff_rows
+	{
+		warn "########## save_tariff";
+		my $self = shift;
+		my ($tariff, $info) = @_;
+		
+		my $http_request = {
+			action => 'DeleteAllTariffRows',
+			tariff => $tariff
+		};
+
+		return $self->APIRequest($http_request);
+	}
+	
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;
@@ -386,6 +428,52 @@ sub get_alt_SOP_consignee_name
 		}
 
 	return $ConsigneeName;
+	}
+
+sub get_cost_and_zone
+	{
+	my $self = shift;
+	my ($fromzip,$tozip,$weight,$fromstate,$tostate,$fromcountry,$tocountry,$dimlength,$dimwidth,$dimheight,$csid) = @_;
+
+	my $http_request = {
+		intelliship => 1,
+		fromzip     => $fromzip,
+		tozip       => $tozip,
+		weight      => $weight,
+		fromstate   => $fromstate,
+		tostate     => $tostate,
+		fromcountry => $fromcountry,
+		tocountry   => $tocountry,
+		dimlength   => $dimlength,
+		dimwidth    => $dimwidth,
+		dimheight   => $dimheight,
+		csid        => $csid,
+		action      => 'GetCost'
+		};
+
+	my $response = $self->APIRequest($http_request);
+
+	my ($Cost, $Zone) = ($response->{'cost'},$response->{'zone'});
+
+	return($Cost,$Zone);
+	}
+
+sub get_assessorial_charge
+	{
+	my $self = shift;
+	my ($csid,$weight,$quantity,$ass_name,$customerid,$freight_cost) = @_;
+
+	my $http_request = {
+		action       => 'GetAssCharge',
+		csid         => $csid,
+		ass_name     => $ass_name,
+		weight       => $weight,
+		quantity     => $quantity,
+		customerid   => $customerid,
+		freight_cost => $freight_cost,
+		};
+
+	return $self->APIRequest($http_request);
 	}
 
 __PACKAGE__->meta()->make_immutable();

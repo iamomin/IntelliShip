@@ -1,0 +1,169 @@
+<!-- File Upload jQuery Plugin http://www.uploadify.com -->
+<script type="text/javascript" src="/static/jquery/uploadify/jquery.uploadify.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/jquery/uploadify/uploadify.css">
+
+<script src="/static/jquery/colorpicker-master/evol.colorpicker.js" type="text/javascript" charset="utf-8"></script>
+<link href="/static/jquery/colorpicker-master/evol.colorpicker.css" rel="stylesheet" type="text/css" />
+
+<div id="message"></div>
+<p class="validateTips"></p>
+
+<div id="branding" class="ui-helper-clearfix">
+	<ul>
+		<li><a href="#branding-logo">Branding Logo's</a></li>
+		<li><a href="#color-picker">Set Colors</a></li>
+		<li><a href="#branding-css-content">Edit Branding CSS</a></li>
+		<li><a href="#branding-demo" id="branding-demo-link">View Demo</a></li>
+	</ul>
+
+	<div id="branding-logo">
+		<table class="center-app">
+			<tr>
+				<td>
+					<div id="show-light-logo"><img id="light-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-light-logo.png' height='50px' width='450px'/></div>
+				</td>
+				<td>
+					<label class="float-left">Logo (Light Background): </label>
+				</td>
+				<td style="width: 50%;">
+					<input id="logo-light-background" type="file" multiple="true"/>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3"><div style="clear: both;">&nbsp;<hr/>&nbsp;</div></td>
+			</tr>
+			<tr>
+				<td>
+					<div id="show-dark-logo"><img id="dark-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-dark-logo.png' height='50px' width='450px'/></div>
+				</td>
+				<td>
+					<label class="float-left">Logo (Dark Background): </label>
+				</td>
+				<td>
+					<input id="logo-dark-background" type="file" multiple="true"/>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div id="color-picker">
+		<table class="center-app">
+			<tr>
+				<td>&nbsp;</td>
+				<td><strong>Background</strong></td>
+				<td><strong>Font</strong></td>
+				<td><strong>Size</strong></td>
+			</tr>
+
+			[% FOREACH item IN stylesetting_loop %]
+			<tr>
+				<td><label for="[% item.bgcolor %]" class="float-left">[% item.name %]: </label></td>
+				<td><input type="text" class="color-picker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"></input></td>
+				<td><input type="text" class="color-picker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"></input></td>
+				<td>
+				[% IF item.size %]
+				<label>
+					<select name="[% item.size %]" id="[% item.size %]" style="width: 45px;">
+						[% FOREACH font IN fontsize_loop %]
+							<option value="[% font.value %]" [% IF font.value == item.values.size %]SELECTED[% END %]>[% font.name %]</option>
+						[% END %]
+					</select>
+				</label>
+				[% END %]
+				</td>
+			</tr>
+			[% END %]
+		</table>
+	</div>
+	<div id="branding-css-content">
+		<table class="center-app">
+			<tr>
+				<td><label for="custom-style-sheet">Custom Style Sheet (CSS3): </label></td>
+			</tr>
+			<tr>
+				<td><textarea rows="25" id="custom-style-sheet" name="custom-style-sheet" cols="85" style="resize: none">[% BRANDING_CSS %]</textarea></td>
+			</tr>
+		</table>
+	</div>
+	<div id="branding-demo">
+		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="">Please wait...</iframe>
+	</div>
+</div>
+<br/>
+<center>
+	<input type="button" class="green" value="Update Branding" onClick="updateCompanyBranding();"/>
+</center>
+
+<script>
+
+	$(document).ready(function() {
+
+		/**** SET LOGO TAB ACTIVE ONLOAD ****/
+		$("#branding").tabs({ active: 0 });
+
+		$('#logo-light-background').uploadify({
+			'formData'     : {
+				'timestamp'  : jQuery.now(),
+				'type'       : 'light',
+				'customerid' : '[% customerid %]'
+				},
+			'swf'      : '/static/jquery/uploadify/uploadify.swf',
+			'uploader' : '/customer/settings/company/upload',
+			'fileDesc': 'Image Files',
+			'fileExt': '*.jpg;*.jpeg;*.gif;*.png',
+			'multi': false,
+			'auto': true,
+			'onUploadSuccess': function(file, data, response){
+				$('#light-logo').attr('src', $('#light-logo').attr('src') + '?' + Math.random());
+				},
+			});
+
+		$('#logo-dark-background').uploadify({
+			'formData'     : {
+				'timestamp' : jQuery.now(),
+				'type'     : 'dark',
+				'customerid' : '[% customerid %]'
+				},
+			'swf'      : '/static/jquery/uploadify/uploadify.swf',
+			'uploader' : '/customer/settings/company/upload',
+			'onUploadSuccess': function(file, data, response){
+				$('#dark-logo').attr('src', $('#dark-logo').attr('src') + '?' + Math.random());
+				},
+			});
+
+		/* Set Initial colors */
+		[% FOREACH item IN stylesetting_loop %]
+			//$("#[% item.bgcolor %]").css({'border-color':'#' + $("#[% item.bgcolor %]").val()});
+			//$("#[% item.font %]").css({'border-color':'#' + $("#[% item.font %]").val()});
+
+			$("#" + "[% item.bgcolor %]").colorpicker({
+					color: "#" + "[% item.values.bgcolor %]"
+				});
+			$("#" + "[% item.font %]").colorpicker({
+					color: "#" + "[% item.values.color %]"
+				});
+		[% END %]
+
+		$(".color-picker").colorpicker({ strings: "Theme Colors,Standard Colors,More Colors,Less Colors" });
+
+		});
+
+	$("#branding-demo-link").click(function() {
+		$('#branding-demo-iframe').attr('src','');
+		updateCompanyBranding(function() {
+			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
+			});
+		});
+
+	/**** DISABLE IFRAME CONTENTS ****/
+	$("#branding-demo-iframe").load(function() {
+		var iFrame = $(this);
+		iFrame.contents().find('a').each(function() {
+			$(this).replaceWith($('<span>' + this.innerHTML + '</span>'));
+			});
+
+		iFrame.contents().find('input').each(function() {
+			$(this).prop('disabled', 'disabled');
+			});
+		});
+
+</script>

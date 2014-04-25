@@ -35,7 +35,7 @@
 :root .css3-checkboxes input[type="checkbox"] + span
 {
     font: normal 11px/14px Arial, Sans-serif;
-    color: #333;
+    color: inherit;
 }
 
 :root .css3-radios label:hover span::before,

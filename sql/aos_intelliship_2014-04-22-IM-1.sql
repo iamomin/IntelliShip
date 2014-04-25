@@ -1,0 +1,1 @@
+ALTER TABLE packprodata ADD COLUMN quantityxweight INT DEFAULT 0;

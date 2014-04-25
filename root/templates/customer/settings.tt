@@ -96,11 +96,12 @@ $(document).ready(function(){
 			<input type="hidden" id="productskuid" name="productskuid"/>
 			<div class="float-right">
 			<table><tr>
-				<td><label class="float-right" for="productsku">SKU:</td>
-				<td><input type="text" class="text" id="productsku" name="productsku" /></td>
+				<td><label class="float-right" for="customerskuid">SKU:</td>
+				<td><input type="text" class="text" id="customerskuid" name="customerskuid" /></td>
 				<td><input type="button" class="blue" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="green" id="sku_add" value="Add New" /></td>
-				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/></td>
+				<td><input type="button" class="red" id="sku_delete" value="Delete" /></td>
+				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="window.location.href='/customer/settings'"/></td>
 				<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 				<td>
 					<select name="records_per_page" id="records_per_page">
@@ -128,6 +129,8 @@ $(document).ready(function(){
 	<table class="report">
 		<tr>
 			<th>&nbsp;</th>
+			<th>&nbsp;</th>
+			<th>SKU</th>
 			<th>Description</th>
 			<th>UPC</th>
 			<th>hazardous</th>
@@ -143,6 +146,8 @@ $(document).ready(function(){
 		[% FOREACH item IN productskulist %]
 			<tr>
 				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
+				<td><a href="javascript:deleteProductSku('[% item.productskuid %]');">DELETE</a></td>
+				<td>[% item.customerskuid %]</td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
 				<td>[% item.hazardous == 0 ? 'No' : 'Yes' %]</td>
@@ -163,16 +168,36 @@ $(document).ready(function(){
 	<script>
 
 	function editProductSku(productskuid) {
-		$("#productsku").val("");
+		$("#customerskuid").val("");
 		$("#productskuid").val(productskuid);
 		$("#frm_sku_management").submit();
+		}
+
+	function deleteProductSku(productskuid) {
+
+		$("#dialog-message").dialog( {
+			title: "Delete Product SKU",
+			width: '400px',
+			buttons: {
+				Ok: function() {
+					$("#do").val('delete');
+					$("#productskuid").val(productskuid);
+					$("#sku_page").prop('disabled','disabled');
+					$("#frm_sku_management").submit();
+					},
+				Cancel: function() { $( this ).dialog( "close" ); }
+				}
+			});
+
+		$("#dialog-message").html("<div class='notice'>Are you sure you want to delete SKU?</div>");
+		$("#dialog-message").dialog("open");
 		}
 
 	var cachedProductSkus = {};
 
 	$(document).ready(function(){
 
-		$("#productsku").autocomplete({
+		$("#customerskuid").autocomplete({
 			minLength: 2,
 			source: function ( request, response ) {
 					var term = request.term;
@@ -189,16 +214,27 @@ $(document).ready(function(){
 					}
 			});
 
+		$("#sku_add").click(function() {
+			$("#do").val('setup');
+			$("#productskuid").val("");
+			$("#customerskuid").val("");
+			$("#sku_page").prop('disabled','disabled');
+			$("#frm_sku_management").submit();
+			});
+
 		$("#sku_edit").click(function() {
-			if (validateForm({ productsku : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+			if (validateForm({ customerskuid : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+				$("#do").val('setup');
+				$("#sku_page").prop('disabled','disabled');
 				$("#frm_sku_management").submit();
 				}
 			});
 
-		$("#sku_add").click(function() {
-			$("#productsku").val("");
-			$("#productskuid").val("");
-			$("#frm_sku_management").submit();
+		$("#sku_delete").click(function() {
+			$("#do").val('delete');
+			if (validateForm({ customerskuid : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
+				deleteProductSku();
+				}
 			});
 
 		$("#records_per_page").change(function() {
@@ -246,13 +282,13 @@ $(document).ready(function(){
 				<td>SKU Item Value:</td>
 				<td><input type="text" name="value" id="value" value="[%value%]" size="30" maxlength="50"></td>
 				<td>SKU Class:</td>
-				<td><input type="text" name="class" id="class" value="[%class%]" size="30" maxlength="50"></td>
+				<td><select name="class" id="class">[% FOREACH item IN class_list %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
 			</tr>
 			<tr>
 				<td>Hazardous:</td>
 				<td><select name="hazardous" id="hazardous">
 						[% FOREACH item IN yesno_list %]
-						<option [% IF hazardous == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (hazardous == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				<td>SKU NMFC Code:</td>
@@ -263,7 +299,7 @@ $(document).ready(function(){
 				<td><select name="unitofmeasure" id="unitofmeasure">
 
 						[% FOREACH item IN unitofmeasure_list %]
-						<option [% IF unitofmeasure == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (unitofmeasure == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				<td>Balance on Hand:</td>
@@ -273,7 +309,7 @@ $(document).ready(function(){
 				<td>Unit Type:</td>
 				<td><select name="unittypeid" id="unittypeid">
 						[% FOREACH item IN unittype_list %]
-						<option [% IF unittypeid == item.value %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>
+						<option value="[% item.value %]"[% (unittypeid == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				<td></td>
@@ -349,35 +385,13 @@ $(document).ready(function(){
 		<center>
 			<input type="submit" class="green" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />
 			&nbsp;&nbsp;
-			<input type="button" class="button" id="cancel" value="Cancel" onclick="javascript:history.back();"/>
+			<input type="button" class="button" id="cancel" value="Cancel" onclick="window.location.href='/customer/settings/skumanagement'"/>
 		</center>
 	</form>
 
 	<script>
 	$("#frm_setup_sku").submit(function () {
-		var requireHash = {
-			customerskuid : { minlength: 1, description: "Please specify customer sku ID" },
-			description : { minlength: 1, description: "Please specify sku description" },
-			upccode : { minlength: 1, description: "Please specify UPC code" },
-			manufacturecountry : { minlength: 1, description: "Please specify manufacture country" },
-			value : { minlength: 1, description: "Please specify sku item value" },
-			class : { minlength: 1, description: "Please specify sku class" },
-			nmfc : { minlength: 1, description: "Please specify sku nmfc code" },
-			balanceonhand : { minlength: 1, description: "Please specify balance on hand" },
-			weight : { minlength: 1, description: "Please specify dim weight" },
-			length : { minlength: 1, description: "Please specify dim length" },
-			width : { minlength: 1, description: "Please specify dim width" },
-			height : { minlength: 1, description: "Please specify dim height" },
-			caseweight : { minlength: 1, description: "Please specify case dim weight" },
-			caselength : { minlength: 1, description: "Please specify case dim length" },
-			casewidth : { minlength: 1, description: "Please specify case dim width" },
-			caseheight : { minlength: 1, description: "Please specify case dim height" },
-			skupercase : { minlength: 1, description: "Please specify skus per case" },
-			palletweight : { minlength: 1, description: "Please specify pallet dim weight" },
-			palletlength : { minlength: 1, description: "Please specify pallet dim length" },
-			palletwidth : { minlength: 1, description: "Please specify pallet dim width" },
-			palletheight : { minlength: 1, description: "Please specify pallet dim height" },
-			casesperpallet : { minlength: 1, description: "Please specify cases per pallet" }
+		var requireHash = { customerskuid : { minlength: 1, description: "Please specify customer sku ID" }
 			};
 		if (validateForm(requireHash)) {
 			$("#update_productsku").val("Please Wait...");

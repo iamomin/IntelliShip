@@ -1,0 +1,272 @@
+
+<h1>
+	[% quickship ? 'Quick Ship Order' : 'New Order' %]
+	<table class="float-right css3-radios">
+		<tr>
+			<td><label for="ordernumber" class="small_title">Order Number:</label></td>
+			<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/></td>
+			[% FOREACH item IN shipmenttype_loop %]
+			<td>
+				<label>
+					<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
+					<span><label for="[% item.value %]">[% item.name %]</label></span>
+				</label>
+			</td>
+			[% END %]
+		<tr>
+	</table>
+</h1>
+
+<script src="/static/js/customer-order.js"></script>
+
+<form id="frm_order" name="frm_order" method="post" action="/customer/order/[% quickship ? 'quickship' : 'onepage' %]">
+	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
+	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<input type="hidden" id="shipmentid" name="shipmentid"/>
+	<input type="hidden" id="do" name="do" value="save"/>
+	[% IF AUTO_PROCESS %]
+	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
+	[% END %]
+	[% IF parent %]
+	<input type="hidden" name="parent" value="[% parent %]"/>
+	[% END %]
+
+	[% ADDRESS_SECTION %]
+
+	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
+	<div class="float-right css3-checkboxes">
+		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span style="color:#FFFFFF;"><label for="printpackinglist">Print Packing List</label></span></label>
+	</div>
+	</h1>
+	[% PACKAGE_DETAIL_SECTION %]
+
+	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
+
+	<div id="clear">&nbsp;</div>
+
+	<div style="border: 4px solid #9BA7AF">
+		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd">+</a></td><td><green>Add Special Services</green></td></tr></table>
+		<div id="special-services" style="display: [% special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes"></div>
+	</div>
+
+	<table class="shipment-summary">
+		<tr>
+			<th>SHIPMENT SUMMARY</th>
+			<td class="total" colspan="5">
+			<table class="float-right">
+				<tr>
+				<td><green><strong>TOTAL SHIPMENT BILLABLE WEIGHT:</strong></green><strong>&nbsp;<input type="text" class="small-text" name="totalweight" id="totalweight" value="[% totalweight ? totalweight : 0.00 %]"/> [% WEIGHT_TYPE %]</strong></td>
+				<td style="width: 30px">&nbsp;</td>
+				<td><green><strong>TOTAL SHIPMENT VALUE:</strong></green><strong>&nbsp;$</strong><input type="text" class="small-text" name="insurance" id="insurance" value="[% insurance ? insurance : 0.00 %]"/></td>
+				</tr>
+			</table>
+		</tr>
+		<tr>
+			<td colspan="6" class="details">
+			<div id="shipment-summary-div" class="float-left">
+				<table id="shipment-summary-list">
+					<tr><th>CLASS:</th><th>QUANTITY:</th><th>BILLABLE WEIGHT:</th><th>VALUE:</th></tr>
+					[% UNLESS PACKAGE_DETAIL_SECTION %]
+					<tr id='ss-row-1'><td id='ss-class-1'>NA</td><td id='ss-quantity-1'>1</td><td id='ss-weight-1'>0.00</td><td id='ss-decval-1'>0.00</td></tr>
+					[% END %]
+				</table>
+			</div>
+			<button type="button" class="long-rounded-button float-right" onclick="getCarrierServiceList('frm_order');">
+				<reload id="loading-1"></reload>
+				&nbsp;&nbsp;ROUTE NOW&nbsp;&nbsp;
+				<reload id="loading-2"></reload>
+			</button>
+			</td>
+		</tr>
+	</table>
+
+	<div id="intlCommoditySec" style="border: 4px solid #9BA7AF"></div>
+
+	<div id="clear">&nbsp;</div>
+
+	<h1>SERVICE LEVEL SUMMARY</h1>
+
+	<div style="border: 4px solid #9BA7AF">
+	<table>
+		<tr>
+		[% IF SHOW_NEW_OTHER_CARRIER %]
+		<td><label for="othercarrier" class="float-right">New Other Carrier:</label></td>
+		<td><input type="text" class="text" name="othercarrier" id="othercarrier"/></td>
+		[% ELSE %]
+		<td>&nbsp;</td>
+		[% END %]
+		</tr>
+	</table>
+	<div id="carrier-service-list"></div>
+	</div>
+
+	<div style="clear: both;">&nbsp;</div>
+
+	<div class="float-right">
+		[% UNLESS ONLY_SHIP %]<input type="button" class="green" id="save" value="SAVE"/>[% END %]
+		[% IF quickship %]<input type="button" class="green" id="ship_now" value="SHIP"/>[% END %]
+		<input type="button" class="gray" id="cancel" value="CANCEL"/>
+	</div>
+
+</form>
+
+<script>
+
+	[% FOREACH item IN requiredfield_list %]
+		requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
+	$("#ordernumber").change(function() {
+
+		if ($(this).val().length == 0) return;
+
+		var query_param = "coid=" + $("#coid").val() + "&ordernumber=" + $("#ordernumber").val();
+
+		send_ajax_request('', 'JSON', 'order', 'search_ordernumber', query_param, function () {
+			if ( JSON_data.ORDER_FOUND == 0 ) return;
+			requiredFieldHash = {},
+			$("#coid").val(JSON_data.COID);
+			$("#do").val('');
+			$('#frm_order').submit();
+			});
+		});
+
+	$(document).on('change', '.shipment-details', configureShipmentDetails);
+
+	$("#tocountry").change(checkInternationalSection);
+
+	$(document).on('change', '.sku_id', function() {
+		var row_num = this.id.replace(/^sku_/, "");
+		setSkuDetails(row_num, this.value)
+		});
+
+	$(document).on('click', '.calculate-package-weight', function() {
+
+		if ($(this).hasClass("green")) return;
+
+		var arr = this.id.split("-");
+		var type = arr[0];
+		var ID = arr[1];
+
+		$(this).addClass("green",1000);
+
+		if (type == 'weightperpackage')
+			{
+			$('#totalweight-'+ID).removeClass("green",1000);
+			$('#quantityxweight-'+ID).val(0);
+			}
+		else
+			{
+			$('#weightperpackage-'+ID).removeClass("green",1000);
+			$('#quantityxweight-'+ID).val(1);
+			}
+
+		calculateTotalWeight(ID);
+		});
+
+	$('#unittype').change(function() {
+		$("#add-package-btn").html('<span class="round-green-button">+</span>&nbsp;&nbsp;ADD ' + $("#unittype option:selected").text().toUpperCase());
+		});
+
+	$('#save').click(function() {
+		delete requiredFieldHash['package-detail-list'];
+		$("#frm_order").submit();
+		});
+
+	$('#special-services-cmd').click(function() {
+
+		var linkObject = $(this);
+		if ($('#special-services').html().length > 0)
+			{
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			$("#special-services").slideToggle("slow");
+			return;
+			}
+
+		var params = 'coid=' + $("#coid").val();
+		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
+			$( "#special-services" ).slideToggle( "slow" );
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			});
+		});
+
+	$("#ship_now").click(function() {
+
+		updatePackageProductSequence();
+
+		if (validateForm(requiredFieldHash) == false) return;
+
+		var carrier     = $("#carrier").val();
+		var totalweight = $("#totalweight").val();
+
+		if ($('#autoprocess').val() == 1)
+			{
+			if (totalweight == undefined || totalweight == 0) return;
+			if (carrier == undefined || carrier == '')
+				{
+				$('#route').click();
+				return;
+				}
+			}
+
+		if (carrier == undefined) return;
+
+		$("#do").val("ship");
+		$("#ship_now").val("Please wait...");
+
+		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_order").serialize(), function () {
+
+			if ( JSON_data.SUCCESS == 0 ) {
+				$("#ship_now").val("SHIP");
+				return;
+				}
+
+			$("#save").attr("disabled", true);
+			$("#cancel").attr("disabled", true);
+			$("#ship_now").attr("disabled", true);
+
+			$("#shipmentid").val(JSON_data.shipmentid);
+			$("#do").val("print");
+			$("#frm_order").submit();
+			});
+		});
+
+	$('#cancel').click(function() {
+		requiredFieldHash = {};
+		$("#do").val("cancel");
+		$("#frm_order").submit();
+		});
+
+	$("#frm_order").submit(function() {
+		updatePackageProductSequence();
+		return validateForm(requiredFieldHash);
+		});
+
+	[% IF tooltips %]
+		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+		setToolTip();
+	[% END %]
+
+	$('#insurance').change(function() {
+		distributeInsuranceAmongProducts();
+		updateShipmentSummary();
+		});
+
+	$(document).ready(function() {
+
+		$('#unittype').change();
+		calculateTotalWeight();
+		updateShipmentSummary();
+		checkInternationalSection();
+
+		if(requiredFieldHash) {
+			markRequiredFields(requiredFieldHash);
+			}
+
+		if ($('#autoprocess').val() == 1) {
+			$("#ship_now").click();
+			}
+		});
+
+</script>

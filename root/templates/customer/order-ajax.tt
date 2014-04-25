@@ -268,7 +268,7 @@
 
 [% END %]
 
-[% IF CARRIERSERVICE_LIST %]
+[% IF CARRIER_SERVICE_LIST %]
 
   [% IF ONLY_TABLE %]
 	<table class="app css3-radios">
@@ -318,7 +318,7 @@
 
 	<input type="hidden" id="carrier" name="carrier"/>
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
-	<div id="carrier-service-list">
+	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
 			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
 			<li><a href="#freight-charges-list-2">TRANSIT DAYS</a></li>
@@ -362,7 +362,7 @@
 
 		$(document).ready(function() {
 
-			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+			$("#carrier-service-list-tabs").tabs({ beforeActivate: function( event, ui ) {
 					var panelID = $(ui.newPanel).prop('id');
 					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
 					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {

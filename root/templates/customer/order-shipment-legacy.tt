@@ -1,0 +1,360 @@
+[% UNLESS one_page %]
+
+	<h2>SHIP A PACKAGE</h2>
+
+	<table class="order-nav">
+		<tr>
+		<td class="L"><input type="button" class="inactive" id="btn_address" value="ADDRESS"/></td>
+		<td class="C"><input type="button" class="active" value="SHIPMENT DETAILS"/></td>
+		<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="$('#frm_shipment').submit();"/></td>
+		</tr>
+		<tr>
+		<td colspan="3">
+			<div style="position: relative;">
+				<hr class="solid-line"/>
+				<img style="z-index: 1; float: left; margin-left: 14%; margin-top: -0.2%;" src="/static/branding/[% branding_id %]/images/thumbs-up-grayed.png">
+				<img style="z-index: 1; float: left; margin-left: 31%; margin-top: -0.2%;" src="/static/branding/[% branding_id %]/images/navigation-down.png">
+			</div>
+		</td>
+		</tr>
+	</table>
+
+	<form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
+		<input type="hidden" id="do" name="do" value="step2"/>
+		<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+		<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
+
+	<table class="app">
+		<caption>SHIPMENT DETAIL:</caption>
+		<tr>
+			<td><label for="datetoship" class="bold-text">Estimated Ship Date</label></td>
+			<td><label for="dateneeded">Due Date</label></td>
+			[% IF PONUMBER %]<td><label for="ponumber">PO Number</label></td>[% END %]
+			[% IF one_page %]
+			<td><label for="dryicewt">Dry Ice Weight</label></td>
+			[% END %]
+			<td><label for="description">Comments</label></td>
+			<td><label for="deliverymethod">Delivery Method:</label></td>
+		</tr>
+		<tr>
+			<td><input type="text" style="margin-right: 3px;" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+			<td><input type="text" style="margin-right: 3px;" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+			[% IF PONUMBER %]<td><input type="text" class="text" id="ponumber" name="ponumber"/></td>[% END %]
+			<td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
+			<td class="css3-radios">
+				[% FOREACH item IN deliverymethod_loop %]
+				<label>
+				<input type="radio" name="deliverymethod" id="[% item.value %]" value="[% item.value %]" [% item.value == deliverymethod ? 'CHECKED' : '' %]/>
+				<span><label for="[% item.value %]">[% item.name %]</label></span>
+				</label>
+				[% END %]
+				<div id="third-party-details"></div>
+			</td>
+		</tr>
+	</table>
+
+	<h2>Package Detail</h2>
+	<!--<div class="notice">Please enter the weight and dimensions of your package/product for a more accurate estimated rate</div>-->
+[% END %]
+
+<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
+
+[% IF one_page %]
+	<h2>Package Detail</h2>
+	<table class="css3-radios css3-checkboxes">
+		<tr>
+			<td><input type="button" id="add_package_product" class="add" value="ADD"/></td>
+			<td><input type="button" id="delete_package_product" class="delete" value="DELETE"/></td>
+			<td><label><input type="checkbox" name="quantityxweight" id="quantityxweight" value="1" [% IF AUTO_QUANTITYxWEIGHT_SELECT %] CHECKED [% END %]/><span><label for="quantityxweight">Multiply Qty*Weight</label></span></label></td>
+			[% IF default_packing_list %]
+			<td><label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span><label for="printpackinglist">Print Packing List</label></span></label></td>
+			[% END %]
+			<td><label>Total Weight:</label></td>
+			<td><input type="text" class="bold-text" style="border: none; width: 40px;" id="totalweight" name="totalweight" value="0.00" readonly /></td>
+			<td><label>Total Packages:</label></td>
+			<td><input type="text" class="bold-text" style="border: none; width: 20px;" id="totalpackages" name="totalpackages" value="1" readonly /></td>
+			<td><label for="insurance">Declared Value:</label></td>
+			<td><input type="text" name="insurance" id="insurance" value="[% insurance ? insurance : '0.00' %]" style="width: 40px;"/></td>
+			<td><label for="freightinsurance">Freight Insurance:</label></td>
+			<td><input type="text" name="freightinsurance" id="freightinsurance" value="[% freightinsurance ? freightinsurance : '0.00' %]" style="width: 40px;"/></td>
+		</tr>
+	</table>
+	<br>
+[% END %]
+
+[% IF one_page %]
+	<ul class="sortable css3-checkboxes" id="package-detail-list">
+		<li class="ui-state-fixed">
+		<table style="font-size: 9px">
+			<tr>
+				<th style="width: 01%"><label><input type="checkbox" id="all_packages" /><span></span></label></th>
+				<th style="width: 04%">QTY</th>
+				<th style="width: 04%">SKU#</th>
+				<th style="width: 11%">Description</th>
+				<th style="width: 10%">Type</th>
+				<th style="width: 07%">Weight</th>
+				<th style="width: 07%">Dim Weight</th>
+				<th style="width: 05%">Length</th>
+				<th style="width: 05%">Width</th>
+				<th style="width: 05%">Height</th>
+				<th style="width: 07%">Density</th>
+				<th style="width: 05%">NMFC</th>
+				<th style="width: 05%">Class</th>
+				<th style="width: 07%">Dec. Value</th>
+				<th style="width: 07%">Freight Ins.</th>
+			</tr>
+		</table>
+		</li>
+
+	[% IF package_detail_section %]
+		[% package_detail_section %]
+	[% ELSE %]
+		<li id="new_package_1" class="ui-state-package ui-state-fixed">
+			<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+			<table>
+			<tr>
+				<td style="width: 01%"><input  type="hidden" name="type_1" id="type_1" value="package"/><label><input type="checkbox" id="ppd_1" value="package"/><span></span></label></td>
+				<td style="width: 04%"><input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" value="1"/></td>
+				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_1" id="sku_1"/></td>
+				<td style="width: 11%"><input  type="text" class="broad-text" name="description_1" id="description_1"/></td>
+				<td style="width: 10%"><select name="unittype_1" id="unittype_1">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"/></td>
+				<td style="width: 07%"><input  type="text" name="density_1" id="density_1"/></td>
+				<td style="width: 05%"><input  type="text" name="nmfc_1" id="nmfc_1"/></td>
+				<td style="width: 05%"><input  type="text" name="class_1" id="class_1"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1" value="0.00"/></td>
+			</tr>
+			</table>
+		</li>
+		<li id="new_product_2" class="ui-state-product">
+			<input type="hidden" id="rownum_id_2" name="rownum_id_2" value="2"/>
+			<table>
+			<tr>
+				<td style="width: 01%"><input  type="hidden" name="type_2" id="type_2" value="product"/><label><input type="checkbox" id="ppd_2" value="product"/><span></span></label></td>
+				<td style="width: 04%"><input  type="text" class="total_pkg_detail float-right" name="quantity_2" id="quantity_2" value="1"/></td>
+				<td style="width: 04%"><input  type="text" class="sku_id" name="sku_2" id="sku_2"/></td>
+				<td style="width: 11%"><input  type="text" class="broad-text" name="description_2" id="description_2"/></td>
+				<td style="width: 10%"><select name="unittype_2" id="unittype_2">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_product_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="weight_2" id="weight_2"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="dimweight_2" id="dimweight_2"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimlength_2" id="dimlength_2"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimwidth_2" id="dimwidth_2"/></td>
+				<td style="width: 05%"><input  type="text" class="total_pkg_detail" name="dimheight_2" id="dimheight_2"/></td>
+				<td style="width: 07%"><input  type="text" name="density_2" id="density_2"/></td>
+				<td style="width: 05%"><input  type="text" name="nmfc_2" id="nmfc_2"/></td>
+				<td style="width: 05%"><input  type="text" name="class_2" id="class_2"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail" name="decval_2" id="decval_2" value="0.00"/></td>
+				<td style="width: 07%"><input  type="text" class="total_pkg_detail"  name="frtins_2" id="frtins_2" value="0.00"/></td>
+			</tr>
+			</table>
+		</li>
+	[% END %]
+	</ul>
+[% ELSE %]
+	<ul class="sortable css3-checkboxes" id="package-detail-list">
+		<li id="new_package_1" class="ui-state-fixed">
+		<input type="hidden" id="rownum_id_1" name="rownum_id_1" value="1"/>
+		<input  type="hidden" name="type_1" id="type_1" value="package"/>
+		<table class="app">
+			<tr>
+				<th>QTY</th>
+				<th>Description</th>
+				<th>Type</th>
+				<th>Weight</th>
+				<th>Dim Weight</th>
+				<th>Length</th>
+				<th>Width</th>
+				<th>Height</th>
+				<th>Density</th>
+				<th>Dec. Value</th>
+			</tr>
+			<tr>
+				<td colspan="10">&nbsp;</td>
+			</tr>
+		[% IF package_detail_section %]
+			[% package_detail_section %]
+		[% ELSE %]
+			<tr>
+				<td><input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" value="1" style="width: 50px;"/></td>
+				<td><input  type="text" style="width: 150px;" name="description_1" id="description_1"/></td>
+				<td><select name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
+				<td><input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1" style="width: 50px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1" style="width: 50px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1" style="width: 50px;"/></td>
+				<td><input  type="text" name="density_1" id="density_1" value="0.00" style="width: 100px;"/></td>
+				<td><input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00" style="width: 100px;" onchange="$('#customscommodityvalue').val(this.value);"/></td>
+			</tr>
+		[% END %]
+		</table>
+		</li>
+	</ul>
+[% END %]
+
+	<div style="clear: both;">&nbsp;</div>
+
+	[% IF INTERNATIONAL_AND_COMMODITY %]
+		[% INTERNATIONAL_AND_COMMODITY %]
+		<div style="clear: both;">&nbsp;</div>
+	[% END %]
+
+	<div id="selected-special-requirements" style="display: [% selected_special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes">
+		<h2>Special Services Requested</h2>
+		[% FOREACH item IN selected_special_service_loop %]
+			<div id='div_[% item.value %]' style='display: inline'><label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" CHECKED/><span><label for="[% item.value %]">[% item.name %]</label></span></label></div>
+		[% END %]
+		<script>
+		$("#selected-special-requirements input:checkbox").click(function () {
+			if (!$(this).is(':checked')) {
+				$("#td_" + this.id).html($("#div_" + this.id).html());
+				$("#div_" + this.id).remove();
+				$("#" + this.id).attr("checked", false);
+				}
+			});
+		</script>
+	</div>
+
+[% UNLESS one_page %]
+	<div class="float-left">
+		<div id="special-requirements"></div>
+		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/>
+	</div>
+
+	<div class="float-right">
+		<table><tr>
+		<td><div class="gray-backward"><input type="button" value="PREVIOUS" onclick="javascript:history.back();"/></div></td>
+		<td>&nbsp;</td>
+		<td><div class="green-forward"><input type="submit" id="quick_ship" value="NEXT STEP"/></div></td>
+		</tr></table>
+	</div>
+</form>
+
+<script src="/static/js/customer-order.js"></script>
+[% END %]
+
+<script>
+
+[% UNLESS one_page %]
+	$("#datetoship").datepicker({
+		minDate: '-0d' });
+
+	[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
+
+	$("#dateneeded").datepicker({
+		minDate: '-0d'
+		});
+
+	$("#dateneeded").change(function() {
+		check_due_date();
+		});
+
+	//$("input[name='deliverymethod']:radio").change(checkDeliveryMethodSection);
+	$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
+[% END %]
+
+	$("#btn_address").click(function() {
+		$("#do").val('address');
+		$("#frm_shipment").submit();
+		});
+
+	$(document).on('change', '.total_pkg_detail', function() {
+
+		var row_ID = this.id.split('_')[1];
+
+		calculate_total_weight(row_ID);
+		calculate_total_packages();
+		calculate_total_freight_insurance();
+		calculate_total_declared_value_insurance();
+		calculate_density(row_ID);
+		setCustomsCommodityValue();
+		});
+
+	$(document).on('change', '.sku_id', function() {
+		var row_num = this.id.replace(/^sku_/, "");
+		setSkuDetails(row_num, this.value)
+
+		calculate_total_weight();
+		calculate_total_packages();
+		});
+
+	$("#all_packages").click(function() {
+
+		if ($(this).is(':checked'))
+			$("#package-detail-list input:checkbox[name^='type_']").attr('checked', true);
+		else
+			$("#package-detail-list input:checkbox[name^='type_']").attr('checked', false);
+
+		//$("#package-detail-list input:checkbox[name^='type_']").each(function(){ $(this).attr('checked', $("#all_packages").is(':checked')); });
+		});
+
+	$("#add_package_product").click(function() {
+
+		resetCSList();
+
+		var type='';
+		$('#package-detail-list input:checkbox:checked').each(function(){
+			if (type == 'package' || type == 'product') return;
+			type = $(this).val();
+			});
+		if (type == '') type = 'product';
+		add_pkg_detail_row(type);
+		});
+
+	$("#delete_package_product").click(function() {
+
+		resetCSList();
+
+		$('#package-detail-list input:checkbox:checked').each(function(){
+			var row_id = this.id.split('_')[1];
+			if (row_id == 1) return; // First package should not be removed
+			$("#new_" + $(this).val() + "_" + row_id).remove();
+			});
+
+		calculate_total_weight();
+		calculate_total_packages();
+		calculate_total_declared_value_insurance();
+		calculate_total_freight_insurance();
+		setCustomsCommodityValue();
+		});
+
+	$("#package-detail-list").sortable({
+					items: "li:not('.ui-state-fixed')",
+					start: function (event, ui) {
+								var old_position = $("#package-detail-list li").index(ui.item)
+								ui.item.data("old", old_position)
+								},
+					stop: update_package_product_details
+					});
+
+	$('#quantityxweight').click(calculate_total_weight);
+
+	$('#insurance').change(distribute_insurance_among_products);
+	$('#freightinsurance').change(distribute_insurance_among_products);
+
+[% UNLESS one_page %]
+	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+	[% END %]
+
+	$("#frm_shipment").submit(function() {
+		if ($("#do").val() == 'address') return true;
+		[% IF one_page %]update_package_product_sequence();[% END %]
+		return validateForm(requiredFieldHash);
+		});
+
+	$(document).ready(function(){
+		[% IF tooltips %]
+		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+		setToolTip();
+		[% END %]
+
+		setCustomsCommodityValue();
+		});
+[% END %]
+
+</script>

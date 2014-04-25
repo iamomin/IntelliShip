@@ -869,14 +869,14 @@ sub packages
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '2000', datatypeid => '1000' };
-	return $self->packprodata($WHERE);
+	return $self->packprodata($WHERE, { order_by => 'datecreated' });
 	}
 
 sub products
 	{
 	my $self = shift;
 	my $WHERE = { ownertypeid => '2000', datatypeid => '2000' };
-	return $self->packprodata($WHERE);
+	return $self->packprodata($WHERE, { order_by => 'datecreated' });
 	}
 
 sub package_details
@@ -997,6 +997,13 @@ sub is_international
 	my $OA = $self->origin_address;
 	my $DA = $self->destination_address;
 	return ($OA->country ne $DA->country);
+	}
+
+sub has_pickup_request
+	{
+	my $self = shift;
+	my $RS = $self->assdata({ assname => 'pickupreq' });
+	return $RS->count;
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

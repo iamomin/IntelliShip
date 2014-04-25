@@ -1,54 +1,30 @@
 [% UNLESS one_page %]
-<h2>SHIP A PACKAGE</h2>
+	<h2>SHIP A PACKAGE</h2>
 
-<table class="order-nav">
-	<tr>
-	<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
-	<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="$('#frm_address').submit();"/></td>
-	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="reviewOrder();"/></td>
-	</tr>
-	<tr>
-	<td colspan="3">
-		<div style="position: relative;">
-			<hr class="solid-line"/>
-			<img style="z-index: 1; float: left; margin-left:14%;" src="/static/branding/[% branding_id %]/images/navigation-down.png">
-		</div>
-	</td>
-	</tr>
-</table>
-
-<form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
-	<input type="hidden" id="do" name="do" value="step1"/>
-	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
-[% END %]
-[% IF one_page %]
-	<table width="100%">
+	<table class="order-nav">
 		<tr>
-			<td width="9%">
-			<label for="ordernumber" class="small_title">Order Number:</label>
-			</td>
-			<td>
-			<input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/>
-			</td>
-			[% IF shipmenttype_loop %]
-			<td>
-				<table class="float-right css3-radios">
-					<tr>
-					[% FOREACH item IN shipmenttype_loop %]
-						<td>
-						<label>
-						<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
-						<span><label for="[% item.value %]">[% item.name %]</label></span>
-						</label>
-						</td>
-					[% END %]
-					</tr>
-				</table>
-			</td>
-			[% END %]
+		<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
+		<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="$('#frm_address').submit();"/></td>
+		<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="reviewOrder();"/></td>
+		</tr>
 		<tr>
+		<td colspan="3">
+			<div style="position: relative;">
+				<hr class="solid-line"/>
+				<img style="z-index: 1; float: left; margin-left:14%;" src="/static/branding/[% branding_id %]/images/navigation-down.png">
+			</div>
+		</td>
+		</tr>
 	</table>
+
+	<form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
+		<input type="hidden" id="do" name="do" value="step1"/>
+		<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+		<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
+[% END %]
+
+[% IF one_page %]
+	<h2>Address Information</h2>
 [% END %]
 	<!--
 		<div class="notice">Enter the recipient's (SHIP TO) address [% one_page ? 'and Shipment ' : '' %]details</div>
@@ -324,7 +300,7 @@ $("#tozip").change(function() {
 
 $("#dateneeded").change(function() {
 	resetCSList();
-	check_due_date();
+	checkDueDate();
 	});
 
 $("input[name='deliverymethod']").click(checkDeliveryMethodSection);

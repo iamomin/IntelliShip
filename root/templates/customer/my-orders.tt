@@ -138,10 +138,10 @@
 		});
 
 	$('#filter').keyup(function(event) {
-		var keycode = (event.keyCode ? event.keyCode : event.which);
-		if(keycode == '13') {
-			send_ajax_request('myOrders', 'HTML', 'myorders', '', $("#frm_my_ordres").find("input[type='checkbox'], #filter, #view").serialize());
-			}
+		//var keycode = (event.keyCode ? event.keyCode : event.which);
+		//if(keycode == '13') {
+		send_ajax_request('myShipments', 'HTML', 'myorders', '', $("#frm_my_ordres").find("input[type='checkbox'], #filter, #view").serialize());
+		//	}
 		});
 
 	$("#instant-filter-columns").click(function() {
@@ -183,7 +183,7 @@
 
 		$("#coids").change(function () {
 			var query_param = "view=" + $("#view").val() + "&coids=" + $("#coids").val();
-			send_ajax_request('myOrders', 'HTML', 'myorders', '', query_param);
+			send_ajax_request('myShipments', 'HTML', 'myorders', '', query_param);
 			});
 
 		$('#frm_my_ordres').submit(function() {

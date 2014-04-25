@@ -17,7 +17,26 @@ body {
     color: #4B4B4B;
 }
 
+ol, ul {
+    list-style: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: "";
+}
+
+blockquote, q {
+    quotes: "" "";
+}
+
+button { cursor: pointer }
+
 a {
+    /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
+    -webkit-transition: all 0.3s ease-in; 
+    -moz-transition: all 0.3s ease-in;
+    -o-transition: all 0.3s ease-in; 
     text-decoration: none;
     color: #1875BA;
 }
@@ -25,6 +44,11 @@ a {
 a:hover {
     text-decoration: underline;
     color: #555;
+    outline: 0;
+}
+
+a:focus {
+    outline: thin dotted;
 }
 
 a:active { /* Improves readability when focused and also mouse hovered in all browsers people.opera.com/patrickl/experiments/keyboard/test */
@@ -34,6 +58,10 @@ a:active { /* Improves readability when focused and also mouse hovered in all br
 img { border: none; vertical-align: middle }
 
 #wrapper {
+}
+
+#clear {
+    clear: both;
 }
 
 #preload {
@@ -55,6 +83,10 @@ img { border: none; vertical-align: middle }
 
 .require {
     color: #A22827;
+}
+
+.site-branding {
+    display:none;
 }
 
 /* Centered 1000 pixel content of all section body */
@@ -98,6 +130,87 @@ img { border: none; vertical-align: middle }
     cursor: pointer;
     background-color: #98A7AF;
     position:absolute;
+}
+
+
+#header nav {
+    margin: 15px 25px;
+    max-width: 500px;
+    float: right;
+}
+
+#header nav ul ul {
+    display: none;
+    background-color: #FFF;
+}
+
+#header nav ul li:hover > ul {
+    display: block;
+}
+
+#header nav a {
+    display: block;
+    color: #1875BA;
+    font: bold 10px Arial;
+    text-decoration: none;
+}
+
+#header nav a span {
+    font: bold 12px Arial;
+    padding: 0 10px; 
+    color: #FFF;
+}
+
+#header nav a:hover {
+    text-decoration: none;
+}
+
+#header nav ul {
+    position: relative;
+    display: inline-table;
+}
+
+#header nav ul:after {
+    content: ""; clear: both; display: block;
+}
+
+#header nav ul li {
+    float: left;
+}
+
+#header nav ul li a {
+    padding-bottom: 10px 30px 10px 10px;
+}
+
+#header nav ul ul {
+    border: 1px solid #1875BA;
+    position: absolute;
+    top: 100%;
+}
+
+#header nav ul ul li {
+    float: none;
+    position: relative;
+    white-space: nowrap;
+}
+
+#header nav ul ul li a {
+    padding: 10px 20px;
+}
+
+#header nav ul ul li a:hover {
+    color: #9AA4AD;
+    background: #F5F5F5;
+}
+
+#header nav ul ul li hr {
+    margin: 0 auto;
+    color: #CCC;
+    width: 90%;
+}
+
+#header nav ul ul ul {
+    position: absolute; left: 100%; top:0;
 }
 
 /* Menu */
@@ -259,6 +372,13 @@ label {
     white-space: nowrap;
 }
 
+table { margin: 0; padding: 0; border-spacing: 0px; }
+table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
+table td { padding: 3px; }
+table a { text-align: center; }
+
+h1 table td { font-size: 12px; font-weight: normal }
+
 #equal {display: table; width: 100%}
 #row {display: table-row; width: 100%}
 #row table {min-height: 100px}
@@ -269,14 +389,112 @@ label {
 #row div.ship-to {display: table-cell; padding: 0 10px;vertical-align: top}
 #row div.ship-info {display: table-cell; padding-left: 10px;vertical-align: top}
 
-table { margin: 0; padding: 0; border-spacing: 0px; }
-table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
-table td { padding: 3px; }
-table a { text-align: center; }
-
-#package-detail-list table {padding: 10px 0;border-spacing: 0px; text-align: center}
+#package-detail-list table {padding: 10px 0; border-spacing: 0px; text-align: center}
 #package-detail-list table th {color: #FFF; background: #9BA7AF; text-transform: uppercase; white-space: nowrap}
 #package-detail-list table td {padding: 0; text-align: center}
+
+green { color: #5DBD53; font-weight: normal; }
+
+table.package { width: 1000px; margin: 10px 0; padding: 0; border-spacing: 0px; text-align: center; font-weight: bold; background: #9BA7AF; }
+table.package th { padding: 5px; color: #9BA7AF; background: #EEE; text-align: left; text-transform: capitalize; white-space: nowrap }
+table.package td { padding: 5px; color: #FFF; text-align: left; text-transform: capitalize; white-space: nowrap }
+table.package td.spacer { border-left: 1px solid #bbb }
+table.package td.product { background: #FFF; border: 4px solid #9BA7AF }
+table.package a :hover { text-decoration: none }
+
+table.shipment-summary { width: 1000px; margin: 10px 0; border-spacing: 0px; text-align: center}
+table.shipment-summary th { padding: 5px; color: #FFF; background: #5DBD53; text-transform: capitalize; white-space: nowrap }
+table.shipment-summary td { padding: 10px; white-space: nowrap; text-align: right }
+table.shipment-summary td.details { border: 4px solid #5DBD53;}
+table.shipment-summary td.total { background: #EEE;}
+
+table.shipment-summary table td { padding: 0 }
+
+#shipment-summary-div table { background: #FFF; border-spacing: 0px; text-align: left; white-space: nowrap }
+#shipment-summary-div table th { padding: 5px; background: #FFF; color: #5DBD53; text-transform: capitalize }
+#shipment-summary-div table td { padding: 0 5px }
+
+.small-text { width: 50px; }
+.full-width { width: 100% }
+
+button.left-rounded-btn   { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 10px 0 0 10px; border-radius: 10px 0 0 10px; font: bold 11px Arial; cursor: pointer }
+button.right-rounded-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
+button.green { color: #FFF; background: #5DBD53 }
+
+.round-black-button { 
+    padding: 1px 4px;
+    display: inline;
+    width:10px;
+    height:10px;
+    border: 2px solid #f5f5f5;
+    border-radius: 50%;
+    color:#f5f5f5;
+    text-align:center;
+    text-decoration:none;
+    background: #464646;
+    box-shadow: 0 0 3px gray;
+    font: bold 11px Arial;
+}
+.round-black-button:hover { background: #262626 }
+.round-green-button {
+    padding: 1px 4px;
+    display: inline;
+    width:15px;
+    height:15px;
+    line-height:10px;
+    border-radius: 50%;
+    color: #FFF;
+    text-align:center;
+    background: #5DBD53;
+    font: bold 14px Arial;
+}
+.round-green-button:hover {
+    background: #296F32;
+    color: #FFF;
+}
+
+.long-rounded-button {
+    padding: 5px 10px 5px 5px;
+    height: 30px;
+    display: inline;
+    border: 2px solid #FFF;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    color: #FFF;
+    text-align: center;
+    text-decoration:none;
+    background: #5DBD53;
+    box-shadow: 0 0 3px gray;
+    font: bold 11px Arial;
+}
+
+.long-rounded-button span {
+    display: inline;
+    padding: 0 3px;
+    width:15px;
+    height:15px;
+    line-height:10px;
+    border-radius: 50%;
+    color: #5DBD53;
+    text-align:center;
+    background: #FFF;
+    font: bold 14px Arial;
+}
+
+.long-rounded-button:hover {
+    background: #296F32;
+    color: #FFF;
+}
+
+.long-rounded-button reload {
+    width: 24px;
+    height: 18px;
+    padding: 0;
+    color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    background: url("/static/branding/engage/images/command-refresh-24.png") no-repeat center center;
+}
 
 table.center { width: auto; padding: 10px; margin: 10px auto; text-align: center; }
 
@@ -618,6 +836,8 @@ input {
     vertical-align: inherit;
 }
 
+input, select, textarea { color: #595959 }
+
 input.text {
     width: 160px;
 }
@@ -629,6 +849,27 @@ input.broad-text {
 input.invisible {
     border: none;
 }
+
+#weight-with-unit input {
+    display: block;
+    float: left;
+    background: #FFF;
+    width: 200px;
+    margin-left: 30px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-appearance: textfield;
+    }
+
+#weight-with-unit label {
+    margin: 2px 0 0 133px;
+    position: absolute;
+    display: block;
+    padding: 1px 10px;
+    background: #EEE;
+    color: #9BA7AF;
+    }
 
 /* Buttons */
 
@@ -832,6 +1073,14 @@ input.orange  {
 #carrier-service-list.ui-tabs { margin: 0; padding: 0; }
 #carrier-service-list.ui-tabs-nav { margin: 0; padding: 0; }
 #carrier-service-list.ui-widget-header { background-color: #FFF; border: none; }
+
+/* Company Management Setup - Branding Tab Styling */
+#branding .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 11em; height: 500px }
+#branding .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0 }
+#branding .ui-tabs-nav li a { display: block }
+#branding .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-bottom-width: 1px; border-right-width: 1px }
+#branding .ui-tabs-panel { padding: 1em; float: left; width: 55em }
+#branding .ui-widget-header { background:#bfbfbf !important }
 
 .float-right {float: right;}
 .float-left {float: left;}

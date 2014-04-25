@@ -75,6 +75,7 @@ sub setup :Local
 	my $Customer = $self->get_customer;
 	if ($Customer)
 		{
+		$params->{'customerid'} = $Customer->customerid unless $params->{'customerid'};
 		#$c->log->debug("CUSTOMER DUMP: " . Dumper $Customer->{'_column_data'});
 		$c->stash($Customer->{'_column_data'});
 		$c->stash->{customerAddress} = $Customer->address;
@@ -163,6 +164,9 @@ sub setup :Local
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 
 	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
+
+	$self->get_branding_settings;
+	$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);;
 
 	$c->stash->{SETUP_CUSTOMER} = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
@@ -466,8 +470,12 @@ sub get_HTML_DATA :Private
 		{
 		$self->get_customer_contacts;
 		}
+	elsif ($action eq 'get_branding_settings')
+		{
+		$self->get_branding_settings;
+		}
 
-	$c->stash(template => "templates/customer/settings-company.tt");
+	$c->stash(template => "templates/customer/settings-company.tt") unless $c->stash->{template};
 	}
 
 sub get_JSON_DATA :Private
@@ -493,6 +501,10 @@ sub get_JSON_DATA :Private
 		my $arr = [];
 		push(@$arr, $_->[0]) foreach @{$sth->query_data};
 		return $c->response->body(IntelliShip::Utils->jsonify($arr));
+		}
+	elsif ($action eq 'update_branding_settings')
+		{
+		$dataHash = $self->update_branding_settings;
 		}
 
 		#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
@@ -529,6 +541,190 @@ sub validate_customer_username :Private
 
 	return { COUNT => $c->model('MyDBI::Customer')->search($WHERE)->count };
    }
+
+sub get_branding_settings :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{fontsize_loop} = $self->get_select_list('FONT_SIZE');
+
+	my $customer_css = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/css/' . $params->{'customerid'} . '.css';
+
+	my $INPUT = new IO::File;
+
+	my $BRANDING_CSS = '';
+	if (open $INPUT, $customer_css)
+		{
+		$BRANDING_CSS .= $_ while <$INPUT>;
+		close $INPUT;
+		}
+	else
+		{
+		$c->log->debug("Branding CSS not found '$customer_css'");
+		}
+
+	my $custom_styles;
+	if ($BRANDING_CSS =~ /\/\*custom_css_start\*\/(.*?)\/\*custom_css_end\*\//s)
+		{
+		$custom_styles = $1;
+		$c->log->debug("custom_styles: " . $custom_styles);
+		}
+
+	$c->stash->{stylesetting_loop} = $self->get_style_setting_list($custom_styles);
+
+	# IDENTIFY AND CLEAR THE OLD CUSTOM CSS CLASSES.
+	my $custom_css_start_line = "/*custom_css_start*/";
+	my $custom_css_end_line = "/*custom_css_end*/";
+
+	$custom_styles = $custom_css_start_line . $custom_styles . $custom_css_end_line;
+	$c->log->debug("old_styles: " . $custom_styles);
+	$BRANDING_CSS =~ s/\Q$custom_styles\E//g;
+
+	$c->stash->{BRANDING_CSS} = $BRANDING_CSS;
+	$c->stash->{BASE_URL} = $c->request->base;
+	$c->stash(template => "templates/customer/settings-company-branding.tt");
+	}
+
+sub get_style_setting_list
+	{
+	my $self = shift;
+	my $CUSTOM_STYLE_DATA = shift;
+	my $c = $self->context;
+
+	my $CUSTOM_CSS_RULES = IntelliShip::Utils->get_custome_css_style_hash;
+	my $css_contents;
+
+	foreach my $style (@$CUSTOM_CSS_RULES)
+		{
+		if ($CUSTOM_STYLE_DATA =~ /$style->{section}[0]\{(.*?)\}/s) {
+			$css_contents = $1;
+			$css_contents =~ s/\n\t\s*//g; # Remove new line character, tabs and spaces
+			$c->log->debug("css_contents:" . $css_contents);
+			my $values = {};
+			foreach my $element (split(';', $css_contents))
+				{
+				my @attribute_arr = split(/:/, $element);
+				if ($attribute_arr[0] eq 'background')
+					{
+					$values->{bgcolor} = $attribute_arr[1];
+					$values->{bgcolor} =~ s/\ *#//;
+					}
+				elsif ($attribute_arr[0] eq 'color')
+					{
+					$values->{color} = $attribute_arr[1];
+					$values->{color} =~ s/\ *#//;
+					}
+				elsif ($attribute_arr[0] eq 'font-size')
+					{
+					$values->{size} = $attribute_arr[1];
+					$values->{size} =~ s/\s*px//;
+					$values->{size} =~ s/^\s+//;
+					}
+				}
+			$style->{values} = $values;
+			}
+		}
+	$c->log->debug("CUSTOM_CSS_STYLES: " . Dumper @$CUSTOM_CSS_RULES);
+	return $CUSTOM_CSS_RULES;
+	}
+
+sub update_branding_settings :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $Customer = $self->get_customer;
+
+	my $CSS_CONTENT = $params->{'custom-style-sheet'};
+	my $CustomerCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/css/' . $params->{'customerid'} . '.css';
+
+	my $FILE = new IO::File;
+	unless (open ($FILE,">$CustomerCss"))
+		{
+		return { SUCCESS => 0, error => "Unable to open branding css" };
+		}
+
+	print $FILE $CSS_CONTENT;
+
+	print $FILE "\n/*custom_css_start*/\n";
+
+	my $css_contents;
+	my $CUSTOM_CSS_RULES = IntelliShip::Utils->get_custome_css_style_hash;
+	foreach my $style_list (@$CUSTOM_CSS_RULES)
+		{
+		foreach my $style (@{ $style_list->{section }})
+			{
+			$css_contents = $style . "{";
+			$css_contents .= "$_\n" . "\tbackground: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
+			$css_contents .= "$_\n" . "\tcolor: " . $params->{"$style_list->{font}"} . ";" if $params->{"$style_list->{font}"};
+			$css_contents .= "$_\n" . "\tfont-size: " . $params->{"$style_list->{size}"} . "px;" if $params->{"$style_list->{size}"};
+
+			unless ($css_contents eq $style . "{")
+				{
+				$css_contents .= "$_\n" . "}$_\n\n";
+				print $FILE $css_contents ;
+				$css_contents = '';
+				}
+			}
+		}
+
+	print $FILE "\n/*custom_css_end*/\n";
+	close $FILE;
+
+	return { SUCCESS => 1, MESSAGE => "Updated successfully..." };
+	}
+
+sub brandingdemo :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{BRANDING_DEMO_CSS} = $params->{'id'};
+
+	my $CO = IntelliShip::Controller::Customer::Order->new;
+	$CO->context($c);
+	$CO->contact($self->contact);
+	$CO->customer($self->contact->customer);
+	$CO->quickship;
+
+	$self->customer($c->model('MyDBI::Customer')->find({ customerid => $params->{'id'} }));
+
+	$c->stash(template => "templates/customer/order-one-page-v1.tt");
+	}
+
+sub upload :Local
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Customer = $self->get_customer;
+	unless ($Customer)
+		{
+		$c->log->debug("Customer not found");
+		return;
+		}
+
+	my $Upload = $c->request->upload('Filedata');
+	unless ($Upload)
+		{
+		$c->log->debug("File to be uploaded is not provided");
+		return;
+		}
+
+	my $FILE_name = $Customer->username . '-' . $params->{'type'} . '-logo.png';
+	my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $FILE_name;
+	$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
+
+	if ($Upload->copy_to($FullPath))
+		{
+		$c->log->debug("File Upload Path, " . $FullPath);
+		}
+	}
 
 sub get_customer
 	{

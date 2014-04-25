@@ -105,6 +105,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->add_pkg_detail_row;
 		}
+	elsif ($action eq 'add_package_product_row')
+		{
+		$dataHash = $self->add_package_product_row;
+		}
 	elsif ($action eq 'get_freight_class')
 		{
 		$dataHash = $self->get_freight_class;
@@ -331,12 +335,12 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
+			my $SC_charge = $self->populate_special_services_charge($SHIPMENT_CHARGE_DETAILS,$customerserviceid,$freightcharges);
+
 			$CS_charge_details->{$customerserviceid} = "Freight Charge:$freightcharges|Fuel Surcharge:$fuelcharges|Declared Value Insurance Charge:$DVI_Charge|Freight Insurance Charge:$FI_Charge";
 
-			#$detail_hash->{'freight_charge'} = $freightcharges || '0';
 			$detail_hash->{'freight_charge'} = sprintf("%.2f",($freightcharges || '0'));
-			#$detail_hash->{'other_charge'} = ($fuelcharges+$DVI_Charge+$FI_Charge) || '0';
-			$detail_hash->{'other_charge'} = sprintf("%.2f",(($fuelcharges+$DVI_Charge+$FI_Charge) || '0'));
+			$detail_hash->{'other_charge'} = sprintf("%.2f",(($fuelcharges+$DVI_Charge+$FI_Charge+$SC_charge) || '0'));
 
 			#if ($detail_hash->{'shipment_charge'} =~ /Quote/)
 			#	{
@@ -354,7 +358,7 @@ sub get_carrier_service_list
 		($detail_hash->{'shipment_charge'} =~ /\d+/ and $detail_hash->{'shipment_charge'} > 0) ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
 		}
 
-	$c->stash->{CARRIERSERVICE_LIST} = 1;
+	$c->stash->{CARRIER_SERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
 	#$c->log->debug("CS_list_1: ". Dumper($CS_list_1));
@@ -557,6 +561,34 @@ sub calculate_freight_insurance
 	return 0;
 	}
 
+sub populate_special_services_charge
+	{
+	my $self = shift;
+	my $SHIPMENT_CHARGE_DETAILS = shift;
+	my $csid = shift;
+	my $freightcharges = shift;
+
+	my $c = $self->context;
+	my $Customer = $self->customer;
+
+	my $CO = $self->get_order;
+
+	my @arr = $CO->assessorials;
+	$c->log->debug("Total special services selected ".@arr);
+
+	my $SC_charge = 0;
+	foreach my $AssData (@arr)
+		{
+		my $chargeDetails = $self->API->get_assessorial_charge($csid,$CO->total_weight,$CO->total_quantity,$AssData->assname,$Customer->customerid,$freightcharges);
+		$c->log->debug("CSID: $csid, Service: " . $AssData->assname . ", Charge: " . $chargeDetails->{'value'});
+		next unless $chargeDetails->{'value'};
+		push(@$SHIPMENT_CHARGE_DETAILS, { text => $AssData->assdisplay, value => '$' . sprintf("%.2f",$chargeDetails->{'value'}) });
+		$SC_charge += $chargeDetails->{'value'};
+		}
+
+	return $SC_charge;
+	}
+
 sub get_sku_detail :Private
 	{
 	my $self = shift;
@@ -572,6 +604,7 @@ sub get_sku_detail :Private
 	if ($SkuObj)
 		{
 		$response_hash->{'description'} = $SkuObj->description;
+		$response_hash->{'unittypeid'} = $SkuObj->unittypeid;
 		$response_hash->{'weight'} = $SkuObj->weight;
 		$response_hash->{'length'} = $SkuObj->length;
 		$response_hash->{'width'} = $SkuObj->width;
@@ -652,6 +685,35 @@ sub add_pkg_detail_row :Private
 	return { rowHTML => $row_HTML };
 	}
 
+sub add_package_product_row :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $flag = uc($params->{'detail_type'}) . '_DETAIL_ROW';
+
+	$c->stash($params);
+	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
+		{
+		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
+		}
+
+	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
+	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
+	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
+	$c->stash->{PACKAGE_INDEX} = $params->{'row_ID'} || 1;
+	$c->stash->{ROW_COUNT} = $params->{'row_ID'} || 1;
+	$c->stash->{one_page} = 1;
+	$c->stash->{$flag} = 1;
+
+	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
+
+	$c->stash->{$flag} = 0;
+
+	return { rowHTML => $row_HTML };
+	}
+
 sub set_third_party_delivery
 	{
 	my $self = shift;
@@ -711,6 +773,11 @@ sub mark_shipment_as_printed
 	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}, coid => $params->{coid} });
 	$Shipment->statusid('100'); ## Printed
 	$Shipment->update;
+
+	if ($Shipment->has_pickup_request)
+		{
+		$self->send_pickup_request($Shipment);
+		}
 
 	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
 

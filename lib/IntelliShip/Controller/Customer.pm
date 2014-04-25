@@ -506,7 +506,7 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'WEIGHT_TYPE')
 		{
-		my @records = $c->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypename'});
+		my @records = $c->model('MyDBI::Weighttype')->search({}, {order_by => 'weighttypeid'});
 		foreach my $WeightType (@records)
 			{
 			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });
@@ -837,9 +837,9 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => '0' , name => 'Prepaid' },
-			{ value => '1' , name => 'Collect' },
-			{ value => '2' , name => '3rd Party' },
+			{ value => '0' , name => 'Bill To Shipper (Prepaid)' },
+			{ value => '1' , name => 'Bill To Recipient (Collect)' },
+			{ value => '2' , name => 'Bill To 3rd Party (3rd Party)' },
 			];
 		}
 	elsif ($list_name eq 'RECORDS_PER_PAGE')
@@ -983,6 +983,12 @@ sub get_select_list
 			{ name => '50%', value => '1.5'  },
 			];
 		}
+	elsif ($list_name eq 'CLASS')
+		{
+		push @$list, { name => 'NA', value => ''};
+		my @classes = qw(50 55 60 65 70 75.5 85 92.5 100 110 125 150 175 200 250 300 400 500);
+		push @$list, { name => $_, value => $_} foreach @classes;
+		}
 	elsif ($list_name eq 'LABEL_TYPE')
 		{
 		$list = [
@@ -1017,6 +1023,21 @@ sub get_select_list
 			{ name => 'Bill' ,            value => '1' },
 			{ name => 'Bill Recipient',   value => '2' },
 			{ name => 'Bill Third Party', value => '3' },
+			];
+		}
+	elsif ($list_name eq 'FONT_SIZE')
+		{
+		$list = [
+			{ name =>  '',  value =>  '0' },
+			{ name => '10', value => '10' },
+			{ name => '11', value => '11' },
+			{ name => '12', value => '12' },
+			{ name => '13', value => '13' },
+			{ name => '14', value => '14' },
+			{ name => '15', value => '15' },
+			{ name => '16', value => '16' },
+			{ name => '18', value => '18' },
+			{ name => '20', value => '20' },
 			];
 		}
 
@@ -1092,9 +1113,9 @@ sub set_header_section
 	my $c = $self->context;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
-	my $company_logo = $Customer->username . '-logo.png';
+	my $company_logo = $Customer->username . '-light-logo.png';
 	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $company_logo;
-	$company_logo = 'engage-logo.png' unless -e $fullpath;
+	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
 	$c->stash->{logo} = $company_logo;
 	}
 

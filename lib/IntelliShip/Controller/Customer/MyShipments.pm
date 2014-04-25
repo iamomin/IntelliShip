@@ -224,7 +224,7 @@ sub get_search_by_term_sql
 			my $filter = $1;
 			my $field = $COLUMN_MAPPING->{$filter};
 			next unless $field;
-			push(@arrSearchByTerm," $field LIKE '%$term%'");
+			push(@arrSearchByTerm," upper($field) LIKE '%" . uc($term) . "%'");
 			}
 		}
 

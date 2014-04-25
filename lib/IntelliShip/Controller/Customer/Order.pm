@@ -58,7 +58,7 @@ sub quickship :Local
 		}
 	}
 
-sub setup_one_page :Private
+sub _setup_one_page :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -79,15 +79,37 @@ sub setup_one_page :Private
 	$self->set_required_fields;
 
 	$self->setup_address;
-	$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
-
 	$self->setup_shipment_information;
-	$c->stash(SHIPMENT_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment.tt" ]));
-
 	$self->setup_carrier_service;
-	$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
 
 	$c->stash(template => "templates/customer/order-one-page.tt");
+	}
+
+sub setup_one_page :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CO = $self->get_order;
+
+	if ($self->order_can_auto_process)
+		{
+		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
+		$self->SHIP_ORDER;
+		return $self->display_error_details($self->errors->[0]) if $self->has_errors;
+		return $self->setup_label_to_print;
+		}
+
+	$c->stash->{one_page} = 1;
+
+	#DYNAMIC FIELD VALIDATIONS
+	$self->set_required_fields;
+
+	$self->setup_address;;
+	$self->setup_shipment_information;
+	$self->setup_carrier_service;
+
+	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 
 sub order_can_auto_process
@@ -130,12 +152,12 @@ sub setup_address :Private
 
 	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
 	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
-	$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
 
 	if ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') ;
+		$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
 		}
 
 	$c->stash->{tooltips} = $self->get_tooltips;
@@ -158,13 +180,21 @@ sub setup_address :Private
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
 	$c->stash->{fromphone}  = $Contact->phonebusiness unless $c->stash->{fromphone};
 
-	$c->stash(template => "templates/customer/order-address.tt");
+	if ($c->action =~ /multipage/)
+		{
+		$c->stash(template => "templates/customer/order-address.tt");
+		}
+	else
+		{
+		$c->stash(ADDRESS_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+		}
 	}
 
 sub setup_shipment_information :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
 
@@ -189,6 +219,7 @@ sub setup_shipment_information :Private
 			$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
 			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
 			$CA->context($c);
+			$CA->contact($self->contact);
 			$CA->set_international_details;
 			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 			$c->stash->{INTERNATIONAL} = 0;
@@ -196,17 +227,41 @@ sub setup_shipment_information :Private
 		}
 
 	$c->stash->{default_packing_list} = $Contact->default_packing_list;
-	$c->stash->{default_package_type} = $Contact->default_package_type;
-	$c->stash->{default_product_type} = $Contact->default_product_type;
 
-	$c->stash->{AUTO_QUANTITYxWEIGHT_SELECT} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
+	if (my $unit_type_id = $Contact->default_package_type)
+		{
+		$c->stash->{default_package_type} = $unit_type_id;
+		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
+		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
+		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
+		}
 
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	$c->stash(template => "templates/customer/order-shipment.tt");
+	if ($c->action =~ /multipage/)
+		{
+		$c->stash(template => "templates/customer/order-shipment.tt");
+		}
+	else
+		{
+		unless ($c->stash->{PACKAGE_DETAIL_SECTION})
+			{
+			$c->log->debug("... setup new package shipment details");
+			$params->{'unittypeid'} = $c->stash->{default_package_type};
+			$params->{'detail_type'} = 'package';
+			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+			$CA->context($c);
+			$CA->contact($self->contact);
+			my $data = $CA->add_package_product_row;
+			$c->stash->{PACKAGE_DETAIL_SECTION} = $data->{rowHTML};
+			}
+		}
+
+	$c->stash->{WEIGHT_TYPE} = $Customer->weighttype || 'LBS';
+	$c->stash->{quantityxweight} = $Contact->get_contact_data_value('auto_select_quantity_x_weight');
 	}
 
 sub setup_carrier_service :Private
@@ -254,7 +309,14 @@ sub setup_carrier_service :Private
 
 	$c->stash->{tooltips} = $self->get_tooltips;
 
-	$c->stash(template => "templates/customer/order-carrier-service.tt");
+	if ($c->action =~ /multipage/)
+		{
+		$c->stash(template => "templates/customer/order-carrier-service.tt");
+		}
+	else
+		{
+		$c->stash(CARRIER_SERVICE_SECTION => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-carrier-service.tt" ]));
+		}
 	}
 
 sub get_shipment_types
@@ -655,7 +717,7 @@ sub save_package_product_details :Private
 
 	unless ($total_row_count)
 		{
-		$c->log->debug("... package/product details not found in request");
+		$c->log->debug("... package/product row count not found in request");
 		return;
 		}
 
@@ -716,39 +778,43 @@ sub save_package_product_details :Private
 
 		$c->log->debug("PackageIndex: " . $PackageIndex);
 
-		my $ownerid     = ($params->{'type_' . $PackageIndex } eq 'product' ? $last_package_id : $CO->coid);
-		my $datatypeid  = ($params->{'type_' . $PackageIndex } eq 'product' ? '2000' : '1000');
-		my $ownertypeid = ($params->{'type_' . $PackageIndex } eq 'product' ? '3000' : '1000');
+		my $ownerid         = ($params->{'type_' . $PackageIndex } eq 'product' ? $last_package_id : $CO->coid);
+		my $datatypeid      = ($params->{'type_' . $PackageIndex } eq 'product' ? '2000' : '1000');
+		my $ownertypeid     = ($params->{'type_' . $PackageIndex } eq 'product' ? '3000' : '1000');
 
-		my $quantity  = $params->{'quantity_' . $PackageIndex} || 0;
-		my $weight    = $params->{'weight_'.$PackageIndex}     || 0;
-		my $dimweight = $params->{'dimweight_'.$PackageIndex}  || 0;
-		my $dimlength = $params->{'dimlength_'.$PackageIndex}  || 0;
-		my $dimwidth  = $params->{'dimwidth_'.$PackageIndex}   || 0;
-		my $dimheight = $params->{'dimheight_'.$PackageIndex}  || 0;
-		my $density   = $params->{'density_' . $PackageIndex}  || 0;
-		my $class     = $params->{'class_' . $PackageIndex}    || 0;
-		my $decval    = $params->{'decval_' . $PackageIndex}   || 0;
-		my $frtins    = $params->{'frtins_'.$PackageIndex}     || 0;
-		my $dryicewt  = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+		my $quantity        = $params->{'quantity_' . $PackageIndex} || 0;
+		my $weight          = ( $params->{'weight_'.$PackageIndex}    ? sprintf("%.2f",$params->{'weight_'.$PackageIndex}):     undef);
+		my $dimweight       = ( $params->{'dimweight_'.$PackageIndex} ? sprintf("%.2f",$params->{'dimweight_'.$PackageIndex}) : undef);
+		my $dimlength       = ( $params->{'dimlength_'.$PackageIndex} ? sprintf("%.2f",$params->{'dimlength_'.$PackageIndex}):  undef);
+		my $dimwidth        = ( $params->{'dimwidth_'.$PackageIndex}  ? sprintf("%.2f",$params->{'dimwidth_'.$PackageIndex}) :  undef);
+		my $dimheight       = ( $params->{'dimheight_'.$PackageIndex} ? sprintf("%.2f",$params->{'dimheight_'.$PackageIndex}) : undef);
+		my $density         = ( $params->{'density_' . $PackageIndex} ? sprintf("%.2f",$params->{'density_' . $PackageIndex}) : undef);
+		my $class           = $params->{'class_' . $PackageIndex} || 0;
+		my $decval          = ( $params->{'decval_' . $PackageIndex}  ? sprintf("%.2f",$params->{'decval_' . $PackageIndex}) :  undef);
+		my $frtins          = $params->{'frtins_'.$PackageIndex} || 0;
+		my $dryicewt        = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+		my $unitofmeasure   = $params->{'unitofmeasure_' . $PackageIndex} || 0;
+		my $quantityxweight = $params->{'quantityxweight_' . $PackageIndex} || 0;
 
 		my $PackProData = {
-				ownertypeid => $ownertypeid,
-				ownerid     => $ownerid,
-				datatypeid  => $datatypeid,
-				boxnum      => $quantity,
-				quantity    => $quantity,
-				unittypeid  => $params->{'unittype_' . $PackageIndex },
-				weight      => sprintf("%.2f", $weight),
-				dimweight   => sprintf("%.2f", $dimweight),
-				dimlength   => sprintf("%.2f", $dimlength),
-				dimwidth    => sprintf("%.2f", $dimwidth),
-				dimheight   => sprintf("%.2f", $dimheight),
-				density     => sprintf("%.2f", $density),
-				class       => sprintf("%.2f", $class),
-				decval      => sprintf("%.2f", $decval),
-				frtins      => sprintf("%.2f", $frtins),
-				dryicewt    => int $dryicewt,
+				ownertypeid     => $ownertypeid,
+				ownerid         => $ownerid,
+				datatypeid      => $datatypeid,
+				boxnum          => $quantity,
+				quantity        => $quantity,
+				unitofmeasure   => $unitofmeasure,
+				unittypeid      => $params->{'unittype_' . $PackageIndex },
+				weight          => $weight,
+				dimweight       => $dimweight,
+				dimlength       => $dimlength,
+				dimwidth        => $dimwidth,
+				dimheight       => $dimheight,
+				density         => $density,
+				class           => $class,
+				decval          => $decval,
+				frtins          => $frtins,
+				dryicewt        => int $dryicewt,
+				quantityxweight => $quantityxweight
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
@@ -762,7 +828,7 @@ sub save_package_product_details :Private
 		$PackProDataObj->packprodataid($self->get_token_id);
 		$PackProDataObj->insert;
 
-		$c->log->debug("New Packprodata Inserted, ID: " . $PackProDataObj->packprodataid);
+		$c->log->debug("New " . uc($params->{'type_'.$PackageIndex}) . " Inserted, ID: " . $PackProDataObj->packprodataid);
 
 		$last_package_id = $PackProDataObj->packprodataid if ($params->{'type_' . $PackageIndex } eq 'package');
 		}
@@ -1044,8 +1110,9 @@ sub populate_order :Private
 	## Package Details
 	if (!$populate or $populate eq 'shipment')
 		{
+		$c->stash->{'ROW_COUNT'} = 0;
 		$c->stash->{'totalweight'} = 0;
-		$c->stash->{'totalpackages'} = 0;
+		$c->stash->{'PACKAGE_INDEX'} = 0;
 
 		my $packages = [];
 		if ($params->{'coids'})
@@ -1068,45 +1135,34 @@ sub populate_order :Private
 		$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
 
 		push @$packages, $_ foreach @CoPackages;
-		$c->log->debug("Total No of packages  " . @$packages);
+		$c->log->debug("Total number of packages " . @$packages);
 
-		my ($rownum_id,$insurance,$freightinsurance) = (0,0,0);
-		my $package_detail_section_html;
-		foreach my $Package (@$packages)
+		if ($c->stash->{one_page})
 			{
-			$rownum_id++;
-			$c->stash->{'totalpackages'}++;
-			$package_detail_section_html .= $self->add_detail_row('package',$rownum_id, $Package);
-
-			# Step 2: Find Product belog to Package
-			my @products = $Package->products;
-			foreach my $Packprodata (@products)
+			my ($insurance,$freightinsurance) = (0,0);
+			my $package_detail_section_html = '';
+			foreach my $Package (@$packages)
 				{
-				$rownum_id++;
-				$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $Packprodata);
+				$package_detail_section_html .= $self->add_package_detail_row($Package);
+
+				$insurance += $Package->decval;
+				$freightinsurance += $Package->frtins;
 				}
 
-			$insurance += $Package->decval;
-			$freightinsurance += $Package->frtins;
+			$c->stash->{insurance} = $insurance;
+			$c->stash->{freightinsurance} = $freightinsurance;
+
+			## Don't move this above foreach block
+			$c->stash->{description} = $CO->description;
+
+			#$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
+			$c->stash->{PACKAGE_DETAIL_SECTION} = $package_detail_section_html;
 			}
-
-		$c->stash->{insurance} = $insurance;
-		$c->stash->{freightinsurance} = $freightinsurance;
-
-		## Don't move this above foreach block
-		$c->stash->{description} = $CO->description;
-
-		# Step 3: Find product belog to Order
-		my @products = $CO->co_products;
-		foreach my $ProductData (@products)
+		else
 			{
-			$rownum_id++;
-			$package_detail_section_html .= $self->add_detail_row('product',$rownum_id, $ProductData);
+			$c->stash($packages->[0]->{_column_data}) if @$packages;
+			$c->stash->{comments} = $CO->description; ##**
 			}
-
-		#$c->log->debug("PACKAGE_DETAIL_SECTION: HTML: " . $package_detail_section_html);
-		$c->stash->{package_detail_section} = $package_detail_section_html;
-		$c->stash->{package_detail_row_count} = $rownum_id;
 		}
 
 	if ($populate eq 'summary')
@@ -1208,10 +1264,65 @@ sub add_detail_row :Private
 	$c->stash->{'dimheight'}   = $PackProData->dimheight;
 	$c->stash->{'density'}     = $PackProData->density;
 
-	$c->stash->{PKG_DETAIL_ROW} = 1;
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+	my $flag = uc($type) . '_DETAIL_ROW';
+	$c->stash->{$flag} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	$c->stash->{PKG_DETAIL_ROW} = 0;
+	$c->stash->{$flag} = 0;
+
+	return $HTML;
+	}
+
+sub add_package_detail_row :Private
+	{
+	my $self = shift;
+	my $Package = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
+	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
+	$c->stash->{'PACKAGE_INDEX'}++;
+
+	## Find Product belog to Package
+	my @products = $Package->products;
+	my $product_HTML = '';
+	foreach my $Product (@products)
+		{
+		$c->stash->{'ROW_COUNT'}++;
+		$c->stash($Product->{_column_data});
+
+		$c->stash->{PRODUCT_DETAIL_ROW} = 1;
+		$product_HTML .= $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
+		$c->stash->{PRODUCT_DETAIL_ROW} = 0;
+		}
+
+	## Shipment Automation Has Entered Weight, Set Package Weight
+	if ($params->{'enteredweight'} and $params->{'enteredweight'} > 0 and $Package->datatypeid == 1000)
+		{
+		$Package->weight($params->{'enteredweight'});
+		}
+	## Shipment Automation Has Entered Package Quantity, Set Package Quantity
+	if ($params->{'quantity'} and $params->{'quantity'} > 0 and $Package->datatypeid == 1000)
+		{
+		$Package->quantity($params->{'quantity'});
+		}
+
+	$c->stash($Package->{_column_data});
+	$c->stash->{'coid'} = $Package->ownerid;
+
+	if (my $UnitType = $Package->unittype)
+		{
+		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
+		}
+
+	$c->stash->{'ROW_COUNT'}++;
+	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
+
+	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
+	$c->stash->{PACKAGE_DETAIL_ROW} = 0;
+
 	return $HTML;
 	}
 
@@ -1980,7 +2091,7 @@ sub setup_label_to_print
 		$c->stash->{toAddress}     = $Shipment->destination_address;
 		$c->stash->{shipdate}      = IntelliShip::DateUtils->date_to_text_long($Shipment->{_column_data}->{dateshipped}); ##**
 		$c->stash->{billingtype}   = ($Shipment->billingaccount ? "3RD PARTY" : "P/P");
-		$c->stash->{dimweight}     = $Shipment->dimweight || 0;
+		$c->stash->{dimweight}     = $Shipment->dimweight;
 		$c->stash->{enteredweight} = $Shipment->total_weight;
 		$c->stash->{totalquantity} = $Shipment->total_quantity;
 		$c->stash->{refnumber}     = $params->{'refnumber'};
@@ -2983,7 +3094,7 @@ sub set_required_fields :Private
 			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $customerRules{'reqdateneeded'};
 			}
 
-		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validate_package_details }"})
+		push(@$requiredList, { name => 'package-detail-list', details => "{ method: validatePackageDetails }"})
 		}
 
 	#$c->log->debug("requiredfield_list: " . Dumper $requiredList);
@@ -3353,8 +3464,12 @@ sub GetComInvPackData
 	$product_data->{'packagedescription'} .= ", $product_data->{'nmfc'}" if $product_data->{'nmfc'};
 	$product_data->{'packagedescription'} .= ", " . $ManufactureCountry if $ManufactureCountry;
 
-	$STH = $self->myDBI->select("SELECT unittypename FROM unittype WHERE unittypeid = '$product_data->{'unittypeid'}'");
-	my $UnitTypeName = ($STH->numrows ? $STH->fetchrow(0)->{'unittypename'} : '');
+	my $UnitTypeName = '';
+	if ($product_data->{'unittypeid'})
+		{
+		$STH = $self->myDBI->select("SELECT unittypename FROM unittype WHERE unittypeid = '$product_data->{'unittypeid'}'");
+		$UnitTypeName = ($STH->numrows ? $STH->fetchrow(0)->{'unittypename'} : '');
+		}
 
 	$product_data->{'packagequantity'}  = $product_data->{'shippedqty'};
 	$product_data->{'packagequantity'} .= " " . $UnitTypeName;
@@ -3872,6 +3987,46 @@ sub generate_commercial_invoice
 	$c->stash(template => "templates/customer/order-commercial-invoice.tt");
 
 	return $ComInvHTML;
+	}
+
+sub send_pickup_request
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	my $c = $self->context;
+	my $CO = $Shipment->CO;
+
+	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+	my $Service         = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+	my $carrier = $Shipment->carrier;
+	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+		{
+		$carrier = &CARRIER_EFREIGHT;
+		}
+	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
+		{
+		$carrier = &CARRIER_GENERIC;
+		}
+
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_PICKUP_REQUEST);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->contact($self->contact);
+	$Handler->carrier($carrier);
+	$Handler->customerservice($CustomerService);
+	$Handler->service($Service);
+	$Handler->CO($CO);
+	$Handler->API($self->API);
+	$Handler->SHIPMENT($Shipment);
+
+	my $Response = $Handler->process_request({
+			NO_TOKEN_OPTION => 1
+			});
+
+	$c->log->debug("....Response: " . $Response);
 	}
 
 __PACKAGE__->meta->make_immutable;
