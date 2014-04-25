@@ -1,0 +1,1 @@
+cd /var/git/IntelliShip && git reset --hard && git pull origin master && chgrp -R nobody * && chmod -R 775 * && /etc/init.d/httpd graceful
