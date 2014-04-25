@@ -653,7 +653,7 @@ function NumericRangeEditor(args) {
 	};
 
 	this.validate = function () {
-		alert(JSON.stringify(args.item.rateids));
+		//alert(JSON.stringify(args.item.rateids));
 		if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
 			return {
 				valid : false,
