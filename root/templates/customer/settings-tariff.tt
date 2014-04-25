@@ -18,7 +18,7 @@
 
 <input type="hidden" name="data" id="data"/>
 <input type="hidden" name="csid" id="csid"/>
-<table style="width: 100%; height: 400px">
+<table style="width: 100%; height: 400px" id="tbl_tariff" style="display:none">
 <tr>
 <td colspan="2">
 	<center>
@@ -70,8 +70,8 @@
 			<tr>
 				<td>
 					<div id="tree_operations">
-						<input type="button" value="Add" onclick="addService();"/>&nbsp;
-						<input type="button" value="Delete" onclick="deleteService();"/>
+						<input type="button" value="Add" onclick="addCustomerService();"/>&nbsp;
+						<input type="button" value="Delete" onclick="deleteCustomerService();"/>
 					</div>
 				</td>
 			</tr>
@@ -141,7 +141,7 @@ function loadServicesTree() {
 			$('#lbl_breadcrumb').html(breadcrumbStr);
 
 		}).jstree({
-			"plugins" : ['themes', 'json_data', 'ui'],
+			"plugins" : ['themes', 'json_data', 'ui', 'state'],
 			"core" : {
 				"animation" : 0,
 				"check_callback" : true,
@@ -162,6 +162,7 @@ function getAllServices() {
 		loadServicesTree();
 		toggleToolbarButtons();
 		$('#lbl_breadcrumb').html($("#customername").val() + " / ");
+		$('#tbl_tariff').show();
 	});
 }
 
@@ -228,12 +229,24 @@ function doAddSelectedServices(){
 	var params = "serviceids=" + JSON.stringify(selectedServiceIds) + "&customerid="+ $("#customerid").val();
 	my_ajax_request('settings/tariff/add_services', params, function () {
 		if (JSON_data.status == "success") {
-			showMessage(JSON_data.message);
-			GRID.invalidate();
+			var msg = JSON_data.message;
+			$('#div_add_service').slideUp('slow');
+			reloadUI();
+			showMessage(msg);
 		} else {
 			showMessage("Failed to update");
 		}
 	});
+}
+
+function reloadUI() {
+	$('#div_add_service').slideUp('slow');
+	$('#services_tree').jstree('destroy');
+	$('#services_tree').html("");
+	$('#operations').hide();
+	$('#serviceIds').hide();
+	$('#myGrid').empty();
+	getAllServices();
 }
 
 function loadServiceInfo() {
@@ -260,7 +273,12 @@ function loadGrid() {
 
 	//Now define your buttonFormatter function
 	var buttonFormatter = function (row, cell, value, columnDef, dataContext) {
-		var button = "<input class='slick-deletebutton' type='button' id='" + dataContext.id + "' />";
+		/*console.log("row: " + JSON.stringify(row));
+		console.log("cell: " + JSON.stringify(cell));
+		console.log("value: " + JSON.stringify(value));
+		console.log("columnDef: " + JSON.stringify(columnDef));
+		console.log("dataContext: " + JSON.stringify(dataContext));*/
+		var button = "<input class='slick-deletebutton' type='button' id='" + dataContext.id + "' onclick='deleteTariffRow(" + row + ")' />";
 		//the id is so that you can identify the row when the particular button is clicked
 		return button;
 		//Now the row will display your button
@@ -313,19 +331,6 @@ function loadGrid() {
 	//GRID.registerPlugin(checkboxSelector);
 	var columnpicker = new Slick.Controls.ColumnPicker(columns, GRID, options);
 
-	//Now you can use jquery to hook up your delete button event
-	$('.slick-deletebutton').click(function () {
-		var me = $(this),
-		id = me.attr('id');
-		window.confirm("Deletes are irrevocable. Do you want to delete " + id + "?");
-		//assuming you have used a dataView to create your grid
-		//also assuming that its variable name is called 'dataView'
-		//use the following code to get the item to be deleted from it
-		//dataView.deleteItem(id);
-		//This is possible because in the formatter we have assigned the row id itself as the button id;
-		//now assuming your grid is called 'grid'
-		//grid.invalidate();
-	});
 	ISGRIDLOADED = true;
 }
 
@@ -363,22 +368,54 @@ function extractAndSubmit() {
 	}
 }
 
-function deleteAllTariffRows() {
-	if (window.confirm("WARNING: You are about to delete ALL the tariff rows for the service. This will not delete the customer-service association. Do you want to proceed?")) {
-		var d = GRID.getData();
-		var params = "csid=" + $('#csid').val() + "&data=" + JSON.stringify(d);
-		/*my_ajax_request('settings/tariff/deleteAllTariffRows', params, function () {
-			if (JSON_data.status == "success") {
-				showMessage(JSON_data.message);
-				getTariff($('#csid').val());
-			} else {
-				showMessage("Failed to update");
-			}
-		});*/
+function deleteTariffRow(rownum){
+	var row = GRID.getDataItem(rownum);
+	var range = row.wtmin + "-" + row.wtmax;
+	if(window.confirm("WARNING: Deletes are irrevocable. Do you want to delete the range " + range + "?")){
+		doDeleteTariffRows(extractRateIds(row));
 	}
 }
 
-function addService() {
+function extractRateIds(row){
+	var arr = [];
+	for (var propertyName in row){
+		var value = row[propertyName];
+		if(typeof(value) == "object" && value.hasOwnProperty("rateid")){
+			arr.push(value.rateid);
+		}
+	}
+	return arr;
+}
+
+function doDeleteTariffRows(rowids){
+	var params = "rateids=" + JSON.stringify(rowids);
+	my_ajax_request('settings/tariff/deleteTariffRows', params, function () {
+			if (JSON_data.status == "success") {
+				showMessage(JSON_data.message);
+				//$("#myGrid").empty();
+				var csids = $("#services_tree").jstree("get_selected");
+				getTariff(csids[0]);
+			} else {
+				showMessage("Failed to update");
+			}
+		});
+}
+
+function deleteAllTariffRows() {
+	if (window.confirm("WARNING: You are about to delete ALL the tariff rows for the service. This will not delete the customer-service association. Do you want to proceed?")) {
+		var rows =  GRID.getDataLength();
+		var rateids = [];
+		for(var i = 0; i < rows; i++){
+			var row = GRID.getDataItem(i);
+			var arr = extractRateIds(row);
+			rateids.push.apply(rateids, arr);
+		}
+		doDeleteTariffRows(rateids);
+	}
+}
+
+function addCustomerService() {
+	TREE = $('#services_tree').jstree(true);
 	var carrierNode = TREE.get_node(TREE.get_selected());
 	if (carrierNode) {
 		if (carrierNode.original.hasOwnProperty('sid')) {
@@ -395,9 +432,25 @@ function addService() {
 	}
 }
 
-function deleteService() {
+function deleteCustomerService() {
 	if (window.confirm("WARNING: You are about to delete a customer-service association. Do you want to proceed?")) {
-		//delete selected service
+		var csids = $("#services_tree").jstree("get_selected");
+		var selectednode = $("#services_tree").jstree("get_node", csids[0]);
+		if(selectednode && selectednode.original.hasOwnProperty('sid')){
+			//alert("Deleting " + csids[0]);
+			var params = "csid=" + csids[0];
+			my_ajax_request('settings/tariff/delete_customer_service', params, function () {
+				if (JSON_data.status == "success") {
+					var msg = JSON_data.message;
+					reloadUI();
+					showMessage(msg);
+				} else {
+					showMessage("Failed to delete");
+				}
+			});
+		}else{
+			showMessage("Please select a service to delete");
+		}
 	}
 }
 
