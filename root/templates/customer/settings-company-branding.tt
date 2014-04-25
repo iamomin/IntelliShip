@@ -151,6 +151,9 @@
 		$('#branding-demo-iframe').attr('src','');
 		updateCompanyBranding(function() {
 			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
+			[% IF CURRENT_COMPANY %]
+			$('#branding_css').attr('href','/static/branding/[% branding_id %]/css/[% customerid %].css?v='+jQuery.now());
+			[% END %]
 			});
 		});
 
@@ -162,6 +165,10 @@
 			});
 
 		iFrame.contents().find('input').each(function() {
+			$(this).prop('disabled', 'disabled');
+			});
+		
+		iFrame.contents().find('button').each(function() {
 			$(this).prop('disabled', 'disabled');
 			});
 		});

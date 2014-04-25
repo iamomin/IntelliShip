@@ -47,10 +47,10 @@
 		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
 		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/style.css"/>
 		[% IF CUSTOMER_OVERRIDE %]
-		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.customerid %].css"/>
+		<link id="branding_css" rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.customerid %].css?[% timestamp %]"/>
 		[% END %]
 		[% IF CONTACT_OVERRIDE %]
-		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.contactid %].css"/>
+		<link id="branding_css" rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.contactid %].css?[% timestamp %]"/>
 		[% END %]
 		[% IF BRANDING_DEMO_CSS %]
 

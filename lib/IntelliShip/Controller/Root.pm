@@ -2,6 +2,7 @@ package IntelliShip::Controller::Root;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::DateUtils;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -130,6 +131,7 @@ sub end : Private {
 	$self->set_selected_menu($c);
 	$self->check_css_overrides($c);
 	$c->stash->{landing_page} = '/customer/order/multipage';
+	$c->stash->{timestamp} = IntelliShip::DateUtils->timestamp;
 
 	my $Controller = $c->controller;
 	my $Token = $Controller->token;

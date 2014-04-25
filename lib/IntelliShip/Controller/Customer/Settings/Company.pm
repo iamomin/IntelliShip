@@ -166,6 +166,7 @@ sub setup :Local
 	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 
 	$self->get_branding_settings;
+	$c->stash->{CURRENT_COMPANY} = ($params->{'customerid'} eq $self->customer->customerid);
 	$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);;
 
 	$c->stash->{SETUP_CUSTOMER} = 1;
