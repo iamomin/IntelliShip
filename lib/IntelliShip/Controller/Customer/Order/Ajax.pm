@@ -613,6 +613,7 @@ sub get_sku_detail :Private
 		$response_hash->{'class'} = $SkuObj->class;
 		$response_hash->{'unittypeid'} = $SkuObj->unittypeid;
 		$response_hash->{'unitofmeasure'} = $SkuObj->unitofmeasure;
+		$response_hash->{'value'} = $SkuObj->value;
 		}
 	else
 		{

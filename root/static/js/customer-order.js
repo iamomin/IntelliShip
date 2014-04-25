@@ -333,6 +333,7 @@ function setSkuDetails(row_ID, sku_id)
 				$("#dimheight_"+row_ID).val(JSON_data.height);
 				$("#nmfc_"+row_ID).val(JSON_data.nmfc);
 				$("#class_"+row_ID).val(JSON_data.class);
+				$("#decval_"+row_ID).val(JSON_data.value);
 				if (JSON_data.unittypeid != "") $("#unittype_"+row_ID+" option:selected").val(JSON_data.unittypeid);
 				configureShipmentDetails();
 				}
