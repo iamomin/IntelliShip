@@ -335,13 +335,12 @@ sub get_carrier_service_list
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
-			$self->populate_special_seevices_charge($SHIPMENT_CHARGE_DETAILS,$customerserviceid,$freightcharges);
+			my $SC_charge = $self->populate_special_services_charge($SHIPMENT_CHARGE_DETAILS,$customerserviceid,$freightcharges);
+
 			$CS_charge_details->{$customerserviceid} = "Freight Charge:$freightcharges|Fuel Surcharge:$fuelcharges|Declared Value Insurance Charge:$DVI_Charge|Freight Insurance Charge:$FI_Charge";
 
-			#$detail_hash->{'freight_charge'} = $freightcharges || '0';
 			$detail_hash->{'freight_charge'} = sprintf("%.2f",($freightcharges || '0'));
-			#$detail_hash->{'other_charge'} = ($fuelcharges+$DVI_Charge+$FI_Charge) || '0';
-			$detail_hash->{'other_charge'} = sprintf("%.2f",(($fuelcharges+$DVI_Charge+$FI_Charge) || '0'));
+			$detail_hash->{'other_charge'} = sprintf("%.2f",(($fuelcharges+$DVI_Charge+$FI_Charge+$SC_charge) || '0'));
 
 			#if ($detail_hash->{'shipment_charge'} =~ /Quote/)
 			#	{
@@ -562,7 +561,7 @@ sub calculate_freight_insurance
 	return 0;
 	}
 
-sub populate_special_seevices_charge
+sub populate_special_services_charge
 	{
 	my $self = shift;
 	my $SHIPMENT_CHARGE_DETAILS = shift;
@@ -577,13 +576,17 @@ sub populate_special_seevices_charge
 	my @arr = $CO->assessorials;
 	$c->log->debug("Total special services selected ".@arr);
 
+	my $SC_charge = 0;
 	foreach my $AssData (@arr)
 		{
 		my $chargeDetails = $self->API->get_assessorial_charge($csid,$CO->total_weight,$CO->total_quantity,$AssData->assname,$Customer->customerid,$freightcharges);
 		$c->log->debug("CSID: $csid, Service: " . $AssData->assname . ", Charge: " . $chargeDetails->{'value'});
 		next unless $chargeDetails->{'value'};
 		push(@$SHIPMENT_CHARGE_DETAILS, { text => $AssData->assdisplay, value => '$' . sprintf("%.2f",$chargeDetails->{'value'}) });
+		$SC_charge += $chargeDetails->{'value'};
 		}
+
+	return $SC_charge;
 	}
 
 sub get_sku_detail :Private
