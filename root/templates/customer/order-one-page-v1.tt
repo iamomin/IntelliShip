@@ -34,8 +34,11 @@
 
 	[% ADDRESS_SECTION %]
 
-	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></h1>
-
+	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
+	<div class="float-right css3-checkboxes">
+		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% default_packing_list >= 2 ? 'CHECKED' : ''%] [% default_packing_list == 3 ? 'onclick="return false;"' : ''%]/><span style="color:#FFFFFF;"><label for="printpackinglist">Print Packing List</label></span></label>
+	</div>
+	</h1>
 	[% PACKAGE_DETAIL_SECTION %]
 
 	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
