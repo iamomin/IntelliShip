@@ -1190,30 +1190,31 @@ sub ImportProducts
 					my $FILTER  = "upper(customerskuid) = upper('$CustRef->{partnumber}') AND unittypeid = '$CustRef->{unittypeid}' AND customerid = '$CustomerID'";
 					if ( $CustRef->{'unittypeid'} == 3 )
 						{
-						$sql = "SELECT weight wt, length ln, width wd, height ht FROM productsku WHERE $FILTER LIMIT 1";
+						$sql = "SELECT weight wt, length ln, width wd, height ht, value FROM productsku WHERE $FILTER LIMIT 1";
 						}
 					elsif ( $CustRef->{'unittypeid'} == 2 )
 						{
-						$sql = "SELECT weight wt, caselength ln, casewidth wd, caseheight ht FROM productsku WHERE $FILTER LIMIT 1";
+						$sql = "SELECT weight wt, caselength ln, casewidth wd, caseheight ht, value FROM productsku WHERE $FILTER LIMIT 1";
 						}
 					elsif ( $CustRef->{'unittypeid'} == 1 )
 						{
-						$sql = "SELECT palletweight wt, palletlength ln, palletwidth wd, palletheight ht FROM productsku WHERE FILTER LIMIT 1";
+						$sql = "SELECT palletweight wt, palletlength ln, palletwidth wd, palletheight ht, value FROM productsku WHERE FILTER LIMIT 1";
 						}
 
 					my $STH = $self->myDBI->select($sql);
 
-					my ($weight, $length, $width, $height) = (0, 0, 0, 0);
+					my ($weight, $length, $width, $height, $value) = (0, 0, 0, 0, 0);
 					if ($STH->numrows)
 						{
 						$c->log->debug("... SKU found, get weight, length, width and height");
 						my $d = $STH->fetchrow(0);
-						($weight, $length, $width, $height) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht});
+						($weight, $length, $width, $height, $value) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht}, $d->{value});
 						}
 					$CustRef->{'productweight'} = $weight * $CustRef->{'productquantity'} if $weight;
 					$CustRef->{'dimlength'} = $length if $length;
 					$CustRef->{'dimwidth'} = $width if $width;
 					$CustRef->{'dimheight'} = $height if $height;
+					$CustRef->{'productprice'} = $value if $value;
 					}
 				}
 
