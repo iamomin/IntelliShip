@@ -94,13 +94,6 @@ sub review_order
 	$self->setup_carrier_service;
 	}
 
-sub cancel_order
-	{
-	my $self = shift;
-	$self->VOID_SHIPMENT;
-	$self->setup_address;
-	}
-
 =encoding utf8
 
 =head1 AUTHOR
