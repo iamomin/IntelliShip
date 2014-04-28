@@ -526,8 +526,8 @@ sub BuildPrinterString
 		}
 	else
 		{
-		push(@service_lines,"A670,1025,0,3,2,2,,INV");
-		push(@service_lines,"A670,1050,0,2,1,1,N,POA");
+		#push(@service_lines,"A670,1025,0,3,2,2,,INV");
+		#push(@service_lines,"A670,1050,0,2,1,1,N,POA");
 		}
 
 	push (@service_lines,"P1\nR0,0\n.");
