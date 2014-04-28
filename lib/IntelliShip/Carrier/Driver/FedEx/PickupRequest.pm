@@ -86,6 +86,8 @@ sub process_request
 
 	$self->log("FedEx CreatePickup ResponseString: " . $Response->content);
 
+	$self->SendPickUpEmail();
+
 	return 1;
 	}
 

@@ -304,6 +304,54 @@ sub insert_shipment
 	return $Shipment;
 	}
 
+sub SendPickUpEmail
+	{
+	my $self = shift;
+	my $ResponseCode = shift;
+	my $Message = shift;
+	my $CustomerTransactionId = shift;
+	my $ConfirmationNumber = shift;
+
+	my $Shipment = $self->SHIPMENT;
+
+	my $subject;
+	if($ResponseCode eq '0000')
+		{
+		$subject = "NOTICE: Driver pickup scheduled on " . IntelliShip::DateUtils->american_date($Shipment->datepacked);
+		}
+	else
+		{
+		$subject = "ALERT: Error scheduling driver pickup on ". IntelliShip::DateUtils->american_date($Shipment->datepacked);
+		}
+
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
+	$Email->subject($subject);
+	$Email->add_to('noc@engagetechnology.com');
+
+	$Email->add_line('');
+	$Email->add_line('=' x 60);
+	$Email->add_line('Weight      : ' . $Shipment->total_weight);
+	$Email->add_line('DIM Weight  : ' . $Shipment->dimweight);
+	$Email->add_line('Pickup Date : ' . $Shipment->datepacked);
+	$Email->add_line('Origin      : ' . $Shipment->addressidorigin);
+	$Email->add_line('Tracking    : ' . $Shipment->tracking1);
+	$Email->add_line('=' x 60);
+	$Email->add_line('');
+	$Email->add_line('Message                    : ' . $Message);
+	$Email->add_line('Code                       : ' . $ResponseCode);
+	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId);
+	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber);
+
+	if ($Email->send)
+		{
+		$self->context->log->debug("Shipment Pick-Up notification email successfully sent");
+		}
+	}
+
 sub log
 	{
 	my $self = shift;
