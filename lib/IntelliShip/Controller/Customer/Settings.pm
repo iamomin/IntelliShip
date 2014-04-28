@@ -592,14 +592,14 @@ sub contactinformation :Local
 	foreach my $ruleHash (@$CONTACT_RULES)
 		{
 		#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
-		if ($params->{$ruleHash->{value}})
+		if (defined $params->{$ruleHash->{value}})
 			{
 			my $customerContactData = {
-				ownertypeid	=> 2,
-				ownerid		=> $Contact->contactid,
-				datatypeid	=> $ruleHash->{datatypeid},
-				datatypename=> $ruleHash->{value},
-				value       => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
+				ownertypeid  => 2,
+				ownerid      => $Contact->contactid,
+				datatypeid   => $ruleHash->{datatypeid},
+				datatypename => $ruleHash->{value},
+				value        => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
 				};
 
 			my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
