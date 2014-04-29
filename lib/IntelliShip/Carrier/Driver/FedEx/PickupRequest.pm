@@ -89,7 +89,7 @@ sub process_request
 
 	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
 
-	my $NotificationArrayRef = $responseDS->{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Notifications'};
+	my $NotificationArrayRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Notifications'};
 
 	my ($Message,$ResponseCode) = ("","");
 	foreach my $msg (@$NotificationArrayRef)
@@ -101,8 +101,8 @@ sub process_request
 	$Message      = $Message . "<br>";
 	$ResponseCode = $ResponseCode  . "<br>";
 
-	my $CustomerTransactionId = $responseDS->{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'};
-	my $ConfirmationNumber    = $responseDS->{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'};
+	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'}. "<br>";
 
 	#$self->log("##### ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
