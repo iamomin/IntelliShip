@@ -906,6 +906,15 @@ sub get_select_list
 			{ name => 'Show, checked FORCED', value => '3' },
 			];
 		}
+	elsif ($list_name eq 'PRINT_RETURN_SHIPMENT')
+		{
+		$list = [
+			{ name => 'Not Shown' , value => '0' },
+			{ name => 'Show, unchecked', value => '1' },
+			{ name => 'Show, checked', value => '2' },
+			{ name => 'Show, checked FORCED', value => '3' },
+			];
+		}
 	elsif ($list_name eq 'LIVE_PRODUCT_LIST')
 		{
 		$list = [

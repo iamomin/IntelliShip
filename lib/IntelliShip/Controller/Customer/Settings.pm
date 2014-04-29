@@ -663,6 +663,7 @@ sub contactinformation :Local
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');
 		$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
+		$c->stash->{printreturnshipment_loop}= $self->get_select_list('PRINT_RETURN_SHIPMENT');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
@@ -799,7 +800,7 @@ sub get_contact_setting_list :Private
 			}
 		else
 			{
-			$ruleHash->{text } = $value;
+			$ruleHash->{text} = $value;
 			}
 		}
 

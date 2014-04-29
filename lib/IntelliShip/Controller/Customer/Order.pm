@@ -227,6 +227,7 @@ sub setup_shipment_information :Private
 		}
 
 	$c->stash->{default_packing_list} = $Contact->default_packing_list;
+	$c->stash->{print_return_shipment} = $Contact->print_return_shipment;
 
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
@@ -394,6 +395,7 @@ sub save_CO_details :Private
 			}
 		}
 
+	$coData->{'return'}  = $params->{'printreturnshipment'} || '';
 	$coData->{'isinbound'}  = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'inbound') || 0;
 	$coData->{'isdropship'} = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'dropship') || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
@@ -4027,6 +4029,55 @@ sub send_pickup_request
 			});
 
 	$c->log->debug("....Response: " . $Response);
+	}
+
+sub create_return_shipment
+	{
+	my $self = shift;
+	my $CO = shift;
+
+	my $c = $self->context;
+	my $Contact = $self->contact;
+
+	my $RetCO = $c->model('MyDBI::CO')->new($CO->{_column_data});
+	$RetCO->coid($self->get_token_id);
+	$RetCO->ordernumber($RetCO->ordernumber . '-RTN');
+
+	$RetCO->reset;
+
+	my $origin_address = $RetCO->oaaddressid;
+	my $destin_address = $RetCO->addressid;
+
+	$RetCO->oaaddressid($destin_address);
+	$RetCO->addressid($origin_address);
+
+	$RetCO->contactphone($Contact->email);
+	$RetCO->shipmentnotification($Contact->phonebusiness);
+	$RetCO->dateneeded(undef);
+	$RetCO->isinbound(1);
+	$RetCO->insert;
+
+	$c->log->debug(".... return shipment created, coid: " . $RetCO->coid);
+
+	my @packages = $CO->packages;
+	foreach my $Package (@packages)
+		{
+		my $RetPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
+		$RetPackage->packprodataid($self->get_token_id);
+		$RetPackage->ownerid($RetCO->coid);
+		$RetPackage->insert;
+
+		my @products = $Package->products;
+		foreach my $Product (@products)
+			{
+			my $RetProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
+			$RetProduct->packprodataid($self->get_token_id);
+			$RetProduct->ownerid($Package->packprodataid);
+			$RetProduct->insert;
+			}
+		}
+
+	return $RetCO;
 	}
 
 __PACKAGE__->meta->make_immutable;

@@ -572,12 +572,12 @@
 						</label>
 						</td>
 
-						<td><label class="float-right" for="cust_liveproduct">Live Product TAB:</label></td>
+						<td><label class="float-right" for="cust_printreturnshipment">Print Return Shipment:</label></td>
 						<td>
 						<label>
-							<select name="cust_liveproduct" id="cust_liveproduct">
-							[% FOREACH item IN liveproduct_loop %]
-								<option value="[% item.value %]" [% (item.value == cust_liveproduct) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							<select name="cust_printreturnshipment" id="cust_printreturnshipment">
+							[% FOREACH item IN printreturnshipment_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_printreturnshipment) ? 'SELECTED' : '' %]>[% item.name %]</option>
 							[% END %]
 							</select>
 						</label>
@@ -595,6 +595,21 @@
 						</label>
 						</td>
 
+						<td><label class="float-right" for="cust_liveproduct">Live Product TAB:</label></td>
+						<td>
+						<label>
+							<select name="cust_liveproduct" id="cust_liveproduct">
+							[% FOREACH item IN liveproduct_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_liveproduct) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+					</tr>
+					<tr>
+						<td><label class="float-right" for="cust_chargediffflat">Charge Difference<br/>Threshold (flat):</label></td>
+						<td><input type="text" class="broad-text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
+
 						<td><label class="float-right" for="shipmentmarkup">Shipment Markup:</label></td>
 						<td><input type="text" class="broad-text" style="width:50%" name="shipmentmarkup" id="shipmentmarkup" value="[% shipmentmarkup %]">
 							<select name="shipmentmarkuptype" id="shipmentmarkuptype">
@@ -606,8 +621,9 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float-right" for="cust_chargediffflat">Charge Difference<br/>Threshold (flat):</label></td>
-						<td><input type="text" class="broad-text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
+						<td><label class="float-right" for="cust_chargediffpct">Charge Difference<br/>Threshold (%/min):</label></td>
+						<td><input type="text" class="broad-text" style="width:43%" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]">&nbsp;&nbsp;
+							<input type="text" class="broad-text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
 
 						<td><label class="float-right" for="assmarkup">Assessorial Markup:</label></td>
 						<td><input type="text" class="broad-text" style="width:50%" name="assmarkup" id="assmarkup" value="[% assmarkup %]">
@@ -617,21 +633,6 @@
 							[% END %]
 							</select>
 						</label>
-						</td>
-					</tr>
-					<tr>
-						<td><label class="float-right" for="cust_chargediffpct">Charge Difference<br/>Threshold (%/min):</label></td>
-						<td><input type="text" class="broad-text" style="width:43%" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]">&nbsp;&nbsp;
-							<input type="text" class="broad-text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
-
-						<td><label class="float-right" for="cust_labeltype">Label Type:</label></td>
-						<td class="css3-radios">
-							[% FOREACH item IN labeltype_loop %]
-								<label>
-								<input type="radio" name="cust_labeltype" id="[% item.value %]" value="[% item.value %]" [% item.value == cust_labeltype ? 'CHECKED' : ''%]/>
-								<span><label for="[% item.value %]">[% item.name %]</label></span>
-								</label>
-							[% END %]
 						</td>
 					</tr>
 					<tr>
@@ -646,8 +647,15 @@
 						</label>
 						</td>
 
-						<td></td>
-						<td></td>
+						<td><label class="float-right" for="cust_labeltype">Label Type:</label></td>
+						<td class="css3-radios">
+							[% FOREACH item IN labeltype_loop %]
+								<label>
+								<input type="radio" name="cust_labeltype" id="[% item.value %]" value="[% item.value %]" [% item.value == cust_labeltype ? 'CHECKED' : ''%]/>
+								<span><label for="[% item.value %]">[% item.name %]</label></span>
+								</label>
+							[% END %]
+						</td>
 					</tr>
 				</table>
 

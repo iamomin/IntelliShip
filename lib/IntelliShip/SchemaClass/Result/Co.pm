@@ -515,6 +515,12 @@ __PACKAGE__->table("co");
   is_nullable: 1
   size: 100
 
+=head2 return
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 25
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -688,6 +694,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 100 },
   "oacontactphone",
   { data_type => "varchar", is_nullable => 1, size => 100 },
+  "return",
+  { data_type => "varchar", is_nullable => 1, size => 25 },
 );
 
 =head1 PRIMARY KEY
@@ -1017,11 +1025,11 @@ sub has_carrier_service_details
 sub reset
 	{
 	my $self = shift;
-	#$self->dateneeded('');
-	$self->extcarrier('');
-	$self->extservice('');
-	$self->density('0');
-	$self->class('');
+	#$self->dateneeded(undef);
+	$self->extcarrier(undef);
+	$self->extservice(undef);
+	$self->density(undef);
+	$self->class(undef);
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

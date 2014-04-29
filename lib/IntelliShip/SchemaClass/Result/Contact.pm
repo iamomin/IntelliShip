@@ -345,6 +345,12 @@ sub default_packing_list
 	return $self->get_contact_data_value('defaultpackinglist');
 	}
 
+sub print_return_shipment
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('printreturnshipment');
+	}
+
 sub default_thermal_count
 	{
 	my $self = shift;

@@ -443,6 +443,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Company Type',                                  value => 'companytype',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], },
 	{ name => 'Print Packing List',                            value => 'defaultpackinglist',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Packing List',                                  value => 'packinglist',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Print Return Shipment',                         value => 'printreturnshipment',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Live Product TAB',                              value => 'liveproduct',						type => 'SELECT',   datatypeid => 2, ownertype => ['CUSTOMER'], default => '0'},
 	{ name => 'Freight Charge Editablity',                     value => 'fceditability',					type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], default => '0'},
 	{ name => 'Label Stub',                                    value => 'labelstub',						type => 'SELECT',   datatypeid => 2, ownertype => ['CUSTOMER'], default => '0'},
@@ -462,7 +463,7 @@ my $CUSTOMER_CONTACT_RULES = [
 
 my $CUSTOM_CSS_STYLES = [
 	{ name => 'Site Top Header',           bgcolor => 'header-bgcolor', font => 'header-font', size => 'header-size', section => ['#header', '#header nav a span'] },
-	{ name => 'Menu Buttons',              bgcolor => 'menu-bgcolor',   font => 'menu-font',   size => 'menu-size',   section => ['#menu', '#menu a'] },	
+	{ name => 'Menu Buttons',              bgcolor => 'menu-bgcolor',   font => 'menu-font',   size => 'menu-size',   section => ['#menu', '#menu a'] },
 	{ name => 'Primary Section Headers',   bgcolor => 'h1',             font => 'h1-font',     size => 'h1-size',     section => ['h1'] },
 	{ name => 'Secondary Section Headers', bgcolor => 'h2',             font => 'h2-font',     size => 'h2-size',     section => ['h2'] },
 	{ name => 'Title Headers',             bgcolor => 'title-bgcolor',  font => 'title-font',  size => 'title-size',  section => ['table.summary-app caption', 'table.app caption'] },

@@ -676,7 +676,9 @@
 			window['qzDonePrinting'] = function() {
 				var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
 				send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
-					window.location.href = '/customer/order/quickship';
+					var href = '/customer/order/quickship';
+					if (JSON_data.RETURN_SHIPMENT == 1) href += '?coid=' + JSON_data.RET_COID;
+					window.location.href = href;
 					});
 
 				// Remove reference to this function

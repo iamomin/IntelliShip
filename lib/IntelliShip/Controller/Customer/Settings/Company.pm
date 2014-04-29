@@ -159,6 +159,7 @@ sub setup :Local
 	$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
 	$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 	$c->stash->{fceditability_loop}      = $self->get_select_list('FREIGHT_CHARGE_EDITABILITY_LIST');
+	$c->stash->{printreturnshipment_loop}= $self->get_select_list('PRINT_RETURN_SHIPMENT');
 	$c->stash->{labelstub_loop}          = $self->get_select_list('LABEL_STUB_LIST');
 	$c->stash->{markuptype_loop}         = $self->get_select_list('MARKUP_TYPE');
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
@@ -319,20 +320,6 @@ sub configure :Local
 	foreach my $ruleHash (@$CUSTOMER_RULES)
 		{
 		next unless $params->{'cust_'.$ruleHash->{value}};
-=as
-		#$c->log->debug("___ Inserting New custcondata $ruleHash->{value} for company: " . $Customer->customerid);
-		my $customerContactData = {
-			ownertypeid	 => 1,
-			ownerid		 => $Customer->customerid,
-			datatypeid	 => $ruleHash->{datatypeid},
-			datatypename => $ruleHash->{value},
-			value		 => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{'cust_'.$ruleHash->{value}},
-			};
-
-		my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
-		$NewCCData->custcondataid($self->get_token_id);
-		$NewCCData->insert;
-=cut
 		push (@$customerContactValues, "('".$self->get_token_id."', '1', '".$Customer->customerid."', '".$ruleHash->{datatypeid}."', '".$ruleHash->{value}."', '".($ruleHash->{type} eq 'CHECKBOX' ? 1 : $params->{'cust_'.$ruleHash->{value}})."')" );
 		}
 

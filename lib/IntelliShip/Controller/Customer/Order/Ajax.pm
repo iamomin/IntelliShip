@@ -784,7 +784,16 @@ sub mark_shipment_as_printed
 
 	#$self->SendShipNotification($Shipment);
 
-	return { UPDATED => 1};
+	my $response = { UPDATED => 1};
+	if (length $CO->return > 0)
+		{
+		$c->log->debug("... Return capability found");
+		$response->{RETURN_SHIPMENT} = 1;
+		my $RetCO = $self->create_return_shipment($CO);
+		$response->{RET_COID} = $RetCO->coid;
+		}
+
+	return $response;
 	}
 
 sub search_ordernumber :Private
