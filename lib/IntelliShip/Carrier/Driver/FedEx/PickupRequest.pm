@@ -3,6 +3,7 @@ package IntelliShip::Carrier::Driver::FedEx::PickupRequest;
 use Moose;
 use Data::Dumper;
 use LWP::UserAgent;
+use IntelliShip::Utils;
 
 BEGIN { extends 'IntelliShip::Carrier::Driver'; }
 
@@ -59,7 +60,7 @@ sub process_request
 
 	$PickupRequest->{CarrierCode} = 'FDXE';
 
-	$self->log("....PickupRequest : " . Dumper $PickupRequest);
+	#$self->log("....PickupRequest : " . Dumper $PickupRequest);
 
 	my $XMLString = $self->get_XML_v6($PickupRequest);
 
@@ -84,11 +85,28 @@ sub process_request
 		return 0;
 		}
 
-	$self->log("FedEx CreatePickup ResponseString: " . $Response->content);
+	#$self->log("FedEx CreatePickup ResponseString: " . $Response->content);
 
-	$self->SendPickUpEmail();
+	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
 
-	return 1;
+	my $NotificationArrayRef = $responseDS->{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Notifications'};
+
+	my ($Message,$ResponseCode) = ("","");
+	foreach my $msg (@$NotificationArrayRef)
+		{
+		$Message      = $Message . "<br>" . $msg->{'v6:Message'};
+		$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
+		}
+
+	$Message      = $Message . "<br>";
+	$ResponseCode = $ResponseCode  . "<br>";
+
+	my $CustomerTransactionId = $responseDS->{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'};
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'};
+
+	#$self->log("##### ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
+
+	$self->SendPickUpEmail($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
 	}
 
 sub get_XML_v6

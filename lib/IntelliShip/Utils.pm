@@ -155,14 +155,14 @@ sub parse_XML
 		suppressempty => 1
 		);
 
-	my $xmlRequestDS = eval{ $xs->XMLin($XML) };
+	my $xmlDS = eval{ $xs->XMLin($XML) };
 
 	if ($@)
 		{
 		print STDERR "\nXML Parse Error: " . $@;
 		}
 
-	return $xmlRequestDS;
+	return $xmlDS;
 	}
 
 my $FILTER_CRITERIA_HASH = {
