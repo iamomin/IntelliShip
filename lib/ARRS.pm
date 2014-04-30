@@ -13,6 +13,7 @@ use ARRS::MODETYPE;
 use ARRS::CSOVERRIDE;
 use ARRS::ASSDATA;
 use ARRS::INVOICEDATA;
+use ARRS::TARIFFIMPORTER;
 use IntelliShip::MyConfig;
 
 =b
@@ -509,6 +510,15 @@ sub DeleteCustomerService{
     my $Online =
       new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
     return $Online->DeleteCustomerService( $Ref->{'csid'});
+}
+
+sub ImportTariff{
+	warn "########## ImportTariff";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $importer = new ARRS::TARIFFIMPORTER($Ref->{'tariffdbname'}, $self->{'dbref'});
+    return $importer->ImportTariff($Ref->{'content'}, $Ref->{'ratetypeid'});
 }
 
 sub GetShipmentCosts {

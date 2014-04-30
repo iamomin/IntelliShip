@@ -137,4 +137,32 @@ sub add_services: Local
 	$c->stash->{'JSON'} = $JSONUTIL->to_json($result);
 	$c->stash(template => "templates/customer/json.tt"); 
 }
+
+sub import_tariff_files: Local
+{
+	my ( $self, $c ) = @_;
+	my $params = $c->req->params;
+	my $ratetypeid = $params->{'ratetypeid'};
+	my $tariffdbname = $params->{'tariffdbname'};
+	my $uploads = $c->request->uploads;
+	
+	my $res = {};
+	 
+	for my $field ( $c->req->upload) {
+        my $upload = $c->req->upload($field);
+		my $content = $upload->slurp();
+		my $result = $self->API->import_tariff($content, $ratetypeid, $tariffdbname);
+		warn "########## result: ".Dumper($result);
+		$res->{$upload->filename} = $result;
+		$upload=undef;
+	}
+	$c->stash->{'JSON'} = $JSONUTIL->to_json($res);
+	$c->stash(template => "templates/customer/json.tt"); 
+}
+
+sub import: Local
+{
+	my ( $self, $c) = @_;
+    $c->stash(template => "templates/customer/import_tariff.tt");
+}
 1;
