@@ -1114,9 +1114,7 @@ sub populate_order :Private
 	## Package Details
 	if (!$populate or $populate eq 'shipment')
 		{
-		$c->stash->{'ROW_COUNT'} = 0;
-		$c->stash->{'totalweight'} = 0;
-		$c->stash->{'PACKAGE_INDEX'} = 0;
+		$c->stash->{ROW_COUNT} = 0;
 
 		my $packages = [];
 		if ($params->{'coids'})
@@ -1143,17 +1141,19 @@ sub populate_order :Private
 
 		if ($c->stash->{one_page})
 			{
-			my ($insurance,$freightinsurance) = (0,0);
+			my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
 			my $package_detail_section_html = '';
 			foreach my $Package (@$packages)
 				{
 				$package_detail_section_html .= $self->add_package_detail_row($Package);
 
 				$insurance += $Package->decval;
+				$totalweight += $Package->weight;
 				$freightinsurance += $Package->frtins;
 				}
 
 			$c->stash->{insurance} = $insurance;
+			$c->stash->{totalweight} = $totalweight;
 			$c->stash->{freightinsurance} = $freightinsurance;
 
 			## Don't move this above foreach block
@@ -1293,7 +1293,7 @@ sub add_package_detail_row :Private
 	my $product_HTML = '';
 	foreach my $Product (@products)
 		{
-		$c->stash->{'ROW_COUNT'}++;
+		$c->stash->{ROW_COUNT}++;
 		$c->stash($Product->{_column_data});
 
 		$c->stash->{PRODUCT_DETAIL_ROW} = 1;
@@ -1320,7 +1320,7 @@ sub add_package_detail_row :Private
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		}
 
-	$c->stash->{'ROW_COUNT'}++;
+	$c->stash->{ROW_COUNT}++;
 	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
