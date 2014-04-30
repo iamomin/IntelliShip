@@ -244,6 +244,23 @@ sub delete_customer_service
 
 		return $self->APIRequest($http_request);
 	}
+
+sub import_tariff
+	{
+		warn "########## import_tariff";
+		my $self = shift;
+		my ($content, $ratetypeid, $tariffdbname) = @_;
+		
+		my $http_request = {
+			action => 'ImportTariff',
+			content => $content,
+			ratetypeid => $ratetypeid,
+			tariffdbname => $tariffdbname
+		};
+
+		return $self->APIRequest($http_request);
+	}
+	
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;
