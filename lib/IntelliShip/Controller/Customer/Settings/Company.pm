@@ -672,6 +672,7 @@ sub brandingdemo :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->stash->{NO_CACHE} = 1;
 	$c->stash->{BRANDING_DEMO_CSS} = $params->{'id'};
 
 	my $CO = IntelliShip::Controller::Customer::Order->new;
