@@ -227,7 +227,7 @@ sub setup_shipment_information :Private
 		}
 
 	$c->stash->{default_packing_list} = $Contact->default_packing_list;
-	$c->stash->{print_return_shipment} = $Contact->print_return_shipment;
+	$c->stash->{print_return_shipment} = $Contact->print_return_shipment unless $CO->ordernumber =~ /\-RTN$/;
 
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
@@ -333,8 +333,8 @@ sub get_shipment_types
 	my $CO = $self->get_order;
 	my $is_outbound = (!$CO->isinbound and !$CO->isdropship);
 
-	my $shipmenttype_loop = [{ name => 'Outbound', value => 'outbound', checked =>  $is_outbound }];
-	if ($returncapability == 1 || $returncapability == 3)
+	my $shipmenttype_loop = [];
+	if ($returncapability == 1 || $returncapability == 3 || $CO->ordernumber =~ /\-RTN$/)
 		{
 		push(@$shipmenttype_loop, { name => 'Inbound',  value => 'inbound', checked => $CO->isinbound });
 		}
@@ -343,7 +343,9 @@ sub get_shipment_types
 		push(@$shipmenttype_loop, { name => 'Dropship', value => 'dropship', checked => $CO->isdropship });
 		}
 
-	return (@$shipmenttype_loop > 1 ? $shipmenttype_loop : undef);
+	push @$shipmenttype_loop, { name => 'Outbound', value => 'outbound', checked =>  $is_outbound } if @$shipmenttype_loop;
+
+	return $shipmenttype_loop;
 	}
 
 sub save_order :Private
@@ -4045,14 +4047,6 @@ sub create_return_shipment
 
 	$RetCO->reset;
 
-	my $origin_address = $RetCO->oaaddressid;
-	my $destin_address = $RetCO->addressid;
-
-	$RetCO->oaaddressid($destin_address);
-	$RetCO->addressid($origin_address);
-
-	$RetCO->contactphone($Contact->email);
-	$RetCO->shipmentnotification($Contact->phonebusiness);
 	$RetCO->dateneeded(undef);
 	$RetCO->isinbound(1);
 	$RetCO->insert;
@@ -4072,7 +4066,7 @@ sub create_return_shipment
 			{
 			my $RetProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
 			$RetProduct->packprodataid($self->get_token_id);
-			$RetProduct->ownerid($Package->packprodataid);
+			$RetProduct->ownerid($RetPackage->packprodataid);
 			$RetProduct->insert;
 			}
 		}

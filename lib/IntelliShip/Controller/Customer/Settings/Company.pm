@@ -567,7 +567,7 @@ sub get_branding_settings :Private
 	my $custom_css_end_line = "/*custom_css_end*/";
 
 	$custom_styles = $custom_css_start_line . $custom_styles . $custom_css_end_line;
-	$c->log->debug("old_styles: " . $custom_styles);
+
 	$BRANDING_CSS =~ s/\Q$custom_styles\E//g;
 
 	$c->stash->{BRANDING_CSS} = $BRANDING_CSS;
@@ -614,7 +614,9 @@ sub get_style_setting_list
 			$style->{values} = $values;
 			}
 		}
-	$c->log->debug("CUSTOM_CSS_STYLES: " . Dumper @$CUSTOM_CSS_RULES);
+
+	#$c->log->debug("CUSTOM_CSS_STYLES: " . Dumper @$CUSTOM_CSS_RULES);
+
 	return $CUSTOM_CSS_RULES;
 	}
 

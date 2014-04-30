@@ -26,9 +26,6 @@
 [% IF one_page %]
 	<h2>Address Information</h2>
 [% END %]
-	<!--
-		<div class="notice">Enter the recipient's (SHIP TO) address [% one_page ? 'and Shipment ' : '' %]details</div>
-	-->
 
 	<div id="equal">
 		<div id="row">
@@ -48,35 +45,35 @@
 				</tr>
 				[% IF quickship%]
 				<tr>
-					<td><label for="fromcity" class="float-right">City, State, Zip:</label></td><!--<td><b><input type="text" class="" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>-->
+					<td><label for="fromcity" class="float-right">City, State, Zip:</label></td>
 					<td>
-					<div id="fromCityDiv" style="display: inline; padding: 0;">
-					<input type="text" name="fromcity" id="fromcity" style="width: 100px;" value="[% fromAddress.city %]"/>
-					</div>
-					<div id="fromStateDiv" style="display: inline; padding: 0;">
-					<label>
-					<select name="fromstate" id="fromstate" style="width: 45px;">
-						[% FOREACH item IN statelist_loop %]
-							<option value="[% item.value %]" [% IF item.value == fromAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
-						[% END %]
-					</select>
-					</label>
-					</div>
-					<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromAddress.zip %]"/>
+						<div id="fromCityDiv" style="display: inline; padding: 0;">
+						<input type="text" name="fromcity" id="fromcity" style="width: 100px;" value="[% fromAddress.city %]"/>
+						</div>
+						<div id="fromStateDiv" style="display: inline; padding: 0;">
+						<label>
+						<select name="fromstate" id="fromstate" style="width: 45px;">
+							[% FOREACH item IN statelist_loop %]
+								<option value="[% item.value %]" [% IF item.value == fromAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+							[% END %]
+						</select>
+						</label>
+						</div>
+						<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromAddress.zip %]"/>
 					</td>
 				</tr>
 				<tr>
 					<td><label for="fromcountry" class="float-right">Country:</label></td>
 					<td>
-					<div id="fromCountryDiv" style="display: inline; padding: 0;">
-					<label>
-					<select name="fromcountry" id="fromcountry" style="width: 220px;" onchange="updateStateList('from');">
-						[% FOREACH item IN countrylist_loop %]
-							<option value="[% item.value %]" [% (fromAddress.country and item.value == fromAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
-						[% END %]
-					</select>
-					</label>
-					</div>
+						<div id="fromCountryDiv" style="display: inline; padding: 0;">
+						<label>
+						<select name="fromcountry" id="fromcountry" style="width: 220px;" onchange="updateStateList('from');">
+							[% FOREACH item IN countrylist_loop %]
+								<option value="[% item.value %]" [% (fromAddress.country and item.value == fromAddress.country) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+						</select>
+						</label>
+						</div>
 					</td>
 				</tr>
 				[% ELSE %]
@@ -311,7 +308,6 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 	addressArray['ADDRESS_1']      = GetAddress('');
 	addressArray['ADDRESS_2']      = GetAddress('');
 
-	
 	previousCheck = $('input:radio[name=shipmenttype]:checked').val();
 
 	function initializeCompanyAddress()
@@ -329,16 +325,15 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 			department		: "[% customerdepartment %]",
 			customernumber	: "[% customercustomernumber %]",
 			email			: "[% customeremail %]"
-		};
-
+			};
 
 		return company_address;
 		}
-		
-		ConfigureInboundOutboundDropship();
-		$("#fromstate").change(function(){alert('changed');});
-		setCityAndState('from');
-		
+
+	ConfigureInboundOutboundDropship();
+	$("#fromstate").change();
+	setCityAndState('from');
+
 	$("input[name='shipmenttype']").change(ConfigureInboundOutboundDropship);
 
 	$("#fromname").autocomplete({

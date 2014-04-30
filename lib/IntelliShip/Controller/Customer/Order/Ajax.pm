@@ -571,17 +571,18 @@ sub populate_special_services_charge
 	my $c = $self->context;
 	my $Customer = $self->customer;
 
-	my $CO = $self->get_order;
-
+	my $CO  = $self->get_order;
 	my @arr = $CO->assessorials;
-	$c->log->debug("Total special services selected ".@arr);
 
 	my $SC_charge = 0;
 	foreach my $AssData (@arr)
 		{
 		my $chargeDetails = $self->API->get_assessorial_charge($csid,$CO->total_weight,$CO->total_quantity,$AssData->assname,$Customer->customerid,$freightcharges);
+
 		$c->log->debug("CSID: $csid, Service: " . $AssData->assname . ", Charge: " . $chargeDetails->{'value'});
+
 		next unless $chargeDetails->{'value'};
+
 		push(@$SHIPMENT_CHARGE_DETAILS, { text => $AssData->assdisplay, value => '$' . sprintf("%.2f",$chargeDetails->{'value'}) });
 		$SC_charge += $chargeDetails->{'value'};
 		}
@@ -595,7 +596,7 @@ sub get_sku_detail :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $where = {customerskuid => $params->{'sku_id'}};
+	my $where = { customerid => $self->customer->customerid, customerskuid => $params->{'sku_id'} };
 
 	my @sku = $c->model("MyDBI::Productsku")->search($where);
 	my $SkuObj = $sku[0];

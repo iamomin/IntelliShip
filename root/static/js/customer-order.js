@@ -67,6 +67,8 @@ function ConfigureAddressSection(address, direction, type)
 	var add_class    = (editable ? 'broad-text' : 'labellike');
 	var remove_class = (editable ? 'labellike' : 'broad-text');
 
+	//alert("ConfigureAddressSection, direction: " + direction + ", add_class: " + add_class + ", remove_class: " + remove_class);
+
 	jQuery.each( fieldArray, function( i, val ) {
 		if (val == 'department' || val == 'customernumber' || val == 'email') return;
 
@@ -114,7 +116,8 @@ function ConfigureAddressSection(address, direction, type)
 			}
 		$('#'+targetCtrl).prop('width', $('#'+targetCtrl).val().length);
 		});
-		RestoreAddress(address, direction, type);
+
+	RestoreAddress(address, direction, type);
 	}
 
 var addressArray  = {};
@@ -123,6 +126,9 @@ var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'count
 function ConfigureInboundOutboundDropship()
 	{
 	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
+
+	/* set default shipment type outbound if no return capability */
+	if (selectedType == undefined) selectedType = 'outbound';
 
 	if (previousCheck == 'outbound')
 		{
@@ -148,9 +154,6 @@ function ConfigureInboundOutboundDropship()
 		$('#tocustomernumber_tr').hide();
 		ConfigureAddressSection('COMPANY_ADDRESS', 'to', 'READONLY');
 		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
-
-		//RestoreAddress('COMPANY_ADDRESS', 'to');
-		//RestoreAddress('ADDRESS_1','from');
 		}
 	else if(selectedType == 'outbound')
 		{
@@ -161,9 +164,6 @@ function ConfigureInboundOutboundDropship()
 		$('#tocustomernumber_tr').show();
 		ConfigureAddressSection('ADDRESS_1', 'to', 'EDITABLE');
 		ConfigureAddressSection('COMPANY_ADDRESS', 'from', 'READONLY');
-
-		//RestoreAddress('COMPANY_ADDRESS', 'from');
-		//RestoreAddress('ADDRESS_1','to');
 		}
 	else if(selectedType == 'dropship')
 		{
@@ -174,9 +174,6 @@ function ConfigureInboundOutboundDropship()
 
 		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
 		ConfigureAddressSection('ADDRESS_2', 'to', 'EDITABLE');
-
-		//RestoreAddress('ADDRESS_1', 'from');
-		//RestoreAddress('ADDRESS_2','to');
 		}
 
 	previousCheck = selectedType;

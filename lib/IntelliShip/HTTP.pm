@@ -94,7 +94,7 @@ sub http_request
 		{
 		$uri .= IntelliShip::Utils->hex_string($content) if $uri and $content;
 		$uri = '?' . $uri unless $uri =~ /^\?/;
-		print STDERR "\n" . $http_prefix.$host.$uri;
+		#print STDERR "\n" . $http_prefix.$host.$uri;
 		$HTTP_req = HTTP::Request->new(GET => $http_prefix . $host . $uri);
 		}
 	else
