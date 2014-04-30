@@ -60,6 +60,8 @@ sub index :Path :Args(0)
 
 		$c->res->cookies->{'TokenID'} = { value => $TokenID, expires => '+3600' };
 
+		$c->stash(NO_CACHE => 1);
+
 		#return $c->response->redirect($c->uri_for('/customer/dashboard'));
 		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
 		}

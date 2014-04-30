@@ -5,6 +5,12 @@
 
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 
+		[% IF NO_CACHE %]
+		<meta http-Equiv="Cache-Control" Content="no-cache">
+		<meta http-Equiv="Pragma" Content="no-cache">
+		<meta http-Equiv="Expires" Content="0">
+		[% END %]
+
 		[% IF MEDIA_PRINT %]
 		<link rel="stylesheet" type="text/css" href="/static/css/customer/print.css" media="print"/>
 		[% END %]
@@ -38,10 +44,10 @@
 		<!-- The jQuery Mask Plugin v 1.3.1 -->
 		<script src="/static/jquery/jquery.mask.min.js"></script>
 
-		 <!-- Customer Portal Javascript -->
+		<!-- Customer Portal Javascript -->
 		<script src="/static/js/Chart.min.js"></script>
 
-		 <!-- Customer Portal Javascript -->
+		<!-- Customer Portal Javascript -->
 		<script src="/static/js/customer.js"></script>
 
 		<link rel="stylesheet" type="text/css" href="/static/css/css3-checkboxes-and-radios.css"/>
@@ -53,12 +59,9 @@
 		<link id="branding_css" rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% contactObj.contactid %].css?[% timestamp %]"/>
 		[% END %]
 		[% IF BRANDING_DEMO_CSS %]
-
-		<meta http-Equiv="Cache-Control" Content="no-cache">
-		<meta http-Equiv="Pragma" Content="no-cache">
-		<meta http-Equiv="Expires" Content="0">
 		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/[% BRANDING_DEMO_CSS %].css"/>
 		[% END %]
+
 		<script>
 			$(document).ready(function() {
 				var link = $("#[% selected_mnu %]");
