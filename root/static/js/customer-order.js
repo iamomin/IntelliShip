@@ -61,6 +61,8 @@ function RestoreAddress(address, direction, type)
 	}
 
 var from_to_Hash = {};
+var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+
 function ConfigureAddressSection(address, direction, type)
 	{
 	var editable     = (type == 'EDITABLE' ? true : false);
@@ -122,7 +124,6 @@ function ConfigureAddressSection(address, direction, type)
 
 var previousCheck;
 var addressArray = {};
-var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
 
 function ConfigureInboundOutboundDropship()
 	{
@@ -132,20 +133,23 @@ function ConfigureInboundOutboundDropship()
 	if (selectedType == undefined) selectedType = 'outbound';
 	if (previousCheck == undefined) previousCheck = 'outbound';
 
-	if (previousCheck == 'outbound')
+	if (selectedType != previousCheck)
 		{
-		addressArray['COMPANY_ADDRESS'] = GetAddress('from');
-		addressArray['ADDRESS_1'] = GetAddress('to');
-		}
-	else if (previousCheck == 'inbound')
-		{
-		addressArray['ADDRESS_1'] = GetAddress('from');
-		addressArray['COMPANY_ADDRESS'] = GetAddress('to');
-		}
-	else
-		{
-		addressArray['ADDRESS_1'] = GetAddress('from');
-		addressArray['ADDRESS_2'] = GetAddress('to');
+		if (previousCheck == 'outbound')
+			{
+			addressArray['COMPANY_ADDRESS'] = GetAddress('from');
+			addressArray['ADDRESS_DESTIN'] = GetAddress('to');
+			}
+		if (previousCheck == 'inbound')
+			{
+			addressArray['ADDRESS_DESTIN'] = GetAddress('from');
+			addressArray['COMPANY_ADDRESS'] = GetAddress('to');
+			}
+		if (previousCheck == 'dropship')
+			{
+			addressArray['ADDRESS_ORIGIN'] = GetAddress('from');
+			addressArray['ADDRESS_DESTIN'] = GetAddress('to');
+			}
 		}
 
 	if (selectedType == 'inbound')
@@ -155,25 +159,25 @@ function ConfigureInboundOutboundDropship()
 		$('#fromcustomernumber_tr').show();
 		$('#tocustomernumber_tr').hide();
 		ConfigureAddressSection('COMPANY_ADDRESS', 'to', 'READONLY');
-		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_DESTIN', 'from', 'EDITABLE');
 		}
-	else if(selectedType == 'outbound')
+	if (selectedType == 'outbound')
 		{
 		$('#fromdepartment_tr').show();
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
-		ConfigureAddressSection('ADDRESS_1', 'to', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_DESTIN', 'to', 'EDITABLE');
 		ConfigureAddressSection('COMPANY_ADDRESS', 'from', 'READONLY');
 		}
-	else if(selectedType == 'dropship')
+	if (selectedType == 'dropship')
 		{
 		$('#fromdepartment_tr').show();
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
-		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
-		ConfigureAddressSection('ADDRESS_2', 'to', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_ORIGIN', 'from', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_DESTIN', 'to', 'EDITABLE');
 		}
 
 	previousCheck = selectedType;

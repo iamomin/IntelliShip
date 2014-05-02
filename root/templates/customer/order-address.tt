@@ -304,15 +304,7 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
 [% IF quickship %]
 
-	addressArray['COMPANY_ADDRESS']= initializeCompanyAddress();
-	addressArray['ADDRESS_1']      = GetAddress('');
-	addressArray['ADDRESS_2']      = GetAddress('');
-
-	previousCheck = $('input:radio[name=shipmenttype]:checked').val();
-
-	function initializeCompanyAddress()
-		{
-		var company_address = {
+	addressArray['COMPANY_ADDRESS'] = {
 			name			: "[% customername %]",
 			address1		: "[% customeraddress1 %]",
 			address2		: "[% customeraddress2 %]",
@@ -327,12 +319,18 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 			email			: "[% customeremail %]"
 			};
 
-		return company_address;
-		}
+	addressArray['ADDRESS_DESTIN'] = GetAddress('to');
 
-	ConfigureInboundOutboundDropship();
-	$("#fromstate").change();
-	setCityAndState('from');
+	previousCheck = $('input:radio[name=shipmenttype]:checked').val();
+
+	addressArray['ADDRESS_ORIGIN'] = (previousCheck == 'dropship' ? GetAddress('from') : GetAddress(''));
+
+	if (previousCheck != undefined) ConfigureInboundOutboundDropship();
+
+	if ($("#fromcity").val().length == 0) {
+		$("#fromstate").change(); 
+		setCityAndState('from');
+		}
 
 	$("input[name='shipmenttype']").change(ConfigureInboundOutboundDropship);
 

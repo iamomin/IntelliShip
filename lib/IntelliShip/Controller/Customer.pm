@@ -1148,7 +1148,7 @@ sub set_navigation_rules
 		}
 
 	$navRules->{DISPLAY_DASHBOARD} = $Contact->get_contact_data_value('dashboard') || 0;
-	$navRules->{DISPLAY_SHIP_PACKAGE} = ($Customer->username eq 'sprint' and $Contact->username eq 'user');
+	#$navRules->{DISPLAY_SHIP_PACKAGE} = ($Customer->username eq 'sprint' and $Contact->username eq 'user');
 
 	unless ($Contact->is_restricted)
 		{
