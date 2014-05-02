@@ -63,7 +63,15 @@ sub index :Path :Args(0)
 		$c->stash(NO_CACHE => 1);
 
 		#return $c->response->redirect($c->uri_for('/customer/dashboard'));
-		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
+		
+		
+		$self->set_navigation_rules;
+		my $landing_page;
+		$landing_page = '/customer/order/multipage' if !$landing_page and $c->stash->{DISPLAY_SHIP_A_PACKAGE};
+		$landing_page = '/customer/order/quickship' if !$landing_page and $c->stash->{DISPLAY_QUICKSHIP};
+		$landing_page = '/customer/myorders' if !$landing_page and $c->stash->{DISPLAY_MYORDERS};
+		$landing_page = '/customer/report' unless $landing_page;
+		return $c->response->redirect($c->uri_for($landing_page));
 		}
 	else
 		{
