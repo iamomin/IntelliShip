@@ -41,10 +41,10 @@ sub index :Path :Args(0) {
 	#push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
 	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'});
 	push (@$settings, { name => 'Company Management', url => '/customer/settings/company'}) if $Contact->is_superuser;
-	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Customer->login_level != 25 and $Contact->get_contact_data_value('skumanager');
+	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Contact->login_level != 25 and $Contact->get_contact_data_value('skumanager');
 	push (@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
 
-	if ($Customer->login_level != 25 and ($Customer->login_level == 35 or $Customer->login_level == 40))
+	if ($Contact->login_level != 25 and ($Contact->login_level == 35 or $Contact->login_level == 40))
 		{
 		push (@$settings, { name => 'My POs View', url => '#'});
 		}

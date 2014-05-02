@@ -130,7 +130,14 @@ sub end : Private {
 
 	$self->set_selected_menu($c);
 	$self->check_css_overrides($c);
-	$c->stash->{landing_page} = '/customer/order/multipage';
+
+	my $landing_page;
+	$landing_page = '/customer/order/multipage' if !$landing_page and $c->stash->{DISPLAY_SHIP_A_PACKAGE};
+	$landing_page = '/customer/order/quickship' if !$landing_page and $c->stash->{DISPLAY_QUICKSHIP};
+	$landing_page = '/customer/myorders' if !$landing_page and $c->stash->{DISPLAY_MYORDERS};
+	$landing_page = '/customer/report' unless $landing_page;
+
+	$c->stash->{landing_page} = $landing_page;
 	$c->stash->{timestamp} = IntelliShip::DateUtils->timestamp;
 
 	my $Controller = $c->controller;

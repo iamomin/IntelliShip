@@ -387,7 +387,6 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Require Customer Ref 3',                        value => 'reqcustref3',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Department',                            value => 'reqdepartment',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Ext ID',                                value => 'reqextid',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Manual Routing Control',                        value => 'manroutingctrl',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Has AltSOPs',                                   value => 'hasaltsops',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Custnum Address Lookup',                        value => 'custnumaddresslookup',				type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Saturday Shipping',                             value => 'satshipping',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
@@ -443,7 +442,6 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Company Type',                                  value => 'companytype',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], },
 	{ name => 'Print Packing List',                            value => 'defaultpackinglist',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Packing List',                                  value => 'packinglist',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
-	{ name => 'Print Return Shipment',                         value => 'printreturnshipment',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Live Product TAB',                              value => 'liveproduct',						type => 'SELECT',   datatypeid => 2, ownertype => ['CUSTOMER'], default => '0'},
 	{ name => 'Freight Charge Editablity',                     value => 'fceditability',					type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], default => '0'},
 	{ name => 'Label Stub',                                    value => 'labelstub',						type => 'SELECT',   datatypeid => 2, ownertype => ['CUSTOMER'], default => '0'},
@@ -459,6 +457,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Auto Select-Multiply Qty X Weight',             value => 'auto_select_quantity_x_weight',	type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Only Show My Items',                            value => 'myonly',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Include All Email For All Notification ',       value => 'combineemail',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Ship A Package',                                value => 'shipapackage',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	];
 
 my $CUSTOM_CSS_STYLES = [

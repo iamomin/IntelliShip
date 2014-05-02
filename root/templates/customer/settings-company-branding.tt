@@ -13,7 +13,7 @@
 		<li><a href="#branding-logo">Branding Logo's</a></li>
 		<li><a href="#color-picker">Set Colors</a></li>
 		<li><a href="#branding-css-content">Edit Branding CSS</a></li>
-		<li><a href="#branding-demo" id="branding-demo-link">View Demo</a></li>
+		<li><a href="#branding-demo" id="branding-demo-link">Preview</a></li>
 	</ul>
 
 	<div id="branding-logo">

@@ -658,12 +658,6 @@ sub get_contact_data_value
 	return $custcondata_arr[0]->value;
 	}
 
-sub login_level
-	{
-	my $self = shift;
-	return $self->get_contact_data_value('loginlevel') || 0;
-	}
-
 sub has_extid_data
 	{
 	my $self = shift;

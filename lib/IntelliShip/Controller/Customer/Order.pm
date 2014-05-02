@@ -163,7 +163,7 @@ sub setup_address :Private
 	$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY
-	unless ($Customer->login_level == 25)
+	unless ($Contact->login_level == 25)
 		{
 		$c->stash->{SHOW_PONUMBER} = $Customer->get_contact_data_value('reqponum');
 		$c->stash->{SHOW_EXTID}    = $Customer->get_contact_data_value('reqextid');
@@ -287,7 +287,7 @@ sub setup_carrier_service :Private
 	#$c->stash->{deliverymethod} = '0';
 	#$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
-	if ($Contact->is_administrator and $Customer->login_level != 10 and $Customer->login_level != 20 and $Customer->login_level != 15)
+	if ($Contact->is_administrator and $Contact->login_level != 10 and $Contact->login_level != 20 and $Contact->login_level != 15)
 		{
 		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
 		}
@@ -432,7 +432,7 @@ sub save_CO_details :Private
 
 	$coData->{'cotypeid'} = ($params->{'action'} and $params->{'action'} eq 'clearquote') ? 10 : 1;
 
-	if ($self->customer->login_level =~ /(35|40)/ and $params->{'cotypeid'} and $params->{'cotypeid'} == 2)
+	if ($self->contact->login_level =~ /(35|40)/ and $params->{'cotypeid'} and $params->{'cotypeid'} == 2)
 		{
 		$coData->{'cotypeid'} = 2;
 		}
@@ -3050,6 +3050,7 @@ sub set_required_fields :Private
 	my $self = shift;
 	my $page = shift;
 	my $c = $self->context;
+	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
 	return if $c->stash->{requiredfield_list};
@@ -3073,7 +3074,7 @@ sub set_required_fields :Private
 			{ name => 'toemail',    details => "{ email: false }"},
 		];
 
-		unless ($Customer->login_level == 25)
+		unless ($Contact->login_level == 25)
 			{
 			if ($c->stash->{one_page})
 				{
@@ -3094,7 +3095,7 @@ sub set_required_fields :Private
 
 	if (!$page or $page eq 'shipment')
 		{
-		unless ($Customer->login_level == 25 or $c->stash->{one_page})
+		unless ($Contact->login_level == 25 or $c->stash->{one_page})
 			{
 			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $customerRules{'reqdatetoship'} and $Customer->allowpostdating;
 			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $customerRules{'reqdateneeded'};

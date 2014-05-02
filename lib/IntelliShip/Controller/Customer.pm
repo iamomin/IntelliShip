@@ -1138,16 +1138,17 @@ sub set_navigation_rules
 	my $c = $self->context;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
-	my $login_level = $Customer->login_level;
+	my $login_level = $Contact->login_level;
 
 	my $navRules = {};
 	if ($login_level != 25 and $login_level != 35 and $login_level != 40 and !$Contact->is_restricted)
 		{
 		$navRules->{DISPLAY_SHIPMENT_MAINTENANCE} = 1;
-		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->uploadorders;
+		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->get_contact_data_value('uploadorders') || 0;
 		$navRules->{DISPLAY_SHIP_PACKAGE} = !$Contact->get_contact_data_value('disallowshippackages') || 0;
 		}
 
+	$navRules->{DISPLAY_SHIP_A_PACKAGE} = $Contact->get_contact_data_value('shipapackage') || 0;
 	$navRules->{DISPLAY_DASHBOARD} = $Contact->get_contact_data_value('dashboard') || 0;
 	#$navRules->{DISPLAY_SHIP_PACKAGE} = ($Customer->username eq 'sprint' and $Contact->username eq 'user');
 

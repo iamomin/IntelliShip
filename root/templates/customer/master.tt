@@ -128,7 +128,9 @@
 					[% IF DISPLAY_NEW_ORDER %]
 					<li><a id="mnu_onepage" href="/customer/order/onepage"><img src="/static/branding/[% branding_id %]/images/menu/new-order-grayed.png"/><span>NEW ORDER</span></a></li>
 					[% END %]
+					[% IF DISPLAY_SHIP_A_PACKAGE %]
 					<li><a id="mnu_multipage" href="/customer/order/multipage"><img src="/static/branding/[% branding_id %]/images/menu/new-order-grayed.png"/><span>SHIP A PACKAGE</span></a></li>
+					[% END %]
 					[% IF DISPLAY_QUICKSHIP %]
 					<li><a id="mnu_quickship" href="/customer/order/quickship"><img src="/static/branding/[% branding_id %]/images/menu/quick-ship-grayed.png"/><span>QUICK SHIP</span></a></li>
 					[% END %]
