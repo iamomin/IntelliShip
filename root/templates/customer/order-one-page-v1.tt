@@ -98,7 +98,7 @@
 	<div style="border: 4px solid #9BA7AF">
 	<table>
 		<tr>
-		[% IF SHOW_NEW_OTHER_CARRIER %]
+		[% IF 0 && SHOW_NEW_OTHER_CARRIER %]
 		<td><label for="othercarrier" class="float-right">New Other Carrier:</label></td>
 		<td><input type="text" class="text" name="othercarrier" id="othercarrier"/></td>
 		[% ELSE %]
