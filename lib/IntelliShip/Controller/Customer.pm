@@ -927,7 +927,8 @@ sub get_select_list
 	elsif ($list_name eq 'PACKING_LIST')
 		{
 		$list = [
-			{ name => 'Generic', value => 'packinglist' },
+			{ name => 'Generic', value => 'generic' },
+			{ name => 'Sprint',  value => 'sprint' },
 			];
 		}
 	elsif ($list_name eq 'MARKUP_TYPE')

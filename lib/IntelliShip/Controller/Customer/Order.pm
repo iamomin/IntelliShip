@@ -3253,20 +3253,20 @@ sub generate_packing_list
 	##########################
 	## Set line item values ##
 	##########################
-	my @packpros = $Shipment->packages;
+	my @packages = $Shipment->packages;
 
 	my ($gross_weight,$quantity,$product_statusid) = (0,0,0);
 
 	my $packinglist_loop = [];
-	foreach my $PackProData (@packpros)
+	foreach my $Package (@packages)
 		{
 		# Use shipment package data for # of packages, weights, and the like
-		my $weight = ($PackProData->dimweight > $PackProData->weight ? $PackProData->dimweight : $PackProData->weight);
+		my $weight = ($Package->dimweight > $Package->weight ? $Package->dimweight : $Package->weight);
 
 		$gross_weight += $weight;
-		$quantity     += $PackProData->quantity;
+		$quantity     += $Package->quantity;
 
-		(my $shipment_section_ref,$product_statusid) = $self->GetLineItems($PackProData);
+		(my $shipment_section_ref,$product_statusid) = $self->GetLineItems($Package);
 
 		foreach my $key (sort { $a <=> $b } keys %$shipment_section_ref)
 			{
@@ -3289,14 +3289,6 @@ sub generate_packing_list
 		$c->stash->{datefullfilled} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
 		}
 
-	## Render Packing List HTML
-	my $PackListHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packing-list.tt" ]);
-
-	## Save packinglist invoice to File
-	my $PackListFileName = IntelliShip::MyConfig->packing_list_directory . '/' . $Shipment->shipmentid;
-
-	$self->SaveStringToFile($PackListFileName, $PackListHTML);
-
 	## print commercial invoice only for international shipment
 	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
 
@@ -3318,7 +3310,22 @@ sub generate_packing_list
 		$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
 		}
 
-	$c->stash(template => "templates/customer/order-packing-list.tt");
+	my $list_type = $self->contact->get_contact_data_value('packinglist');
+	$list_type = 'generic' unless $list_type =~ /sprint/i;
+
+	$self->setup_label_to_print if $list_type =~ /sprint/i;
+
+	my $template = 'order-packing-list-' . $list_type . '.tt';
+
+	## Render Packing List HTML
+	my $PackListHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/" . $template ]);
+
+	## Save packinglist invoice to File
+	my $PackListFileName = IntelliShip::MyConfig->packing_list_directory . '/' . $Shipment->shipmentid;
+
+	$self->SaveStringToFile($PackListFileName, $PackListHTML);
+
+	$c->stash(template => "templates/customer/" . $template);
 
 	return $PackListHTML;
 	}
