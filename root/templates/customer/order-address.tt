@@ -191,14 +191,6 @@
 				<tr>
 					<td><label for="description" class="float-right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
-				<!--
-				<tr>
-					<td><label for="shipmentvalue" class="float-right">Shipment Value:</label></td><td><input type="hidden" id="shipmentvalue" name="shipmentvalue" value="[% shipmentvalue ? shipmentvalue : 0.00 %]"/><div class="bold-text" id="shipmentvalue_div">[% shipmentvalue ? shipmentvalue : 0.00 %]</div></td>
-				</tr>
-				<tr>
-					<td><label for="dryicewt" class="float-right">Dry Ice Wt:</label></td><td><input type="text" class="text" name="dryicewt" id="dryicewt" value="[% dryicewt %]"/></td>
-				</tr>
-				-->
 				<tr>
 					<td><label for="deliverymethod" class="float-right">Delivery Method:</label></td>
 					<td class="css3-radios">

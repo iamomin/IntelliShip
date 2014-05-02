@@ -146,7 +146,7 @@ sub setup_address :Private
 
 	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
-	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
+	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->ordernumber) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 
@@ -1010,7 +1010,9 @@ sub get_order :Private
 			$c->log->debug("######## NO CO FOUND ########");
 			my $COID = $self->get_token_id;
 			my $OrderNumber = $self->get_auto_order_number($params->{'ordernumber'});
-			$OrderNumber = $COID unless $OrderNumber;
+			#$OrderNumber = $COID unless $OrderNumber;
+			$params->{'ordernumber'} = $OrderNumber;
+			$c->stash->{ordernumber} = $OrderNumber;
 
 			my $coData = {
 				ordernumber       => $OrderNumber,
@@ -3145,7 +3147,7 @@ sub get_auto_order_number :Private
 	#$c->log->debug("SQL: " . $SQL);
 
 	my $STH = $MyDBI->select($SQL);
-	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count(*)'};
+	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count'};
 
 	# get order number if one is needed
 	if ($HasAutoOrderNumber and !$OrderNumber)
