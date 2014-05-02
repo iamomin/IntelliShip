@@ -1,25 +1,26 @@
 
-<h1>
-	[% quickship ? 'Quick Ship Order' : 'New Order' %]
-	<table class="float-right css3-radios">
-		<tr>
-			<td><label for="ordernumber" class="small_title">Order Number:</label></td>
-			<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/></td>
-			[% FOREACH item IN shipmenttype_loop %]
-			<td>
-				<label>
-					<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
-					<span><label for="[% item.value %]">[% item.name %]</label></span>
-				</label>
-			</td>
-			[% END %]
-		<tr>
-	</table>
-</h1>
-
 <script src="/static/js/customer-order.js"></script>
 
 <form id="frm_order" name="frm_order" method="post" action="/customer/order/[% quickship ? 'quickship' : 'onepage' %]">
+
+	<h1>
+		[% quickship ? 'Quick Ship Order' : 'New Order' %]
+		<table class="float-right css3-radios">
+			<tr>
+				<td><label for="ordernumber" class="small_title">Order Number:</label></td>
+				<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/></td>
+				[% FOREACH item IN shipmenttype_loop %]
+				<td>
+					<label>
+						<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
+						<span><label for="[% item.value %]">[% item.name %]</label></span>
+					</label>
+				</td>
+				[% END %]
+			<tr>
+		</table>
+	</h1>
+
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>

@@ -120,15 +120,17 @@ function ConfigureAddressSection(address, direction, type)
 	RestoreAddress(address, direction, type);
 	}
 
-var addressArray  = {};
 var previousCheck;
+var addressArray = {};
 var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+
 function ConfigureInboundOutboundDropship()
 	{
 	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
 
 	/* set default shipment type outbound if no return capability */
 	if (selectedType == undefined) selectedType = 'outbound';
+	if (previousCheck == undefined) previousCheck = 'outbound';
 
 	if (previousCheck == 'outbound')
 		{
@@ -157,7 +159,6 @@ function ConfigureInboundOutboundDropship()
 		}
 	else if(selectedType == 'outbound')
 		{
-
 		$('#fromdepartment_tr').show();
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
@@ -171,7 +172,6 @@ function ConfigureInboundOutboundDropship()
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
-
 		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
 		ConfigureAddressSection('ADDRESS_2', 'to', 'EDITABLE');
 		}
