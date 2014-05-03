@@ -191,16 +191,12 @@ function setCityAndState(type)
 	var tozip = $("#"+type+"zip").val();
 	if (tozip.length < 5) return;
 
-	//$("#tocity").val('');
-	//$("#tostate").val('');
-	//$("#tocountry").val('');
-
 	var query_param = "&zipcode=" + tozip + '&city=' + $("#"+type+"city").val() + '&state=' + $("#"+type+"state").val() + '&country=' + $("#"+type+"country").val();
 	if($("#"+type+"zip").val() != "") {
 		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
-			$("#"+type+"city").val(JSON_data.city);
-			$("#"+type+"state").val(JSON_data.state);
-			$("#"+type+"country").val(JSON_data.country);
+			if (JSON_data.city.length > 0) $("#"+type+"city").val(JSON_data.city);
+			if (JSON_data.city.state > 0) $("#"+type+"state").val(JSON_data.state);
+			if (JSON_data.city.country > 0) $("#"+type+"country").val(JSON_data.country);
 			if ($("#fromstatespan").length && type == 'from') $("#fromstatespan").text(JSON_data.state);
 			});
 		}
@@ -274,9 +270,8 @@ function validatePackageDetails()
 	var controls = ['quantity', 'description', 'weight'];
 
 	var requiredPkgProduct = {};
-	$('#package-detail-list li').each(function() {
 
-		if (!this.id.match(/^new_/)) return;
+	$('input[id^=rownum_id_]').each(function( index ) {
 
 		var row_ID = this.id.split('_')[2];
 

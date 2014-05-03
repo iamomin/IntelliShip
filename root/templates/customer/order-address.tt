@@ -1,11 +1,9 @@
 [% UNLESS one_page %]
-	<h2>SHIP A PACKAGE</h2>
-
 	<table class="order-nav">
 		<tr>
 		<td class="L"><input type="button" class="active" value="ADDRESS"/></td>
-		<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="$('#frm_address').submit();"/></td>
-		<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="reviewOrder();"/></td>
+		<td class="C"><input type="button" class="inactive" value="SHIPMENT DETAILS" onclick="interviewNext();"/></td>
+		<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="interviewSummary();"/></td>
 		</tr>
 		<tr>
 		<td colspan="3">
@@ -17,7 +15,7 @@
 		</tr>
 	</table>
 
-	<form id="frm_address" name="frm_address" method="post" action="/customer/order/multipage">
+	<form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 		<input type="hidden" id="do" name="do" value="step1"/>
 		<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 		<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
@@ -136,11 +134,11 @@
 					</select>
 					</label>
 					</div>
-					<input type="text" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]"/>
+					<input type="text" class="reset-cs-onchange" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]"/>
 					</td>
 				</tr>
 				<tr>
-					<td><label for="tocountry" class="float-right require">Country:</label></td>
+					<td><label for="tocountry" class="float-right require reset-cs-onchange">Country:</label></td>
 					<td>
 					<div id="toCountryDiv" style="display: inline; padding: 0;">
 					<label>
@@ -247,88 +245,31 @@
 		</table>
 		</div>
 	</div>
+
 [% UNLESS one_page %]
 	<br/>
 
-	<div class="green-forward float-right">&nbsp;&nbsp;<input type="submit" id="quick_ship" value="NEXT STEP"/></div>
+	<div class="green-forward float-right">&nbsp;&nbsp;<input type="button" value="NEXT STEP" onclick="interviewNext();"/></div>
 
 </form>
-
-<script src="/static/js/customer-order.js"></script>
 [% END %]
+
 <script>
 
-$("#fromdepartment").change(function() {
-	validateDepartment('fromdepartment', '[% contactObj.customerid %]');
-	});
+	$("#fromdepartment").change(function() {
+		validateDepartment('fromdepartment', '[% contactObj.customerid %]');
+		});
 
-[% IF one_page %]
-	$("#datetoship").datepicker({ minDate: '-0d' });
-	[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
-	$("#dateneeded").datepicker({ minDate: '-0d' });
-[% END %]
+	[% IF one_page %]
+		$("#datetoship").datepicker({ minDate: '-0d' });
+		[% UNLESS datetoship %]$("#datetoship").datepicker('setDate', '+0d');[% END %]
+		$("#dateneeded").datepicker({ minDate: '-0d' });
+	[% END %]
 
-var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.zip %] | [% item.address1 %]",[% END %]];
-var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
+	var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name %] | [% item.city %] | [% item.state %] | [% item.zip %] | [% item.address1 %]",[% END %]];
+	var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
 
-$("#toname").autocomplete({
-	source: availableCustomers,
-	select: function( event, ui ) {
-		var SelectedCompany = ui.item.value
-		var AddrParts = SelectedCompany.split(" | ");
-		var Company = AddrParts[0];
-		var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
-		var RefID = hashCompanyRef[Key];
-		if (RefID == undefined) return;
-		ui.item.value = Company;
-		populateShipAddress('to', RefID);
-		}
-	});
-
-$("#tozip").change(function() {
-	setCityAndState('to');
-	});
-
-$("#dateneeded").change(function() {
-	resetCSList();
-	checkDueDate();
-	});
-
-$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
-
-[% IF quickship %]
-
-	addressArray['COMPANY_ADDRESS'] = {
-			name			: "[% customername %]",
-			address1		: "[% customeraddress1 %]",
-			address2		: "[% customeraddress2 %]",
-			city			: "[% customercity %]",
-			state			: "[% customerstate %]",
-			zip				: "[% customerzip %]",
-			country			: "[% customercountry %]",
-			contact			: "[% customercontact %]",
-			phone			: "[% customerphone %]",
-			department		: "[% customerdepartment %]",
-			customernumber	: "[% customercustomernumber %]",
-			email			: "[% customeremail %]"
-			};
-
-	addressArray['ADDRESS_DESTIN'] = GetAddress('to');
-
-	previousCheck = $('input:radio[name=shipmenttype]:checked').val();
-
-	addressArray['ADDRESS_ORIGIN'] = (previousCheck == 'dropship' ? GetAddress('from') : GetAddress(''));
-
-	if (previousCheck != undefined) ConfigureInboundOutboundDropship();
-
-	if ($("#fromcity").val().length == 0) {
-		$("#fromstate").change(); 
-		setCityAndState('from');
-		}
-
-	$("input[name='shipmenttype']").change(ConfigureInboundOutboundDropship);
-
-	$("#fromname").autocomplete({
+	$("#toname").autocomplete({
 		source: availableCustomers,
 		select: function( event, ui ) {
 			var SelectedCompany = ui.item.value
@@ -338,42 +279,94 @@ $("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 			var RefID = hashCompanyRef[Key];
 			if (RefID == undefined) return;
 			ui.item.value = Company;
-			populateShipAddress('from', RefID);
+			populateShipAddress('to', RefID);
 			}
 		});
 
-	$("#fromzip").change(function() {
-		setCityAndState('from');
+	$("#tozip").change(function() {
+		setCityAndState('to');
 		});
 
-	requiredFieldHash['fromname']		={ minlength: 2 };
-	requiredFieldHash['fromaddress1']	={ minlength: 2 };
-	requiredFieldHash['fromcity']		={ minlength: 2 };
-	requiredFieldHash['fromstate']		={ minlength: 2 };
-	requiredFieldHash['fromzip']		={ minlength: 5 };
-	requiredFieldHash['fromcountry']	={ minlength: 2 };
-[% END %]
+	$("#dateneeded").change(function() {
+		resetCSList();
+		checkDueDate();
+		});
 
-[% UNLESS one_page %]
-	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+	$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
+
+	[% IF quickship %]
+
+		addressArray['COMPANY_ADDRESS'] = {
+				name			: "[% customername %]",
+				address1		: "[% customeraddress1 %]",
+				address2		: "[% customeraddress2 %]",
+				city			: "[% customercity %]",
+				state			: "[% customerstate %]",
+				zip				: "[% customerzip %]",
+				country			: "[% customercountry %]",
+				contact			: "[% customercontact %]",
+				phone			: "[% customerphone %]",
+				department		: "[% customerdepartment %]",
+				customernumber	: "[% customercustomernumber %]",
+				email			: "[% customeremail %]"
+				};
+
+		addressArray['ADDRESS_DESTIN'] = GetAddress('to');
+
+		previousCheck = $('input:radio[name=shipmenttype]:checked').val();
+
+		addressArray['ADDRESS_ORIGIN'] = (previousCheck == 'dropship' ? GetAddress('from') : GetAddress(''));
+
+		if (previousCheck != undefined) ConfigureInboundOutboundDropship();
+
+		if ($("#fromcity").val().length == 0) {
+			$("#fromstate").change(); 
+			setCityAndState('from');
+			}
+
+		$("input[name='shipmenttype']").change(ConfigureInboundOutboundDropship);
+
+		$("#fromname").autocomplete({
+			source: availableCustomers,
+			select: function( event, ui ) {
+				var SelectedCompany = ui.item.value
+				var AddrParts = SelectedCompany.split(" | ");
+				var Company = AddrParts[0];
+				var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
+				var RefID = hashCompanyRef[Key];
+				if (RefID == undefined) return;
+				ui.item.value = Company;
+				populateShipAddress('from', RefID);
+				}
+			});
+
+		$("#fromzip").change(function() {
+			setCityAndState('from');
+			});
+
+		requiredFieldHash['fromname']		={ minlength: 2 };
+		requiredFieldHash['fromaddress1']	={ minlength: 2 };
+		requiredFieldHash['fromcity']		={ minlength: 2 };
+		requiredFieldHash['fromstate']		={ minlength: 2 };
+		requiredFieldHash['fromzip']		={ minlength: 5 };
+		requiredFieldHash['fromcountry']	={ minlength: 2 };
 	[% END %]
 
-function reviewOrder() {
-	$("#do").val('review');
-	$("#frm_address").submit();
-	}
+	[% UNLESS one_page %]
+		[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+		[% END %]
 
-$("#frm_address").submit(function() {
-	return validateForm(requiredFieldHash);
-	});
+	$("#frm_shipment").submit(function() {
+		return validateForm(requiredFieldHash);
+		});
 
-$(document).ready(function(){
-	[% IF tooltips %]
-	[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
-	setToolTip();
+	$(document).ready(function(){
+		[% IF tooltips %]
+		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
+		setToolTip();
+		[% END %]
+
+		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
+		});
 	[% END %]
-
-	if (requiredFieldHash) markRequiredFields(requiredFieldHash);
-	});
-[% END %]
 </script>

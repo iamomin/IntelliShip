@@ -90,7 +90,7 @@ img { border: none; vertical-align: middle }
 }
 
 /* Centered 1000 pixel content of all section body */
-#content {
+.content {
     width: 1000px;
     margin: 0 auto;
 }

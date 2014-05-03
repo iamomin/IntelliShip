@@ -1,7 +1,6 @@
 package IntelliShip::Controller::Customer::Order::Multipage;
 use Moose;
 use namespace::autoclean;
-use IntelliShip::Controller::Customer::Ajax;
 
 BEGIN { extends 'IntelliShip::Controller::Customer::Order'; }
 
@@ -58,8 +57,54 @@ sub index :Path :Args(0) {
 		}
 	else
 		{
-		$self->setup_address;
+		#$self->setup_address;
+		$self->setup_interview;
 		}
+	}
+
+sub ajax :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $do_value = $c->req->param('do') || '';
+	if ($do_value eq 'step1')
+		{
+		$self->complete_step1;
+		}
+	elsif ($do_value eq 'step2')
+		{
+		$self->complete_step2;
+		}
+	elsif ($do_value eq 'print')
+		{
+		$self->setup_label_to_print;
+		}
+	elsif ($do_value eq 'shipment')
+		{
+		$self->setup_shipment_information;
+		}
+	elsif ($do_value eq 'address')
+		{
+		$self->edit_address_details;
+		}
+	elsif ($do_value eq 'review')
+		{
+		$self->review_order;
+		}
+	elsif ($do_value eq 'cancel')
+		{
+		$self->cancel_order;
+		}
+	}
+
+sub setup_interview
+	{
+	my $self = shift;
+	my $c = $self->context;
+	$self->setup_address;
+	$c->stash(CONTENT => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-address.tt" ]));
+	$c->stash(template => "templates/customer/order-interview.tt");
 	}
 
 sub complete_step1

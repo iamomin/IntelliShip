@@ -135,7 +135,7 @@ sub setup_address :Private
 
 	my $CO = $self->get_order;
 
-	my $do = $c->req->param('do') || '';
+	my $do = $params->{'do'} || '';
 	if (!$do or $do eq 'address')
 		{
 		$c->stash->{populate} = 'address';
@@ -269,6 +269,7 @@ sub setup_carrier_service :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	my $Customer = $self->customer;
 	my $Contact  = $self->contact;
@@ -277,7 +278,7 @@ sub setup_carrier_service :Private
 	$c->stash->{review_order} = 1;
 	$c->stash->{customer} = $Contact;
 
-	my $do = $c->req->param('do') || '';
+	my $do = $params->{'do'} || '';
 	if (!$do or $do =~ /(summary|review|step2)/)
 		{
 		$c->stash->{populate} = 'summary';
@@ -292,7 +293,7 @@ sub setup_carrier_service :Private
 		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
 		}
 
-	if ($CO->has_carrier_service_details or $do =~ /step2/)
+	if ($CO->has_carrier_service_details or ($do =~ /step2/ and !$params->{'skiproute'}))
 		{
 		$c->log->debug("CO has carrier service details, populate details...");
 
@@ -375,7 +376,7 @@ sub save_CO_details :Private
 
 	$c->log->debug("... SAVE CO DETAILS");
 
-	#IntelliShip::Utils->hash_decode($params);
+	IntelliShip::Utils->hash_decode($params);
 
 	my $CO = $self->get_order;
 

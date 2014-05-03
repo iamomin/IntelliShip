@@ -91,7 +91,7 @@
 
 		<!-- start header -->
 		<div id="header">
-			<div id="content">
+			<div class="content">
 				<a href="[% landing_page %]"><img src="/static/branding/[% branding_id %]/images/header/[% logo %]"/></a>
 				<nav>
 					<ul>
@@ -114,7 +114,7 @@
 		<!-- <div style="clear: both;">&nbsp;</div> -->
 
 		<div ID="menu"> <!-- start menu -->
-			<div id="content">
+			<div class="content">
 				<ul>
 					[% IF DISPLAY_DASHBOARD %]
 					<li><a id="mnu_dashboard" href="/customer/dashboard"><img src="/static/branding/[% branding_id %]/images/menu/dashboard-grayed.png"/><span>DASHBOARD</span></a></li>
@@ -150,7 +150,7 @@
 
 		<div id="page"> <!-- start page -->
 
-			<div id="content"> <!-- start content -->
+			<div class="content"> <!-- start content -->
 				<div id="post">
 
 				<!-- ========================================== START ========================================== -->
@@ -166,7 +166,7 @@
 
 		<!-- start footer -->
 		<div id="footer">
-			<div id="content">
+			<div class="content">
 				<ul>
 					<li><img src="/static/branding/[% branding_id %]/images/footer/logo.gif" class="logo"/></li>
 					<li>Copyright &copy; 2000-2014 Engage Technology, LLC.</li>
