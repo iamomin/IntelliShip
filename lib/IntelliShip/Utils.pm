@@ -427,6 +427,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Charge Difference Threshold (%/min)',           value => 'chargediffpct',					type => 'INPUT',    datatypeid => 2, ownertype => ['CUSTOMER']},
 	{ name => '',                                              value => 'chargediffmin',					type => 'INPUT',    datatypeid => 2, ownertype => ['CUSTOMER']},
 	{ name => 'Return Capability',                             value => 'returncapability',					type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
+	{ name => 'Print Return Shipment',                         value => 'printreturnshipment',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Login Level',                                   value => 'loginlevel',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Dropship Capability',                           value => 'dropshipcapability',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Display Quote Markup',                          value => 'quotemarkup',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
