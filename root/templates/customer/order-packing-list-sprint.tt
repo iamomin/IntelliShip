@@ -141,7 +141,8 @@
 				[% END %]
 			</table>
 		</div>
-	<form id="frm_next" action="/customer/order/ajax">
+
+		<form id="frm_next" action="/customer/order/ajax">
 			<input type="hidden" name="ajax" value="1"/>
 			<input type="hidden" name="type" value="HTML"/>
 			[% IF billoflading %]
@@ -155,6 +156,7 @@
 			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
 		</form>
+
 		<canvas id="hidden_screenshot" style="display:none;"></canvas>
 	</body>
 </html>
