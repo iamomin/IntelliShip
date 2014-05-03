@@ -63,10 +63,12 @@ sub fetchrow
 	my $rowno = shift;
 	my $return_hash = {};
 
-	return undef unless ($rowno >= 0);
+	return undef unless $rowno >= 0;
 
 	my $row_data_array = $self->query_data->[$rowno];
 	my $field_count = $self->query_field_number;
+
+	return undef unless $row_data_array;
 
 	if (!$field_count)
 		{

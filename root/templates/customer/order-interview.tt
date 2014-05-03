@@ -79,10 +79,8 @@
 				}
 			}
 		}
-	function resetCSList()
-		{
-		carrierServieDetails = {};
-		}
+
+	resetCSList = function () { carrierServieDetails = {}; }
 
 	$(document).on('change', '.reset-cs-onchange', resetCSList);
 
