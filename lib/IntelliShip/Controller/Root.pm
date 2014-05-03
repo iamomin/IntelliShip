@@ -131,7 +131,6 @@ sub end : Private {
 	$self->set_selected_menu($c);
 	$self->check_css_overrides($c);
 
-	$c->stash->{landing_page} = '/customer/report';
 	$c->stash->{timestamp} = IntelliShip::DateUtils->timestamp;
 
 	my $Controller = $c->controller;
@@ -151,7 +150,9 @@ sub end : Private {
 		{
 		$Controller->set_header_section;
 		$Controller->set_navigation_rules;
-		$c->stash->{contactObj} = $Controller->contact;
+
+		$c->response->redirect($c->uri_for($c->stash->{landing_page})) if $c->request->action =~ /login$/;
+
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else

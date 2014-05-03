@@ -151,6 +151,8 @@ sub authenticate_token :Private
 		$self->contact($Contact);
 		$self->customer($Customer);
 
+		$c->stash->{contactObj} = $Contact;
+
 		## Update token expire time
 		$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp with time zone 'now' + '2 hours' WHERE tokenid = '$NewTokenID'");
 		}
@@ -1140,6 +1142,8 @@ sub set_navigation_rules
 	my $Customer = $self->customer;
 	my $login_level = $Contact->login_level;
 
+	return if $c->stash->{RULES_CACHED};
+
 	my $navRules = {};
 	if ($login_level != 25 and $login_level != 35 and $login_level != 40 and !$Contact->is_restricted)
 		{
@@ -1150,7 +1154,6 @@ sub set_navigation_rules
 
 	$navRules->{DISPLAY_SHIP_A_PACKAGE} = $Contact->get_contact_data_value('shipapackage') || 0;
 	$navRules->{DISPLAY_DASHBOARD} = $Contact->get_contact_data_value('dashboard') || 0;
-	#$navRules->{DISPLAY_SHIP_PACKAGE} = ($Customer->username eq 'sprint' and $Contact->username eq 'user');
 
 	unless ($Contact->is_restricted)
 		{
@@ -1162,8 +1165,16 @@ sub set_navigation_rules
 	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
 
 	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
-	#$c->stash->{$_} = 1 foreach keys %$navRules;
-	#$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
+
+	my $landing_page;
+	$landing_page = '/customer/order/multipage' if !$landing_page and $c->stash->{DISPLAY_SHIP_A_PACKAGE};
+	$landing_page = '/customer/order/quickship' if !$landing_page and $c->stash->{DISPLAY_QUICKSHIP};
+	$landing_page = '/customer/myorders' if !$landing_page and $c->stash->{DISPLAY_MYORDERS};
+	$landing_page = '/customer/report' unless $landing_page;
+
+	$c->stash->{landing_page} = $landing_page;
+
+	$c->stash->{RULES_CACHED} = 1;
 	}
 
 sub process_pagination
