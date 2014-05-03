@@ -153,6 +153,7 @@ sub end : Private {
 
 		$c->response->redirect($c->uri_for($c->stash->{landing_page})) if $c->request->action =~ /login$/;
 
+		$c->stash->{NO_CACHE} = 1 if $c->req->param('cache') == 0;
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else

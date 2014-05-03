@@ -195,8 +195,8 @@ function setCityAndState(type)
 	if($("#"+type+"zip").val() != "") {
 		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
 			if (JSON_data.city.length > 0) $("#"+type+"city").val(JSON_data.city);
-			if (JSON_data.city.state > 0) $("#"+type+"state").val(JSON_data.state);
-			if (JSON_data.city.country > 0) $("#"+type+"country").val(JSON_data.country);
+			if (JSON_data.state.length > 0) $("#"+type+"state").val(JSON_data.state);
+			if (JSON_data.country.length > 0) $("#"+type+"country").val(JSON_data.country);
 			if ($("#fromstatespan").length && type == 'from') $("#fromstatespan").text(JSON_data.state);
 			});
 		}

@@ -57,7 +57,7 @@
 						</select>
 						</label>
 						</div>
-						<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromAddress.zip %]"/>
+						<input type="text" name="fromzip" id="fromzip" style="width: 55px;" value="[% fromAddress.zip %]" onchange="setCityAndState('from');"/>
 					</td>
 				</tr>
 				<tr>
@@ -134,7 +134,7 @@
 					</select>
 					</label>
 					</div>
-					<input type="text" class="reset-cs-onchange" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]"/>
+					<input type="text" class="reset-cs-onchange" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]" onchange="setCityAndState('to');"/>
 					</td>
 				</tr>
 				<tr>
@@ -283,10 +283,6 @@
 			}
 		});
 
-	$("#tozip").change(function() {
-		setCityAndState('to');
-		});
-
 	$("#dateneeded").change(function() {
 		resetCSList();
 		checkDueDate();
@@ -338,10 +334,6 @@
 				ui.item.value = Company;
 				populateShipAddress('from', RefID);
 				}
-			});
-
-		$("#fromzip").change(function() {
-			setCityAndState('from');
 			});
 
 		requiredFieldHash['fromname']		={ minlength: 2 };

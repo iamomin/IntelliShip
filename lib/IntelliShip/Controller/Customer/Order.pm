@@ -3317,7 +3317,12 @@ sub generate_packing_list
 	my $list_type = $self->contact->get_contact_data_value('packinglist');
 	$list_type = 'generic' unless $list_type =~ /sprint/i;
 
-	$self->setup_label_to_print if $list_type =~ /sprint/i;
+	if ($list_type =~ /sprint/i)
+		{
+		my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+		$c->stash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+		$self->setup_label_to_print ;
+		}
 
 	my $template = 'order-packing-list-' . $list_type . '.tt';
 
