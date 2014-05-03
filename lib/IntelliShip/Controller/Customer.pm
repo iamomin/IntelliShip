@@ -100,14 +100,14 @@ sub default :Path
 	$c->response->redirect($c->uri_for('/customer/login'));
 	}
 
-sub help :Path
+sub help :Local
 	{
 	my ( $self, $c ) = @_;
 	$c->stash(template => "templates/customer/help.tt");
 	return 1;
 	}
 
-sub printdemo :Path
+sub printdemo :Local
 	{
 	my ( $self, $c ) = @_;
 	$c->stash(template => "templates/customer/applet-print-demo.html");
@@ -166,7 +166,7 @@ sub authenticate_token :Private
 	return ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
 	}
 
-sub get_customer_contact
+sub get_customer_contact :Private
 	{
 	my $self = shift;
 	my $username = shift;
