@@ -63,7 +63,14 @@
 			if (Object.keys(carrierServieDetails).length > 0)
 				{
 				$("#carrier-service-list").html(carrierServieDetails['CS-LIST']);
+				}
+			else
+				{
+				carrierServieDetails['CS-LIST'] = $("#carrier-service-list").html();
+				}
 
+			if ($("#carrier-service-list").html().length > 0)
+				{
 				$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
 						var panelID = $(ui.newPanel).prop('id');
 						var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
@@ -72,10 +79,6 @@
 							});
 						}
 					});
-				}
-			else
-				{
-				carrierServieDetails['CS-LIST'] = $("#carrier-service-list").html();
 				}
 			}
 		}
