@@ -735,7 +735,7 @@ sub get_business_days_between_two_dates
 
 	#print STDERR "\nDiff: " . $day1->diffb($day2);
 
-	return $day1->diffb($day2);
+	return $day2->diffb($day1);
 	}
 
 sub parse_date
