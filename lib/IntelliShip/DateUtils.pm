@@ -719,6 +719,25 @@ sub Holiday
 	return $numHolidays;
 	}
 
+sub get_business_days_between_two_dates
+	{
+	my $self = shift;
+	my ($date1,$date2) = @_;
+
+	my $d1 = $self->format_to_yyyymmdd($date1);
+	my $d2 = $self->format_to_yyyymmdd($date2);
+
+	#print STDERR "\n d1: " . $d1;
+	#print STDERR "\n d2: " . $d2;
+
+	my $day1 = new Date::Business(DATE => $d1);
+	my $day2 = new Date::Business(DATE => $d2);
+
+	#print STDERR "\nDiff: " . $day1->diffb($day2);
+
+	return $day1->diffb($day2);
+	}
+
 sub parse_date
 	{
 	my $self = shift;
