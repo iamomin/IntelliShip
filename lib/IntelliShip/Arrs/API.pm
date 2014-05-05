@@ -297,7 +297,7 @@ sub get_carrrier_service_rate_list
 		$self->context->log->debug("NO DATE NEEDED, FUTURE DATE SELECTED: ". $request->{'dateneeded'});
 		}
 
-	$request->{'hasrates'} = $Customer->hasrates;
+	$request->{'hasrates'} = $Contact->get_contact_data_value('hasrates');
 	$request->{'autocsselect'} = $Customer->autocsselect;
 	$request->{'allowraterecalc'} = 1;
 	$request->{'manroutingctrl'} = $Customer->get_contact_data_value('manroutingctrl');
