@@ -341,10 +341,10 @@ sub SendPickUpEmail
 	$Email->add_line('Tracking    : ' . $Shipment->tracking1);
 	$Email->add_line('=' x 60);
 	$Email->add_line('');
-	$Email->add_line('Message                    : ' . $Message);
-	$Email->add_line('Code                       : ' . $ResponseCode);
-	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId);
-	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber);
+	$Email->add_line('Message                    : ' . $Message . '<br>');
+	$Email->add_line('Code                       : ' . $ResponseCode . '<br>');
+	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId . '<br>');
+	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber . '<br>');
 
 	if ($Email->send)
 		{

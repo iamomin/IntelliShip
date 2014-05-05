@@ -89,17 +89,26 @@ sub process_request
 
 	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
 
-	my $NotificationArrayRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Notifications'};
+	my $NotificationRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Notifications'};
 
 	my ($Message,$ResponseCode) = ("","");
-	foreach my $msg (@$NotificationArrayRef)
-		{
-		$Message      = $Message . "<br>" . $msg->{'v6:Message'};
-		$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
-		}
 
-	$Message      = $Message . "<br>";
-	$ResponseCode = $ResponseCode  . "<br>";
+	if (ref $NotificationRef eq 'ARRAY')
+		{
+		foreach my $msg (@$NotificationRef)
+			{
+			$Message      = $Message . "<br>" . $msg->{'v6:Message'};
+			$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
+			}
+
+		$Message      = $Message . "<br>";
+		$ResponseCode = $ResponseCode  . "<br>";
+		}
+	else
+		{
+		$Message      = $NotificationRef->{'v6:Message'};
+		$ResponseCode = $NotificationRef->{'v6:Code'};
+		}
 
 	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
 	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'}. "<br>";
