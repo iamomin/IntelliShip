@@ -293,7 +293,17 @@ sub setup_carrier_service :Private
 		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
 		}
 
-	if ($CO->has_carrier_service_details or ($do =~ /step2/ and !$params->{'skiproute'}))
+	my $populate_carrier_service = 0;
+	if ($do =~ /(step2|review)/)
+		{
+		$populate_carrier_service = 1 unless $params->{'skiproute'};
+		}
+	elsif ($CO->has_carrier_service_details)
+		{
+		$populate_carrier_service = 1;
+		}
+
+	if ($populate_carrier_service)
 		{
 		$c->log->debug("CO has carrier service details, populate details...");
 
