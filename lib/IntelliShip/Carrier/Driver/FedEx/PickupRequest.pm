@@ -31,6 +31,9 @@ sub process_request
 	# Get 'from' information
 	my $FromAddress = $Shipment->origin_address;
 
+	my $sth = $self->myDBI->select("SELECT datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
+	my $datepacked = $sth->fetchrow(0)->{'datepacked'} if $sth->numrows;
+
 	$PickupRequest->{CompanyName} = $FromAddress->addressname;
 	$PickupRequest->{StreetLines} = $FromAddress->address1;
 	$PickupRequest->{BuildingPartDescription} = $FromAddress->address2;
@@ -39,7 +42,7 @@ sub process_request
 	$PickupRequest->{PostalCode} = $FromAddress->zip;
 	$PickupRequest->{CountryCode} = $FromAddress->country;
 
-	$PickupRequest->{ReadyTimestamp} = substr($Shipment->datepacked,0,24);
+	$PickupRequest->{ReadyTimestamp} = $datepacked;
 	$PickupRequest->{PackageLocation} = 'FRONT';
 	$PickupRequest->{CompanyCloseTime} = '20:00:00';
 	$PickupRequest->{PackageCount} = $Shipment->total_quantity;
