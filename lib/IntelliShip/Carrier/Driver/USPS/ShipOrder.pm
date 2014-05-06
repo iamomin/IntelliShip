@@ -34,22 +34,22 @@ sub process_request
 		$XML_request = $self->get_StandardPost_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPRIORITY')
+	elsif ($shipmentData->{'servicecode'} eq 'UPRIORITY' or $shipmentData->{'servicecode'} eq 'USPSPMFRE' or $shipmentData->{'servicecode'} eq 'USPSPMPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMSFRB' or $shipmentData->{'servicecode'} eq 'USPSPMMFRB' or $shipmentData->{'servicecode'} eq 'USPSPMLFRB')
 		{
 		$XML_request = $self->get_PriorityMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-		elsif ($shipmentData->{'servicecode'} eq 'USPSMM')
+	elsif ($shipmentData->{'servicecode'} eq 'USPSMM')
 		{
 		$XML_request = $self->get_MediaMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-		elsif ($shipmentData->{'servicecode'} eq 'USPSLM')
+	elsif ($shipmentData->{'servicecode'} eq 'USPSLM')
 		{
 		$XML_request = $self->get_LibraryMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPME')
+	elsif ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMESFRB')
 		{
 		$XML_request = $self->get_PriorityMailExpress_xml_request;
 		$API_name = 'ExpressMailLabel';
@@ -78,8 +78,8 @@ sub process_request
 		return $shipmentData;
 		}
 
-	#$self->log( "### RESPONSE IS SUCCESS: " . $response->is_success);
-	#$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
+	$self->log( "### RESPONSE IS SUCCESS: " . $response->is_success);
+	$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
 
@@ -316,6 +316,37 @@ sub get_PriorityMail_xml_request
 		$shipmentData->{'packagesize'} = 'REGULAR';
 		}
 
+	if ($shipmentData->{'packagesize'} eq 'LARGE')
+		{
+		$shipmentData->{'containerType'} = 'RECTANGULAR';
+		}
+	else
+		{
+		$shipmentData->{'containerType'} = 'VARIABLE';
+		}
+
+	if($shipmentData->{'servicecode'} eq 'USPSPMFRE')
+		{
+		$shipmentData->{'containerType'} = 'FLAT RATE ENVELOPE';
+		}
+	elsif($shipmentData->{'servicecode'} eq 'USPSPMPFRE')
+		{
+		$shipmentData->{'containerType'} = 'PADDED FLAT RATE ENVELOPE';
+		}
+	elsif($shipmentData->{'servicecode'} eq 'USPSPMSFRB')
+		{
+		$shipmentData->{'containerType'} = 'SM FLAT RATE BOX';
+		}
+	elsif($shipmentData->{'servicecode'} eq 'USPSPMMFRB')
+		{
+		$shipmentData->{'containerType'} = 'SM FLAT RATE BOX';
+		}
+	elsif($shipmentData->{'servicecode'} eq 'USPSPMLFRB')
+		{
+		$shipmentData->{'containerType'} = 'LG FLAT RATE BOX';
+		$shipmentData->{'packagesize'} = 'REGULAR';
+		}
+		
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
 <DeliveryConfirmationV4.0Request USERID="667ENGAG1719" PASSWORD="044BD12WF954">
@@ -343,6 +374,7 @@ sub get_PriorityMail_xml_request
 <ImageType>TIF</ImageType>
 <AddressServiceRequested>False</AddressServiceRequested>
 <HoldForManifest>N</HoldForManifest>
+<Container>$shipmentData->{'containerType'}</Container>
 <Size>$shipmentData->{'packagesize'}</Size>
 <Width>$shipmentData->{'dimheight'}</Width>
 <Length>$shipmentData->{'dimwidth'}</Length>
@@ -541,6 +573,19 @@ sub get_PriorityMailExpress_xml_request
 	else
 		{
 		$shipmentData->{'containerType'} = 'VARIABLE';
+		}
+
+	if ($shipmentData->{'servicecode'} eq 'USPSPMEFRE')
+		{
+		$shipmentData->{'containerType'} = 'FLAT RATE ENVELOPE';
+		}
+	elsif ($shipmentData->{'servicecode'} eq 'USPSPMEPFRE')
+		{
+		$shipmentData->{'containerType'} = 'PADDED FLAT RATE ENVELOPE';
+		}
+	elsif ($shipmentData->{'servicecode'} eq 'USPSPMESFRB')
+		{
+		$shipmentData->{'containerType'} = 'FLAT RATE BOX';
 		}
 
 	my $XML_request = <<END;

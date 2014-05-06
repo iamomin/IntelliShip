@@ -91,12 +91,20 @@ sub void_shipment
 	}
 
 my $EPL_TEMPLATES = {
-	USPSF     => 'get_USPS_EPL_1',
-	USTPO     => 'get_USPS_EPL_2',
-	UPRIORITY => 'get_USPS_EPL_3',
-	USPSMM    => 'get_USPS_EPL_4',
-	USPSLM    => 'get_USPS_EPL_5',
-	UPME      => 'get_USPS_EPL_6',
+	USPSF		=> 'get_USPS_EPL_1',
+	USTPO		=> 'get_USPS_EPL_2',
+	UPRIORITY	=> 'get_USPS_EPL_3',
+	USPSMM		=> 'get_USPS_EPL_4',
+	USPSLM		=> 'get_USPS_EPL_5',
+	UPME		=> 'get_USPS_EPL_6',
+	USPSPMFRE	=> 'get_USPS_EPL_3',
+	USPSPMPFRE	=> 'get_USPS_EPL_3',
+	USPSPMSFRB	=> 'get_USPS_EPL_3',
+	USPSPMMFRB	=> 'get_USPS_EPL_3',
+	USPSPMLFRB	=> 'get_USPS_EPL_3',
+	USPSPMEFRE	=> 'get_USPS_EPL_6',
+	USPSPMEPFRE	=> 'get_USPS_EPL_6',
+	USPSPMESFRB	=> 'get_USPS_EPL_6',
 	};
 
 sub get_EPL
