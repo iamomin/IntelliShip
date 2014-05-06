@@ -297,7 +297,11 @@ sub get_USPS_EPL_3
 	{
 	my $self = shift;
 	my $DATA = shift;
-
+	my $weight = "Weight: $DATA->{'weightinounces'} oz";
+	unless ($DATA->{'containerType'} eq 'VARIABLE' or $DATA->{'containerType'} eq 'RECTANGULAR')
+		{
+		$weight = $DATA->{'containerType'};
+		}
 	my $EPL = <<END;
 .
 
@@ -328,7 +332,7 @@ A100,570,0,3,1,1,N,"$DATA->{'address2'}"
 A100,590,0,3,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
 A545,330,0,2,1,1,N,"Ship Date:$DATA->{'datetoship'}"
 A450,350,0,2,1,1,N,"Expected Delivery:$DATA->{'expectedDelivery'}"
-A630,370,0,2,1,1,N,"Weight: $DATA->{'weightinounces'} oz"
+A630,370,0,2,1,1,N,"$weight"
 A710,390,0,1,2,2,N,"$DATA->{'RDC'}"
 LO590,430,1,40
 LO500,430,1,40
@@ -467,7 +471,11 @@ sub get_USPS_EPL_6
 	{
 	my $self = shift;
 	my $DATA = shift;
-
+	my $weight = "Weight: $DATA->{'weightinounces'} oz";
+	unless ($DATA->{'containerType'} eq 'VARIABLE' or $DATA->{'containerType'} eq 'RECTANGULAR')
+		{
+		$weight = $DATA->{'containerType'};
+		}
 	my $EPL = <<END;
 .
 
@@ -500,7 +508,7 @@ A100,570,0,3,1,1,N,"$DATA->{'address2'}"
 A100,590,0,3,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
 A550,330,0,2,1,1,N,"Ship Date:$DATA->{'datetoship'}"
 A475,350,0,2,1,1,N,"Expected Delivery:$DATA->{'expectedDelivery'}"
-A630,370,0,2,1,1,N,"Weight: $DATA->{'weightinounces'} oz"
+A550,370,0,2,1,1,N,"$weight"
 A710,390,0,1,2,2,N,"$DATA->{'RDC'}"
 LO590,430,1,40
 LO500,430,1,40
