@@ -1427,6 +1427,8 @@ warn "NO Class return" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SP
 			my $RateHandler = eval 'new Tariff::' . $RateHandlerName . '($ShipmentRef->{"dbref_' . lc($RateHandlerName) . '"},$RateTypeID)';
 			#WarnHashRefValues($ShipmentRef);
 
+			#warn "\n RateHandlerName: " . $RateHandlerName;
+
 			my ($MarkupAmt,$MarkupPercent) = $self->GetCustomerMarkup($ShipmentRef);
 			my $DiscountPercent = $self->GetDiscountPercent($ShipmentRef);
 			my $ScacCode = $self->GetCarrierScac();
@@ -1534,6 +1536,8 @@ sub GetClassValue
 	my $self = shift;
 		my ($CDColumn,$ClassLow,$ClassHigh) = @_;
 
+		return unless $ClassLow or $ClassHigh;
+
 		my $CSID = $self->GetValueHashRef()->{'customerserviceid'};
 		my $ServiceID = $self->GetValueHashRef()->{'serviceid'};
 
@@ -1552,7 +1556,7 @@ sub GetClassValue
 					)
 				)
 		";
-	#warn $SQL;
+	#warn "\n$SQL";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
 			or die "Could not prepare SQL statement";
