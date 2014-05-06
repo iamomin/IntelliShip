@@ -1377,8 +1377,17 @@ sub GetSuperCost
 
 			# Must have a class to rate the tariff based carriers
 			my $Class = 0;
-			if ( $ShipmentRef->{'class'} )
+			my $Mode = $self->GetCSValue('servicetypeid');
+warn "RATETYPEID=$RateTypeID";
+			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' )
 			{
+				# small package/parcel doesn't need a class
+warn "Override Class requirement for Parcel" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+			}
+			elsif ( $ShipmentRef->{'class'} )
+			{
+warn "Has Class class=$ShipmentRef->{'class'}" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+
 				unless ( $Class = $self->GetClassValue('fak',$ShipmentRef->{'class'},$ShipmentRef->{'class'}) )
 				{
 					$Class = $ShipmentRef->{'class'}
@@ -1386,6 +1395,7 @@ sub GetSuperCost
 			}
 			else
 			{
+warn "NO Class return" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
 				return(undef,undef,$CostWeight);
 			}
 
@@ -1434,7 +1444,12 @@ sub GetSuperCost
 				$ShipmentRef->{'efreightid'},
 				$ShipmentRef->{'clientid'},
 				$self->{'field_customerserviceid'},
-				$self->{'field_serviceid'}
+				$self->{'field_serviceid'},
+				$ShipmentRef->{'tocountry'},
+				$ShipmentRef->{'customerid'},
+				$DimHeight,
+				$DimWidth,
+				$DimLength
 			);
 
 			unless ( defined($Cost) && $Cost ne '' && $Cost >= 0 )
