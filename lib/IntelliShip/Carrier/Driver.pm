@@ -193,6 +193,7 @@ sub insert_shipment
 	#$self->log("... shipmentData: " . Dumper $shipmentData);
 
 	my $date_shipped = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetoship'});
+	my $date_packed = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datepacked'});
 
 	my $shipmentObj = {
 			'shipmentid' => $shipmentData->{'new_shipmentid'},
@@ -257,7 +258,7 @@ sub insert_shipment
 			'freightcharges' => $shipmentData->{'freightcharges'},
 			'termsofsale' => $shipmentData->{'termsofsale'},
 			'commoditycustomsvalue' => $shipmentData->{'commoditycustomsvalue'},
-			'datepacked' => $shipmentData->{'datepacked'},
+			'datepacked' => $date_packed,
 			'unitquantity' => $shipmentData->{'unitquantity'},
 			'ipaddress' => $shipmentData->{'ipaddress'},
 			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'},

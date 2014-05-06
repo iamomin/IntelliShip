@@ -39,7 +39,7 @@ sub process_request
 	$PickupRequest->{PostalCode} = $FromAddress->zip;
 	$PickupRequest->{CountryCode} = $FromAddress->country;
 
-	$PickupRequest->{ReadyTimestamp} = $Shipment->datepacked;
+	$PickupRequest->{ReadyTimestamp} = substr($Shipment->datepacked,0,24);
 	$PickupRequest->{PackageLocation} = 'FRONT';
 	$PickupRequest->{CompanyCloseTime} = '20:00:00';
 	$PickupRequest->{PackageCount} = $Shipment->total_quantity;
