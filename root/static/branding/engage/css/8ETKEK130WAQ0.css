@@ -16,10 +16,10 @@
     -moz-box-sizing:border-box;
     padding-left:9px;
 }
-nav a span, nav ul ul li a, h2, h1, table.app caption, input[type=button].active{
+nav a span, nav ul ul li a, h2, h1, table.app caption, table.summary-app caption, input[type=button].active{
     color:#220c00; /* Title Text color */
 }
-h1, table.app caption, 
+h1, table.app caption, table.summary-app caption, 
 .solid-line, input[type=button].active{
     background-color:#ffdd05; /*  Primary Accent Color  */
 }
