@@ -3,7 +3,7 @@
 
 <table class="order-nav">
 	<tr>
-	<td class="L"><input type="button" class="inactive" value="ADDRESS" onclick="interviewAddress"/></td>
+	<td class="L"><input type="button" class="inactive" value="ADDRESS" onclick="interviewAddress();"/></td>
 	<td class="C"><input type="button" class="active" value="SHIPMENT DETAILS"/></td>
 	<td class="R"><input type="button" class="inactive" value="FINAL REVIEW" onclick="interviewNext();"/></td>
 	</tr>
