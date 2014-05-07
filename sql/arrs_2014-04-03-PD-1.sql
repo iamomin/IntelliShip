@@ -2,13 +2,13 @@ INSERT INTO service (carrierid, serviceid, servicename, webhandlername, internat
 
 INSERT INTO customerservice (customerserviceid,customerid,serviceid,zonetypeid) VALUES ('ENGAGEUSPSF00','0000000000001','USPS000000003','9999999999990');
 
-UPDATE customerservice SET ratetypeid = 'QUOTERATING01' WHERE customerserviceid = 'ENGAGEUSPSF00'
+UPDATE customerservice SET ratetypeid = 'QUOTERATING01' WHERE customerserviceid = 'ENGAGEUSPSF00';
 
-UPDATE service SET timeneededmin = 1 WHERE serviceid = 'USPS000000003'
+UPDATE service SET timeneededmin = 1 WHERE serviceid = 'USPS000000003';
 
-UPDATE service SET timeneededmax = 3 WHERE serviceid = 'USPS000000003'
+UPDATE service SET timeneededmax = 3 WHERE serviceid = 'USPS000000003';
 
-INSERT INTO servicecsdata (servicecsdataid,ownertypeid,ownerid,datatypeid,datatypename,value) VALUES ('USPSFCLSMAXWT','3','USPS000000003','2','maxpackageweight','')
+INSERT INTO servicecsdata (servicecsdataid,ownertypeid,ownerid,datatypeid,datatypename,value) VALUES ('USPSFCLSMAXWT','3','USPS000000003','2','maxpackageweight','');
 
 INSERT INTO service (carrierid, serviceid, servicename, webhandlername, international, modetypeid,servicecode,timeneededmin,timeneededmax) VALUES ('USPS000000001', 'USPS000000002', 'Standard Post', 'handler_local_usps.pl', '0', '1','USTPO',2,8);
 

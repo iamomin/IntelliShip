@@ -1379,7 +1379,7 @@ sub GetSuperCost
 			my $Class = 0;
 			my $Mode = $self->GetCSValue('servicetypeid');
 warn "RATETYPEID=$RateTypeID";
-			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' )
+			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' || $RateTypeID eq 'USPSRATINGAPI' )
 			{
 				# small package/parcel doesn't need a class
 warn "Override Class requirement for Parcel" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
