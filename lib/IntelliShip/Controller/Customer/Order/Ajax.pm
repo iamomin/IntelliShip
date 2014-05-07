@@ -786,7 +786,10 @@ sub mark_shipment_as_printed
 	#$self->SendShipNotification($Shipment);
 
 	my $response = { UPDATED => 1};
-	if (length $CO->return > 0)
+
+	my $return_capability = $CO->return;
+	$return_capability =~ s/\s+//;
+	if ($return_capability ne '')
 		{
 		$c->log->debug("... Return capability found");
 		$response->{RETURN_SHIPMENT} = 1;
