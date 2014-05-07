@@ -331,7 +331,7 @@ A100,550,0,3,1,1,N,"$DATA->{'address1'}"
 A100,570,0,3,1,1,N,"$DATA->{'address2'}"
 A100,590,0,3,1,1,N,"$DATA->{'addresscity'}, $DATA->{'addressstate'} $DATA->{'addresszip'}"
 A593,330,0,2,1,1,N,"Ship Date:$DATA->{'datetoship'}"
-A422,350,0,2,1,1,N,"Expected Delivery:$DATA->{'expectedDelivery'}"
+A522,350,0,2,1,1,N,"Expected Delivery:$DATA->{'expectedDelivery'}"
 A500,370,0,2,1,1,N,"$weight"
 A710,390,0,1,2,2,N,"$DATA->{'RDC'}"
 LO590,430,1,40
