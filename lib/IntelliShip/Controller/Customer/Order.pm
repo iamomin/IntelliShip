@@ -160,7 +160,7 @@ sub setup_address :Private
 		$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
 		}
 
-	$c->stash->{tooltips} = $self->get_tooltips;
+	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY
 	unless ($Contact->login_level == 25)
@@ -240,7 +240,7 @@ sub setup_shipment_information :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 
-	$c->stash->{tooltips} = $self->get_tooltips;
+	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	if ($c->action =~ /multipage/)
 		{
@@ -319,7 +319,7 @@ sub setup_carrier_service :Private
 		#$c->log->debug("SERVICE_LEVEL_SUMMARY, HTML: " . $c->stash->{SERVICE_LEVEL_SUMMARY});
 		}
 
-	$c->stash->{tooltips} = $self->get_tooltips;
+	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	if ($c->action =~ /multipage/)
 		{
