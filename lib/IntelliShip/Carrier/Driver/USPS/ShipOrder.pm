@@ -339,7 +339,7 @@ sub get_PriorityMail_xml_request
 		}
 	elsif($shipmentData->{'servicecode'} eq 'USPSPMMFRB')
 		{
-		$shipmentData->{'containerType'} = 'SM FLAT RATE BOX';
+		$shipmentData->{'containerType'} = 'MD FLAT RATE BOX';
 		}
 	elsif($shipmentData->{'servicecode'} eq 'USPSPMLFRB')
 		{
