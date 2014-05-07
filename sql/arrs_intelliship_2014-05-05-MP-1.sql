@@ -46,3 +46,7 @@ INSERT INTO customerservice (customerserviceid,customerid,serviceid,zonetypeid,r
 INSERT INTO service (carrierid, serviceid, servicename, webhandlername, international, modetypeid,servicecode,timeneededmin,timeneededmax) VALUES ('USPS000000001', 'USPS000000015', 'Priority Mail Express - Flat Rate Boxes', 'handler_local_usps.pl', '0', '1','USPSPMESFRB',2,8);
 
 INSERT INTO customerservice (customerserviceid,customerid,serviceid,zonetypeid,ratetypeid) VALUES ('ENGAGEPMESFRB','0000000000001','USPS000000015','9999999999990','QUOTERATING01');
+
+
+update service set servicecode = 'USPSPMEFRB' where serviceid = 'USPS000000015' ;
+update customerservice set customerserviceid = 'ENGAGEUPMEFRB' where customerserviceid = 'ENGAGEPMESFRB';

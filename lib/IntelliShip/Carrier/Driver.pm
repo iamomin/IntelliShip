@@ -104,7 +104,7 @@ my $EPL_TEMPLATES = {
 	USPSPMLFRB	=> 'get_USPS_EPL_3',
 	USPSPMEFRE	=> 'get_USPS_EPL_6',
 	USPSPMEPFRE	=> 'get_USPS_EPL_6',
-	USPSPMESFRB	=> 'get_USPS_EPL_6',
+	USPSPMEFRB	=> 'get_USPS_EPL_6',
 	};
 
 sub get_EPL

@@ -49,7 +49,7 @@ sub process_request
 		$XML_request = $self->get_LibraryMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMESFRB')
+	elsif ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
 		{
 		$XML_request = $self->get_PriorityMailExpress_xml_request;
 		$API_name = 'ExpressMailLabel';
@@ -94,14 +94,14 @@ sub process_request
 		}
 
 	## Check Priority Express Mail Commitment Days
-	if ($shipmentData->{'servicecode'} eq 'UPME')
+	if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
 		{
 		$self->CheckExpressMailCommitment;
 		}
 
 	my $TrackingNumber;
 
-	if ($shipmentData->{'servicecode'} eq 'UPME')
+	if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
 		{
 		$TrackingNumber =$XMLResponse->{EMConfirmationNumber};
 		$self->log("EMConfirmationNumber: ".$TrackingNumber);
@@ -583,7 +583,7 @@ sub get_PriorityMailExpress_xml_request
 		{
 		$shipmentData->{'containerType'} = 'PADDED FLAT RATE ENVELOPE';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'USPSPMESFRB')
+	elsif ($shipmentData->{'servicecode'} eq 'USPSPMEFRB')
 		{
 		$shipmentData->{'containerType'} = 'FLAT RATE BOX';
 		}
