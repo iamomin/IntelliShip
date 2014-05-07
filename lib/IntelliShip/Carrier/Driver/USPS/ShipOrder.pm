@@ -93,11 +93,26 @@ sub process_request
 		return $shipmentData;
 		}
 
+	my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
+
+	#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
+
+	$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
+	$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
+
+	#$self->log("Date1 " .$shipmentData->{'datetoship'});
+
+	my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
+	#$self->log("Day " .$Days);
+
+	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
+	#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
+
 	## Check Priority Express Mail Commitment Days
-	if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
-		{
-		$self->CheckExpressMailCommitment;
-		}
+	#if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
+	#	{
+	#	$self->CheckExpressMailCommitment;
+	#	}
 
 	my $TrackingNumber;
 
@@ -638,6 +653,7 @@ sub get_PriorityMailExpress_xml_request
 <Width>$shipmentData->{'dimheight'}</Width>
 <Length>$shipmentData->{'dimwidth'}</Length>
 <Height>$shipmentData->{'dimlength'}</Height>
+<ReturnCommitments>true</ReturnCommitments>
 </ExpressMailLabelRequest>
 END
 
