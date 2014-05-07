@@ -148,7 +148,8 @@
 		});
 
 	$("#branding-demo-link").click(function() {
-		$('#branding-demo-iframe').attr('src','');
+		var iframe = document.getElementById('branding-demo-iframe');
+		iframe.src = iframe.src;
 		updateCompanyBranding();
 		});
 
