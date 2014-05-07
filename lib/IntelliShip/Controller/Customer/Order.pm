@@ -523,6 +523,8 @@ sub save_address :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	IntelliShip::Utils->hash_decode($params);
+
 	$c->log->debug("... save address details");
 
 	my $CO = $self->get_order;
