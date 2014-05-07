@@ -197,9 +197,8 @@ XML
 	## Check return string for errors;
 	if ( $ShipmentReturn->{'Postage'} )
 		{
-		warn "USPS ShipManager Error: " .  $ShipmentReturn->{'Postage'}->{'Error'} if $ShipmentReturn->{'Postage'}->{'Error'};
+		warn "USPS ShipManager Error: " . $ShipmentReturn->{'Postage'}->{'Error'} if $ShipmentReturn->{'Postage'}->{'Error'};
 		$cost = $ShipmentReturn->{'Postage'}->{'Rate'};
-		$oazip = $ShipmentReturn->{'Postage'}->{'Rate'};
 		$Days = $1 if $ShipmentReturn->{'Postage'}->{'MailService'} =~ m/(\d+)\-Day/i;
 		}
 
@@ -235,11 +234,11 @@ sub ProcessLocalRequest
 
 	my $xml = new XML::Simple;
 
-	my $XMLResponse = $xml->XMLin($response->content);
+	my $responseDS = $xml->XMLin($response->content);
 
-	#warn "Response DS: " . Dumper $XMLResponse;
+	#warn "Response DS: " . Dumper $responseDS;
 
-	return $XMLResponse->{'RateV4Response'}->{'Package'};
+	return $responseDS->{'Package'};
 	}
 
 1
