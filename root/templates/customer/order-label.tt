@@ -243,7 +243,7 @@
 		[% UNLESS REPRINT_LABEL %]PrintFormSequence_[% shipmentid %].push(MarkShipmentAsPrinted);[% END %]
 
 		var functionPointer = PrintFormSequence_[% shipmentid %].shift();
-		functionPointer('[% coid %]', '[% shipmentid %]');
+		if (functionPointer != undefined) functionPointer('[% coid %]', '[% shipmentid %]');
 		}
 
 	$(document).ready(function() {
