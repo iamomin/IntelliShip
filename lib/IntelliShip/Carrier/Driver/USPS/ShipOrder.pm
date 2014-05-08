@@ -92,8 +92,12 @@ sub process_request
 	$shipmentData->{'weight'}       = $shipmentData->{'enteredweight'};
 	$shipmentData->{'RDC'}          = $XMLResponse->{RDC};
 	$shipmentData->{'CarrierRoute'} = $XMLResponse->{CarrierRoute};
-	$shipmentData->{'expectedDelivery'} = $XMLResponse->{Commitment}->{ScheduledDeliveryDate} if  $XMLResponse->{Commitment}->{ScheduledDeliveryDate};
-	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->american_date($shipmentData->{'expectedDelivery'}) if $shipmentData->{'expectedDelivery'};
+	unless ($shipmentData->{'expectedDelivery'})
+		{
+		$shipmentData->{'expectedDelivery'} = $XMLResponse->{Commitment}->{ScheduledDeliveryDate} if  $XMLResponse->{Commitment}->{ScheduledDeliveryDate};
+		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->american_date($shipmentData->{'expectedDelivery'}) if $shipmentData->{'expectedDelivery'};
+		}
+
 	$shipmentData->{'commintmentName'} = uc($XMLResponse->{Commitment}->{CommitmentName}) if  $XMLResponse->{Commitment}->{CommitmentName};
 
 	my $raw_string = $self->get_EPL($shipmentData);
