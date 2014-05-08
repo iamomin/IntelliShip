@@ -52,6 +52,10 @@
 		}
 	function checkAfterCallback()
 		{
+		if ($("#do").val() == 'step1')
+			{
+			BindCompanyAutoComplete('to',availableCustomers);
+			}
 		if ($("#do").val() == 'step2')
 			{
 			$("#datetoship").datepicker({ minDate: '-0d' });

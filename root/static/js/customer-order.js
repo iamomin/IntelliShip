@@ -1,5 +1,22 @@
 var requiredFieldHash = {};
 
+function BindCompanyAutoComplete(direction,availableCustomers)
+	{
+	$("#"+direction+"name").autocomplete({
+		source: availableCustomers,
+		select: function( event, ui ) {
+			var SelectedCompany = ui.item.value
+			var AddrParts = SelectedCompany.split(" | ");
+			var Company = AddrParts[0];
+			var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
+			var RefID = hashCompanyRef[Key];
+			if (RefID == undefined) return;
+			ui.item.value = Company;
+			populateShipAddress(direction,RefID);
+			}
+		});
+	}
+
 /*
 ########################################################################################
 ## Inbound / Outbound / Dropship stuffs
