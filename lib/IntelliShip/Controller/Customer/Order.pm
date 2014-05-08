@@ -2870,8 +2870,8 @@ sub BuildShipmentInfo
 	$ShipmentData->{'branchcontact'}  = $CO->oacontactname;
 	$ShipmentData->{'branchphone'}    = $CO->oacontactphone;
 
-	$ShipmentData->{'oacontactname'}  = $params->{'fromcontact'};
-	$ShipmentData->{'oacontactphone'} = $params->{'fromphone'};
+	$ShipmentData->{'oacontactname'}  = $CO->oacontactname;
+	$ShipmentData->{'oacontactphone'} = $CO->oacontactphone;
 
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};

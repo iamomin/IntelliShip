@@ -20,7 +20,7 @@ sub process_request
 
 	$self->log("Process USPS Ship Order");
 
-	#$self->log("Shipment Data" .Dumper($shipmentData));
+	$self->log("Shipment Data" .Dumper($shipmentData));
 
 	my ($API_name,$XML_request) = ('','');
 
@@ -58,55 +58,9 @@ sub process_request
 	my $url = 'https://secure.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
 	$self->log("Sending request to URL: " . $url);
 
-	my $shupment_request = {
-			httpurl => $url,
-			API => $API_name,
-			XML => $XML_request
-		};
-
-	my $UserAgent = LWP::UserAgent->new();
-	my $response = $UserAgent->request(
-			POST $shupment_request->{'httpurl'},
-			Content_Type  => 'text/html',
-			Content       => [%$shupment_request]
-			);
-
-	unless ($response)
-		{
-		$self->log("USPS: Unable to access USPS site");
-		$self->add_error("No response received from USPS");
-		return $shipmentData;
-		}
-
-	$self->log( "... RESPONSE IS SUCCESS: " . $response->is_success);
-	$self->log( "... RESPONSE DETAILS: " . Dumper $response->content);
-
-	my $xml = new XML::Simple;
-
-	my $XMLResponse = $xml->XMLin($response->content);
-
-	if( $XMLResponse->{Number} and $XMLResponse->{Description})
-		{
-		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
-		$self->log($msg);
-		$self->add_error($msg);
-		return $shipmentData;
-		}
-
-	my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
-
-	#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
-
-	$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
-	$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
-
-	#$self->log("Date1 " .$shipmentData->{'datetoship'});
-
-	my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
-	#$self->log("Day " .$Days);
-
-	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
-	#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
+	my $XMLResponse = $self->Call_API($url, $XML_request, $API_name);
+	
+	return unless $XMLResponse;
 
 	## Check Commitment Days from USPS
 	$self->Check_USPS_Commitment;
@@ -392,7 +346,7 @@ sub get_PriorityMail_xml_request
 </DeliveryConfirmationV4.0Request>
 END
 
-	#$self->log("... XML Request Data:  " . $XML_request);
+	$self->log("... XML Request Data:  " . $XML_request);
 
 	return $XML_request;
 	}
@@ -641,7 +595,7 @@ sub get_PriorityMailExpress_xml_request
 </ExpressMailLabelRequest>
 END
 
-	#$self->log("... XML Request Data:  " . $XML_request);
+	$self->log("... XML Request Data:  " . $XML_request);
 
 	return $XML_request;
 	}
@@ -649,26 +603,75 @@ END
 sub Check_USPS_Commitment
 	{
 	my $self = shift;
-
 	my $shipmentData = $self->data;
+	my $url = 'http://production.shippingapis.com/ShippingAPITest.dll';
 
-	return unless $shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/;
+	if ($shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/)
+		{
+		my $XML_request = $self->get_Commitment_XML('ExpressMailCommitment');
+		my $XMLResponse = $self->Call_API($url, $XML_request, 'ExpressMailCommitment');
+		
+		return unless $XMLResponse;
+		
+		my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
 
+		#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
+
+		$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
+		$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
+
+		#$self->log("Date1 " .$shipmentData->{'datetoship'});
+		my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
+		#$self->log("Day " .$Days);
+		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
+		#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
+		}
+	elsif ($shipmentData->{'servicecode'} =~ /(UPRIORITY|USPSPMFRE|USPSPMPFRE|USPSPMSFRB|USPSPMMFRB|USPSPMLFRB)/)
+		{
+		my $XML_request = $self->get_Commitment_XML('PriorityMail');
+		my $XMLResponse = $self->Call_API($url, $XML_request, 'PriorityMail');
+		
+		return unless $XMLResponse;
+		
+		my $Days = $XMLResponse->{Days};
+		$self->log("Day " .$Days);
+		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
+		$self->log("expectedDelivery " .$shipmentData->{'expectedDelivery'} );
+		}
+	}
+
+sub get_Commitment_XML
+	{
+	my $self = shift;
+	my $API_NAME = shift;
 	my $shipmentData = $self->data;
+	my $API_REQUEST_TAG = $API_NAME . 'Request';
 
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
-<ExpressMailCommitmentRequest USERID="667ENGAG1719">
+<$API_REQUEST_TAG USERID="667ENGAG1719">
 <OriginZIP>$shipmentData->{'branchaddresszip'}</OriginZIP>
 <DestinationZIP>$shipmentData->{'addresszip'}</DestinationZIP>
 <Date>$shipmentData->{'datetoship'}</Date>
-</ExpressMailCommitmentRequest>
+</$API_REQUEST_TAG>
 END
+	}
+
+sub Call_API
+	{
+	my $self = shift;
+	my $URL = shift;
+	my $XML = shift;
+	my $API_NAME = shift;
+	my $shipmentData = $self->data;
+	my $API_REQUEST_TAG = $API_NAME . 'Request';
+
+	$self->log( "### REQUEST DETAILS: " . Dumper $XML);
 
 	my $shupment_request = {
-			httpurl => 'http://production.shippingapis.com/ShippingAPITest.dll',
-			API => 'ExpressMailCommitment',
-			XML => $XML_request
+			httpurl => $URL,
+			API => $API_NAME,
+			XML => $XML
 			};
 
 	my $UserAgent = LWP::UserAgent->new();
@@ -682,35 +685,22 @@ END
 		{
 		$self->log("USPS: Unable to access USPS site");
 		$self->add_error("No response received from USPS");
-		return $shipmentData;
+		return 0;
 		}
-	#$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
-
 	my $XMLResponse = $xml->XMLin($response->content);
+	$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
 
 	if( $XMLResponse->{Number} and $XMLResponse->{Description})
 		{
 		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
 		$self->log($msg);
 		$self->add_error($msg);
-		return;
+		return 0;
 		}
 
-	my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
-
-	#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
-
-	$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
-	$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
-
-	#$self->log("Date1 " .$shipmentData->{'datetoship'});
-
-	my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
-	#$self->log("Day " .$Days);
-	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
-	#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
+	return $XMLResponse;
 	}
 
 __PACKAGE__->meta()->make_immutable();
