@@ -1,5 +1,7 @@
 [% IF MY_SHIPMENTS %]
 	[% UNLESS ajax %]
+	<script type="text/javascript" src="/static/js/deployJava.js"></script>
+	<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
 	<form id="frm_my_shipments" method="post" action="/customer/myshipments">
 	<input type="hidden" name="do" id="do" value="do"/>

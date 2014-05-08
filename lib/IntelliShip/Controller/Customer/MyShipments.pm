@@ -135,6 +135,8 @@ sub reprint_label :Private
 		push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
 		}
 
+	$c->stash->{template} = undef;
+
 	#$c->log->debug("LABEL_LIST: " . Dumper $LABEL_ARR);
 	$c->stash->{LABEL_LIST} = $LABEL_ARR;
 	}

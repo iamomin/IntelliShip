@@ -1,8 +1,8 @@
 
+[% UNLESS REPRINT_LABEL %]
 <script type="text/javascript" src="/static/js/deployJava.js"></script>
 <script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
-[% UNLESS REPRINT_LABEL %]
 <h2 class="DoNotPrint">SHIP A PACKAGE</h2>
 [% END %]
 
