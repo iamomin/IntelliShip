@@ -650,6 +650,8 @@ sub Check_USPS_Commitment
 	{
 	my $self = shift;
 
+	my $shipmentData = $self->data;
+
 	return unless $shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/;
 
 	my $shipmentData = $self->data;
