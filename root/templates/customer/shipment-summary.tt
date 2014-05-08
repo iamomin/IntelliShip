@@ -108,46 +108,46 @@
 			<table>
 				<tr>
 					<td style="width: 04%">
-						<input  type="text" class="total_pkg_detail float-right" name="quantity_1" id="quantity_1" value="[% PackProData.quantity %]" readonly/>
+						<input  type="text" class="total_pkg_detail float-right labellike" name="quantity_1" id="quantity_1" value="[% PackProData.quantity %]" readonly/>
 					</td>
 					<td style="width: 04%">
-						<input  type="text" class="sku_id" name="sku_1" id="sku_1" value = "[% PackProData.partnumber %]" readonly/>
+						<input  type="text" class="sku_id  labellike" name="sku_1" id="sku_1" value = "[% PackProData.partnumber %]" readonly/>
 					</td>
 					<td style="width: 11%">
-						<input  type="text" class="broad-text" name="description_1" id="description_1"  value = "[% PackProData.description %]" readonly/>
+						<input  type="text" class="labellike" name="description_1" id="description_1"  value = "[% PackProData.description %]" readonly/>
 					</td>
 					<td style="width: 10%">
-						<select name="unittype_1" id="unittype_1" ><option  SELECTED value="[% PackProData.unittype.unittypename %]">[% PackProData.unittype.unittypename %]</option></select>
+						<input  type="text" class="labellike" name="unittype_1" id="unittype_1"  value = "[% PackProData.unittype.unittypename %]" readonly/>
 					</td>
 					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail" name="weight_1" id="weight_1"  value = "[% PackProData.weight%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike" name="weight_1" id="weight_1"  value = "[% PackProData.weight%]" readonly/>
 					</td>
 					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail" name="dimweight_1" id="dimweight_1"  value = "[% PackProData.dimweight%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike" name="dimweight_1" id="dimweight_1"  value = "[% PackProData.dimweight%]" readonly/>
 					</td>
 					<td style="width: 05%">
-						<input  type="text" class="total_pkg_detail" name="dimlength_1" id="dimlength_1"  value = "[% PackProData.dimlength%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike" name="dimlength_1" id="dimlength_1"  value = "[% PackProData.dimlength%]" readonly/>
 					</td>
 					<td style="width: 05%">
-						<input  type="text" class="total_pkg_detail" name="dimwidth_1" id="dimwidth_1"  value = "[% PackProData.dimwidth%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike" name="dimwidth_1" id="dimwidth_1"  value = "[% PackProData.dimwidth%]" readonly/>
 					</td>
 					<td style="width: 05%">
-						<input  type="text" class="total_pkg_detail" name="dimheight_1" id="dimheight_1"  value = "[% PackProData.dimheight%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike" name="dimheight_1" id="dimheight_1"  value = "[% PackProData.dimheight%]" readonly/>
 					</td>
 					<td style="width: 07%">
-						<input  type="text" name="density_1" id="density_1"  value = "[% PackProData.density%]" readonly/>
+						<input  type="text" class="labellike" name="density_1" id="density_1"  value = "[% PackProData.density%]" readonly/>
 					</td>
 					<td style="width: 05%">
-						<input  type="text" name="nmfc_1" id="nmfc_1"  value = "[% PackProData.nmfc%]" readonly/>
+						<input  type="text" class="labellike" name="nmfc_1" id="nmfc_1"  value = "[% PackProData.nmfc%]" readonly/>
 					</td>
 					<td style="width: 05%">
-						<input  type="text" name="class_1" id="class_1"  value = "[% PackProData.class%]" readonly/>
+						<input  type="text" class="labellike" name="class_1" id="class_1"  value = "[% PackProData.class%]" readonly/>
 					</td>
 					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail" name="decval_1" id="decval_1" value="0.00"  value = "[% PackProData.decval%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike" name="decval_1" id="decval_1" value="0.00"  value = "[% PackProData.decval%]" readonly/>
 					</td>
 					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail"  name="frtins_1" id="frtins_1"  value="[% PackProData.frtins%]" readonly/>
+						<input  type="text" class="total_pkg_detail labellike"  name="frtins_1" id="frtins_1"  value="[% PackProData.frtins%]" readonly/>
 					</td>
 				</tr>
 			</table>
