@@ -119,7 +119,7 @@
 				</tr>
 				<tr>
 					<td>
-						<label class="float-right require"><label for="tocity">City</label>, <label for="tostate">State</label>, <label for="tozip">Zip</label>:</label>
+						<label class="float-right require"><label for="tocity">City,</label><label for="tostate">State,</label><label for="tozip">Zip</label>:</label>
 					</td>
 					<td>
 					<div id="toCityDiv" style="display: inline; padding: 0;">
