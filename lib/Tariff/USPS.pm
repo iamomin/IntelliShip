@@ -40,12 +40,12 @@ sub new
 	my $self = {};
 
 	$self->{'dbref'} = ARRS::IDBI->connect({
-	 dbname	  => 'arrs',
-	 dbhost	  => 'localhost',
-	 dbuser	  => 'webuser',
-	 dbpassword  => 'Byt#Yu2e',
-	 autocommit  => 1
-  });
+		dbname     => 'arrs',
+		dbhost     => 'localhost',
+		dbuser     => 'webuser',
+		dbpassword => 'Byt#Yu2e',
+		autocommit => 1
+		});
 
 	bless($self, $class);
 
@@ -142,7 +142,9 @@ sub GetTransit
 	$container =~ s/MEDIUM/MD/;
 	$container =~ s/LARGE/LG/;
 
-	warn "\nService: " . $servicename . ", container: " . $container;
+	warn "\nService: " . $servicename . ", Container: " . $container;
+
+	$servicename = 'PRIORITY MAIL EXPRESS' if $servicename =~ /^STANDARD$/;
 
 	my $path = "$config->{BASE_PATH}/bin/run";
 	my $file = $fileid . ".info";

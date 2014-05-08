@@ -54,7 +54,12 @@ sub connect
 		}
 	elsif ( $dbtype eq "Pg" )
 		{
-		$self->{DBH} = DBI->connect("dbi:Pg:dbname=$dbname;host=$dbhost", "$dbuser", "$dbpassword", {AutoCommit => $autocommit,PrintError => $printerror});
+		$self->{DBH} = $ENV{$dbname};
+		unless ($self->{DBH})
+			{
+			$ENV{$dbname} = $self->{DBH};
+			$self->{DBH} = DBI->connect("dbi:Pg:dbname=$dbname;host=$dbhost", "$dbuser", "$dbpassword", {AutoCommit => $autocommit,PrintError => $printerror});
+			}
 		# Purolator hack
 		}
 

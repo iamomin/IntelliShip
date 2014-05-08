@@ -729,7 +729,7 @@ sub GetShipmentCosts
 			$Cost = sprintf("%02.2f",($Cost + ($Cost * $FSCRate)));
 		}
 
-		#warn "\nCS GetShipmentCosts returning: |$Cost|zone=$Zone|days=$TransitDays|";
+		#warn "\nCS GetShipmentCosts returning: |cost=$Cost|zone=$Zone|packagecost=$PackageCosts|costweight=$CostWeight|days=$TransitDays|";
 
 		return ($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays);
 	}

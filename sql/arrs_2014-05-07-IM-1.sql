@@ -1,6 +1,7 @@
 /* Creates a new USPS ratetype to use with the API */
 INSERT into ratetype values ('USPSRATINGAPI',NULL,'USPS Ship Manager Server API','USPS',0);
 
+UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='LGTKUSPS00001';
 UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUSPSF00';
 UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUSPSPFR';
 UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUPMPFRE';

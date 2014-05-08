@@ -521,8 +521,8 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 #warn $CSNames;
 #		}
 
-		print STDERR "Total ETA Calculation: $ETATotal\n" if $Benchmark;
-		print STDERR "Total Cost Calculation: $CostTotal\n" if $Benchmark;
+		warn "Total ETA Calculation: $ETATotal\n" if $Benchmark;
+		warn "Total Cost Calculation: $CostTotal\n" if $Benchmark;
 
 		if ( ! $DefaultExists && ! $AutoDefaultExists ) { undef($DefaultCSID); }
 		$sth->finish();
@@ -549,6 +549,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		my $file = "$config->{BASE_PATH}/bin/run/$CgiRef->{'efreightid'}".".efreight";
 		#unlink("$config->{BASE_PATH}/bin/run/$CgiRef->{'efreightid'}.efreight");
 
+#WarnHashRefValues($ReturnRef);
 		return $ReturnRef;
 	}
 

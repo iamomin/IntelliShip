@@ -34,7 +34,7 @@ sub process_request
 		$XML_request = $self->get_StandardPost_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPRIORITY' or $shipmentData->{'servicecode'} eq 'USPSPMFRE' or $shipmentData->{'servicecode'} eq 'USPSPMPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMSFRB' or $shipmentData->{'servicecode'} eq 'USPSPMMFRB' or $shipmentData->{'servicecode'} eq 'USPSPMLFRB')
+	elsif ($shipmentData->{'servicecode'} =~ /(UPRIORITY|USPSPMFRE|USPSPMPFRE|USPSPMSFRB|USPSPMMFRB|USPSPMLFRB)/)
 		{
 		$XML_request = $self->get_PriorityMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
@@ -49,7 +49,7 @@ sub process_request
 		$XML_request = $self->get_LibraryMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
+	elsif ($shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/)
 		{
 		$XML_request = $self->get_PriorityMailExpress_xml_request;
 		$API_name = 'ExpressMailLabel';
@@ -299,6 +299,18 @@ END
 	return $XML_request;
 	}
 
+my $containerTypeHash = {
+	USPSPMFRE  => 'FLAT RATE ENVELOPE',
+	USPSPMPFRE => 'PADDED FLAT RATE ENVELOPE',
+	USPSPMSFRB => 'SM FLAT RATE BOX',
+	USPSPMMFRB => 'MD FLAT RATE BOX',
+	USPSPMLFRB => 'LG FLAT RATE BOX',
+
+	USPSPMEFRE  => 'FLAT RATE ENVELOPE',
+	USPSPMEPFRE => 'PADDED FLAT RATE ENVELOPE',
+	USPSPMEFRB  => 'FLAT RATE BOX',
+	};
+
 sub get_PriorityMail_xml_request
 	{
 	my $self = shift;
@@ -322,7 +334,11 @@ sub get_PriorityMail_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'servicecode'} eq 'USPSPMLFRB')
+		{
+		$shipmentData->{'packagesize'} = 'REGULAR';
+		}
+	elsif ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} > 12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -340,28 +356,9 @@ sub get_PriorityMail_xml_request
 		$shipmentData->{'containerType'} = 'VARIABLE';
 		}
 
-	if($shipmentData->{'servicecode'} eq 'USPSPMFRE')
-		{
-		$shipmentData->{'containerType'} = 'FLAT RATE ENVELOPE';
-		}
-	elsif($shipmentData->{'servicecode'} eq 'USPSPMPFRE')
-		{
-		$shipmentData->{'containerType'} = 'PADDED FLAT RATE ENVELOPE';
-		}
-	elsif($shipmentData->{'servicecode'} eq 'USPSPMSFRB')
-		{
-		$shipmentData->{'containerType'} = 'SM FLAT RATE BOX';
-		}
-	elsif($shipmentData->{'servicecode'} eq 'USPSPMMFRB')
-		{
-		$shipmentData->{'containerType'} = 'MD FLAT RATE BOX';
-		}
-	elsif($shipmentData->{'servicecode'} eq 'USPSPMLFRB')
-		{
-		$shipmentData->{'containerType'} = 'LG FLAT RATE BOX';
-		$shipmentData->{'packagesize'} = 'REGULAR';
-		}
-		
+	my $containter_type = $containerTypeHash->{$shipmentData->{'servicecode'}};
+	$shipmentData->{'containerType'} = $containter_type if $containter_type;
+
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
 <DeliveryConfirmationV4.0Request USERID="667ENGAG1719" PASSWORD="044BD12WF954">
@@ -495,7 +492,7 @@ sub get_LibraryMail_xml_request
 	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
 	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
 	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
-   
+
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
 	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
@@ -590,18 +587,8 @@ sub get_PriorityMailExpress_xml_request
 		$shipmentData->{'containerType'} = 'VARIABLE';
 		}
 
-	if ($shipmentData->{'servicecode'} eq 'USPSPMEFRE')
-		{
-		$shipmentData->{'containerType'} = 'FLAT RATE ENVELOPE';
-		}
-	elsif ($shipmentData->{'servicecode'} eq 'USPSPMEPFRE')
-		{
-		$shipmentData->{'containerType'} = 'PADDED FLAT RATE ENVELOPE';
-		}
-	elsif ($shipmentData->{'servicecode'} eq 'USPSPMEFRB')
-		{
-		$shipmentData->{'containerType'} = 'FLAT RATE BOX';
-		}
+	my $containter_type = $containerTypeHash->{$shipmentData->{'servicecode'}};
+	$shipmentData->{'containerType'} = $containter_type if $containter_type;
 
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
