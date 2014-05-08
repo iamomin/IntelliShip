@@ -236,7 +236,7 @@
 	</select>
 	</label>
 	[% ELSE %]
-	<input type="text" name="[% control_name %]" id="[% control_name %]" style="width: 30px;"/>
+	<input type="text" name="[% control_name %]" id="[% control_name %]" style="width: 35px;"/>
 	[% END %]
 [% END %]
 

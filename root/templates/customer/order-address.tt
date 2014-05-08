@@ -126,6 +126,7 @@
 					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
 					</div>
 					<div id="toStateDiv" style="display: inline; padding: 0;">
+					[% IF statelist_loop %]
 					<label>
 					<select name="tostate" id="tostate" style="width: 45px;">
 						[% FOREACH item IN statelist_loop %]
@@ -133,6 +134,9 @@
 						[% END %]
 					</select>
 					</label>
+					[% ELSE %]
+					<input type="text" name="tostate" id="tostate" value="[% toAddress.state %]" style="width: 35px;"/>
+					[% END %]
 					</div>
 					<input type="text" class="reset-cs-onchange" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]" onchange="setCityAndState('to');"/>
 					</td>

@@ -151,7 +151,7 @@ sub setup_address :Private
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 
 	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
-	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
+	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country }) if $country eq 'US';
 
 	if ($c->stash->{one_page})
 		{
