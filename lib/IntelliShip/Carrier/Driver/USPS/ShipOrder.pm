@@ -58,9 +58,13 @@ sub process_request
 	my $url = 'https://secure.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
 	$self->log("Sending request to URL: " . $url);
 
-	my $XMLResponse = $self->Call_API($url, $XML_request, $API_name);
+	unless ($XML_request)
+		{
+		$self->add_error("This service is under construction. Please try another service.");
+		return;
+		}
 	
-	return unless $XMLResponse;
+	my $XMLResponse = $self->Call_API($url, $XML_request, $API_name);
 
 	## Check Commitment Days from USPS
 	$self->Check_USPS_Commitment;
