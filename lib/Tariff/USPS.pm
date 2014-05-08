@@ -214,9 +214,10 @@ sub ProcessLocalRequest
 	my $XML_request = shift;
 
 	#warn "\n XML_request: " . $XML_request;
+	my $url = 'http://production.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
 
 	my $shupment_request = {
-			httpurl => 'http://production.shippingapis.com/ShippingAPI.dll',
+			httpurl => $url,
 			API => 'RateV4',
 			XML => $XML_request
 			};

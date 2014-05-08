@@ -78,8 +78,8 @@ sub process_request
 		return $shipmentData;
 		}
 
-	$self->log( "### RESPONSE IS SUCCESS: " . $response->is_success);
-	$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
+	$self->log( "... RESPONSE IS SUCCESS: " . $response->is_success);
+	$self->log( "... RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
 
@@ -108,11 +108,8 @@ sub process_request
 	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
 	#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
 
-	## Check Priority Express Mail Commitment Days
-	#if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
-	#	{
-	#	$self->CheckExpressMailCommitment;
-	#	}
+	## Check Commitment Days from USPS
+	$self->Check_USPS_Commitment;
 
 	my $TrackingNumber;
 
@@ -649,9 +646,11 @@ END
 	return $XML_request;
 	}
 
-sub CheckExpressMailCommitment
+sub Check_USPS_Commitment
 	{
 	my $self = shift;
+
+	return unless $shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/;
 
 	my $shipmentData = $self->data;
 
@@ -694,7 +693,7 @@ END
 		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
 		$self->log($msg);
 		$self->add_error($msg);
-		return $shipmentData;
+		return;
 		}
 
 	my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
