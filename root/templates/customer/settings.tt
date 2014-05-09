@@ -804,7 +804,7 @@ $(document).ready(function(){
 			<input type="button" class="red" value="Delete" onclick="deleteContact();"/>
 			[% END %]
 			&nbsp;&nbsp;
-			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %]"displayCustomerContacts();"[% ELSE %]javascript:history.back();[% END %]/>
+			<input type="button" class="button" value="Cancel" onclick=[% IF ajax %]"displayCustomerContacts();"[% ELSE %]"javascript:history.back();"[% END %]/>
 		</center>
 	</form>
 

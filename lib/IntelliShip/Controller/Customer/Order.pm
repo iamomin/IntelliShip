@@ -212,6 +212,7 @@ sub setup_shipment_information :Private
 	unless ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
+		$c->stash->{THIRD_PARTY_BILL} = $Contact->get_contact_data_value('thirdpartybill');
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 		if ($Customer->address->country ne $CO->to_address->country)

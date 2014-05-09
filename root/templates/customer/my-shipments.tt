@@ -102,7 +102,7 @@
 				<th>STATUS</th>
 				<th>TRACKING#</th>
 				<th>ORDER#</th>
-				<th>CUSTOMER</th>
+				<th>Ship To</th>
 				<th style="padding-left: 20px; padding-right: 20px;">ORIGIN</th>
 				<th>DESTINATION</th>
 				<th>DATE</th>
@@ -117,7 +117,7 @@
 				<td><a class="[% item.a_class %]" href="javascript:showShipmentDetails('[% item.shipmentid %]');"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
-				<td>[% item.customername %]</td>
+				<td>[% item.shiptoname %]</td>
 				<td>[% item.origin %]</td>
 				<td>[% item.destin %]</td>
 				<td>[% item.dateshipped %]</td>

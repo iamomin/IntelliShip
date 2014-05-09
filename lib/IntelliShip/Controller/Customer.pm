@@ -847,10 +847,14 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => '0' , name => 'Bill To Shipper (Prepaid)' },
-			{ value => '1' , name => 'Bill To Recipient (Collect)' },
-			{ value => '2' , name => 'Bill To 3rd Party (3rd Party)' },
+			{ value => '0' , name => 'Bill To Shipper (Prepaid)' }
 			];
+
+		if ($c->stash->{THIRD_PARTY_BILL})
+			{
+			push @$list, { value => '1' , name => 'Bill To Recipient (Collect)' };
+			push @$list, { value => '2' , name => 'Bill To 3rd Party (3rd Party)' };
+			}
 		}
 	elsif ($list_name eq 'RECORDS_PER_PAGE')
 		{

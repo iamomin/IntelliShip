@@ -27,7 +27,8 @@
 	function interviewCancel()
 		{
 		$("#do").val('cancel');
-		send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', $("#frm_shipment").serialize(), checkAfterCallback);
+		$("#frm_shipment").submit();
+		//send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', $("#frm_shipment").serialize(), checkAfterCallback);
 		}
 	function interviewNext()
 		{
