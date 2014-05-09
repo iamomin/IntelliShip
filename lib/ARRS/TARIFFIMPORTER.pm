@@ -114,7 +114,7 @@
 		my $sth = $self->{'dbref'}->prepare($sql)
 											or die "Could not prepare SQL statement";
 		#warn "########## prepared statement $sql";
-		my $success = $sth->execute($rateid, $ratetypeid, $carrierscac, $originbegin, '', $originstate, $destlowzip, $desthighzip,  $deststate, $class, $mc1, $mc2, $mc3, $mc4, $l5c, $m5c, $m1m, $m2m, $m5m, $m10m, $m20m, $m30m, $m40m, $rbno, $mc5, $mc6, $mc7, $mc8, $ssmc1, $ssmc2, $ssmc3, $ssmc4, $ssmc5, $ssmc6, $ssmc7, $ssmc8)
+		my $success = $sth->execute($rateid, $ratetypeid, $carrierscac, $originbegin, $originbegin, $originstate, $destlowzip, $desthighzip,  $deststate, $class, $mc1, $mc2, $mc3, $mc4, $l5c, $m5c, $m1m, $m2m, $m5m, $m10m, $m20m, $m30m, $m40m, $rbno, $mc5, $mc6, $mc7, $mc8, $ssmc1, $ssmc2, $ssmc3, $ssmc4, $ssmc5, $ssmc6, $ssmc7, $ssmc8)
 								or die "####### Could not execute statement: ".$self->{'dbref'}->errstr;
 		
 		warn "########## executed statement $success";
