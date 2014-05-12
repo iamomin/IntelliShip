@@ -8,7 +8,11 @@
 		<table class="float-right css3-radios">
 			<tr>
 				<td><label for="ordernumber" class="small_title">Order Number:</label></td>
+				[% IF ordernumber %]
+				<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text" readonly/></td>
+				[% ELSE %]
 				<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/></td>
+				[% END %]
 				[% FOREACH item IN shipmenttype_loop %]
 				<td>
 					<label>
