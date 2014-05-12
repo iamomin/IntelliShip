@@ -850,7 +850,7 @@ sub get_select_list
 			{ value => '0' , name => 'Bill To Shipper (Prepaid)' }
 			];
 
-		if ($c->stash->{THIRD_PARTY_BILL})
+		if ($self->contact->get_contact_data_value('thirdpartybill'))
 			{
 			push @$list, { value => '1' , name => 'Bill To Recipient (Collect)' };
 			push @$list, { value => '2' , name => 'Bill To 3rd Party (3rd Party)' };

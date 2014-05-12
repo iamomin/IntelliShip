@@ -144,6 +144,7 @@ sub setup_address :Private
 
 	$self->set_company_address;
 
+	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
 	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
 	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->ordernumber) unless $c->stash->{ordernumber};
@@ -212,7 +213,6 @@ sub setup_shipment_information :Private
 	unless ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
-		$c->stash->{THIRD_PARTY_BILL} = $Contact->get_contact_data_value('thirdpartybill');
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 		if ($Customer->address->country ne $CO->to_address->country)
@@ -285,9 +285,6 @@ sub setup_carrier_service :Private
 		$c->stash->{populate} = 'summary';
 		$self->populate_order;
 		}
-
-	#$c->stash->{deliverymethod} = '0';
-	#$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
 
 	if ($Contact->is_administrator and $Contact->login_level != 10 and $Contact->login_level != 20 and $Contact->login_level != 15)
 		{
