@@ -566,6 +566,7 @@ sub contactinformation :Local
 			$Contact->addressid($Address->addressid);
 			}
 
+		$addressData->{addressname} = $Contact->customer->address->addressname unless $addressData->{addressname};
 		$Address->update($addressData);
 
 		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};

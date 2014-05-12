@@ -142,10 +142,11 @@ sub setup_address :Private
 		$self->populate_order;
 		}
 
-	$self->set_company_address;
-
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
 	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
+
+	$self->set_company_address;
+
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
 	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->ordernumber) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
@@ -1226,7 +1227,7 @@ sub set_company_address
 	my $self = shift;
 	my $c = $self->context;
 	my $Contact = $self->contact;
-	my $customerAddress = $self->customer->address;
+	my $customerAddress = $c->stash->{fromAddress};
 
 	$c->stash->{customername}		= $customerAddress->addressname;
 	$c->stash->{customeraddress1}	= $customerAddress->address1;
