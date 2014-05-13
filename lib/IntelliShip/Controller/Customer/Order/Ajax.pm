@@ -701,6 +701,9 @@ sub add_package_product_row :Private
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
+		$c->stash->{dimlength} = $UnitType->dimlength;
+		$c->stash->{dimwidth}  = $UnitType->dimwidth;
+		$c->stash->{dimheight} = $UnitType->dimheight;
 		}
 
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
