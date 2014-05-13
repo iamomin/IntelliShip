@@ -86,8 +86,11 @@
 			<tr>
 				<td style="width: 100%; vertical-align: top">
 					<div id="operations" style="display:none">
-						<input type="button" value="Update" onclick="extractAndSubmit();"/>&nbsp;
-						<input type="button" value="Delete All Rows" onclick="deleteAllTariffRows();"/>
+						<input id="btn_update_tariff_rows" type="button" value="Update" onclick="extractAndSubmit();"/>&nbsp;
+						<input id="btn_delete_all_rows" type="button" value="Delete All Rows" onclick="deleteAllTariffRows();"/>&nbsp;
+						<input id="btn_add_tariff_rows" type="button" value="Add" onclick="addTariffRow();"/>
+						<input id="btn_save_tariff_rows" type="button" value="Save" onclick="saveTariffRows();" style="display: none"/>
+						<input id="btn_cancel_tariff_rows" type="button" value="Cancel" onclick="cancelTariffRows();" style="display: none"/>
 					</div>
 				</td>
 			</tr>
@@ -112,7 +115,7 @@
 
 <script type="text/javascript">
 var GRID, CSGRID, TREE, COLWIDTH;
-var ISGRIDLOADED = false, ISTREELOADED = false;
+var ISGRIDLOADED = false, ISTREELOADED = false, ISADDMODE = false;
 
 function loadServicesTree() {
 	//alert("loadServicesTree");
@@ -368,12 +371,129 @@ function extractAndSubmit() {
 	}
 }
 
+function addTariffRow() {
+	var data =  GRID.getData();
+	//console.log("data length: " + data.length);
+	var lastRow = data[data.length - 1];
+	//console.log(lastRow);	
+	
+	//Clone the new row from the last row so that the user doesn't have to enter all the data.
+	var newRow = JSON.parse(JSON.stringify(lastRow)); 
+	newRow.rownum = lastRow.rownum + 1;
+	newRow.wtmin = lastRow.wtmax + 1; 
+	newRow.wtmax = lastRow.wtmax + 2;
+		
+	newRow = removeRateIds(newRow);
+	newRow["isnew"] = true;
+	//console.log(newRow);
+	data.push(newRow);
+	
+	//update the GRID and open the wtrange field of the new row in edit mode.
+	refreshGrid();
+	GRID.setActiveCell(newRow.rownum, 1);
+	GRID.editActiveCell();
+	
+	setAddMode(true);
+}
+
+function setAddMode(isOn){
+	if(isOn){
+		//hide Add, Update, Delete All Rows
+		//show Save and Cancel
+		$('#btn_add_tariff_rows').hide();
+		$('#btn_update_tariff_rows').hide();
+		$('#btn_delete_all_rows').hide();
+		$('#btn_save_tariff_rows').show();
+		$('#btn_cancel_tariff_rows').show();
+	}else{
+		//hide Save and Cancel
+		//show Add, Update, Delete All Rows
+		$('#btn_add_tariff_rows').show();
+		$('#btn_update_tariff_rows').show();
+		$('#btn_delete_all_rows').show();
+		$('#btn_save_tariff_rows').hide();
+		$('#btn_cancel_tariff_rows').hide();		
+	}
+	
+	ISADDMODE = isOn;	
+}
+
+function saveTariffRows() {
+	var data =  GRID.getData();
+	
+	//extract new rates.
+	var ratearray = [];
+	for(var i = 0; i < data.length; i++){
+		var row = data[i];
+		if(row.isnew){
+			ratearray.push(row);
+		}
+	}
+	
+	//send the rates.
+	var params = "rates=" + JSON.stringify(ratearray);
+	console.log(params);
+	my_ajax_request('settings/tariff/save_tariff_rows', params, function () {
+		if (JSON_data.status == "success") {
+			var message = JSON_data.message;
+			setAddMode(false);
+			var csids = $("#services_tree").jstree("get_selected");
+			getTariff(csids[0]);			
+			showMessage(message);			
+		} else {
+			showMessage("Failed to update");
+		}
+	});
+}
+
+function cancelTariffRows(){
+	var data =  GRID.getData();
+	for(var i = 0 ; i < data.length; i++){
+		var row =  data[i];
+		if(row.isnew){
+			data.splice(row.rownum,1);
+		}
+		refreshGrid();
+	}
+	setAddMode(false);	
+}
+
+function removeRateIds(row){	
+	for (var propertyName in row){
+		var value = row[propertyName];
+		if(typeof(value) == "object" && value.hasOwnProperty("rateid")){
+			delete value.rateid;
+		}
+	}
+	return row;	
+}
+
 function deleteTariffRow(rownum){
 	var row = GRID.getDataItem(rownum);
 	var range = row.wtmin + "-" + row.wtmax;
 	if(window.confirm("WARNING: Deletes are irrevocable. Do you want to delete the range " + range + "?")){
-		doDeleteTariffRows(extractRateIds(row));
+		if(row.isnew){
+			//delete the row locally.
+			var data = GRID.getData();			
+			data.splice(row.rownum,1);
+			var r = row.rownum;
+			while (r < data.length){
+				GRID.invalidateRow(r);
+				r++;
+			}
+			refreshGrid();
+			GRID.scrollRowIntoView(row.rownum-1)
+		}else{
+			//delete the row from db
+			doDeleteTariffRows(extractRateIds(row));
+		}
+		
 	}
+}
+
+function refreshGrid(){
+	GRID.updateRowCount();
+	GRID.render();
 }
 
 function extractRateIds(row){

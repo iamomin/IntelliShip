@@ -472,6 +472,16 @@ sub GetServiceTariff {
     return $Online->GetServiceTariff( $Ref->{'csid'});
 }
 
+sub SaveTariffRows{
+	warn "########## SaveTariffRows";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->SaveTariffRows( $Ref->{'rates'});
+}
+
 sub AddServices {
 	warn "########## AddServices";
     my $self = shift;

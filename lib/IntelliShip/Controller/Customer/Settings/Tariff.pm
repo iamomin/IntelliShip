@@ -57,7 +57,7 @@ sub get_service_tariff :Local
 	my ( $self, $c, $csid ) = @_;
 	my $tariff = $self->API->get_service_tariff($csid);
 
-	#warn "########## servicelist in Tariff.pm". Dumper($tariff);
+	warn "########## servicelist in Tariff.pm ". Dumper($tariff);
 
 	$c->stash->{'JSON'} = $self->tariff_to_json($tariff);
 	$c->stash(template => "templates/customer/json.tt");
@@ -153,6 +153,18 @@ sub import: Local
 	{
 	my ( $self, $c) = @_;
 	$c->stash(template => "templates/customer/import_tariff.tt");
+	}
+
+sub save_tariff_rows: Local
+	{
+		my ( $self, $c ) = @_;
+		my $params = $c->req->params;
+		my $rates = $self->my_from_JSON($params->{'rates'});
+		#warn "######### save_tariff_rows: " . Dumper($rates);
+		my $result = $self->API->save_tariff_rows($rates);
+		warn "########## \$result: $result";
+		$c->stash->{'JSON'} = $self->to_my_JSON($result);
+		$c->stash(template => "templates/customer/json.tt");
 	}
 
 sub services_to_json

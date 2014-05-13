@@ -1071,6 +1071,66 @@ warn "undef etadate";
             return $ReturnRef;
         }
 	
+	sub SaveTariffRows{
+		my $self = shift;
+		my ($rates) = @_;
+		#warn "########## Online::SaveTariffRows " . Dumper($rates);
+		warn "########## Online::SaveTariffRows ";
+		
+		my @arr = @$rates;
+		my $row_count = 0;
+		foreach my $rate (@arr)
+		{
+			warn "########## 1";
+			my $unitsstart = $rate->{'wtmin'};
+			my $unitsstop = $rate->{'wtmax'};
+			my $typeid = $rate->{'ratetypeid'};
+			my $arcostmin = $rate->{'mincost'};
+			
+			while(my($k, $v) = each %$rate) 
+			{
+				warn "########## 2";
+				if(exists $v->{'costfield'}){
+					warn "########## 3";
+					my $costfield = $v->{'costfield'};
+					my $actualcost = $v->{'actualcost'};
+					my $rateid = $self->{"dbref"}->gettokenid();
+					my $SQLString = "INSERT INTO rate(rateid, 
+													  typeid, 
+													  unitsstart, 
+													  unitsstop, 
+													  zonenumber, 
+													  arcostmin,
+													  $costfield) 
+											VALUES (
+													  '$rateid',
+													  '$typeid',
+													  $unitsstart,
+													  $unitsstop,
+													  $k,
+													  $arcostmin,
+													  $actualcost
+													)";
+													
+					warn "########## \$SQLString: $SQLString";
+					my $success = $self->{'dbref'}->do($SQLString)
+								or warn "Could not execute statement: ".$self->{'dbref'}->errstr;						
+					
+					if($success){
+						warn "########## 4";
+						$row_count++;
+						$self->{'dbref'}->commit;
+					}else{
+						warn "########## 5";
+						$self->{'dbref'}->rollback;
+					}
+				}
+			}			
+		}
+		
+		return {'status' => 'success', 'message' => "$row_count rows added to rate"};		
+	}
+	
 	sub AddServices
 		{
             my $self = shift;

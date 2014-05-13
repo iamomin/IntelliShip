@@ -201,6 +201,20 @@ sub get_service_tariff
 
 	return $self->APIRequest($http_request);
 	}
+
+sub save_tariff_rows
+	{
+        warn "########## save_tariff_rows";
+		my $self = shift;
+		my ($rates) = @_;
+
+		my $http_request = {
+			action => 'SaveTariffRows',
+			rates => $rates		
+			};
+
+		return $self->APIRequest($http_request);
+	}
 	
 sub save_tariff
 	{
