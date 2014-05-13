@@ -158,8 +158,6 @@ sub authenticate_token :Private
 		$self->contact($Contact);
 		$self->customer($Customer);
 
-		$c->stash->{contactObj} = $Contact;
-
 		## Update token expire time
 		$c->model("MyDBI")->dbh->do("UPDATE token SET dateexpires = timestamp with time zone 'now' + '2 hours' WHERE tokenid = '$NewTokenID'");
 		}

@@ -138,6 +138,8 @@ sub end : Private {
 	my $ajax = $c->req->param('ajax') || 0;
 	my $print_label = $c->stash->{print_label} || 0;
 
+	$c->stash->{contactObj} = $Controller->contact;
+
 	if ($Token and $ajax)
 		{
 		$c->forward($c->view('Ajax'));

@@ -28,7 +28,6 @@
 		{
 		$("#do").val('cancel');
 		$("#frm_shipment").submit();
-		//send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', $("#frm_shipment").serialize(), checkAfterCallback);
 		}
 	function interviewNext()
 		{
