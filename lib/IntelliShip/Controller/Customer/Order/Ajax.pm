@@ -299,7 +299,9 @@ sub get_carrier_service_list
 			$c->stash->{IS_PREPAID} = 1;
 			$detail_hash->{'delivery'} = $estimated_date;
 
-			$detail_hash->{'days'} = IntelliShip::DateUtils->get_business_days_between_two_dates(IntelliShip::DateUtils->get_formatted_timestamp, $estimated_date);
+			my $date_to_ship = $CO->datetoship if IntelliShip::DateUtils->is_valid_date($CO->datetoship);
+			$date_to_ship = IntelliShip::DateUtils->get_formatted_timestamp unless $date_to_ship;
+			$detail_hash->{'days'} = IntelliShip::DateUtils->get_business_days_between_two_dates($date_to_ship,$estimated_date);
 
 			my ($freightcharges,$fuelcharges) = (0,0);
 			if ( defined $CSData->{'COST_DETAILS'} and $shipment_charge !~ /Quote/ )

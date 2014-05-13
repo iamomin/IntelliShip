@@ -144,10 +144,6 @@
 	<div style="clear: both;">&nbsp;</div>
 
 [% UNLESS one_page %]
-	<div class="float-left">
-		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/></div>
-		<div id="special-requirements"></div>
-	</div>
 	<div class="float-right">
 		<table>
 			<tr>

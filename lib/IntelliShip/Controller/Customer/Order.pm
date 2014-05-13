@@ -1230,6 +1230,7 @@ sub set_company_address
 	my $customerAddress = $c->stash->{fromAddress};
 
 	$c->stash->{customername}		= $customerAddress->addressname;
+	$c->stash->{customername}		= $Contact->customer->address->addressname unless $c->stash->{customername};
 	$c->stash->{customeraddress1}	= $customerAddress->address1;
 	$c->stash->{customeraddress2}	= $customerAddress->address2;
 	$c->stash->{customercity}		= $customerAddress->city;
