@@ -20,3 +20,4 @@ UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719
 UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUSPSPRM';
 UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUSPSMM0';
 UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUSPSLM0';
+UPDATE customerservice set ratetypeid='USPSRATINGAPI', webusername='667ENGAG1719' where customerserviceid='ENGAGEUPMEFRB';
