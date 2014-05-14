@@ -286,11 +286,7 @@ sub configure :Local
 			};
 
 	my $AuxilaryAddress;
-	if ($Customer->auxformaddressid)
-		{
-		$AuxilaryAddress = $Customer->auxilary_address;
-		}
-	else
+	if ($AuxilaryAddress = $Customer->auxilary_address;)
 		{
 		my @auxaddress = $c->model('MyDBI::Address')->search($auxAddressData);
 
