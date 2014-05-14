@@ -468,6 +468,8 @@ sub process_pagination
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	return undef if defined $params->{'records_per_page'} && $params->{'records_per_page'} == 0;
+
 	#$c->log->debug("PROCESS PAGINATION");
 
 	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
@@ -733,6 +735,7 @@ sub get_customer_contacts :Private
 		$contact_batches = $self->process_pagination('contactmanagement');
 		$WHERE->{contactid} = $contact_batches->[0] if $contact_batches;
 		}
+
 	$c->stash->{SHOW_PAGINATION} = 1 unless $params->{'contact_ids'};
 
 	#$c->log->debug("WHERE: " . Dumper $WHERE);
