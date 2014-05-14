@@ -796,6 +796,7 @@
 				[% END %]
 				</select>
 			</td>
+			[% IF contact_batches %]
 			<td>
 				<select name="contact_page" id="contact_page" onchange="contactPage();">
 				[% FOREACH ids IN contact_batches %]
@@ -803,11 +804,12 @@
 				[% END %]
 				</select>
 			</td>
+			[% END %]
 
 		</tr></table>
 		[% END %]
 
-	[% IF contact_batches %]<div id="myShipments">[% END %]
+	[% IF contactlist %]<div id="myShipments">[% END %]
 	<div style="clear: both;">&nbsp;</div>
 	<div class="float-right"><b>Contact Count: [% contact_count %]</b></div>
 	<table>
@@ -833,7 +835,7 @@
 			<tr><td colspan="6">No contacts found</td></tr>
 		[% END %]
 	</table>
-	[% IF contact_batches %]</div>[% END %]
+	[% IF contactlist %]</div>[% END %]
 
 	[% IF SHOW_PAGINATION %]
 
