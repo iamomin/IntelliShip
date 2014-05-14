@@ -2204,14 +2204,13 @@ sub SendShipNotification :Private
 	$Email->from_name('IntelliShip2');
 	$Email->subject("NOTICE: Shipment Prepared (" .$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
 
-	$Email->add_to($Shipment->shipmentnotification);
+	$Email->add_to($Shipment->shipmentnotification) if $Shipment->shipmentnotification;
+	$Email->add_to($Shipment->deliverynotification) if $Shipment->deliverynotification;
 
-	my $emails = $Shipment->shipmentnotification;
-	if ($Shipment->deliverynotification and $self->contact->get_contact_data_value('combineemail'))
-		{
-		$emails .= ', ' . $Shipment->deliverynotification;
-		$Email->add_to($Shipment->deliverynotification);
-		}
+	#if ($Shipment->deliverynotification and $self->contact->get_contact_data_value('combineemail'))
+	#	{
+	#	$Email->add_to($Shipment->deliverynotification);
+	#	}
 
 	$Email->add_line('<br>');
 	$Email->add_line('<p>Shipment notification</p>');
@@ -2228,7 +2227,7 @@ sub SendShipNotification :Private
 
 	if ($Email->send)
 		{
-		$c->log->debug("Email successfully sent to " . $emails);
+		$c->log->debug("Email successfully sent to " . join(',',@{$Email->to}));
 		}
 	}
 
