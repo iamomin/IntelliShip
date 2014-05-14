@@ -142,6 +142,8 @@ function loadServicesTree() {
 			}
 			breadcrumbStr += data.node.text;
 			$('#lbl_breadcrumb').html(breadcrumbStr);
+			
+			setAddMode(false);
 
 		}).jstree({
 			"plugins" : ['themes', 'json_data', 'ui', 'state'],
@@ -461,7 +463,7 @@ function cancelTariffRows(){
 function removeRateIds(row){	
 	for (var propertyName in row){
 		var value = row[propertyName];
-		if(typeof(value) == "object" && value.hasOwnProperty("rateid")){
+		if(value && typeof(value) == "object" && value.hasOwnProperty("rateid")){
 			delete value.rateid;
 		}
 	}
