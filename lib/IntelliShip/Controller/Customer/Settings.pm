@@ -574,8 +574,8 @@ sub contactinformation :Local
 		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
 		$Contact->password($params->{'contact_password'}) if $params->{'contact_password'};
 
-		$Contact->firstname($params->{'firstname'});
-		$Contact->lastname($params->{'lastname'});
+		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
+		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
 		$Contact->email($params->{'contact_email'});
 		$Contact->fax($params->{'contact_fax'});
 		$Contact->department($params->{'department'});
@@ -648,6 +648,7 @@ sub contactinformation :Local
 			$c->stash->{origdate}			= $Contact->get_contact_data_value('origdate');
 			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
+			$c->stash->{SSO_CUSTOMER}		= 1 if $Contact->customer->is_single_sign_on_customer;
 			}
 
 		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
@@ -702,9 +703,12 @@ sub set_required_fields :Private
 			{ name => 'contact_country',  details => "{ minlength: 1 }"},
 			];
 		}
-
-	push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"});
-	push(@$requiredList, { name => 'contact_password', details => "{ minlength: 6 }"});
+		
+	unless ($c->stash->{SSO_CUSTOMER})
+		{
+		push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"}) ;
+		push(@$requiredList, { name => 'contact_password', details => "{ minlength: 6 }"});
+		}
 	push(@$requiredList, { name => 'phonehome',        details => "{ phone: false }"});
 	push(@$requiredList, { name => 'contact_email',    details => "{ email: false }"});
 	push(@$requiredList, { name => 'contact_fax',      details => "{ phone: false }"});

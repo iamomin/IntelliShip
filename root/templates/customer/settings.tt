@@ -616,29 +616,41 @@ $(document).ready(function(){
 		<tr>
 			<td><label class="float-right" for="contact_username">User Name:</label></td>
 			<td>
+			[% UNLESS SSO_CUSTOMER%]
 			[% IF READONLY %]
 				[% contactInfo.username %]
 			[% ELSE  %]
 				<input type="text" name="contact_username" id="contact_username" value="[% contactInfo.username %]" class="broad-text" onchange="validateContactUsername();">
 			[% END %]
+			[% END %]
 			</td>
 			<td><label class="float-right" for="firstname">First Name:</label></td>
 			<td id="firstnamedisplay">
-				<input type="text" name="firstname" id="firstname" value="[% contactInfo.firstname %]" class="broad-text">
+				[% IF SSO_CUSTOMER %]
+					[% contactInfo.firstname %]
+				[% ELSE  %]
+					<input type="text" name="firstname" id="firstname" value="[% contactInfo.firstname %]" class="broad-text">
+				[% END %]
 			</td>
 		</tr>
 		<tr>
 			<td><label class="float-right" for="password">Password:</label></td>
 			<td>
+			[% UNLESS SSO_CUSTOMER%]
 			[% IF READONLY %]
 				[% password %]
 			[% ELSE %]
 				<input type="text" name="contact_password" id="contact_password" value="[% contact_password %]" class="broad-text">
 			[% END %]
+			[% END %]
 			</td>
 			<td><label class="float-right" for="lastname">Last Name:</label></td>
 			<td id="lastnamedisplay">
-				<input type="text" name="lastname" id="lastname" value="[% contactInfo.lastname %]" class="broad-text">
+				[% IF SSO_CUSTOMER %]
+					[% contactInfo.lastname %]
+				[% ELSE  %]
+					<input type="text" name="lastname" id="lastname" value="[% contactInfo.lastname %]" class="broad-text">
+				[% END %]
 			</td>
 		</tr>
 		<tr>

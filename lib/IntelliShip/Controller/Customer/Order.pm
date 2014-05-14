@@ -108,7 +108,7 @@ sub setup_one_page :Private
 	$self->setup_address;;
 	$self->setup_shipment_information;
 	$self->setup_carrier_service;
-
+	$c->stash->{ROUTE_CAPTION} = $self->customer->is_single_sign_on_customer ? uc($self->customer->get_contact_data_value('routebuttonname')) : 'ROUTE NOW';
 	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 

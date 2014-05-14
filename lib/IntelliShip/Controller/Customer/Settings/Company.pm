@@ -138,6 +138,7 @@ sub setup :Local
 	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
 	$c->stash->{CONTACT_LIST}            = 0;
 	$c->stash->{CONTACT_MANAGEMENT}      = 0;
+	$c->stash->{SSO_CUSTOMER}            = 1 if $Customer->is_single_sign_on_customer;
 	$c->stash->{companysetting_loop}     = $self->get_company_setting_list($Customer);
 	$c->stash->{weighttype_loop}         = [{ name => 'LB', value => 'LBS'},{ name => 'KG', value => 'KGS'}];
 	$c->stash->{countrylist_loop}        = $self->get_select_list('COUNTRY');

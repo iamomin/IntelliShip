@@ -701,6 +701,15 @@ sub get_sop_id
 
 	return $sop_id;
 	}
+	
+sub is_single_sign_on_customer
+	{
+	my $self = shift;
+	if($self->customerid =~ /(8ETKCWZXZC0UY)/i) # Motorola Solutions, Inc.
+		{
+		return 1;
+		}
+	}
 
 sub third_party_account
 	{

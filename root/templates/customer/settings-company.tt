@@ -657,6 +657,16 @@
 							[% END %]
 						</td>
 					</tr>
+					[% IF SSO_CUSTOMER %]
+					<tr>
+						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>
+						<td><input type="text" class="broad-text" name="cust_routebuttonname" id="cust_routebuttonname" value="[% cust_routebuttonname %]">
+						</td>
+
+						<td><label class="float-right" for=""></label></td>
+						<td class="css3-radios"></td>
+					</tr>
+					[% END %]
 				</table>
 
 				<center>

@@ -86,7 +86,7 @@
 			</div>
 			<button type="button" class="long-rounded-button float-right" onclick="getCarrierServiceList('frm_order');">
 				<reload id="loading-1"></reload>
-				&nbsp;&nbsp;ROUTE NOW&nbsp;&nbsp;
+				&nbsp;&nbsp;[% ROUTE_CAPTION %]&nbsp;&nbsp;
 				<reload id="loading-2"></reload>
 			</button>
 			</td>
