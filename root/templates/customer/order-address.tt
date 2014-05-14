@@ -275,6 +275,8 @@
 
 	BindCompanyAutoComplete('to',availableCustomers);
 
+	$("#datetoship").change(resetCSList);
+
 	$("#dateneeded").change(function() {
 		resetCSList();
 		checkDueDate();
