@@ -208,8 +208,7 @@ sub tariff_to_json
 	$json->{'csid'} = $tariff->{'csid'};
 
 	my $prevunitsstart = 0;
-	my @data = ();
-	my @rate_ids = ();
+	my @data = ();	
 	my $d = {};
 	my $i = 0;
 	my $rownum = 0;
@@ -221,7 +220,6 @@ sub tariff_to_json
 		my $unitsstart = $record->{'unitsstart'};
 		if ($prevunitsstart != $unitsstart || $i == 0)
 			{
-			$d->{'rateids'} = \@rate_ids;
 			push(@data, $d);
 
 			$d = {};
@@ -238,10 +236,7 @@ sub tariff_to_json
 										'rateid'=>$record->{'rateid'},
 										'costfield'=>$record->{'costfield'}
 										};
-		if ($prevunitsstart == $unitsstart)
-			{
-			push(@rate_ids, $record->{'rateid'});
-			}
+		
 		$prevunitsstart = $unitsstart;
 		$i++;
 		}
