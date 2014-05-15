@@ -676,7 +676,7 @@ sub Call_API
 	my $shipmentData = $self->data;
 	my $API_REQUEST_TAG = $API_NAME . 'Request';
 
-	$self->log( "### REQUEST DETAILS: " . Dumper $XML);
+	$self->log( "... USPS XML REQUEST: " . $XML);
 
 	my $shupment_request = {
 			httpurl => $URL,
