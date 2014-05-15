@@ -1211,13 +1211,17 @@ sub populate_order :Private
 	## SELECTED SPECIAL SERVICES
 	if (!$populate or $populate eq 'shipment')
 		{
-		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-		$CA->context($c);
-		$CA->contact($self->contact);
-		$CA->customer($self->customer);
-		$CA->get_special_service_list;
-		my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-		$c->stash->{SPECIAL_SERVICE} = $HTML;
+		my $RS = $CO->assessorials;
+		if ($RS->count)
+			{
+			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+			$CA->context($c);
+			$CA->contact($self->contact);
+			$CA->customer($self->customer);
+			$CA->get_special_service_list;
+			my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+			$c->stash->{SPECIAL_SERVICE} = $HTML;
+			}
 		}
 
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
