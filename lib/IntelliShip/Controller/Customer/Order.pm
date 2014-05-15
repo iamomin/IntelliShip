@@ -211,6 +211,8 @@ sub setup_shipment_information :Private
 		$self->populate_order;
 		}
 
+	$c->stash->{SPECIAL_SERVICE} = $self->get_special_services if $Contact->get_contact_data_value('specialserviceexpanded') and !$c->stash->{SPECIAL_SERVICE};
+
 	unless ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
@@ -1181,6 +1183,12 @@ sub populate_order :Private
 			$c->stash($packages->[0]->{_column_data}) if @$packages;
 			$c->stash->{comments} = $CO->description; ##**
 			}
+
+		## SELECTED SPECIAL SERVICES
+		if ($CO->assessorials->count)
+			{
+			$c->stash->{SPECIAL_SERVICE} = $self->get_special_services;
+			}
 		}
 
 	if ($populate eq 'summary')
@@ -1206,22 +1214,6 @@ sub populate_order :Private
 		$c->stash->{insurance} = sprintf("%.2f",$insurance);
 
 		#$c->stash->{international} = '';
-		}
-
-	## SELECTED SPECIAL SERVICES
-	if (!$populate or $populate eq 'shipment')
-		{
-		my $RS = $CO->assessorials;
-		if ($RS->count)
-			{
-			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-			$CA->context($c);
-			$CA->contact($self->contact);
-			$CA->customer($self->customer);
-			$CA->get_special_service_list;
-			my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-			$c->stash->{SPECIAL_SERVICE} = $HTML;
-			}
 		}
 
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
@@ -1348,6 +1340,19 @@ sub add_package_detail_row :Private
 	$c->stash->{PACKAGE_DETAIL_ROW} = 0;
 
 	return $HTML;
+	}
+
+sub get_special_services :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+	$CA->context($c);
+	$CA->contact($self->contact);
+	$CA->customer($self->customer);
+	$CA->get_special_service_list;
+	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	}
 
 sub get_tooltips :Private

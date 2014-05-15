@@ -460,6 +460,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Include All Email For All Notification ',       value => 'combineemail',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Ship A Package',                                value => 'shipapackage',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Route Button Name',                             value => 'routebuttonname',					type => 'INPUT',    datatypeid => 2, ownertype => ['CUSTOMER']},
+	{ name => 'Special Services Expanded',                     value => 'specialserviceexpanded',			type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	];
 
 my $CUSTOM_CSS_STYLES = [
