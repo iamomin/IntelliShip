@@ -63,8 +63,10 @@ sub process_request
 		$self->add_error("This service is under construction. Please try another service.");
 		return;
 		}
-	
-	my $XMLResponse = $self->Call_API($url, $XML_request, $API_name);
+
+	my $responseDS = $self->Call_API($url, $XML_request, $API_name);
+
+	return unless $responseDS;
 
 	## Check Commitment Days from USPS
 	$self->Check_USPS_Commitment;
@@ -73,12 +75,12 @@ sub process_request
 
 	if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
 		{
-		$TrackingNumber =$XMLResponse->{EMConfirmationNumber};
+		$TrackingNumber =$responseDS->{EMConfirmationNumber};
 		$self->log("EMConfirmationNumber: ".$TrackingNumber);
 		}
 	else
 		{
-		$TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
+		$TrackingNumber =$responseDS->{DeliveryConfirmationNumber};
 		$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
 		}
 
@@ -94,15 +96,15 @@ sub process_request
 	$shipmentData->{'tracking1'}    = $TrackingNumber;
 	$shipmentData->{'ElectronicRateApproved'}    = $Electronic;
 	$shipmentData->{'weight'}       = $shipmentData->{'enteredweight'};
-	$shipmentData->{'RDC'}          = $XMLResponse->{RDC};
-	$shipmentData->{'CarrierRoute'} = $XMLResponse->{CarrierRoute};
+	$shipmentData->{'RDC'}          = $responseDS->{RDC};
+	$shipmentData->{'CarrierRoute'} = $responseDS->{CarrierRoute};
 	unless ($shipmentData->{'expectedDelivery'})
 		{
-		$shipmentData->{'expectedDelivery'} = $XMLResponse->{Commitment}->{ScheduledDeliveryDate} if  $XMLResponse->{Commitment}->{ScheduledDeliveryDate};
+		$shipmentData->{'expectedDelivery'} = $responseDS->{Commitment}->{ScheduledDeliveryDate} if  $responseDS->{Commitment}->{ScheduledDeliveryDate};
 		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->american_date($shipmentData->{'expectedDelivery'}) if $shipmentData->{'expectedDelivery'};
 		}
 
-	$shipmentData->{'commintmentName'} = uc($XMLResponse->{Commitment}->{CommitmentName}) if  $XMLResponse->{Commitment}->{CommitmentName};
+	$shipmentData->{'commintmentName'} = uc($responseDS->{Commitment}->{CommitmentName}) if  $responseDS->{Commitment}->{CommitmentName};
 
 	my $raw_string = $self->get_EPL($shipmentData);
 	my $PrinterString = $raw_string;
@@ -136,7 +138,7 @@ sub get_FirstClass_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -208,7 +210,7 @@ sub get_StandardPost_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -382,7 +384,7 @@ sub get_MediaMail_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -454,7 +456,7 @@ sub get_LibraryMail_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -617,11 +619,11 @@ sub Check_USPS_Commitment
 	if ($shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/)
 		{
 		my $XML_request = $self->get_Commitment_XML('ExpressMailCommitment');
-		my $XMLResponse = $self->Call_API($url, $XML_request, 'ExpressMailCommitment');
-		
-		return unless $XMLResponse;
-		
-		my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
+		my $responseDS = $self->Call_API($url, $XML_request, 'ExpressMailCommitment');
+
+		return unless $responseDS;
+
+		my $Commitement = (ref $responseDS->{Commitment} eq 'ARRAY' ? $responseDS->{Commitment} : [$responseDS->{Commitment}]);
 
 		#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
 
@@ -637,11 +639,11 @@ sub Check_USPS_Commitment
 	elsif ($shipmentData->{'servicecode'} =~ /(UPRIORITY|USPSPMFRE|USPSPMPFRE|USPSPMSFRB|USPSPMMFRB|USPSPMLFRB)/)
 		{
 		my $XML_request = $self->get_Commitment_XML('PriorityMail');
-		my $XMLResponse = $self->Call_API($url, $XML_request, 'PriorityMail');
-		
-		return unless $XMLResponse;
-		
-		my $Days = $XMLResponse->{Days};
+		my $responseDS = $self->Call_API($url, $XML_request, 'PriorityMail');
+
+		return unless $responseDS;
+
+		my $Days = $responseDS->{Days};
 		$self->log("Day " .$Days);
 		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
 		$self->log("expectedDelivery " .$shipmentData->{'expectedDelivery'} );
@@ -693,22 +695,32 @@ sub Call_API
 		{
 		$self->log("USPS: Unable to access USPS site");
 		$self->add_error("No response received from USPS");
-		return 0;
+		return;
 		}
+
+	$self->log( "... RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
-	my $XMLResponse = $xml->XMLin($response->content);
-	$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
 
-	if( $XMLResponse->{Number} and $XMLResponse->{Description})
+	my $responseDS = $xml->XMLin($response->content);
+
+	if ( $responseDS->{Number} and $responseDS->{Description})
 		{
-		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
-		$self->log($msg);
+		my $msg = "Carrier Response Error: ".$responseDS->{Number}. " : ". $responseDS->{Description};
 		$self->add_error($msg);
-		return 0;
+		$self->log($msg);
+		return;
 		}
 
-	return $XMLResponse;
+	if ($responseDS->{Number} and $responseDS->{Description})
+		{
+		my $msg = "Carrier Response Error: ".$responseDS->{Number}. " : ". $responseDS->{Description};
+		$self->add_error($msg);
+		$self->log($msg);
+		return;
+		}
+
+	return $responseDS;
 	}
 
 __PACKAGE__->meta()->make_immutable();
