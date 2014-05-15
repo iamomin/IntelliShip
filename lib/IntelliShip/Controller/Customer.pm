@@ -464,7 +464,7 @@ sub get_select_list
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			my $sth1 = $self->myDBI->select("SELECT addressid FROM co WHERE coid = '$data->{'coid'}'");
+			my $sth1 = $self->myDBI->select("SELECT addressid, contactname FROM co WHERE coid = '$data->{'coid'}'");
 			my $address_data = $sth1->fetchrow(0);
 			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
 			push(@$list, {
@@ -474,6 +474,7 @@ sub get_select_list
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
+					contactname  => $address_data->{'contactname'},
 				});
 			}
 		}
