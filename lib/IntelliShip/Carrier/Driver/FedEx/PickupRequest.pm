@@ -31,8 +31,11 @@ sub process_request
 	# Get 'from' information
 	my $FromAddress = $Shipment->origin_address;
 
-	my $sth = $self->myDBI->select("SELECT datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
-	my $datepacked = $sth->fetchrow(0)->{'datepacked'} if $sth->numrows;
+	my $sth = $self->myDBI->select("SELECT datepacked + interval '1 day' as datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
+	my ($datepacked,$timepacked) = split(/\ /,$sth->fetchrow(0)->{'datepacked'}) if $sth->numrows;
+
+	## Send pickup request time to the next day 9AM morning
+	$datepacked .= 'T09:00:00.1234'; ## 2014-05-15T09:00:00.1234
 
 	$PickupRequest->{CompanyName} = $FromAddress->addressname;
 	$PickupRequest->{StreetLines} = $FromAddress->address1;
