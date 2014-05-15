@@ -4,9 +4,9 @@ use Moose;
 use ARRS::IDBI;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
 use IntelliShip::Carrier::EPLTemplates;
-
 BEGIN {
 
 	extends 'IntelliShip::Errors';
@@ -340,6 +340,7 @@ sub SendPickUpEmail
 	$Email->from_name('IntelliShip2');
 	$Email->subject($subject);
 	$Email->add_to('noc@engagetechnology.com');
+	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq &DEVELOPMENT;
 
 	$Email->add_line('');
 	$Email->add_line('=' x 60);
@@ -357,7 +358,7 @@ sub SendPickUpEmail
 
 	if ($Email->send)
 		{
-		$self->context->log->debug("Shipment Pick-Up notification email successfully sent");
+		$self->context->log->debug("Shipment Pick-Up notification email successfully sent to " . join(',',@{$Email->to}));
 		}
 	}
 

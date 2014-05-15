@@ -66,9 +66,9 @@ sub process_request
 
 	$PickupRequest->{CarrierCode} = 'FDXE';
 
-	#$self->log("....PickupRequest : " . Dumper $PickupRequest);
-
 	my $XMLString = $self->get_XML_v6($PickupRequest);
+
+	$self->log("... PickupRequest XML: " . $XMLString);
 
 	## Send request to FedEx
 	##my $URL = 'https://fedex.com/ws/pickup/v6/';
@@ -91,7 +91,7 @@ sub process_request
 		return 0;
 		}
 
-	#$self->log("FedEx CreatePickup ResponseString: " . $Response->content);
+	$self->log("FedEx CreatePickup Response: " . $Response->content);
 
 	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
 
@@ -119,7 +119,7 @@ sub process_request
 	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
 	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'}. "<br>";
 
-	#$self->log("##### ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
+	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
 	$self->SendPickUpEmail($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
 	}
