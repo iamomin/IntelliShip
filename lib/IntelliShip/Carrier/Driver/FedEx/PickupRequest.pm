@@ -117,7 +117,7 @@ sub process_request
 		}
 
 	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
-	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'}. "<br>";
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'}. "<br>";
 
 	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
