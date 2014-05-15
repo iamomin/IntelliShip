@@ -70,7 +70,7 @@ sub add_line
 		{
 		my $line = shift;
 		my $body = $self->body;
-		$body .= $line . "\n";
+		$body .= $line . ($self->content_type =~ /HTML/i ? "<br>" : "\n");
 		$self->body($body);
 		}
 	}
@@ -117,7 +117,7 @@ sub send
 	#print STDERR "\n Body   : \n" . $self->body;
 	#return;
 
-	if (IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT')
+	if (IntelliShip::MyConfig->getDomain eq &DEVELOPMENT)
 		{
 		if ($self->allow_send_from_dev)
 			{
@@ -128,7 +128,9 @@ sub send
 			{
 			#return 1;
 			}
-		#$to_list  = 'iamomin@gmail.com';
+
+		$to_list  = 'imranm@alohatechnology.com';
+		$cc_list  = 'noc@engagetechnology.com';
 		}
 
 	if ($self->attach)

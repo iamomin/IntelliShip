@@ -344,17 +344,21 @@ sub SendPickUpEmail
 
 	$Email->add_line('');
 	$Email->add_line('=' x 60);
+	$Email->add_line('');
 	$Email->add_line('Weight      : ' . $Shipment->total_weight);
 	$Email->add_line('DIM Weight  : ' . $Shipment->dimweight);
 	$Email->add_line('Pickup Date : ' . $Shipment->datepacked);
 	$Email->add_line('Origin      : ' . $Shipment->addressidorigin);
 	$Email->add_line('Tracking    : ' . $Shipment->tracking1);
+	$Email->add_line('');
 	$Email->add_line('=' x 60);
 	$Email->add_line('');
 	$Email->add_line('Message                    : ' . $Message . '<br>');
 	$Email->add_line('Code                       : ' . $ResponseCode . '<br>');
 	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId . '<br>');
 	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber . '<br>');
+	$Email->add_line('');
+	$Email->add_line('=' x 60);
 
 	if ($Email->send)
 		{
