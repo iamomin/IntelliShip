@@ -1208,15 +1208,16 @@ sub populate_order :Private
 		#$c->stash->{international} = '';
 		}
 
-	# SELECTED SPECIAL SERVICES
-	if (!$populate or $populate eq 'shipment' or $populate eq 'summary')
+	## SELECTED SPECIAL SERVICES
+	if (!$populate or $populate eq 'shipment')
 		{
-		my @special_services = $CO->assessorials;
-		my %serviceHash =  map { $_->assname => 1 } @special_services;
-		my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
-		my @selected_special_service_loop = grep { $serviceHash{$_->{'value'}} } @$special_service_loop;
-		$c->stash->{selected_special_service_loop} = \@selected_special_service_loop if @selected_special_service_loop;
-		#$c->log->debug("selected_special_service_loop: " . Dumper @selected_special_service_loop);
+		my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+		$CA->context($c);
+		$CA->contact($self->contact);
+		$CA->customer($self->customer);
+		$CA->get_special_service_list;
+		my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+		$c->stash->{SPECIAL_SERVICE} = $HTML;
 		}
 
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;

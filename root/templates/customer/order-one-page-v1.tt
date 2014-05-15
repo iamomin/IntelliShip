@@ -59,7 +59,7 @@
 
 	<div style="border: 4px solid #9BA7AF">
 		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd">+</a></td><td><green>Add Special Services</green></td></tr></table>
-		<div id="special-services" style="display: [% special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes"></div>
+		<div id="special-services" style="display: [% SPECIAL_SERVICE ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICE %]</div>
 	</div>
 
 	<table class="shipment-summary">

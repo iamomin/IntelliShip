@@ -95,25 +95,9 @@
 		<div style="clear: both;">&nbsp;</div>
 	[% END %]
 
-	<div id="selected-special-requirements" style="display: [% selected_special_service_loop ? 'block' : 'none' %];" class="css3-checkboxes">
-		<h2>Special Services Requested</h2>
-		[% FOREACH item IN selected_special_service_loop %]
-			<div id='div_[% item.value %]' style='display: inline'><label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" CHECKED/><span><label for="[% item.value %]">[% item.name %]</label></span></label></div>
-		[% END %]
-		<script>
-		$("#selected-special-requirements input:checkbox").click(function () {
-			if (!$(this).is(':checked')) {
-				$("#td_" + this.id).html($("#div_" + this.id).html());
-				$("#div_" + this.id).remove();
-				$("#" + this.id).attr("checked", false);
-				}
-			});
-		</script>
-	</div>
-
-	<div class="float-left">
-		<div id="special-requirements"></div>
-		<input type="button" class="orange" value="SPECIAL REQUIREMENTS" onclick="populateSpecialServiceList();"/>
+	<div style="border: 4px solid #9BA7AF">
+		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd" onclick="SpecialServices();">+</a></td><td><green>Add Special Services</green></td></tr></table>
+		<div id="special-services" style="display: [% SPECIAL_SERVICE ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICE %]</div>
 	</div>
 
 	<div class="float-right">
@@ -130,21 +114,39 @@
 	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
 
-	$(document).ready(function(){
+	$("#dateneeded").change(checkDueDate);
 
-		$("#dateneeded").change(checkDueDate);
+	$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
-		$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
+	$(document).on('change', '.package-details', function() {
 
-		$(document).on('change', '.package-details', function() {
+		carrierServieDetails = {};
 
-			carrierServieDetails = {};
+		var row_ID = this.id.split('_')[1];
 
-			var row_ID = this.id.split('_')[1];
+		calculateDensity(row_ID);
+		setCustomsCommodityValue();
+		});
 
-			calculateDensity(row_ID);
-			setCustomsCommodityValue();
+	function SpecialServices()
+		{
+		var linkObject = $('#special-services-cmd');
+
+		if ($('#special-services').html().length > 0)
+			{
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			$("#special-services").slideToggle("slow");
+			return;
+			}
+
+		var params = 'coid=' + $("#coid").val();
+		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
+			$( "#special-services" ).slideToggle( "slow" );
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
 			});
+		}
+
+	$(document).ready(function(){
 
 		[% IF tooltips %]
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
