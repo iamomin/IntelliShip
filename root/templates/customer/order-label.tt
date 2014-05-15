@@ -24,12 +24,12 @@
 	<table class="center DoNotPrint">
 		<tr>
 			[% IF LABEL_IMG %]
-			<td><input type="button" class="blue"  value="DOWNLOAD" id="download" onclick="DownloadLabelImage();"/></td>
+			<td><input type="button" class="blue"  value="Download/Save and Ship" id="download" onclick="DownloadLabelImage();"/></td>
 			[% END %]
-			<td><input type="button" class="green" value="CONFIRM" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-			<td><input type="button" class="red"   value="CANCEL" onclick="CancelShipment();"/></td>
+			<td><input type="button" class="green" value="Print and Ship" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
+			<td><input type="button" class="red"   value="Cancel" onclick="CancelShipment();"/></td>
 			[% IF SEND_EMAIL %]
-			<td><input type="button" class="blue" value="EMAIL" onclick="SendEmailNotification();"/></td>
+			<td><input type="button" class="blue" value="Email" onclick="SendEmailNotification();"/></td>
 			[% END %]
 		</tr>
 	</table>
