@@ -765,12 +765,12 @@
 			});
 			}
 
-		$("#tariff-pricing-tab").click(function() {
+		$("#tariff-pricing-tab").click(function(event) {						
 			if($("#tariff-pricing").html().length == 0) {
 				$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
 				var params = 'customerid='+$("#customerid").val();
-				send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
-				}
+				send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);				
+				}				
 			});
 
 	</script>
