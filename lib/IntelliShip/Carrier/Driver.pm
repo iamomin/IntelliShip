@@ -340,7 +340,7 @@ sub SendPickUpEmail
 	$Email->from_name('IntelliShip2');
 	$Email->subject($subject);
 	$Email->add_to('noc@engagetechnology.com');
-	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq &DEVELOPMENT;
+	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
 	$Email->add_line('');
 	$Email->add_line('=' x 60);

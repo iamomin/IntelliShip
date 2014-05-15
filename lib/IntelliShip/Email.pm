@@ -3,7 +3,6 @@ package IntelliShip::Email;
 use Moose;
 use IO qw(File);
 use Email::Stuff;
-use IntelliShip::MyConfig;
 
 has 'to'			=> ( is => 'rw', isa => 'ArrayRef' );
 has 'cc'			=> ( is => 'rw', isa => 'ArrayRef' );
@@ -117,7 +116,7 @@ sub send
 	#print STDERR "\n Body   : \n" . $self->body;
 	#return;
 
-	if (IntelliShip::MyConfig->getDomain eq &DEVELOPMENT)
+	if (IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT')
 		{
 		if ($self->allow_send_from_dev)
 			{
