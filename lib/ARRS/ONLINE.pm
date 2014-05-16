@@ -2267,6 +2267,39 @@ warn "undef etadate";
 
 		return $total_ass_cost;
 	}
+	
+	sub GetAddressCode
+	{
+		warn "########## ONLINE::GetAddressCode";
+		my $self = shift;
+		my ($addressname,$address1,$address2,$city, $state, $zip, $country) = @_;
+		$address1 = '' unless $address1;
+		$address2 = '' unless $address2;
+		my $SQLString = "
+								SELECT
+									addresscode
+								FROM
+									address
+								WHERE
+									addressname = '$addressname' AND
+									address1 = '$address1' AND
+									address2 = '$address2' AND
+									city = '$city' AND 
+									state = '$state' AND
+									zip = '$zip' AND
+									country = '$country'
+						";
+		warn $SQLString;
+		my $sth = $self->{'object_dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+		$sth->execute()
+			or die "Cannot execute sql statement";
+
+		my ($addresscode) = $sth->fetchrow_array();
+		warn "########## ONLINE::GetAddressCode: ". $addresscode;
+		return $addresscode;
+	}
 }
 
 1
