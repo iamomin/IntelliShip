@@ -871,6 +871,8 @@ sub save_special_services :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	return if $params->{'interview'} == 1 && $params->{'do'} eq 'ship';
+
 	$c->log->debug("... save special services");
 
 	my $CO = $self->get_order;
