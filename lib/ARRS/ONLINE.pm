@@ -2290,13 +2290,14 @@ warn "undef etadate";
 									country = '$country'
 						";
 		warn $SQLString;
-		my $sth = $self->{'object_dbref'}->prepare($SQLString)
+		my $sth = $self->{'dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
 
 		$sth->execute()
 			or die "Cannot execute sql statement";
 
 		my ($addresscode) = $sth->fetchrow_array();
+		$sth->finish();
 		warn "########## ONLINE::GetAddressCode: ". $addresscode;
 		return $addresscode;
 	}
