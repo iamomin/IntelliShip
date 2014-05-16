@@ -261,7 +261,7 @@ sub configure :Local
 		{
 		my @address = $c->model('MyDBI::Address')->search($addressData);
 
-		$Address = (@address ? $address[0] : $c->model('MyDBI::Address')->new({}));
+		$Address = (@address ? $address[0] : $c->model('MyDBI::Address')->new($addressData));
 
 		unless ($Address->addressid)
 			{
