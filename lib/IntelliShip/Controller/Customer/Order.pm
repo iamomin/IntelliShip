@@ -1034,7 +1034,7 @@ sub get_order :Private
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
 				contactid         => $self->contact->contactid,
-				addressid         => $self->customer->address->addressid,
+				addressid         => $self->contact->address->addressid,
 				cotypeid          => $cotypeid,
 				freightcharges    => 0,
 				statusid          => 1
@@ -2040,18 +2040,10 @@ sub generate_label :Private
 
 	if ($LabelType =~ /JPG/i)
 		{
-		## Generate JPEG label image ##
-		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 270";
+		## Generate JPEG label image, format: JPG, rotate: 90 degree ##
+		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 90";
 		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
 		system($cmdGenerageLabel);
-
-		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
-		#my $out_file = $Shipment->shipmentid . '.jpg';
-		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file;
-		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
-
-		## Copy to Apache context path ##
-		#system($copyImgCommand);
 		}
 	else
 		{
