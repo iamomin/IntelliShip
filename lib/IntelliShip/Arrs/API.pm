@@ -354,7 +354,16 @@ sub get_carrrier_service_rate_list
 		}
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
-
+	
+	my $DestAddressCode = $self->get_address_code($ToAddress->addressname, $ToAddress->address1,
+							$ToAddress->address2, $ToAddress->city,
+							$ToAddress->state, $ToAddress->zip,
+							$ToAddress->country
+							);
+	
+	if($DestAddressCode && $DestAddressCode ne ''){
+		$request->{'destaddresscode'} = $DestAddressCode;
+	}
 	#$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
 	############################################
 	my $response = $self->APIRequest($request);
@@ -519,6 +528,26 @@ sub get_assessorial_charge
 
 	return $self->APIRequest($http_request);
 	}
+	
+sub get_address_code
+{
+	warn "########## get_address_code";
+	my $self = shift;
+	my ($addressname,$address1,$address2,$city, $state, $zip, $country) = @_;
+
+	my $http_request = {
+		action       => 'GetAddressCode',
+		addressname         => $addressname,
+		address1     => $address1,
+		address2       => $address2,
+		city     => $city,
+		state   => $state,
+		zip => $zip,
+		country => $country
+		};
+
+	return $self->APIRequest($http_request);
+}
 
 __PACKAGE__->meta()->make_immutable();
 

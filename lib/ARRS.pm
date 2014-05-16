@@ -847,4 +847,20 @@ sub GetAssCode {
 	return $Code;
 }
 
+sub GetAddressCode{
+	warn "########## GetAddressCode";
+	my $self = shift;
+	my ($Ref) = @_;
+
+	my $ONLINE =
+	  new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+
+	my $Code = $ONLINE->GetAddressCode($Ref->{'addressname'}, $Ref->{'address1'}, 
+										$Ref->{'address2'}, $Ref->{'city'}, 
+										$Ref->{'state'}, $Ref->{'zip'}, 
+										$Ref->{'country'});
+
+	return $Code;
+}
+
 1;
