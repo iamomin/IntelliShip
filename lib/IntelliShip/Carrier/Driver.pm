@@ -179,7 +179,7 @@ sub TagPrinterString
 			}
 		if ($CO->extcarrier =~ /FedEx/i and $line eq 'ZB' )
 			{
-			$line .= "\nLO0,3,800,2\nLO0,3,2,1150\nLO800,3,2,1150\nLO0,1150,800,2\n" if $CO->extservice =~ /Ground/i;
+			$line .= "\nLO0,3,800,2\nLO0,3,2,1150\nLO800,3,2,1150\nLO0,1150,800,2\n";
 			}
 
 		$tagged_string .= "$line\n";
