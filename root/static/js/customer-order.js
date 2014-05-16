@@ -389,12 +389,9 @@ function clearProductDetails(row_ID)
 
 function setCustomsCommodityValue()
 	{
-	if ($("#insurance").length == 0 && $("#freightinsurance").length == 0) return;
-
+	if ($("#insurance").length == 0) return;
 	var insurance = parseFloat($("#insurance").val());
-	var freightinsurance = parseFloat($("#freightinsurance").val());
-	var commoditycustomsvalue = (insurance > freightinsurance ? insurance : freightinsurance);
-	$("#commoditycustomsvalue").val(commoditycustomsvalue.toFixed(2));
+	$("#commoditycustomsvalue").val(insurance.toFixed(2));
 	}
 
 function checkInternationalSection()
