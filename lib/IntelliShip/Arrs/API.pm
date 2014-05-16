@@ -281,6 +281,7 @@ sub get_carrrier_service_rate_list
 	my $CO               = shift;
 	my $Contact          = shift;
 	my $Customer         = shift;
+	my $destaddresscode  = shift;
 	my $skip_csid_search = shift || 1;
 
 	my $request = {};
@@ -355,14 +356,8 @@ sub get_carrrier_service_rate_list
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
 	
-	my $DestAddressCode = $self->get_address_code($ToAddress->addressname, $ToAddress->address1,
-							$ToAddress->address2, $ToAddress->city,
-							$ToAddress->state, $ToAddress->zip,
-							$ToAddress->country
-							);
-	
-	if($DestAddressCode && $DestAddressCode ne ''){
-		$request->{'destaddresscode'} = $DestAddressCode;
+	if($destaddresscode && $destaddresscode ne ''){
+		$request->{'destaddresscode'} = $destaddresscode;
 	}
 	#$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
 	############################################

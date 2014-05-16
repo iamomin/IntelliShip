@@ -245,7 +245,12 @@ sub get_carrier_service_list
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer);
+	my $ToAddress = $CO->destination_address;
+	my $addresscode = $ToAddress->addresscode;
+														
+	warn "########## \$addresscode: ".$addresscode;
+	
+	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
 	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
