@@ -1028,13 +1028,16 @@ sub get_order :Private
 			$params->{'ordernumber'} = $OrderNumber;
 			$c->stash->{ordernumber} = $OrderNumber;
 
+			my $addressid = $self->contact->address->addressid if $self->contact->address;
+			   $addressid = $self->customer->address->addressid if !$addressid and $self->customer->address;
+
 			my $coData = {
 				ordernumber       => $OrderNumber,
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
 				contactid         => $self->contact->contactid,
-				addressid         => $self->contact->address->addressid,
+				addressid         => $addressid,
 				cotypeid          => $cotypeid,
 				freightcharges    => 0,
 				statusid          => 1
@@ -1224,20 +1227,26 @@ sub set_company_address
 	my $self = shift;
 	my $c = $self->context;
 	my $Contact = $self->contact;
-	my $customerAddress = $c->stash->{fromAddress};
+	my $fromAddress = $c->stash->{fromAddress};
 
-	$c->stash->{customername}		= $customerAddress->addressname;
+	$c->stash->{customername}		= $fromAddress->addressname;
 	$c->stash->{customername}		= $Contact->customer->address->addressname unless $c->stash->{customername};
-	$c->stash->{customeraddress1}	= $customerAddress->address1;
-	$c->stash->{customeraddress2}	= $customerAddress->address2;
-	$c->stash->{customercity}		= $customerAddress->city;
-	$c->stash->{customercountry}	= $customerAddress->country;
-	$c->stash->{customerzip}		= $customerAddress->zip;
-	$c->stash->{customerstate}		= $customerAddress->state;
+	$c->stash->{customeraddress1}	= $fromAddress->address1;
+	$c->stash->{customeraddress2}	= $fromAddress->address2;
+	$c->stash->{customercity}		= $fromAddress->city;
+	$c->stash->{customercountry}	= $fromAddress->country;
+	$c->stash->{customerzip}		= $fromAddress->zip;
+	$c->stash->{customerstate}		= $fromAddress->state;
 	$c->stash->{customeremail}		= $Contact->email;
 	$c->stash->{customerdepartment} = $Contact->department ;
 	$c->stash->{customercontact}	= $Contact->full_name;
 	$c->stash->{customerphone}		= $Contact->phonebusiness;
+
+	unless ($fromAddress->addressname)
+		{
+		$fromAddress->addressname($c->stash->{customername});
+		$fromAddress->update;
+		}
 	}
 
 sub add_detail_row :Private
