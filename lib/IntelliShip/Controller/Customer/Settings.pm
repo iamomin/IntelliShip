@@ -539,6 +539,7 @@ sub contactinformation :Local
 			}
 
 		my $addressData = {
+			addressname => $self->customer->customername,
 			address1	=> $params->{'contact_address1'},
 			address2	=> $params->{'contact_address2'},
 			city		=> $params->{'contact_city'},
@@ -556,7 +557,7 @@ sub contactinformation :Local
 			{
 			my @addresses = $c->model('MyDBI::Address')->search($addressData);
 
-			$Address = (@addresses ? $addresses[0] : $c->model('MyDBI::Address')->new({}));
+			$Address = (@addresses ? $addresses[0] : $c->model('MyDBI::Address')->new($addressData));
 
 			unless ($Address->addressid)
 				{

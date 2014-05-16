@@ -871,6 +871,8 @@ sub save_special_services :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	return if $params->{'interview'} == 1 && $params->{'do'} eq 'ship';
+
 	$c->log->debug("... save special services");
 
 	my $CO = $self->get_order;
@@ -1028,13 +1030,16 @@ sub get_order :Private
 			$params->{'ordernumber'} = $OrderNumber;
 			$c->stash->{ordernumber} = $OrderNumber;
 
+			my $addressid = $self->contact->address->addressid if $self->contact->address;
+			   $addressid = $self->customer->address->addressid if !$addressid and $self->customer->address;
+
 			my $coData = {
 				ordernumber       => $OrderNumber,
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
 				contactid         => $self->contact->contactid,
-				addressid         => $self->customer->address->addressid,
+				addressid         => $addressid,
 				cotypeid          => $cotypeid,
 				freightcharges    => 0,
 				statusid          => 1
@@ -1224,20 +1229,26 @@ sub set_company_address
 	my $self = shift;
 	my $c = $self->context;
 	my $Contact = $self->contact;
-	my $customerAddress = $c->stash->{fromAddress};
+	my $fromAddress = $c->stash->{fromAddress};
 
-	$c->stash->{customername}		= $customerAddress->addressname;
+	$c->stash->{customername}		= $fromAddress->addressname;
 	$c->stash->{customername}		= $Contact->customer->address->addressname unless $c->stash->{customername};
-	$c->stash->{customeraddress1}	= $customerAddress->address1;
-	$c->stash->{customeraddress2}	= $customerAddress->address2;
-	$c->stash->{customercity}		= $customerAddress->city;
-	$c->stash->{customercountry}	= $customerAddress->country;
-	$c->stash->{customerzip}		= $customerAddress->zip;
-	$c->stash->{customerstate}		= $customerAddress->state;
+	$c->stash->{customeraddress1}	= $fromAddress->address1;
+	$c->stash->{customeraddress2}	= $fromAddress->address2;
+	$c->stash->{customercity}		= $fromAddress->city;
+	$c->stash->{customercountry}	= $fromAddress->country;
+	$c->stash->{customerzip}		= $fromAddress->zip;
+	$c->stash->{customerstate}		= $fromAddress->state;
 	$c->stash->{customeremail}		= $Contact->email;
 	$c->stash->{customerdepartment} = $Contact->department ;
 	$c->stash->{customercontact}	= $Contact->full_name;
 	$c->stash->{customerphone}		= $Contact->phonebusiness;
+
+	unless ($fromAddress->addressname)
+		{
+		$fromAddress->addressname($c->stash->{customername});
+		$fromAddress->update;
+		}
 	}
 
 sub add_detail_row :Private
@@ -2040,18 +2051,10 @@ sub generate_label :Private
 
 	if ($LabelType =~ /JPG/i)
 		{
-		## Generate JPEG label image ##
-		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 270";
+		## Generate JPEG label image, format: JPG, rotate: 90 degree ##
+		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 90";
 		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
 		system($cmdGenerageLabel);
-
-		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
-		#my $out_file = $Shipment->shipmentid . '.jpg';
-		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file;
-		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
-
-		## Copy to Apache context path ##
-		#system($copyImgCommand);
 		}
 	else
 		{

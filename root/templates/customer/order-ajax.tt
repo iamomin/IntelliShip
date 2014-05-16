@@ -247,7 +247,7 @@
 		[% FOREACH item IN specialservice_loop %]
 			[% sscount=sscount+1 %]
 			<td id="td_[% item.value %]">
-				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
+				<label><input type="checkbox" class="reset-cs-onchange" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 			</td>
 			[% IF sscount == 4 %]
 			</tr><tr>

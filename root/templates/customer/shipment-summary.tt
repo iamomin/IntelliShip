@@ -79,79 +79,40 @@
 
 <div>
 <h2>Package Detail</h2>
-	<ul class="sortable css3-checkboxes" id="package-detail-list">
-		<li class="ui-state-fixed">
-			<table style="font-size: 11px">
-				<tr>
-					<th style="width: 04%">QTY</th>
-					<th style="width: 04%">SKU#</th>
-					<th style="width: 11%">Description</th>
-					<th style="width: 10%">Type</th>
-					<th style="width: 07%">Weight</th>
-					<th style="width: 07%">Dim Weight</th>
-					<th style="width: 05%">Length</th>
-					<th style="width: 05%">Width</th>
-					<th style="width: 05%">Height</th>
-					<th style="width: 07%">Density</th>
-					<th style="width: 05%">NMFC</th>
-					<th style="width: 05%">Class</th>
-					<th style="width: 07%">Dec. Value</th>
-					<th style="width: 07%">Freight Ins.</th>
-				</tr>
-				<tr>
-				<td colspan="3">&nbsp;</td>
-				</tr>
-			</table>
-		</li>
+	<div id="myShipments">
 		[% FOREACH  PackProData IN packagedetails %]
-		<li class="ui-state-package ui-state-fixed">
-			<table>
-				<tr>
-					<td style="width: 04%">
-						<input  type="text" class="total_pkg_detail float-right labellike" name="quantity_1" id="quantity_1" value="[% PackProData.quantity %]" readonly/>
-					</td>
-					<td style="width: 04%">
-						<input  type="text" class="sku_id  labellike" name="sku_1" id="sku_1" value = "[% PackProData.partnumber %]" readonly/>
-					</td>
-					<td style="width: 11%">
-						<input  type="text" class="labellike" name="description_1" id="description_1"  value = "[% PackProData.description %]" readonly/>
-					</td>
-					<td style="width: 10%">
-						<input  type="text" class="labellike" name="unittype_1" id="unittype_1"  value = "[% PackProData.unittype.unittypename %]" readonly/>
-					</td>
-					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail labellike" name="weight_1" id="weight_1"  value = "[% PackProData.weight%]" readonly/>
-					</td>
-					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail labellike" name="dimweight_1" id="dimweight_1"  value = "[% PackProData.dimweight%]" readonly/>
-					</td>
-					<td style="width: 05%">
-						<input  type="text" class="total_pkg_detail labellike" name="dimlength_1" id="dimlength_1"  value = "[% PackProData.dimlength%]" readonly/>
-					</td>
-					<td style="width: 05%">
-						<input  type="text" class="total_pkg_detail labellike" name="dimwidth_1" id="dimwidth_1"  value = "[% PackProData.dimwidth%]" readonly/>
-					</td>
-					<td style="width: 05%">
-						<input  type="text" class="total_pkg_detail labellike" name="dimheight_1" id="dimheight_1"  value = "[% PackProData.dimheight%]" readonly/>
-					</td>
-					<td style="width: 07%">
-						<input  type="text" class="labellike" name="density_1" id="density_1"  value = "[% PackProData.density%]" readonly/>
-					</td>
-					<td style="width: 05%">
-						<input  type="text" class="labellike" name="nmfc_1" id="nmfc_1"  value = "[% PackProData.nmfc%]" readonly/>
-					</td>
-					<td style="width: 05%">
-						<input  type="text" class="labellike" name="class_1" id="class_1"  value = "[% PackProData.class%]" readonly/>
-					</td>
-					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail labellike" name="decval_1" id="decval_1" value="0.00"  value = "[% PackProData.decval%]" readonly/>
-					</td>
-					<td style="width: 07%">
-						<input  type="text" class="total_pkg_detail labellike"  name="frtins_1" id="frtins_1"  value="[% PackProData.frtins%]" readonly/>
-					</td>
-				</tr>
-			</table>
-		</li>
+		<table style="text-align: center">
+			<tr>
+				<th>QTY</th>
+				<th>Description</th>
+				<th>Type</th>
+				<th>Weight</th>
+				<th>Dim Weight</th>
+				<th>Length</th>
+				<th>Width</th>
+				<th>Height</th>
+				<th>Density</th>
+				<th>Dec. Value</th>
+				[% IF PackProData.nmfc %]<th>NMFC</th>[% END %]
+				[% IF PackProData.class %]<th>Class</th>[% END %]
+				[% IF PackProData.frtins %]<th>Freight Ins.</th>[% END %]
+			</tr>
+			<tr>
+				<td>[% PackProData.quantity %]</td>
+				<td>[% PackProData.description %]</td>
+				<td>[% PackProData.unittype.unittypename %]</td>
+				<td>[% PackProData.weight%]</td>
+				<td>[% PackProData.dimweight%]</td>
+				<td>[% PackProData.dimlength%]</td>
+				<td>[% PackProData.dimwidth%]</td>
+				<td>[% PackProData.dimheight%]</td>
+				<td>[% PackProData.density%]</td>
+				<td>[% PackProData.decval%]</td>
+				[% IF PackProData.nmfc %]<td>[% PackProData.nmfc %]</td>[% END %]
+				[% IF PackProData.class %]<td>[% PackProData.class %]</td>[% END %]
+				[% IF PackProData.frtins %]<td>[% PackProData.frtins %]</td>[% END %]
+			</tr>
+		</table>
 		[% END %]
-	</ul>
+	</div>
 </div>

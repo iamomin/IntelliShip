@@ -4,9 +4,9 @@ use Moose;
 use ARRS::IDBI;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
 use IntelliShip::Carrier::EPLTemplates;
-
 BEGIN {
 
 	extends 'IntelliShip::Errors';
@@ -180,6 +180,7 @@ sub TagPrinterString
 		if ($CO->extcarrier =~ /FedEx/i and $line eq 'ZB' )
 			{
 			$line .= "\nLO0,3,800,2\nLO0,3,2,1150\nLO800,3,2,1150\nLO0,1150,800,2\n" if $CO->extservice =~ /Ground/i;
+			$line .= "\nLO0,3,810,2\nLO0,3,2,1200\nLO810,3,2,1200\nLO0,1200,810,2\n" if $CO->extservice =~ /(Express|Day|Overnight)/i;
 			}
 
 		$tagged_string .= "$line\n";
@@ -340,24 +341,29 @@ sub SendPickUpEmail
 	$Email->from_name('IntelliShip2');
 	$Email->subject($subject);
 	$Email->add_to('noc@engagetechnology.com');
+	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
 	$Email->add_line('');
 	$Email->add_line('=' x 60);
+	$Email->add_line('');
 	$Email->add_line('Weight      : ' . $Shipment->total_weight);
 	$Email->add_line('DIM Weight  : ' . $Shipment->dimweight);
 	$Email->add_line('Pickup Date : ' . $Shipment->datepacked);
 	$Email->add_line('Origin      : ' . $Shipment->addressidorigin);
 	$Email->add_line('Tracking    : ' . $Shipment->tracking1);
+	$Email->add_line('');
 	$Email->add_line('=' x 60);
 	$Email->add_line('');
 	$Email->add_line('Message                    : ' . $Message . '<br>');
 	$Email->add_line('Code                       : ' . $ResponseCode . '<br>');
 	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId . '<br>');
 	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber . '<br>');
+	$Email->add_line('');
+	$Email->add_line('=' x 60);
 
 	if ($Email->send)
 		{
-		$self->context->log->debug("Shipment Pick-Up notification email successfully sent");
+		$self->context->log->debug("Shipment Pick-Up notification email successfully sent to " . join(',',@{$Email->to}));
 		}
 	}
 

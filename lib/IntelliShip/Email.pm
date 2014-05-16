@@ -3,7 +3,6 @@ package IntelliShip::Email;
 use Moose;
 use IO qw(File);
 use Email::Stuff;
-use IntelliShip::MyConfig;
 
 has 'to'			=> ( is => 'rw', isa => 'ArrayRef' );
 has 'cc'			=> ( is => 'rw', isa => 'ArrayRef' );
@@ -70,7 +69,7 @@ sub add_line
 		{
 		my $line = shift;
 		my $body = $self->body;
-		$body .= $line . "\n";
+		$body .= $line . ($self->content_type =~ /HTML/i ? "<br>" : "\n");
 		$self->body($body);
 		}
 	}
@@ -128,7 +127,9 @@ sub send
 			{
 			#return 1;
 			}
-		#$to_list  = 'iamomin@gmail.com';
+
+		$to_list  = 'imranm@alohatechnology.com';
+		$cc_list  = 'noc@engagetechnology.com';
 		}
 
 	if ($self->attach)

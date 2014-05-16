@@ -350,6 +350,8 @@ sub show_shipment_summary: Private
 
 	if (my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}}))
 		{
+		my @packages = $Shipment->packages;
+
 		my $shipmentSummary = {
 			customerAddress => $Shipment->origin_address,
 			toAddress       => $Shipment->destination_address,
@@ -358,7 +360,7 @@ sub show_shipment_summary: Private
 			shipdate        => IntelliShip::DateUtils->american_date($Shipment->dateshipped),
 			duedate         => IntelliShip::DateUtils->american_date($Shipment->datedue),
 			carrier         => $Shipment->carrier,
-			packagedetails  => $Shipment->package_details,
+			packagedetails  => \@packages,
 			};
 
 		$c->stash($shipmentSummary);

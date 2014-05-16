@@ -31,8 +31,11 @@ sub process_request
 	# Get 'from' information
 	my $FromAddress = $Shipment->origin_address;
 
-	my $sth = $self->myDBI->select("SELECT datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
-	my $datepacked = $sth->fetchrow(0)->{'datepacked'} if $sth->numrows;
+	my $sth = $self->myDBI->select("SELECT datepacked + interval '1 day' as datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
+	my ($datepacked,$timepacked) = split(/\ /,$sth->fetchrow(0)->{'datepacked'}) if $sth->numrows;
+
+	## Send pickup request time to the next day 9AM morning
+	$datepacked .= 'T09:00:00.1234'; ## 2014-05-15T09:00:00.1234
 
 	$PickupRequest->{CompanyName} = $FromAddress->addressname;
 	$PickupRequest->{StreetLines} = $FromAddress->address1;
@@ -63,9 +66,9 @@ sub process_request
 
 	$PickupRequest->{CarrierCode} = 'FDXE';
 
-	#$self->log("....PickupRequest : " . Dumper $PickupRequest);
-
 	my $XMLString = $self->get_XML_v6($PickupRequest);
+
+	$self->log("... PickupRequest XML: " . $XMLString);
 
 	## Send request to FedEx
 	##my $URL = 'https://fedex.com/ws/pickup/v6/';
@@ -88,7 +91,7 @@ sub process_request
 		return 0;
 		}
 
-	#$self->log("FedEx CreatePickup ResponseString: " . $Response->content);
+	$self->log("FedEx CreatePickup Response: " . $Response->content);
 
 	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
 
@@ -114,9 +117,9 @@ sub process_request
 		}
 
 	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
-	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:PickupConfirmationNumber'}. "<br>";
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'}. "<br>";
 
-	#$self->log("##### ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
+	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
 	$self->SendPickUpEmail($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
 	}
