@@ -41,6 +41,7 @@ sub GetZoneNumber
 		my $self = shift;
 		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode) = @_;
 
+		warn "########## GetZoneNumber: ".$DestAddressCode;
 		# Check if this zone is exluded from the customerservice/service
 		if
 		(
@@ -216,8 +217,7 @@ sub GetZoneNumber
 				}
 				#Zip to AddressCode. VERY SPECIFIC.
 				elsif ( defined($lookuptype) && $lookuptype eq '8' )
-				{
-					my $addresscode = $self->GetAddressCode();
+				{					
 					$SQLString = "
 							SELECT
 								zonenumber
