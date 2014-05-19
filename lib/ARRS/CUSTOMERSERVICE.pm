@@ -1399,7 +1399,7 @@ sub GetSuperCost
 			my $Class = 0;
 			my $Mode = $self->GetCSValue('servicetypeid');
 warn "RATETYPEID=$RateTypeID";
-			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' || $RateTypeID eq 'USPSRATINGAPI' )
+			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' || $RateTypeID eq 'USPSRATINGAPI' || $RateTypeID eq 'UPS2RATINGAPI')
 			{
 				# small package/parcel doesn't need a class
 warn "Override Class requirement for Parcel" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
@@ -1455,25 +1455,55 @@ warn "NO Class return" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SP
 			my $ScacCode = $self->GetCarrierScac();
 			#warn "\nRateHandlerName=$RateHandlerName";
 			#warn "\nCarrier Scac=$ScacCode";
-			($Cost,$TransitDays) = $RateHandler->GetCost(
-				$CostWeight,
-				$DiscountPercent,
-				$Class,
-				$ShipmentRef->{'fromzip'},
-				$ShipmentRef->{'tozip'},
-				$ScacCode,
-				$ShipmentRef->{'norm_datetoship'},
-				$ShipmentRef->{'required_assessorials'},
-				$ShipmentRef->{'efreightid'},
-				$ShipmentRef->{'clientid'},
-				$self->{'field_customerserviceid'},
-				$self->{'field_serviceid'},
-				$ShipmentRef->{'tocountry'},
-				$ShipmentRef->{'customerid'},
-				$DimHeight,
-				$DimWidth,
-				$DimLength
-			);
+			if($RateHandlerName eq 'UPS2')
+				{
+				($Cost,$TransitDays) = $RateHandler->GetCost(
+					$CostWeight,
+					$DiscountPercent,
+					$Class,
+					$ShipmentRef->{'fromzip'},
+					$ShipmentRef->{'tozip'},
+					$ScacCode,
+					$ShipmentRef->{'norm_datetoship'},
+					$ShipmentRef->{'required_assessorials'},
+					$ShipmentRef->{'efreightid'},
+					$ShipmentRef->{'clientid'},
+					$self->{'field_customerserviceid'},
+					$self->{'field_serviceid'},
+					$ShipmentRef->{'tocountry'},
+					$ShipmentRef->{'customerid'},
+					$DimHeight,
+					$DimWidth,
+					$DimLength,
+					$ShipmentRef->{'fromcountry'},
+					$ShipmentRef->{'fromcity'},
+					$ShipmentRef->{'fromstate'},
+					$ShipmentRef->{'tocity'},
+					$ShipmentRef->{'tostate'},
+				);
+				}
+			else
+				{
+				($Cost,$TransitDays) = $RateHandler->GetCost(
+					$CostWeight,
+					$DiscountPercent,
+					$Class,
+					$ShipmentRef->{'fromzip'},
+					$ShipmentRef->{'tozip'},
+					$ScacCode,
+					$ShipmentRef->{'norm_datetoship'},
+					$ShipmentRef->{'required_assessorials'},
+					$ShipmentRef->{'efreightid'},
+					$ShipmentRef->{'clientid'},
+					$self->{'field_customerserviceid'},
+					$self->{'field_serviceid'},
+					$ShipmentRef->{'tocountry'},
+					$ShipmentRef->{'customerid'},
+					$DimHeight,
+					$DimWidth,
+					$DimLength
+				);
+				}
 
 			unless ( defined($Cost) && $Cost ne '' && $Cost >= 0 )
 			{
