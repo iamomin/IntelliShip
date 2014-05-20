@@ -3861,7 +3861,8 @@ sub GetBOLorPOPPD
 				{
 				# Unit display
 				my $productData = $Product->{_column_data};
-				$productData->{'unittype'} = $Product->unittype->unittypename if $Package->unittypeid;
+				my $UnitType = $Product->unittype;
+				$productData->{'unittype'} = $UnitType->unittypename if $UnitType;
 				if ($Product->dimlength and $Product->dimwidth and $Product->dimheight)
 					{
 					$productData->{'dims'} = $Product->dimlength . 'x' . $Product->dimwidth . 'x' . $Product->dimheight;
