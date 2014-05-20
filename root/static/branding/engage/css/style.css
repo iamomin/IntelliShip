@@ -142,6 +142,7 @@ img { border: none; vertical-align: middle }
 #header nav ul ul {
     display: none;
     background-color: #FFF;
+    z-index: 1;
 }
 
 #header nav ul li:hover > ul {
