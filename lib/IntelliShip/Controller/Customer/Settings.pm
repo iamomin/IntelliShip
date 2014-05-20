@@ -670,6 +670,7 @@ sub contactinformation :Local
 		$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 		$c->stash->{printreturnshipment_loop}= $self->get_select_list('PRINT_RETURN_SHIPMENT');
 		$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
+		$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;

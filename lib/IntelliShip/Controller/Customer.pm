@@ -1072,6 +1072,16 @@ sub get_select_list
 			{ name => '270 Degree',  value => '270' },
 			];
 		}
+	elsif ($list_name eq 'PACKAGE_PRODUCT_LEVEL')
+		{
+		$list = [
+			{ name => '' ,         value => '0' },
+			{ name => 'Normal',    value => '1' },
+			{ name => 'Mini',      value => '2' },
+			{ name => 'Micro',     value => '3' },
+			{ name => 'Enchanced', value => '4' },
+			];
+		}
 
 	return $list;
 	}

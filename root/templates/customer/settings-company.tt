@@ -668,9 +668,18 @@
 							</select>
 						</label>
 						</td>
-
-						<td></td>
-						<td></td>
+						[%UNLESS SSO_CUSTOMER%]
+						<td><label class="float-right" for="cust_packageproductlevel">Package Product Level:</label></td>
+						<td>
+						<label>
+							<select name="cust_packageproductlevel" id="cust_packageproductlevel">
+							[% FOREACH item IN packageproductlevel_loop %]
+							<option value="[% item.value %]" [% (item.value == cust_packageproductlevel) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+						[% END %]
 					</tr>
 					[% IF SSO_CUSTOMER %]
 					<tr>

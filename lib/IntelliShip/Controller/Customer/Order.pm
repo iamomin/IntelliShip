@@ -254,6 +254,7 @@ sub setup_shipment_information :Private
 		{
 		unless ($c->stash->{PACKAGE_DETAIL_SECTION})
 			{
+			$c->stash->{HIDE_PRODUCT} = 1 if $Contact->get_contact_data_value('packageproductlevel') == 2;
 			$c->log->debug("... setup new package shipment details");
 			$params->{'unittypeid'} = $c->stash->{default_package_type};
 			$params->{'detail_type'} = 'package';
