@@ -657,6 +657,21 @@
 							[% END %]
 						</td>
 					</tr>
+					<tr>
+						<td><label class="float-right" for="cust_jpgrotation">JPG Label Rotation:</label></td>
+						<td>
+						<label>
+							<select name="cust_jpgrotation" id="cust_jpgrotation">
+							[% FOREACH item IN jpgrotation_loop %]
+							<option value="[% item.value %]" [% (item.value == cust_jpgrotation) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+
+						<td></td>
+						<td></td>
+					</tr>
 					[% IF SSO_CUSTOMER %]
 					<tr>
 						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>

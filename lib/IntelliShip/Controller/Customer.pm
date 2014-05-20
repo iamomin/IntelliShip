@@ -1063,6 +1063,15 @@ sub get_select_list
 			{ name => '20', value => '20' },
 			];
 		}
+	elsif ($list_name eq 'JPG_LABEL_ROTATION')
+		{
+		$list = [
+			{ name => 'None - no rotation' , value => '0' },
+			{ name =>  '90 Degree',  value => '90' },
+			{ name => '180 Degree',  value => '180' },
+			{ name => '270 Degree',  value => '270' },
+			];
+		}
 
 	return $list;
 	}

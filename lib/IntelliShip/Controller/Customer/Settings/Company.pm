@@ -164,6 +164,7 @@ sub setup :Local
 	$c->stash->{labelstub_loop}          = $self->get_select_list('LABEL_STUB_LIST');
 	$c->stash->{markuptype_loop}         = $self->get_select_list('MARKUP_TYPE');
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
+	$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 
 	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 

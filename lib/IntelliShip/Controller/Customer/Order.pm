@@ -2051,8 +2051,8 @@ sub generate_label :Private
 
 	if ($LabelType =~ /JPG/i)
 		{
-		## Generate JPEG label image, format: JPG, rotate: 90 degree ##
-		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 90";
+		my $rotation = $self->contact->jpg_label_rotation;
+		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s " . $rotation;
 		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
 		system($cmdGenerageLabel);
 		}

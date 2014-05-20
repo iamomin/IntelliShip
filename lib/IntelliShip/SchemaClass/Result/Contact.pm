@@ -357,6 +357,12 @@ sub default_thermal_count
 	return $self->get_contact_data_value('defaultthermalcount') || 1;
 	}
 
+sub jpg_label_rotation
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('jpgrotation');
+	}
+
 sub get_label_type
 	{
 	my $self = shift;
