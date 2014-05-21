@@ -497,7 +497,7 @@ function getCarrierServiceList(form_name)
 
 			has_FC=true;
 
-			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+			$("#carrier-service-list-tabs").tabs({ beforeActivate: function( event, ui ) {
 					var panelID = $(ui.newPanel).prop('id');
 					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
 					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
