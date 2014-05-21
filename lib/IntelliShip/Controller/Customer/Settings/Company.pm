@@ -134,6 +134,14 @@ sub setup :Local
 				}
 			}
 		}
+	else
+		{
+		if (length $params->{'customername'})
+			{
+			$c->stash->{MESSAGE} = 'Invalid customer name';
+			$c->detach("index",$params);
+			}
+		}
 
 	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
 	$c->stash->{CONTACT_LIST}            = 0;
