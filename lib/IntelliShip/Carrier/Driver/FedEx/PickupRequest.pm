@@ -69,6 +69,10 @@ sub process_request
 		}
 	else
 		{
+		my $sth = $self->myDBI->select("SELECT datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
+		my ($dispatchdate,$timepacked) = split(/\ /,$sth->fetchrow(0)->{'datepacked'}) if $sth->numrows;
+		$PickupRequest->{DispatchDate} = $dispatchdate;
+
 		$PickupRequest->{CarrierCode} = 'FDXG';
 		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber) = $self->send_same_day_pickup_request($PickupRequest);
 		$next_day_pickup_reqeust = 1 unless $ResponseCode =~ /0000/;
@@ -146,7 +150,7 @@ END
 	$self->log("... SAME DAY Pickup REQUEST: " . $XML_request);
 
 	my $UA = LWP::UserAgent->new;
-	my $Response = $UA->post($URL, Content_Type => 'text/xml', Content => $XMLString);
+	my $Response = $UA->post($URL, Content_Type => 'text/xml', Content => $XML_request);
 
 	unless ($Response)
 		{
