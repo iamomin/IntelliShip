@@ -121,6 +121,13 @@ sub uspsrateapi :Local
 	return 1;
 	}
 
+sub clear_stash :Private
+	{
+	my $self = shift;
+	my $stash = $self->context->stash;
+	delete $stash->{$_} foreach keys %$stash;
+	}
+
 sub flush_expired_tokens :Private
 	{
 	my $self = shift;
