@@ -743,8 +743,8 @@ sub get_business_days_between_two_dates
 	my $days_diff = $day1->diffb($day2);
 
 	my $holidays = $self->Holiday($d2,$d1);
-
-	return ($days_diff-$holidays);
+	my $transit_days = ($days_diff-$holidays);
+	return  ($transit_days < 0) ? $transit_days * -1 : $transit_days;
 	}
 
 sub parse_date
