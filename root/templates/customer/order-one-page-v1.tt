@@ -73,6 +73,7 @@
 				<td><green><strong>TOTAL SHIPMENT VALUE:</strong></green><strong>&nbsp;$</strong><input type="text" class="small-text" name="insurance" id="insurance" value="[% insurance ? insurance : 0.00 %]"/></td>
 				</tr>
 			</table>
+			</td>
 		</tr>
 		<tr>
 			<td colspan="6" class="details">
