@@ -398,6 +398,7 @@ function checkInternationalSection()
 	{
 
 	if ($('#intlCommoditySec').length == 0) return;
+	if ($("#tocountry").val() == '' || $("#fromcountry").val() == '') return;
 
 	if ($("#tocountry").val() != $("#fromcountry").val()) {
 
