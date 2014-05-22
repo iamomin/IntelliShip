@@ -144,6 +144,9 @@
 					[% IF DISPLAY_UPLOAD_FILE %]
 					<li><a id="mnu_uploadfile" href="/customer/uploadfile"><img src="/static/branding/engage/images/menu/upload-grayed.png"/><span>UPLOAD FILE</span></a></li>
 					[% END %]
+					[% IF ORDER_SUPPLIES %]
+					<li><a id="mnu_supplyordering" href="/customer/supplyordering"><img src="/static/branding/engage/images/menu/order-supplies-grayed.png"/><span>ORDER SUPPLIES</span></a></li>
+					[% END %]
 					<li><a id="mnu_report" href="/customer/report"><img src="/static/branding/engage/images/menu/reports-grayed.png"/><span>REPORTS</span></a></li>
 				</ul>
 			</div>

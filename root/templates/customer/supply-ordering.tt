@@ -1,0 +1,287 @@
+
+<h2>Order Supplies</h2>
+
+<form name="supplyOrder" action="/index.cgi" method="post">
+	<input type="hidden" name="do" value="send"/>
+
+	<div class="notice">Please click "Order" to place your supply order.</div>
+
+	<table width="100%">
+		<tr>
+			<td>Order Number:</td>
+			<td><input type="text" class="labellike" name="ordernumber" value="[% ordernumber %]"/></td>
+		</tr>
+	</table>
+
+	<div id="equal">
+		<div id="row">
+			<table class="single-row">
+			<tr>
+			<td class="twocolumns" style="padding-right: 10px">
+			<table class="app">
+				<caption>SHIP TO</caption>
+				<tr>
+					<td><label for="toname" class="float-right require">Company: </label></td><td><input type="text" class="broad-text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress1" class="float-right require">Address 1:</label></td><td><input type="text" class="broad-text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress2" class="float-right">Address 2:</label></td><td><input type="text" class="broad-text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
+				</tr>
+				<tr>
+					<td>
+						<label class="float-right require"><label for="tocity">City,</label><label for="tostate">State,</label><label for="tozip">Zip</label>:</label>
+					</td>
+					<td>
+					<div id="toCityDiv" style="display: inline; padding: 0;">
+					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
+					</div>
+					<div id="toStateDiv" style="display: inline; padding: 0;">
+					[% IF statelist_loop %]
+					<label>
+					<select name="tostate" id="tostate" style="width: 45px;">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == toAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+						[% END %]
+					</select>
+					</label>
+					[% ELSE %]
+					<input type="text" name="tostate" id="tostate" value="[% toAddress.state %]" style="width: 35px;"/>
+					[% END %]
+					</div>
+					<input type="text" class="reset-cs-onchange" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]" onchange="setCityAndState('to');"/>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tocountry" class="float-right require reset-cs-onchange">Country:</label></td>
+					<td>
+					<div id="toCountryDiv" style="display: inline; padding: 0;">
+					<label>
+					<select name="tocountry" id="tocountry" style="width: 220px;" onchange="updateStateList('to');">
+						[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]" [% (toAddress.country and item.value == toAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</div>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tocontact" class="float-right">Contact:</label></td><td><input type="text" class="broad-text" name="tocontact" id="tocontact" value="[% tocontact %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="tophone" class="float-right">Phone:</label></td><td><input type="text" class="broad-text" name="tophone" id="tophone" value="[% tophone %]"></td>
+				</tr>
+				<tr>
+					<td><label for="todepartment" class="float-right">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% todepartment %]"></td>
+				</tr>
+				<tr>
+					<td><label for="toemail" class="float-right">Delivery Email:</label></td><td><input type="text" class="broad-text" name="toemail" id="toemail" value="[% toemail %]"/></td>
+				</tr>
+			</table>
+			</td>
+			<td class="twocolumns" style="padding-left: 10px">
+			<table class="app">
+				<caption>SHIPMENT INFORMATION</caption>
+				<tr>
+					<td><label for="datetoship" class="float-right bold-text">Ordered On:</label></td>
+					<td><input type="text" class="labellike" size="10" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+				</tr>
+				<tr>
+					<td><label for="dateneeded" class="float-right">Deliver By:</label></td>
+					<td><input type="text" size="10" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+				</tr>
+				<tr>
+					<td><label for="description" class="float-right">Comments:</label></td>
+					<td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="carrier" class="float-right">Carrier:</label></td>
+					<td><select name="carrier" id="carrier"><option value="FedEx">FedEx</option></select></td>
+				</tr>
+			</table>
+		</td>
+		</tr>
+		</table>
+		</div>
+	</div>
+
+	<table class="shipment-summary">
+		<tr>
+			<th>Supply Details</th>
+			<td class="total" colspan="5">
+			<table class="float-right">
+				<tr>
+				<td><green><strong>Total Types of Supplies:</strong></green><strong>&nbsp;<input type="text" class="labellike" name="supplytypes" id="supplytypes" value="[% supplytypes ? supplytypes : 0.00 %]"/></strong></td>
+				<td style="width: 30px">&nbsp;</td>
+				<td><green><strong>Total Quantity of Supplies:</strong></green><strong>&nbsp;</strong><input type="text" class="labellike" name="supplyquantity" id="supplyquantity" value="[% supplyquantity ? supplyquantity : 0.00 %]"/></td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="6" class="details">
+			<table class="app">
+				<tr>
+					<th>&nbsp;</th><th>Description</th><th>Length</th><th>Width</th><th>Height</th><th>Quantity</th>
+				</tr>
+				[% FOREACH item IN productsku_loop %]
+				<tr>
+					<td>[% IF item.SRC %]<img src="[% item.SRC %]">[% ELSE %]No Image[% END %]</td>
+					<td>[% item.description _ '<br>Part# ' _ item.customerskuid %]</td>
+					<td>[% item.length %]</td>
+					<td>[% item.width %]</td>
+					<td>[% item.height %]</td>
+					<td>
+						<select name="quantity_[% item.productskuid %]" class="quantity-onchange">
+						<option value="">Select One</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+						<option value="75">75</option>
+						<option value="100">100</option>
+						<option value="200">200</option>
+						</select>
+					</td>
+				</tr>
+				[% END %]
+			</table>
+			</td>
+		</tr>
+	</table>
+
+	<center><input type="button" value="SAVE"/></center>
+
+</form>
+
+<SCRIPT language=JavaScript>
+
+$("#dateneeded").datepicker({ minDate: '-0d' });
+
+function MM_findObj(n, d) { //v3.0
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+	d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document); return x;
+}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+	var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+	if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+	if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+function InitializeScreen()
+{
+	document.getElementById("errorString").innerHTML = '';//clear error message in screen
+	var date = new Date();
+	var datestring = ("0" + (date.getMonth() + 1).toString()).substr(-2) + "/" + ("0" + date.getDate().toString()).substr(-2)  + "/" + date.getFullYear().toString();
+	// Set Ordered On date to current date
+	document.getElementById('curDateDiv').innerHTML=datestring;
+	document.supplyOrder.curDate.value=datestring;
+	document.supplyOrder.totQtySup.value='0';
+	document.supplyOrder.typeSup.value='0';
+	PopulateCCAddress('to');
+}
+function PopulateCCAddress(direction)
+{
+	var tabstart = direction == 'from' ? 100 : 300;
+	var AddressOptionList = eval('document.supplyOrder.branchaddressoptionlist.value');
+	var check = '1';
+	if ( '<var name=shipmentid>' == '' && '<var name=loginlevel>' != '25' )
+	{
+		// if list is not empty display select box
+	  if(AddressOptionList != '')
+	  {
+		 document.getElementById(direction + "addressid").innerHTML = "<select id=" + direction + "addressid1 onChange=\"PopulateLocation('" + direction + "');\" tabindex=" + tabstart + " style=\"width: 248px\">" + AddressOptionList + "</select>";
+
+	  }
+	  document.getElementById(direction + "name").innerHTML = '<div class="search" onmouseover="this.className=\'mo_search\'" onmouseout="this.className=\'search\'"><input type="text" maxlength="100" id="' + direction + 'name1" value="' + document.supplyOrder.addressname.value + '" size="40" tabindex=' + eval(tabstart+=10) + ' style="width: 228px; border: none; background-color: #FFFFFF"><img src="images/lookup.png" style="position:relative; top: 3px;" onclick="StoreAddresses();PopulateAddressDropdownFromAjax(\'' + direction + '\')"></div>';
+	  document.getElementById(direction + "address1").innerHTML = '<input type="text" maxlength="100" id="' + direction + 'address11" value="<var name=address1>" size="40" tabindex=' + eval(tabstart+=10) + ' class="ship_input">';
+	  document.getElementById(direction + "address2").innerHTML = '<input type="text" maxlength="100" id="' + direction + 'address21" value="<var name=address2>" size="40" tabindex=' + eval(tabstart+=10) + ' class="ship_input">';
+	  var addresscountryhtml = "<SELECT id=\"" + direction + "country1\"  STYLE=\"width: 248px\" tabindex=" + eval(tabstart+=40) + " onChange=\"LockSelect(document.supplyOrder.lock" + direction + "country.value,'"+ direction +"country');DisplayCityStateZip('" + direction + "');SetInternationalDisplay('" + direction + "');\"><var type=dropdown name=branchaddresscountry value=branchaddresscountry showzero=1></SELECT>";
+	  document.getElementById(direction + "country").innerHTML = addresscountryhtml;
+		document.getElementById(direction + "country1").value = document.supplyOrder.addresscountry.value;
+	  DisplayCityStateZip(direction);
+	  document.getElementById(direction + "contact").innerHTML = '<div id="' + direction + 'contact1" class="ship_data"><var name=addressname1></div>';
+	  document.getElementById(direction + "phone").innerHTML = '<input type="text" maxlength="100" id="' + direction + 'phone1" value="<var name=phonemobile>" size="31" tabindex=' + eval(tabstart+=10) + ' class="ship_input">';
+	  document.getElementById(direction + "identifier1").innerHTML = '<var name=departmentaka>:';
+	  document.getElementById(direction + "identifier2").innerHTML = '<input type="text" id="' + direction + 'identifier" value="<var name=department>" size="27" tabindex=' + eval(tabstart+=10) + ' maxlength="100" onChange="GetAddressFromOrderField(\'extcustnum\');CheckForAltSOP();SetBillingAccountDisplay();" class="ship_input">';
+	}
+	else
+	{
+	  document.getElementById(direction + "name").innerHTML = "<div class=\"ship_data\"><var name=addressname></div>";
+	  document.getElementById(direction + "address1").innerHTML = "<div class=\"ship_data\"><var name=address1></div>";
+	  document.getElementById(direction + "address2").innerHTML = "<div class=\"ship_data\"><var name=address2></div>";
+	  document.all(direction + "citystatezip").innerHTML = "<td width=\"33%\" align=\"left\"><div class=\"ship_data\"><var name=addresscity>,&nbsp;<var name=addressstate>&nbsp;<var name=addresszip></div></td>";
+	  document.getElementById(direction + "country").innerHTML = "<div class=\"ship_data\"><var name=addresscountry></div>";
+	  document.getElementById(direction + "contact").innerHTML = "<div class=\"ship_data\"><var name=contactname></div>";
+	  document.getElementById(direction + "phone").innerHTML = "<div class=\"ship_data\"><var name=contactphone></div>";
+	}
+}
+
+function LockSelect(Lock,Field)
+{
+	if ( Lock != '' )
+	{
+	  eval('document.supplyOrder.' + Field + '.value="' + Lock + '"');
+	}
+}
+function SetInternationalDisplay(IntlDirection)
+{
+	if ( IntlDirection == 'init' )
+	{
+	  IntlDirection = GetCCDirection();
+	}
+	var State;
+	if ( '<var name=pseudoscreen>' != 'view' && '<var name=loginlevel>' != '25' )
+	{
+		Country = document.getElementById(IntlDirection + "country1").options[document.getElementById(IntlDirection + "country1").selectedIndex].value;
+	  if ( Country == 'US' )
+	  {
+			State = document.getElementById(IntlDirection+ "state1").options[document.getElementById(IntlDirection+ "state1").selectedIndex].value;
+	  }
+	}
+	else
+	{
+	  if ( IntlDirection == 'to' )
+	  {
+		 Country = '<var name=addresscountry>';
+		 State = '<var name=addressstate>';
+	  }
+	  else
+	  {
+		 if ( '<var name=isdropship>' == '1' )
+		 {
+			Country = '<var name=dropaddresscountry>';
+			State = '<var name=dropaddressstate>';
+		 }
+		 else
+		 {
+			Country = '<var name=branchaddresscountry>';
+			State = '<var name=branchaddressstate>';
+		 }
+
+	  }
+	}
+}
+
+$('.quantity-onchange').change(function (){
+	var supply_quantity = 0;
+	var supply_types = 0;
+	$('select[name^=quantity_]').each(function( index ) {
+		supply_quantity += +$(this).val();
+		if ($(this).val() > 0) supply_types++;
+		});
+	$('#supplyquantity').val(supply_quantity);
+	$('#supplytypes').val(supply_types);
+	});
+</SCRIPT>
