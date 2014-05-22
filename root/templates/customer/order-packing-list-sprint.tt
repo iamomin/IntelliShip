@@ -114,7 +114,7 @@
 			[% LABEL %]
 		[% END %]
 		</center>
-		<br>
+		<br><br>
 		<div id="packing-list">
 			<table>
 				<tr>
