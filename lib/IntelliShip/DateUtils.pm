@@ -114,7 +114,14 @@ sub current_date
 	$tm[4] = "0" . $tm[4] if ($tm[4] < 10);
 
 	$tm[5] = $tm[5] + 1900;
-	$date = $tm[5] . $separator . $tm[4] . $separator . $tm[3];
+	if ($separator =~ /\//)
+		{
+		$date = $tm[4] . $separator . $tm[3] . $separator . $tm[5];
+		}
+	else
+		{
+		$date = $tm[5] . $separator . $tm[4] . $separator . $tm[3];
+		}
 
 	return ($date);
 	}
