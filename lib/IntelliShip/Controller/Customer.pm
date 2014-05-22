@@ -404,9 +404,10 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
-		my @customers = $c->model('MyDBI::Customer')->search( {},
+		my @customers = $c->model('MyDBI::Customer')->search( { customername => { '!=' => '' } },
 			{
 			select => [ 'customerid', 'customername' ],
+			order_by => 'customername',
 			}
 			);
 		foreach my $Customer (@customers)
@@ -1210,6 +1211,7 @@ sub set_navigation_rules
 
 	$c->stash->{landing_page} = $landing_page;
 
+	$c->stash->{ORDER_SUPPLIES} = 1;
 	$c->stash->{RULES_CACHED} = 1;
 	}
 
