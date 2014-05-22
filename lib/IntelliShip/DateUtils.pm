@@ -730,12 +730,14 @@ sub get_business_days_between_two_dates
 	#print STDERR "\n d1: " . $d1;
 	#print STDERR "\n d2: " . $d2;
 
-	my $day1 = new Date::Business( DATE => $d1, HOLIDAY  => \&Holiday );
-	my $day2 = new Date::Business( DATE => $d2, HOLIDAY  => \&Holiday );
+	my $day1 = new Date::Business( DATE => $d1 );
+	my $day2 = new Date::Business( DATE => $d2 );
 
-	#print STDERR "\nDiff: " . $day1->diffb($day2);
+	my $days_diff = $day1->diffb($day2);
 
-	return $day2->diffb($day1);
+	my $holidays = $self->Holiday($d2,$d1);
+
+	return ($days_diff-$holidays);
 	}
 
 sub parse_date
