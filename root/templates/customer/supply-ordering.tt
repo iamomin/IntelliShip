@@ -91,7 +91,7 @@
 					<td><input type="text" class="labellike" size="10" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
 				</tr>
 				<tr>
-					<td><label for="dateneeded" class="float-right">Deliver By:</label></td>
+					<td><label for="dateneeded" class="float-right">Requested By:</label></td>
 					<td><input type="text" size="10" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
 				</tr>
 				<tr>
@@ -100,7 +100,12 @@
 				</tr>
 				<tr>
 					<td><label for="carrier" class="float-right">Carrier:</label></td>
-					<td><select name="carrier" id="carrier"><option value="FedEx">FedEx</option></select></td>
+					<td>
+						<select name="carrier" id="carrier">
+						[% FOREACH item IN carrier_loop %]<option value="[% item.value %]">[% item.name %]</option>
+						[% END %]
+						</select>
+					</td>
 				</tr>
 			</table>
 		</td>
@@ -124,6 +129,7 @@
 		</tr>
 		<tr>
 			<td colspan="6" class="details">
+			<div id="carrier-product-sku">
 			<table class="app">
 				<tr>
 					<th>&nbsp;</th><th>Description</th><th>Length</th><th>Width</th><th>Height</th><th>Quantity</th>
@@ -136,7 +142,7 @@
 					<td>[% item.width %]</td>
 					<td>[% item.height %]</td>
 					<td>
-						<select name="quantity_[% item.productskuid %]" class="quantity-onchange">
+						<select name="quantity_[% item.productskuid %]" onchange="UpdateSupplyDetails();">
 						<option value="">Select One</option>
 						<option value="25">25</option>
 						<option value="50">50</option>
@@ -148,11 +154,12 @@
 				</tr>
 				[% END %]
 			</table>
+			</div>
 			</td>
 		</tr>
 	</table>
 
-	<center><input type="button" class="green" value="SAVE" onclick="Validate();"/></center>
+	[% IF carrier_loop %]<center><input type="button" class="green" value="SAVE" onclick="Validate();"/></center>[% END %]
 
 </form>
 
@@ -167,6 +174,19 @@ $("#dateneeded").datepicker({ minDate: '-0d' });
 
 [% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
 [% END %]
+
+$("#carrier").change(function () {
+
+	$('#supplytypes').val(0);
+	$('#supplyquantity').val(0);
+
+	$("#carrier-product-sku").slideToggle("slow", function () {
+		var params = 'carrier=' + $('#carrier').val();
+		send_ajax_request('carrier-product-sku', 'HTML', 'supplyordering', 'get_carrier_productsku', params, function() {
+			$("#carrier-product-sku").slideToggle("slow");
+			});
+		});
+	});
 
 function Validate()
 	{
@@ -218,15 +238,17 @@ function SetInternationalDisplay(IntlDirection)
 	}
 }
 
-$('.quantity-onchange').change(function (){
+function UpdateSupplyDetails()
+	{
 	var supply_quantity = 0;
 	var supply_types = 0;
 	$('select[name^=quantity_]').each(function( index ) {
 		supply_quantity += +$(this).val();
 		if ($(this).val() > 0) supply_types++;
 		});
+
 	$('#supplyquantity').val(supply_quantity);
 	$('#supplytypes').val(supply_types);
-	});
+	}
 
 </SCRIPT>

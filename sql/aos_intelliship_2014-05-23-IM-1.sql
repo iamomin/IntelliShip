@@ -1,0 +1,1 @@
+ALTER TABLE productsku ADD COLUMN carrier character(50) NOT NULL DEFAULT '';

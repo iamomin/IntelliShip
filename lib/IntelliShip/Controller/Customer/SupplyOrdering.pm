@@ -1,5 +1,6 @@
 package IntelliShip::Controller::Customer::SupplyOrdering;
 use Moose;
+use Data::Dumper;
 use IntelliShip::Email;
 use namespace::autoclean;
 
@@ -46,7 +47,27 @@ sub setup_supply_ordering :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $self->customer->customerid });
+	my $CustomerID = $self->customer->customerid;
+	my $SQL = "SELECT DISTINCT carrier FROM productsku WHERE customerid = '$CustomerID'";
+	my $sth = $self->myDBI->select($SQL);
+
+	my $first_carrier;
+	my $carrier_loop = [];
+	foreach (my $row=0; $row < $sth->numrows; $row++)
+		{
+		my $data = $sth->fetchrow($row);
+		next unless $data->{carrier};
+		$data->{carrier} =~ s/^\s+//;
+		$data->{carrier} =~ s/\s+$//;
+		$first_carrier = $data->{carrier} unless $first_carrier;
+		push(@$carrier_loop, { name => $data->{carrier}, value => $data->{carrier} });
+		}
+
+	$c->log->debug("... Total carriers found: " . @$carrier_loop);
+
+	my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $CustomerID, carrier => $first_carrier });
+
+	$c->log->debug("... Total Productsku found: " . @arr);
 
 	my $productsku_loop = [];
 	foreach my $Productsku (@arr)
@@ -61,7 +82,7 @@ sub setup_supply_ordering :Private
 		push(@$productsku_loop, $data);
 		}
 
-	$c->stash(carrier => 'fedex');
+	$c->stash(carrier_loop => $carrier_loop);
 	$c->stash(productsku_loop => $productsku_loop);
 	$c->stash(toAddress => $self->customer->address);
 	$c->stash(ordernumber => $self->get_auto_order_number);
@@ -104,6 +125,9 @@ sub send_email :Private
 	$CompanyEmail->add_line(qq~Below is an order for FEDEX supplies, requested on $params->{'curDate'}.\nThank You\n\n~);
 
 	$UserEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
+	$CompanyEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
+
+	$UserEmail->add_line(qq~\nQty\t\tPart\#\t\tDescription\n-------\t\t------------\t--------------------------------------~);
 	$CompanyEmail->add_line(qq~\nQty\t\tPart\#\t\tDescription\n-------\t\t------------\t--------------------------------------~);
 
 	## Loop to generate shipment details
@@ -158,6 +182,57 @@ sub send_email :Private
 	$c->log->debug("CompanyEmail: " . $CompanyEmail->to_string);
 
 	$self->setup_supply_ordering;
+	}
+
+sub ajax :Local
+	{
+	my ( $self, $c ) = @_;
+	my $params = $c->req->params;
+
+	if ($params->{'type'} eq 'HTML')
+		{
+		$self->get_HTML;
+		}
+	}
+
+sub get_HTML :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $action = $c->req->param('action');
+	if ($action eq 'get_carrier_productsku')
+		{
+		$self->get_carrier_productsku;
+		}
+	}
+
+sub get_carrier_productsku :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $params = $c->req->params;
+	my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $self->customer->customerid, carrier => $params->{'carrier'} });
+
+	$c->log->debug("... Total Productsku found: " . @arr);
+
+	my $productsku_loop = [];
+	foreach my $Productsku (@arr)
+		{
+		my $data = $Productsku->{_column_data};
+		my $img = '/static/branding/engage/images/sku/fedex/' . $Productsku->customerskuid . '.jpg';
+		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/fedex/' . $Productsku->customerskuid . '.jpg')
+			{
+			$data->{SRC} = $img;
+			}
+
+		push(@$productsku_loop, $data);
+		}
+
+	$c->stash(CARRIER_PRODUCT_SKU => 1);
+	$c->stash(productsku_loop => $productsku_loop);
+	$c->stash(template => "templates/customer/supply-ordering-ajax.tt");
 	}
 
 =encoding utf8

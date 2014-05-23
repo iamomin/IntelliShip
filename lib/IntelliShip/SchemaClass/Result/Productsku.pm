@@ -221,6 +221,12 @@ __PACKAGE__->table("productsku");
   data_type: 'integer'
   is_nullable: 1
 
+=head2 carrier
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 50
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -292,6 +298,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "unittypeid",
   { data_type => "integer", is_nullable => 1 },
+  "carrier",
+  { data_type => "varchar", is_nullable => 1, size => 50 },
 );
 
 =head1 PRIMARY KEY
