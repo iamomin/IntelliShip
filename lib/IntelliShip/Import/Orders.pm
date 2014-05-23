@@ -169,13 +169,10 @@ sub ImportOrders
 
 	$c->log->debug("... Total file lines: " . @FileLines);
 
-	my $LineCount = 0;
 	my $ImportFailureRef = {};
 
 	foreach my $Line (@FileLines)
 		{
-		$LineCount++;
-
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
@@ -974,14 +971,12 @@ sub ImportProducts
 
 	$c->log->debug("... Total file lines: " . @FileLines);
 
-	my $LineCount = 0;
+	my $CO;
+	my $LastCOID = '';
 	my $ImportFailureRef = {};
 
-	my $LastCOID = '';
 	foreach my $Line (@FileLines)
 		{
-		$LineCount++;
-
 		my $CustRef = {};
 
 		## Trim spaces from front and back
@@ -1113,9 +1108,6 @@ sub ImportProducts
 				}
 			}
 
-		## use this to issue delete of products for an order only once.
-		$LastCOID = $CustRef->{'coid'};
-
 		if ($CustRef->{'productquantity'})
 			{
 			$CustRef->{'productquantity'} =~ s/[^\d\.]//g;
@@ -1172,7 +1164,6 @@ sub ImportProducts
 
 		$c->log->debug("... unittypeid:  " . $CustRef->{'unittypeid'});
 
-		my $CO;
 		if ( $export_flag == 0 )
 			{
 			## if missing info, see if the customer has sku data in our db
@@ -1219,12 +1210,15 @@ sub ImportProducts
 				}
 
 			## if it's the 1st hit on a particular order then delete any existing product records
-			if ( $LineCount== 1 || ($LastCOID ne $CustRef->{'coid'}) )
+			if ($LastCOID ne $CustRef->{'coid'})
 				{
-				$CO=$c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
+				$CO = $c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
 
 				#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
 				}
+
+			## use this to issue delete of products for an order only once.
+			$LastCOID = $CustRef->{'coid'};
 
 			my $productData = { datatypeid => '2000' };
 
