@@ -720,6 +720,7 @@ sub Holiday
 
 	foreach $holiday (@holidays)
 		{
+		#print STDERR "\nstart: $start, holiday: $holiday, end: $end";
 		$numHolidays++ if ($start le $holiday and $end ge $holiday);
 		}
 
@@ -741,10 +742,13 @@ sub get_business_days_between_two_dates
 	my $day2 = new Date::Business( DATE => $d2 );
 
 	my $days_diff = $day1->diffb($day2);
+	$days_diff = $days_diff * -1 if $days_diff < 0;
 
-	my $holidays = $self->Holiday($d2,$d1);
+	my $holidays = $self->Holiday($d1,$d2);
+	#print STDERR "\n days_diff: " . $days_diff;
+	#print STDERR "\n holidays : " . $holidays;
 	my $transit_days = ($days_diff-$holidays);
-	return  ($transit_days < 0) ? $transit_days * -1 : $transit_days;
+	return $transit_days;
 	}
 
 sub parse_date
