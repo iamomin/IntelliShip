@@ -1201,7 +1201,7 @@ sub set_navigation_rules
 	$navRules->{DISPLAY_MYORDERS} = $navRules->{DISPLAY_MYSHIPMENT} = $Contact->get_contact_data_value('myorders');
 	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
 
-	$navRules->{ORDER_SUPPLIES} = !$Contact->get_contact_data_value('ordersupplies');
+	$navRules->{ORDER_SUPPLIES} = $Contact->get_contact_data_value('ordersupplies');
 
 	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
 
