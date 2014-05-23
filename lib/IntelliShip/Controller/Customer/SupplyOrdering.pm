@@ -23,6 +23,11 @@ Catalyst Controller.
 
 =cut
 
+my $COMPANY_EMAILS = {
+	FEDEX => 'focmemteam3b@fedex.com',
+	UPS => 'customer.service@ups.com',
+	};
+
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 	my $params = $c->req->params;
@@ -150,7 +155,7 @@ sub send_email :Private
 
 	## Footer
 	$UserEmail->add_line(qq~\n\n\n***************************************\n** This email is not authorized for redistribution **\n***************************************~);
-	$CompanyEmail->add_line(qq~\n\n\n*****************************************\n** This email is not authorized for redistribution      **\n** The confidential $params->{'toname'} $carrier **\n** Acct\# is 494036924 and cannot be disclosed          **\n** verbally or electronically                                                 **\n*****************************************~);
+	$CompanyEmail->add_line(qq~\n\n\n**********************************************************\n** This email is not authorized for redistribution\t**\n** The confidential $params->{'toname'} $carrier \t\t\t\t\t**\n** Acct\# is 494036924 and cannot be disclosed\t\t**\n** verbally or electronically\t\t\t\t**\n**********************************************************\n~);
 
 	## END Body
 	$UserEmail->add_line('</PRE>');
@@ -167,7 +172,7 @@ sub send_email :Private
 	$UserEmail->add_to($Contact->email) if IntelliShip::Utils->is_valid_email($Contact->email);
 	$UserEmail->add_to($params->{'toemail'}) if IntelliShip::Utils->is_valid_email($params->{'toemail'});
 
-	$CompanyEmail->add_to('focmemteam3b@fedex.com');
+	$CompanyEmail->add_to($COMPANY_EMAILS->{$carrier});
 	$CompanyEmail->add_to('tsharp@engagetechnology.com');
 
 	## Subject
