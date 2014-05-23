@@ -463,6 +463,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Special Services Expanded',                     value => 'specialserviceexpanded',			type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'JPG Label Rotation',                            value => 'jpgrotation',						type => 'SELECT',   datatypeid => 2, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Package Product Level',                         value => 'packageproductlevel',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Order Supplies',                                value => 'ordersupplies',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	];
 
 my $CUSTOM_CSS_STYLES = [

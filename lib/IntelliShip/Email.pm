@@ -23,6 +23,7 @@ sub BUILD
 	$self->to([]);
 	$self->cc([]);
 	$self->bcc([]);
+	$self->content_type('text/html');
 	$self->sendmail_path(IntelliShip::MyConfig->getSendmailPath);
 	}
 
