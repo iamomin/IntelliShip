@@ -31,7 +31,7 @@ function GetAddress(direction)
 	var city			= direction ? $('#' + direction + 'city').val() : '';
 	var state			= direction ? $('#' + direction + 'state').val() : '';
 	var zip				= direction ? $('#' + direction + 'zip').val() : '';
-	var country			= direction ? $('#' + direction + 'country').val() : '';
+	var country			= direction ? $('#' + direction + 'country').val() : 'US';
 	var contact			= direction ? $('#' + direction + 'contact').val() : '';
 	var phone			= direction ? $('#' + direction + 'phone').val() : '';
 	var department		= direction ? $('#' + direction + 'department').val() : '';
