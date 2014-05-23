@@ -63,8 +63,18 @@ sub setup_supply_ordering :Private
 
 	$c->stash(carrier => 'fedex');
 	$c->stash(productsku_loop => $productsku_loop);
+	$c->stash(toAddress => $self->customer->address);
 	$c->stash(ordernumber => $self->get_auto_order_number);
 	$c->stash(datetoship => IntelliShip::DateUtils->current_date('/'));
+	$c->stash(countrylist_loop => $self->get_select_list('COUNTRY'));
+	$c->stash(customerlist_loop => $self->get_select_list('ADDRESS_BOOK_CUSTOMERS'));
+
+	$c->stash(requiredfield_list => [
+			{ name => 'toname',  details => "{ minlength: 2 }"},
+			{ name => 'supplyquantity',  details => "{ numeric: true }"},
+			{ name => 'carrier', details => "{ minlength: 2 }"},
+			{ name => 'toemail', details => "{ email: false }"},
+			]);
 
 	$c->stash(template => "templates/customer/supply-ordering.tt");
 	}
@@ -93,13 +103,14 @@ sub send_email :Private
 	$UserEmail->add_line(qq~Your order for supplies has been send to FEDEX on $params->{'curDate'}.\nThank You\n\n~);
 	$CompanyEmail->add_line(qq~Below is an order for FEDEX supplies, requested on $params->{'curDate'}.\nThank You\n\n~);
 
-	$UserEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t\t$params->{'tophone'}\n~);
+	$UserEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
 	$CompanyEmail->add_line(qq~\nQty\t\tPart\#\t\tDescription\n-------\t\t------------\t--------------------------------------~);
 
 	## Loop to generate shipment details
 	foreach my $key (keys %$params)
 		{
-		next unless $key =~ /^quantity_(\.+)/;
+		next unless $key =~ /^quantity_(.+)/;
+		next unless $params->{$key};
 
 		my $ProductSku = $c->model('MyDBI::Productsku')->find({ productskuid => $1 });
 
@@ -137,11 +148,16 @@ sub send_email :Private
 
 	## Subject
 	$UserEmail->subject("NOTICE: $carrier, Supply Order");
-	$CompanyEmail->("REQUEST: $carrier, Supply Order");
+	$CompanyEmail->subject("REQUEST: $carrier, Supply Order");
 
 	## Send email
 	$UserEmail->send;
 	$CompanyEmail->send;
+
+	$c->log->debug("UserEmail: " . $UserEmail->to_string);
+	$c->log->debug("CompanyEmail: " . $CompanyEmail->to_string);
+
+	$self->setup_supply_ordering;
 	}
 
 =encoding utf8

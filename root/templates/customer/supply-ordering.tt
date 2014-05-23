@@ -1,7 +1,9 @@
 
+<script src="/static/js/customer-order.js"></script>
+
 <h2>Order Supplies</h2>
 
-<form name="supplyOrder" action="/index.cgi" method="post">
+<form id="supplyOrder" action="/customer/supplyordering" method="post">
 	<input type="hidden" name="do" value="send"/>
 
 	<div class="notice">Please click "Order" to place your supply order.</div>
@@ -150,91 +152,33 @@
 		</tr>
 	</table>
 
-	<center><input type="button" value="SAVE"/></center>
+	<center><input type="button" class="green" value="SAVE" onclick="Validate();"/></center>
 
 </form>
 
 <SCRIPT language=JavaScript>
 
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]",[% END %]];
+var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
+
+BindCompanyAutoComplete('to',availableCustomers);
+
 $("#dateneeded").datepicker({ minDate: '-0d' });
 
-function MM_findObj(n, d) { //v3.0
-  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
-	d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
-  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
-  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document); return x;
-}
+[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+[% END %]
 
-function MM_swapImgRestore() { //v3.0
-  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
-}
-
-function MM_preloadImages() { //v3.0
-  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
-	var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
-	if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
-}
-
-function MM_swapImage() { //v3.0
-  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
-	if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
-}
-function InitializeScreen()
-{
-	document.getElementById("errorString").innerHTML = '';//clear error message in screen
-	var date = new Date();
-	var datestring = ("0" + (date.getMonth() + 1).toString()).substr(-2) + "/" + ("0" + date.getDate().toString()).substr(-2)  + "/" + date.getFullYear().toString();
-	// Set Ordered On date to current date
-	document.getElementById('curDateDiv').innerHTML=datestring;
-	document.supplyOrder.curDate.value=datestring;
-	document.supplyOrder.totQtySup.value='0';
-	document.supplyOrder.typeSup.value='0';
-	PopulateCCAddress('to');
-}
-function PopulateCCAddress(direction)
-{
-	var tabstart = direction == 'from' ? 100 : 300;
-	var AddressOptionList = eval('document.supplyOrder.branchaddressoptionlist.value');
-	var check = '1';
-	if ( '<var name=shipmentid>' == '' && '<var name=loginlevel>' != '25' )
+function Validate()
 	{
-		// if list is not empty display select box
-	  if(AddressOptionList != '')
-	  {
-		 document.getElementById(direction + "addressid").innerHTML = "<select id=" + direction + "addressid1 onChange=\"PopulateLocation('" + direction + "');\" tabindex=" + tabstart + " style=\"width: 248px\">" + AddressOptionList + "</select>";
+	if (validateForm(requiredFieldHash) == false) return;
+	if ($("#supplyquantity").val() == 0)
+		{
+		showError('There is no supply selected to place your order');
+		return;
+		}
+	$("#supplyOrder").submit();
+	}
 
-	  }
-	  document.getElementById(direction + "name").innerHTML = '<div class="search" onmouseover="this.className=\'mo_search\'" onmouseout="this.className=\'search\'"><input type="text" maxlength="100" id="' + direction + 'name1" value="' + document.supplyOrder.addressname.value + '" size="40" tabindex=' + eval(tabstart+=10) + ' style="width: 228px; border: none; background-color: #FFFFFF"><img src="images/lookup.png" style="position:relative; top: 3px;" onclick="StoreAddresses();PopulateAddressDropdownFromAjax(\'' + direction + '\')"></div>';
-	  document.getElementById(direction + "address1").innerHTML = '<input type="text" maxlength="100" id="' + direction + 'address11" value="<var name=address1>" size="40" tabindex=' + eval(tabstart+=10) + ' class="ship_input">';
-	  document.getElementById(direction + "address2").innerHTML = '<input type="text" maxlength="100" id="' + direction + 'address21" value="<var name=address2>" size="40" tabindex=' + eval(tabstart+=10) + ' class="ship_input">';
-	  var addresscountryhtml = "<SELECT id=\"" + direction + "country1\"  STYLE=\"width: 248px\" tabindex=" + eval(tabstart+=40) + " onChange=\"LockSelect(document.supplyOrder.lock" + direction + "country.value,'"+ direction +"country');DisplayCityStateZip('" + direction + "');SetInternationalDisplay('" + direction + "');\"><var type=dropdown name=branchaddresscountry value=branchaddresscountry showzero=1></SELECT>";
-	  document.getElementById(direction + "country").innerHTML = addresscountryhtml;
-		document.getElementById(direction + "country1").value = document.supplyOrder.addresscountry.value;
-	  DisplayCityStateZip(direction);
-	  document.getElementById(direction + "contact").innerHTML = '<div id="' + direction + 'contact1" class="ship_data"><var name=addressname1></div>';
-	  document.getElementById(direction + "phone").innerHTML = '<input type="text" maxlength="100" id="' + direction + 'phone1" value="<var name=phonemobile>" size="31" tabindex=' + eval(tabstart+=10) + ' class="ship_input">';
-	  document.getElementById(direction + "identifier1").innerHTML = '<var name=departmentaka>:';
-	  document.getElementById(direction + "identifier2").innerHTML = '<input type="text" id="' + direction + 'identifier" value="<var name=department>" size="27" tabindex=' + eval(tabstart+=10) + ' maxlength="100" onChange="GetAddressFromOrderField(\'extcustnum\');CheckForAltSOP();SetBillingAccountDisplay();" class="ship_input">';
-	}
-	else
-	{
-	  document.getElementById(direction + "name").innerHTML = "<div class=\"ship_data\"><var name=addressname></div>";
-	  document.getElementById(direction + "address1").innerHTML = "<div class=\"ship_data\"><var name=address1></div>";
-	  document.getElementById(direction + "address2").innerHTML = "<div class=\"ship_data\"><var name=address2></div>";
-	  document.all(direction + "citystatezip").innerHTML = "<td width=\"33%\" align=\"left\"><div class=\"ship_data\"><var name=addresscity>,&nbsp;<var name=addressstate>&nbsp;<var name=addresszip></div></td>";
-	  document.getElementById(direction + "country").innerHTML = "<div class=\"ship_data\"><var name=addresscountry></div>";
-	  document.getElementById(direction + "contact").innerHTML = "<div class=\"ship_data\"><var name=contactname></div>";
-	  document.getElementById(direction + "phone").innerHTML = "<div class=\"ship_data\"><var name=contactphone></div>";
-	}
-}
-
-function LockSelect(Lock,Field)
-{
-	if ( Lock != '' )
-	{
-	  eval('document.supplyOrder.' + Field + '.value="' + Lock + '"');
-	}
-}
 function SetInternationalDisplay(IntlDirection)
 {
 	if ( IntlDirection == 'init' )
@@ -284,4 +228,5 @@ $('.quantity-onchange').change(function (){
 	$('#supplyquantity').val(supply_quantity);
 	$('#supplytypes').val(supply_types);
 	});
+
 </SCRIPT>

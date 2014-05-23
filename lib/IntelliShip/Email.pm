@@ -183,6 +183,19 @@ sub send
 	return 1;
 	}
 
+sub to_string
+	{
+	my $self = shift;
+	my $EmailString = "";
+	$EmailString .= "\n From   : " . $self->from_name;
+	$EmailString .= "\n To     : " . join(',',@{$self->to}) if @{$self->to};
+	$EmailString .= "\n CC     : " . join(',',@{$self->cc}) if @{$self->cc};
+	$EmailString .= "\n BCC    : " . join(',',@{$self->bcc}) if @{$self->bcc};
+	$EmailString .= "\n Subject: " . $self->subject;
+	$EmailString .= "\n Body   : \n" . $self->body;
+	return $EmailString;
+	}
+
 __PACKAGE__->meta()->make_immutable();
 
 no Moose;
