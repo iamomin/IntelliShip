@@ -91,6 +91,8 @@ sub process_request
 		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber) = $self->send_pickup_dispatch_reqeust($PickupRequest);
 		}
 
+	$CustomerTransactionId = $PickupRequest->{CustomerTransactionId} unless $CustomerTransactionId;
+
 	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
 	$self->SendPickUpEmail($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
@@ -138,7 +140,7 @@ sub send_same_day_pickup_request
         <q0:NumberOfBusinessDays>1</q0:NumberOfBusinessDays>
         <q0:PackageReadyTime>08:00:00</q0:PackageReadyTime>
         <q0:CustomerCloseTime>18:00:00</q0:CustomerCloseTime>
-        <q0:Carriers>FDXG</q0:Carriers>
+        <q0:Carriers>FDXE</q0:Carriers>
     </q0:PickupAvailabilityRequest>
  </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>

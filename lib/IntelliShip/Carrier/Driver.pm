@@ -356,8 +356,8 @@ sub SendPickUpEmail
 	$Email->add_line('');
 	$Email->add_line('Message                    : ' . $Message . '<br>');
 	$Email->add_line('Code                       : ' . $ResponseCode . '<br>');
-	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId . '<br>');
-	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber . '<br>');
+	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId . '<br>') if $CustomerTransactionId;
+	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber . '<br>') if $ConfirmationNumber;
 	$Email->add_line('');
 	$Email->add_line('=' x 60);
 
