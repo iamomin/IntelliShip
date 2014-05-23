@@ -812,6 +812,7 @@ sub save_package_product_details :Private
 		my $decval          = ( $params->{'decval_' . $PackageIndex}  ? sprintf("%.2f",$params->{'decval_' . $PackageIndex}) :  undef);
 		my $frtins          = $params->{'frtins_'.$PackageIndex} || 0;
 		my $dryicewt        = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+		my $unittypeid      = ($params->{'unittype_' . $PackageIndex } ? $params->{'unittype_' . $PackageIndex } : undef);
 		my $unitofmeasure   = $params->{'unitofmeasure_' . $PackageIndex} || 0;
 		my $quantityxweight = $params->{'quantityxweight_' . $PackageIndex} || 0;
 
@@ -822,7 +823,7 @@ sub save_package_product_details :Private
 				boxnum          => $quantity,
 				quantity        => $quantity,
 				unitofmeasure   => $unitofmeasure,
-				unittypeid      => $params->{'unittype_' . $PackageIndex },
+				unittypeid      => $unittypeid,
 				weight          => $weight,
 				dimweight       => $dimweight,
 				dimlength       => $dimlength,
