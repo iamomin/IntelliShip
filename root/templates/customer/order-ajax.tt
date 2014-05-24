@@ -268,10 +268,10 @@
 			<th>SERVICE LEVEL</th>
 			[% IF IS_PREPAID %]
 			<th>TRANSIT DAYS</th>
-			<th>EST. DELIVERY</th>
-			<th>EST. FREIGHT CHARGE</th>
-			<th>EST. OTHER CHARGES</th>
-			<th style="width:161px;">EST. TOTAL CHARGE</th>
+			<th>DELIVERY</th>
+			<th>FREIGHT CHARGE</th>
+			<th>OTHER CHARGES</th>
+			<th style="width:161px;">TOTAL CHARGE</th>
 			<th style="width:10px;"></th>
 			[% END %]
 		</tr>
@@ -290,7 +290,7 @@
 			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.other_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 10px;"><green>[% item.shipment_charge %]&nbsp;&nbsp;</green>
 				<div class="charge-details" style="display: none;" id="SC-[% item.customerserviceid %]">
-					<table style="font-size: 11px;float:right;">
+					<table style="font-size: 11px; float:right; background-color: #FFF;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
 						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b><i>[% scd.text %]</i></b></td><td style="text-align: right;"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
 					[% END %]

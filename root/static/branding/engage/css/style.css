@@ -373,6 +373,9 @@ label {
     white-space: nowrap;
 }
 
+div.notice { position: relative; margin: 10px 0px; padding: 15px; border: 1px solid #97C1DA; color: #264C72; background-color: #D0E3EF; text-align: left }
+div.error   { position: relative; margin: 10px 0px; padding: 15px; border: 1px solid #811;    color: #911;    background-color: #efd0d0; text-align: left }
+
 table { margin: 0; padding: 0; border-spacing: 0px; }
 table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
 table td { padding: 3px; }
@@ -644,26 +647,6 @@ table.center-app {
     background: #F5F5F5;
     text-align: left;
     border: solid 1px #CCC;
-}
-
-div.notice {
-    position: relative;
-    margin: 10px 0px;
-    padding: 15px;
-    border: 1px solid #97C1DA;
-    color: #264C72;
-    background-color: #D0E3EF;
-    text-align: left;
-}
-
-div.error {
-    position: relative;
-    margin: 10px 0px;
-    padding: 15px;
-    border: 1px solid #811;
-    color: #911;
-    background-color: #efd0d0;
-    text-align: left;
 }
 
 input.active {
@@ -1067,6 +1050,9 @@ input.orange  {
 .ui-corner-top { border-radius: 0 }
 
 #carrier-service-list table { text-align: center; }
+#carrier-service-list table tr:nth-child(odd) { color: #000; background: #F6F6F8 }
+#carrier-service-list table tr:nth-child(even) { color: #000; background: #E4E5E7 }
+
 #carrier-service-list ul li { width: 33%; margin-right: 1px; padding: 0; }
 #carrier-service-list ul li a { width: 92%; text-align: center; }
 #carrier-service-list li.ui-tabs-active a { background-color: #5DBD53; color: #FFF; }

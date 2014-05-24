@@ -29,7 +29,7 @@
 		<div id="row">
 			<div class="add-summary">
 			<table class="summary-app">
-				<caption>ADDRESS SUMMARY:<div class="float-right"><a href="javascript:void(0);" onclick="interviewAddress();">edit</a></div></caption>
+				<caption>ADDRESS SUMMARY<div class="float-right"><a href="javascript:void(0);" onclick="interviewAddress();">edit</a></div></caption>
 				<tr>
 					<td class="float-right bold-text">SHIP FROM </th><td>[% customer.customername %]</td>
 					<td class="float-right bold-text">SHIP TO </th><td>[% toAddress.addressname %]</td>
@@ -59,13 +59,13 @@
 
 			<div class="sd-summary">
 			<table class="summary-app">
-				<caption>SHIPMENT DETAIL SUMMARY:<div class="float-right"><a href="javascript:void(0);" onclick="interviewShipment();">edit</a></div></caption>
+				<caption>SHIPMENT DETAIL SUMMARY<div class="float-right"><a href="javascript:void(0);" onclick="interviewShipment();">edit</a></div></caption>
 				<tr>
 					<td class="text-align-right bold-text" style="width: 50%">Due Date: </td>
 					<td>[% dateneeded %]</td>
 				</tr>
 				<tr>
-					<td class="text-align-right bold-text" style="width: 50%">#Packages: </td>
+					<td class="text-align-right bold-text" style="width: 50%">#&nbsp;Packages: </td>
 					<td>[% total_packages %]</td>
 				</tr>
 				<tr>
