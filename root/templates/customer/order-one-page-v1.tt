@@ -7,6 +7,9 @@
 		[% quickship ? 'Quick Ship Order' : 'New Order' %]
 		<table class="float-right css3-radios">
 			<tr>
+				[% IF CONSOLIDATE_COMBINE %]
+				<td><input type="button" class="green" id="consolidate" value="Consolidate" style="padding: 0px 0px 0px 0px;"/></td>
+				[% END %]
 				<td><label for="ordernumber" class="small_title">Order Number:</label></td>
 				[% IF ordernumber %]
 				<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text" readonly/></td>
@@ -51,8 +54,9 @@
 	[% IF print_return_shipment > 1 %]<input type="hidden" name="printreturnshipment" value="1"/>[% END %]
 	[% IF default_packing_list > 1 %]<input type="hidden" name="printpackinglist" value="1"/>[% END %]
 	</h1>
+	<div id="order-packages">
 	[% PACKAGE_DETAIL_SECTION %]
-
+	</div>
 	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
 
 	<div id="clear">&nbsp;</div>
@@ -281,5 +285,32 @@
 			$("#ship_now").click();
 			}
 		});
+
+
+		$("#consolidate").click(function() {
+
+			$('#dialog-message').dialog( {
+				autoOpen: false,
+				title: 'Consolidate Orders',
+				width: '1000px',
+				buttons: {
+					Ok: function() {
+
+						send_ajax_request('order-packages', 'HTML', 'order', 'consolidate', $("#frm_consolidate").serialize(), function () {
+
+							$( "#dialog-message" ).dialog("close");
+							});
+						}
+					}
+				});
+			$("#consolidate").prop('disabled', true);
+
+			$("#consolidate").val('Please wait...');
+			send_ajax_request('dialog-message', 'HTML', 'order', 'get_consolidate_orders_list', $("#equal :input").serialize() + '&coid=' + $("#coid").val(), function () {
+				$( "#dialog-message" ).dialog("open");
+				$("#consolidate").prop('disabled', false);
+				$("#consolidate").val('Consolidate');
+				});
+			});
 
 </script>

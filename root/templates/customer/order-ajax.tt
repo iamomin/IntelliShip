@@ -368,3 +368,80 @@
 	</script>
   [% END %]
 [% END %]
+
+[% IF CONSOLIDATE_ORDERS %]
+	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
+
+	<form id="frm_consolidate" name="frm_consolidate" method="post" action="/customer/order/consolidate_orders">
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<table>
+		<tr>
+			<td>Total <strong><span id="select-count"></span></strong> orders selected</td>
+		</tr>
+	</table>
+
+	<div id="myShipments">
+	<table class="css3-checkboxes">
+		<tr>
+			<th><label><input type="checkbox" id="checkAll" CHECKED onclick="check_uncheck_all();"/><span></span></label></th>
+			<th>Order Number</th>
+			<th>Consignee</th>
+			<th>Address</th>
+			<th>City</th>
+			<th>State</th>
+			<th>Zip</th>
+			<th>Country</th>
+		</tr>
+		[% FOREACH item IN consolidate_order_list %]
+		<tr>
+			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" class="orders" value="[% item.coid %]" CHECKED/><span></span></label></td>
+			<td>[% item.ordernumber %]</td>
+			<td>[% item.toAddress.addressname %]</td>
+			<td>[% item.toAddress.address1 _ toAddress.address2%]</td>
+			<td>[% item.toAddress.city %]</td>
+			<td>[% item.toAddress.state %]</td>
+			<td>[% item.toAddress.zip %]</td>
+			<td>[% item.toAddress.country %]</td>
+		</tr>
+		[% END %]
+	</table>
+	</div>
+	</form>
+
+	<script>
+		$("#select-count").html([% consolidate_order_list.size %]);
+
+		$('.orders').change(function(){
+			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
+			if ($("#checkAll").is(':checked'))
+				$("#checkAll").prop( "checked", false )
+			});
+
+		function check_uncheck_all() {
+			if($("#checkAll").is(':checked'))
+				{
+				$("input:checkbox[name=coids]").each(function() {
+					$(this).prop( "checked", true );
+					});
+				}
+			else
+				{
+				$("input:checkbox[name=coids]").each(function() {
+					$(this).prop( "checked", false );
+					});
+				}
+
+			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
+			}
+			
+		function consolidate_order() {
+			
+			}
+	</script>
+[% END %]
+
+[% IF CONSOLIDATED_PACKAGE_DETAILS %]
+	<input type="hidden" id="consolidate" name="consolidate" value="1"/>
+	<input type="hidden" id="coids" name="coids" value="[% coids %]"/>
+	[% CONSOLIDATED_PACKAGE_DETAILS %]
+[% END %]

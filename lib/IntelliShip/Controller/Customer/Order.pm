@@ -160,6 +160,7 @@ sub setup_address :Private
 		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') ;
 		$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
+		$c->stash->{CONSOLIDATE_COMBINE} = $Customer->get_contact_data_value('consolidatecombine');
 		}
 
 	#$c->stash->{tooltips} = $self->get_tooltips;
@@ -947,6 +948,8 @@ sub cancel_order :Private
 	my $CO = $self->get_order;
 	$CO->update({ statusid => '200' });
 
+	return if $params->{'consolidate'};
+
 	my $parent = $params->{'parent'} || '';
 	if (length $parent)
 		{
@@ -1344,6 +1347,8 @@ sub add_package_detail_row :Private
 		{
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		}
+
+	$c->stash->{SHIPPER_NUMBER} = $Package->ownerid if $params->{'action'} eq 'consolidate';
 
 	$c->stash->{ROW_COUNT}++;
 	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;

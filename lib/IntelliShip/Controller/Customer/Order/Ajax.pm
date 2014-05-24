@@ -77,6 +77,14 @@ sub get_HTML :Private
 		{
 		$self->generate_commercial_invoice;
 		}
+	elsif ($action eq 'get_consolidate_orders_list')
+		{
+		$self->get_consolidate_orders_list;
+		}
+	elsif ($action eq 'consolidate')
+		{
+		$self->consolidate_orders;
+		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -884,6 +892,144 @@ sub cancel_shipment
 	{
 	my $self = shift;
 	return { voided => $self->VOID_SHIPMENT($self->context->req->params->{'shipmentid'}) };
+	}
+	
+sub get_consolidate_orders_list
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	IntelliShip::Utils->hash_decode($params);
+	my $CustomerID = $self->customer->customerid;
+	my $OrderSQL = "
+		SELECT
+			coid
+		FROM
+			co
+			INNER JOIN address oa ON oa.addressid = co.oaaddressid INNER JOIN address da ON da.addressid = co.addressid AND co.customerid = '$CustomerID'
+		WHERE
+			co.cotypeid = 1
+			AND co.estimatedweight IS NOT NULL
+			AND co.coid != '$params->{'coid'}'
+			AND
+			(
+				(
+					co.extcarrier IS NOT NULL
+					AND co.extservice IS NOT NULL
+				)
+				OR
+				(
+					co.dateneeded IS NOT NULL
+				)
+			)
+		";
+		
+	# Select on Ship from address
+	$OrderSQL .= " AND oa.addressname = " . "'$params->{'fromname'}'" if $params->{'fromname'} ne '';
+	$OrderSQL .= " AND oa.address1 = " . "'$params->{'fromaddress1'}'" if $params->{'fromaddress1'} ne '';
+	$OrderSQL .= " AND oa.address2 = " . "'$params->{'fromaddress2'}'" if $params->{'fromaddress2'} ne '';
+	$OrderSQL .= " AND oa.city = " . "'$params->{'fromcity'}'" if $params->{'fromcity'} ne '';
+	$OrderSQL .= " AND oa.state = " . "'$params->{'fromstate'}'" if $params->{'fromstate'} ne '';
+	$OrderSQL .= " AND oa.zip = " . "'$params->{'fromzip'}'" if $params->{'fromzip'} ne '';
+
+	# Select on delivery address
+	$OrderSQL .= " AND da.addressname = " . "'$params->{'toname'}'" if $params->{'toname'} ne '';
+	$OrderSQL .= " AND da.address1 = " . "'$params->{'toaddress1'}'" if $params->{'toaddress1'} ne '';
+	$OrderSQL .= " AND da.address2 = " . "'$params->{'toaddress2'}'" if $params->{'toaddress2'} ne '';
+	$OrderSQL .= " AND da.city = " . "'$params->{'tocity'}'" if $params->{'tocity'} ne '';
+	$OrderSQL .= " AND da.state = " . "'$params->{'tostate'}'" if $params->{'tostate'} ne '';
+	$OrderSQL .= " AND da.zip = " . "'$params->{'tozip'}'" if $params->{'tozip'} ne '';
+
+	$c->log->debug("OrderSQL: " . $OrderSQL);
+
+	my $STH = $c->model('MyDBI')->select($OrderSQL);
+
+	if ($STH->numrows)
+		{
+		my $arr = $STH->query_data;
+		#$c->log->debug("CO IDs: " . Dumper $arr);
+		my @COS = $c->model('MyDBI::CO')->search({ coid => $arr });
+
+		my $consolidate_order_list = [];
+		foreach my $CO (@COS)
+			{
+			push(@$consolidate_order_list, {
+				coid         => $CO->coid,
+				ordernumber  => $CO->ordernumber,
+				carrier      => $CO->extcarrier,
+				service      => $CO->extservice,
+				datetoship   => IntelliShip::DateUtils->american_date($CO->datetoship),
+				dateneeded   => IntelliShip::DateUtils->american_date($CO->dateneeded),
+				toAddress    => $CO->to_address
+				});
+			}
+		#$c->log->debug("Customer Orders: " . Dumper @COS);
+		$c->stash->{consolidate_order_list} = $consolidate_order_list;
+		}
+	else
+		{
+		$c->stash->{MESSAGE} = 'No matching orders found for batch ship';
+		}
+
+	$c->stash->{coid} = $params->{'coid'};
+	$c->stash->{CONSOLIDATE_ORDERS} = 1;
+	}
+
+sub consolidate_orders
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	
+	my $CO     = $self->get_order;
+	$c->log->debug("Order Id: " . $CO->coid);
+	$c->stash->{ROW_COUNT} = 0;
+	my $packages = [];
+
+	my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
+	my $package_detail_section_html = '';
+	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
+	push(@$Coids, $CO->coid);
+	foreach my $coid (@$Coids)
+		{
+		$c->log->debug("coid: " . $coid);
+		my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+		my @packages = $CoObj->packages;
+		foreach (@packages)
+			{
+			$package_detail_section_html .= $self->add_package_detail_row($_) ;
+
+			$insurance += $_->decval;
+			$totalweight += $_->weight;
+			$freightinsurance += $_->frtins;
+			}
+
+		$c->log->debug("Total No of Packages in COID ($coid): " . @packages);
+		}
+
+	$c->log->debug("Grand Total Packages: " . @$packages);
+
+	# Step 1: Find Packages belog to Order
+	#my @CoPackages = $CO->packages;
+
+	#$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
+
+	#push @$packages, $_ foreach @CoPackages;
+	$c->log->debug("Total number of packages " . @$packages);
+
+	foreach my $Package (@$packages)
+		{
+		}
+
+	$c->stash->{insurance} = $insurance;
+	$c->stash->{totalweight} = $totalweight;
+	$c->stash->{freightinsurance} = $freightinsurance;
+
+	## Don't move this above foreach block
+	$c->stash->{description} = $CO->description;
+	$c->stash->{coids} = join(',', @$Coids);
+	#$c->log->debug("CONSOLIDATED_PACKAGE_DETAILS : HTML: " . $package_detail_section_html);
+	$c->stash->{CONSOLIDATED_PACKAGE_DETAILS} = $package_detail_section_html;
 	}
 
 =encoding utf8
