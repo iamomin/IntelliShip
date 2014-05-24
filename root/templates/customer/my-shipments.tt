@@ -342,9 +342,21 @@
 					$("#datefrom").datepicker('setDate', '+0d');
 					$("#dateto").datepicker('setDate', '+0d');
 					}
+				if (vDate == 'yesterday') {
+					$("#datefrom").datepicker('setDate', '-1d');
+					$("#dateto").datepicker('setDate', '-1d');
+					}
 				if (vDate == 'this_week') {
 					$("#datefrom").datepicker('setDate', '-1w');
 					$("#dateto").datepicker('setDate', '+0d');
+					}
+				if (vDate == 'last_week') {
+					$("#datefrom").datepicker('setDate', '-2w');
+					$("#dateto").datepicker('setDate', '-1w');
+					}
+				if(vDate == 'last_month') {
+					$("#datefrom").datepicker('setDate', '-2m');
+					$("#dateto").datepicker('setDate', '-1m');
 					}
 				if(vDate == 'this_month') {
 					$("#datefrom").datepicker('setDate', '-1m');

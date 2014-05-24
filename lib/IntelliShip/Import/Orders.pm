@@ -743,7 +743,7 @@ sub ImportOrders
 			IntelliShip::Utils->trim_hash_ref_values($returnAddressData);
 
 			## Fetch return address
-			@addresses = $c->model('MyDBI::Address')->search($returnAddressData);
+			@addresses = $c->model('MyDBI::Address')->search($returnAddressData) if length $returnAddressData->{'address1'};
 
 			my $ReturnAddress;
 			if (@addresses)
@@ -751,7 +751,7 @@ sub ImportOrders
 				$ReturnAddress = $addresses[0];
 				$c->log->debug("... Existing Address Found, ID: " . $ReturnAddress->addressid);
 				}
-			else
+			elsif (length $returnAddressData->{'address1'})
 				{
 				$ReturnAddress = $c->model("MyDBI::Address")->new($returnAddressData);
 				$ReturnAddress->addressid($self->myDBI->get_token_id);
@@ -759,7 +759,7 @@ sub ImportOrders
 				$c->log->debug("... New Address Inserted, ID: " . $ReturnAddress->addressid);
 				}
 
-			$CO->{'rtaddressid'} = $ReturnAddress->id;
+			$CO->{'rtaddressid'} = $ReturnAddress->id if $ReturnAddress;
 			###########################
 
 			$CO->{'ordernumber'}           = $CustRef->{'ordernumber'};

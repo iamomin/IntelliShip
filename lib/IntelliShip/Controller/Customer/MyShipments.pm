@@ -32,8 +32,11 @@ sub index :Path :Args(0) {
 	$self->populate_my_shipment_list;
 
 	$c->stash->{date_list} = [
-			{ name => 'Today', value => 'today' },
-			{ name => 'This Week', value => 'this_week' },
+			{ name => 'Today',      value => 'today' },
+			{ name => 'Yesterday',  value => 'yesterday' },
+			{ name => 'This Week',  value => 'this_week' },
+			{ name => 'Last Week',  value => 'last_week' },
+			{ name => 'Last Month', value => 'last_month' },
 			{ name => 'This Month', value => 'this_month' },
 			];
 

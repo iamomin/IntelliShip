@@ -16,6 +16,7 @@ sub process_request
 	my $CO = $self->CO;
 	my $Customer = $CO->customer;
 	my $shipmentData = $self->data;
+	my $CustomerService = $self->customerservice;
 
 	$self->log("Process FedEx Ship Order");
 
@@ -93,7 +94,7 @@ sub process_request
 		}
 	else
 		{
-		$AccountNumber = $shipmentData->{'webaccount'};
+		$AccountNumber = $CustomerService->{'webaccount'};
 		$BillingType = 1;
 		}
 
@@ -141,7 +142,7 @@ sub process_request
 		25		=>	$shipmentData->{'refnumber'},			#Reference Number
 		117		=>	$shipmentData->{'branchaddresscountry'},#Sender Country Code
 		183		=>	$shipmentData->{'oacontactphone'},		#Sender Phone Number
-		498		=>	$shipmentData->{'meternumber'},			#Required - Meter #
+		498		=>	$CustomerService->{'meternumber'},		#Required - Meter #
 		1119	=>	"Y",
 		24		=>	$ShipDate,								# Ship date
 		1273	=>	$PackageType,							#FedEx Packaging Type
