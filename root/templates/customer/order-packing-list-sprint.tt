@@ -52,7 +52,8 @@
 			text-align: center;
 		}
 		#packing-list table{
-			position: absolute;
+			position: relative;
+			margin:auto;
 			padding: 0;
 			border-spacing:collapse;
 		}
