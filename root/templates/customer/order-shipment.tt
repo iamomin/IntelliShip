@@ -25,7 +25,7 @@
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 
 	<table class="app">
-		<caption>SHIPMENT DETAIL:</caption>
+		<caption>SHIPMENT DETAIL</caption>
 		<tr>
 			<td><label for="datetoship" class="bold-text">Estimated Ship Date</label></td>
 			<td><label for="dateneeded">Due Date</label></td>

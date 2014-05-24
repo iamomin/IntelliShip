@@ -70,7 +70,8 @@ sub setup_supply_ordering :Private
 
 	$c->log->debug("... Total carriers found: " . @$carrier_loop);
 
-	my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $CustomerID, carrier => $first_carrier });
+	#my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $CustomerID, carrier => $first_carrier });
+	my @arr = $c->model('MyDBI::Productsku')->search({ carrier => $first_carrier });
 
 	$c->log->debug("... Total Productsku found: " . @arr);
 
@@ -218,7 +219,8 @@ sub get_carrier_productsku :Private
 	my $c = $self->context;
 
 	my $params = $c->req->params;
-	my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $self->customer->customerid, carrier => $params->{'carrier'} });
+	#my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $self->customer->customerid, carrier => $params->{'carrier'} });
+	my @arr = $c->model('MyDBI::Productsku')->search({ carrier => $params->{'carrier'} });
 
 	$c->log->debug("... Total Productsku found: " . @arr);
 
