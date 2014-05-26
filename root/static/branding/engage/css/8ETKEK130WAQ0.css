@@ -54,3 +54,21 @@ input.inactive {
 #menu a{
     color:#98A7AF; /* inactive header-nav link text - this may or may not be the same as the secondary accent color */
 }
+
+#frm_order h1 {
+    position:relative;
+}
+
+#frm_order h1 table {
+  position: absolute;
+  right: 10px;
+  top: 6px;
+}
+
+#frm_order h1 div {
+  clear: none;
+  float: right;
+  position: absolute;
+  right: 5px;
+  top: 9px;
+}
