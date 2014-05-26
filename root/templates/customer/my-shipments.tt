@@ -38,7 +38,7 @@
 					</tr>
 				</table>
 			</td>
-				[% IF DISPLAY_QUICKSHIP %]
+				[% IF 0 && DISPLAY_QUICKSHIP %]
 					<td style="width: 20%;">&nbsp;</td>
 					<td>
 						<button type="button" id="quick_ship" class="quick-ship"><label></label><span>QUICK SHIP</span></button>
@@ -48,49 +48,32 @@
 		</table>
 	</h2>
 
-	<table class="shipment-filter">
-		<tr>
-			<td style="width: 05%">Show Filters</td>
-			<td style="width: 02%">
-				&nbsp;<a id="instant-filter-columns" style="font-size:14px;" href="javascript:void(0);">+</a>&nbsp;
-			</td>
-			<td style="width: 75%">
-				<div id="filter-checkbox" style="display: none;">
-					<table class="css3-checkboxes">
-						<tr>
-							<td><label><input type="checkbox" name="filter_tracking" value="1" checked/><span></span>TRACKING</label></td>
-							<td><label><input type="checkbox" name="filter_ordernumber" value="1" checked/><span></span>ORDER</label></td>
-							<td><label><input type="checkbox" name="filter_customername" value="1" checked/><span></span>CUSTOMER</label></td>
-							<td><label><input type="checkbox" name="filter_origin" value="1" checked/><span></span>ORIGIN</label></td>
-							<td><label><input type="checkbox" name="filter_destination" value="1" checked/><span></span>DESTINATION</label></td>
-						</tr>
-						<tr>
-							<td><label><input type="checkbox" name="filter_shipdate" value="1" checked/><span></span>DATE</label></td>
-							<td><label><input type="checkbox" name="filter_duedate" value="1" checked/><span></span>DUE DATE</label></td>
-							<td><label><input type="checkbox" name="filter_carrier" value="1" checked/><span></span>CARRIER</label></td>
-							<td><label><input type="checkbox" name="filter_mode" value="1" checked/><span></span>MODE</label></td>
-							<td>&nbsp;</td>
-						</tr>
-					</table>
-				</div>
-			</td>
-			<td style="width: 05%"><label for="filter">Instant Filter</label>:&nbsp;</td>
-			<td style="width: 13%"><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
-		</tr>
-	</table>
-
-	<b><table><tr><td><span id="count">0</span></td><td>Shipments Selected</td></tr></table></b>
+	<input type="hidden" name="filter_tracking" value="1"/>    
+	<input type="hidden" name="filter_ordernumber" value="1"/> 
+	<input type="hidden" name="filter_customername" value="1"/>
+	<input type="hidden" name="filter_origin" value="1"/>
+	<input type="hidden" name="filter_destination" value="1"/> 
+	<input type="hidden" name="filter_shipdate" value="1"/>    
+	<input type="hidden" name="filter_duedate" value="1"/>     
+	<input type="hidden" name="filter_carrier" value="1"/>     
+	<input type="hidden" name="filter_mode" value="1"/>        
 
 	<table class="batch-option css3-radios">
 		<tr>
+			<th><label for="filter">Instant Filter</label>:&nbsp;</th>
+			<td><input type="text" style="width: 300px;" title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Filter Results....." id="filter" name="filter"/></td>
+			<td style="width: 20px; background-color: #FFF;">&nbsp;</td>
 			<th>BATCH OPTIONS:</th>
 			<td><label><input type="radio" id="track"   name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
 			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
 			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
 			<td><input type="button" id="btn_submit" value="SUBMIT"></td>
-			<td width="510px"> Batch tracking limited to 25 shipments</td>
 		</tr>
 	</table>
+
+	<div class="float-right"><strong>Batch tracking limited to 25 shipments</strong></div>
+
+	<b><table><tr><td><span id="count">0</span></td><td>Shipments Selected</td></tr></table></b>
 
 	</form>
 
