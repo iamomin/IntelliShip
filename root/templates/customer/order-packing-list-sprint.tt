@@ -14,11 +14,12 @@
 		#packing-list {
 			font-family: Arial, Helvetica, sans-serif;
 			font-size: 10pt;
+
+			-moz-transform: rotate(360deg);  /* FF3.5+ */
+			-o-transform: rotate(360deg);  /* Opera 10.5 */
+			-webkit-transform: rotate(360deg);  /* Saf3.1+, Chrome */
 		}
 		#packing-list table {
-			-moz-transform: rotate(-90.0deg);  /* FF3.5+ */
-			-o-transform: rotate(-90.0deg);  /* Opera 10.5 */
-			-webkit-transform: rotate(-90.0deg);  /* Saf3.1+, Chrome */
 			filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
 			-ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
 		}
