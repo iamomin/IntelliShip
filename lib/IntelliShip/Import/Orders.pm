@@ -16,6 +16,7 @@ use IntelliShip::DateUtils;
 
 extends 'IntelliShip::Errors';
 
+has 'import_type'  => ( is => 'rw' );
 has 'import_file'  => ( is => 'rw' );
 has 'customer'     => ( is => 'rw' );
 has 'contact'      => ( is => 'rw' );
@@ -41,26 +42,6 @@ sub myDBI
 	$self->myDBI_obj($self->context->model('MyDBI'));
 	return $self->myDBI_obj;
 	}
-
-=as
-sub parse_csv_row
-	{
-	my $self = shift;
-	my $row_data = shift;
-
-	my $CSV = Text::CSV->new();
-
-	unless ($CSV->parse($row_data))
-		{
-		print "\n$row_data\n";
-		print $CSV->error_input . "\n";
-		return;
-		}
-
-	return $CSV->fields();
-
-	}
-=cut
 
 sub import
 	{
@@ -95,16 +76,25 @@ sub import
 
 		$c->log->debug("... Start Import Process For " . $file);
 
-		my ($order_file, $product_file) = $self->format_file($import_file);
-
-		if (!$order_file and !$product_file)
+		my ($order_file, $product_file);
+		if ($self->import_type)
 			{
-			$self->add_error("File formatting error");
-			next;
+			$order_file = $self->import_file if $self->import_type eq 'order';
+			$product_file = $self->import_file if $self->import_type eq 'product';
+			}
+		else
+			{
+			($order_file, $product_file) = $self->format_file($import_file);
+
+			if (!$order_file and !$product_file)
+				{
+				$self->add_error("File formatting error");
+				next;
+				}
 			}
 
-		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file);
-		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file);
+		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
+		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
 
 		#my $import_base_file = fileparse($file);
 

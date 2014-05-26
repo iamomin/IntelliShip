@@ -149,6 +149,7 @@ sub upload :Local
 	$ImportHandler->contact($self->contact);
 	$ImportHandler->customer($self->customer);
 	$ImportHandler->import_file($TMP_file);
+	$ImportHandler->import_type($params->{'file_type'});
 	$ImportHandler->import;
 
 	my $msg;
