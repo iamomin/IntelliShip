@@ -35,9 +35,9 @@
 		<table class="center-app">
 			<tr><td colspan="2"><div class="validateTips"></div></td></tr>
 			<tr class="css3-radios">
-				<td><label for="orderfile" class="float-right">Order File :</label></td>
+				<td><label for="orderfile" class="float-right">[% contactObj.customerid == '8ETKEK130WAQ0' ? 'Order' : 'Order/Product' %] File :</label></td>
 				<td><input type="file" class="button" name="orderfile" id="orderfile" size="35"/></td>
-				[% IF contactObj.customerid != '8ETKEK130WAQ0' %]<!-- IF NOT SPRINT -->
+				[% IF contactObj.customerid != '8ETKEK130WAQ0' %]<!-- 8ETKEK130WAQ0 => SPRINT -->
 				<td>
 					File Type:&nbsp;
 					<label><input type="radio" name="file_type" id="order" value="order" CHECKED/><span><label for="order">Order</label></span>
@@ -55,7 +55,7 @@
 	</form>
 
 	[% IF directory_file_list %]
-	<h3>System Order Files</h3>
+	<h3>Uploaded Files History</h3>
 	<div id="myShipments">
 		<table>
 			<tr>

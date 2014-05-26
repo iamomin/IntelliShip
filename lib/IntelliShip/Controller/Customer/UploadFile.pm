@@ -33,8 +33,8 @@ sub index :Path :Args(0) {
 
 	## Display file upload type link
 	my $links = [
-				{ name => 'Order File Upload', url => '/customer/uploadfile/setup?type=ORDER'},
-				{ name => 'Product Sku Upload', url => '/customer/uploadfile/setup?type=PRODUCTSKU'},
+				{ name => ($self->customer->customerid eq '8ETKEK130WAQ0' ? 'Order' : 'Order/Product') . ' File Upload', url => '/customer/uploadfile/setup?type=ORDER'},
+				{ name => 'Sku Management File Upload', url => '/customer/uploadfile/setup?type=PRODUCTSKU'},
 			];
 
 	$c->stash->{UPLOADFILE_LINKS} = $links;
@@ -47,10 +47,13 @@ sub setup :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	my $title = ($self->customer->customerid eq '8ETKEK130WAQ0' ? 'Order' : 'Order/Product') if $params->{type} =~ /order/i;
+	$title = ucfirst(lc($params->{type})) unless $title;
+
 	$c->stash($params);
 	$c->stash->{SETUP_UPLOAD_FILE} = 1;
 	$self->display_uploaded_order_files;
-	$c->stash->{TITLE} = 'Upload ' . ucfirst(lc($params->{type})) . ' File';
+	$c->stash->{TITLE} = 'Upload ' . $title . ' File';
 	$c->stash(template => "templates/customer/upload-file.tt");
 	}
 
