@@ -5,10 +5,10 @@
 
 	<h1>
 		[% quickship ? 'Quick Ship Order' : 'New Order' %]
-		<table class="float-right css3-radios">
+		<table class="float-right">
 			<tr>
 				[% IF CONSOLIDATE_COMBINE %]
-				<td><input type="button" class="green" id="consolidate" value="Consolidate" style="padding: 0px 0px 0px 0px;"/></td>
+				<td class="css3-checkbox"><input type="button" class="green" id="consolidate" value="Consolidate" style="padding: 0px 0px 0px 0px;"/></td>
 				[% END %]
 				<td><label for="ordernumber" class="small_title">Order Number:</label></td>
 				[% IF ordernumber %]
@@ -17,7 +17,7 @@
 				<td><input type="text" id="ordernumber" name="ordernumber" value="[% ordernumber %]" class="broad-text"/></td>
 				[% END %]
 				[% FOREACH item IN shipmenttype_loop %]
-				<td>
+				<td class="css3-radios">
 					<label>
 						<input type="radio" name="shipmenttype" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/>
 						<span><label for="[% item.value %]">[% item.name %]</label></span>
@@ -43,13 +43,21 @@
 	[% ADDRESS_SECTION %]
 
 	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
-	<div class="float-right css3-checkboxes">
+	<div class="float-right">
+		<table>
+		<tr>
 		[% IF print_return_shipment == 1 %]
+		<td class="css3-checkboxes">
 		<label><input type="checkbox" id="printreturnshipment" name="printreturnshipment" value="1"/><span><label for="printreturnshipment">Print Return Shipment</label></span></label>
+		</td>
 		[% END %]
 		[% IF default_packing_list == 1 %]
+		<td class="css3-checkboxes">
 		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1"/><span><label for="printpackinglist">Print Packing List</label></span></label>
+		</td>
 		[% END %]
+		</tr>
+		</table>
 	</div>
 	[% IF print_return_shipment > 1 %]<input type="hidden" name="printreturnshipment" value="1"/>[% END %]
 	[% IF default_packing_list > 1 %]<input type="hidden" name="printpackinglist" value="1"/>[% END %]
