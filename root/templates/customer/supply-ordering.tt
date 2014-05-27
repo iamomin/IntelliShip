@@ -102,7 +102,7 @@
 					<td><label for="carrier" class="float-right">Carrier:</label></td>
 					<td>
 						<select name="carrier" id="carrier">
-						[% FOREACH item IN carrier_loop %]<option value="[% item.value %]">[% item.name %]</option>
+						[% FOREACH item IN carrier_loop %]<option value="[% item.value %]" [% item.selected ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 						</select>
 					</td>

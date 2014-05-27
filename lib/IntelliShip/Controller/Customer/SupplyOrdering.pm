@@ -64,25 +64,35 @@ sub setup_supply_ordering :Private
 		next unless $data->{carrier};
 		$data->{carrier} =~ s/^\s+//;
 		$data->{carrier} =~ s/\s+$//;
-		$first_carrier = $data->{carrier} unless $first_carrier;
+		unless ($first_carrier)
+			{
+			$first_carrier = $data->{carrier};
+			$data->{selected} = 1;
+			}
 		push(@$carrier_loop, { name => $data->{carrier}, value => $data->{carrier} });
 		}
 
 	$c->log->debug("... Total carriers found: " . @$carrier_loop);
 
-	#my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $CustomerID, carrier => $first_carrier });
-	my @arr = $c->model('MyDBI::Productsku')->search({ carrier => $first_carrier });
+	$SQL = "SELECT carrier, customerskuid FROM productsku WHERE carrier = '$first_carrier'";
+	$c->log->debug("... SQL 1: " . $SQL);
+	$sth = $self->myDBI->select($SQL);
 
-	$c->log->debug("... Total Productsku found: " . @arr);
+	$c->log->debug("... Total Productsku found: " . $sth->numrows);
 
 	my $productsku_loop = [];
-	foreach my $Productsku (@arr)
+	foreach (my $row=0; $row < $sth->numrows; $row++)
 		{
-		my $data = $Productsku->{_column_data};
-		my $img = '/static/branding/engage/images/sku/' . lc($data->{carrier}) . '/' . $Productsku->customerskuid . '.jpg';
-		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($data->{carrier}) . '/' . $Productsku->customerskuid . '.jpg')
+		my $data = $sth->fetchrow($row);
+		$data->{carrier} =~ s/^\s+//;
+		$data->{carrier} =~ s/\s+$//;
+		my $virtual_path = '/static/branding/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.jpg';
+		my $physical_path = IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.jpg';
+		$c->log->debug("... ProductSku Path: " . $physical_path);
+
+		if (-e $physical_path)
 			{
-			$data->{SRC} = $img;
+			$data->{SRC} = $virtual_path;
 			}
 
 		push(@$productsku_loop, $data);
