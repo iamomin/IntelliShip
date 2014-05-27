@@ -79,8 +79,8 @@ sub setup_supply_ordering :Private
 	foreach my $Productsku (@arr)
 		{
 		my $data = $Productsku->{_column_data};
-		my $img = '/static/branding/engage/images/sku/fedex/' . $Productsku->customerskuid . '.jpg';
-		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/fedex/' . $Productsku->customerskuid . '.jpg')
+		my $img = '/static/branding/engage/images/sku/' . lc($data->{carrier}) . '/' . $Productsku->customerskuid . '.jpg';
+		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($data->{carrier}) . '/' . $Productsku->customerskuid . '.jpg')
 			{
 			$data->{SRC} = $img;
 			}
@@ -116,6 +116,8 @@ sub send_email :Private
 
 	my $Contact = $self->contact;
 
+	my $carrier = uc($params->{'carrier'});
+
 	my $deliverEmail = $params->{'toemail'};
 	$deliverEmail =~ s/\s+|\t+//g;
 
@@ -127,8 +129,8 @@ sub send_email :Private
 	$CompanyEmail->add_line('<PRE>');
 
 	## Header
-	$UserEmail->add_line(qq~Your order for supplies has been send to FEDEX on $params->{'datetoship'}.\nThank You\n\n~);
-	$CompanyEmail->add_line(qq~Below is an order for FEDEX supplies, requested on $params->{'datetoship'}.\nThank You\n\n~);
+	$UserEmail->add_line(qq~Your order for supplies has been send to $carrier on $params->{'datetoship'}.\nThank You\n\n~);
+	$CompanyEmail->add_line(qq~Below is an order for $carrier supplies, requested on $params->{'datetoship'}.\nThank You\n\n~);
 
 	$UserEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
 	$CompanyEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
@@ -151,8 +153,6 @@ sub send_email :Private
 		$UserEmail->add_line($productskudetails);
 		$CompanyEmail->add_line($productskudetails);
 		}
-
-	my $carrier = uc($params->{'carrier'});
 
 	## Footer
 	$UserEmail->add_line(qq~\n\n\n***************************************\n** This email is not authorized for redistribution **\n***************************************~);
@@ -228,8 +228,8 @@ sub get_carrier_productsku :Private
 	foreach my $Productsku (@arr)
 		{
 		my $data = $Productsku->{_column_data};
-		my $img = '/static/branding/engage/images/sku/fedex/' . $Productsku->customerskuid . '.jpg';
-		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/fedex/' . $Productsku->customerskuid . '.jpg')
+		my $img = '/static/branding/engage/images/sku/' . $params->{carrier} . '/' . $Productsku->customerskuid . '.jpg';
+		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . $params->{carrier} . '/' . $Productsku->customerskuid . '.jpg')
 			{
 			$data->{SRC} = $img;
 			}
