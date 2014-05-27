@@ -219,7 +219,6 @@ sub get_carrier_productsku :Private
 	my $c = $self->context;
 
 	my $params = $c->req->params;
-	#my @arr = $c->model('MyDBI::Productsku')->search({ customerid => $self->customer->customerid, carrier => $params->{'carrier'} });
 	my @arr = $c->model('MyDBI::Productsku')->search({ carrier => $params->{'carrier'} });
 
 	$c->log->debug("... Total Productsku found: " . @arr);
@@ -228,8 +227,8 @@ sub get_carrier_productsku :Private
 	foreach my $Productsku (@arr)
 		{
 		my $data = $Productsku->{_column_data};
-		my $img = '/static/branding/engage/images/sku/' . $params->{carrier} . '/' . $Productsku->customerskuid . '.jpg';
-		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . $params->{carrier} . '/' . $Productsku->customerskuid . '.jpg')
+		my $img = '/static/branding/engage/images/sku/' . lc($params->{carrier}) . '/' . $Productsku->customerskuid . '.jpg';
+		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($params->{carrier}) . '/' . $Productsku->customerskuid . '.jpg')
 			{
 			$data->{SRC} = $img;
 			}
