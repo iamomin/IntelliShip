@@ -53,7 +53,7 @@ sub setup_supply_ordering :Private
 	my $params = $c->req->params;
 
 	my $CustomerID = $self->customer->customerid;
-	my $SQL = "SELECT DISTINCT carrier FROM productsku";
+	my $SQL = "SELECT DISTINCT carrier FROM productsku WHERE carrier <> ''";
 	my $sth = $self->myDBI->select($SQL);
 
 	my $first_carrier;
