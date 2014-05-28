@@ -1398,15 +1398,17 @@ sub GetSuperCost
 			# Must have a class to rate the tariff based carriers
 			my $Class = 0;
 			my $Mode = $self->GetCSValue('servicetypeid');
-warn "RATETYPEID=$RateTypeID";
+
+			warn "RATETYPEID=$RateTypeID";
+
 			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' || $RateTypeID eq 'USPSRATINGAPI' || $RateTypeID eq 'UPS2RATINGAPI')
 			{
 				# small package/parcel doesn't need a class
-warn "Override Class requirement for Parcel" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+				warn "Override Class requirement for Parcel" if 1 || $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
 			}
 			elsif ( $ShipmentRef->{'class'} )
 			{
-warn "Has Class class=$ShipmentRef->{'class'}" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+				warn "Has Class class=$ShipmentRef->{'class'}" if 1 || $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
 
 				unless ( $Class = $self->GetClassValue('fak',$ShipmentRef->{'class'},$ShipmentRef->{'class'}) )
 				{
@@ -1415,7 +1417,7 @@ warn "Has Class class=$ShipmentRef->{'class'}" if $self->GetValueHashRef()->{'cu
 			}
 			else
 			{
-warn "NO Class return" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+				warn "NO Class return" if 1 || $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
 				return(undef,undef,$CostWeight);
 			}
 
@@ -1441,6 +1443,7 @@ warn "NO Class return" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SP
 				#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
 					return(undef,undef,$CostWeight);
 				}
+			$ShipmentRef->{'zonenumber'} = $Zone;
 			}
 			#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
 
@@ -1448,7 +1451,7 @@ warn "NO Class return" if $self->GetValueHashRef()->{'customerserviceid'} eq 'SP
 			my $RateHandler = eval 'new Tariff::' . $RateHandlerName . '($ShipmentRef->{"dbref_' . lc($RateHandlerName) . '"},$RateTypeID)';
 			#WarnHashRefValues($ShipmentRef);
 
-			#warn "\n RateHandlerName: " . $RateHandlerName;
+			warn "\n RateHandlerName: " . $RateHandlerName;
 
 			my ($MarkupAmt,$MarkupPercent) = $self->GetCustomerMarkup($ShipmentRef);
 			my $DiscountPercent = $self->GetDiscountPercent($ShipmentRef);
@@ -1597,6 +1600,29 @@ sub GetClassValue
 	return $ClassValue;
 	}
 
+sub GetZoneDiscount
+	{
+	my $self = shift;
+	my ($ZoneNumber) = @_;
+
+	return unless $ZoneNumber;
+
+	my $serviceid = $self->GetValueHashRef()->{'serviceid'};
+
+	# Take cs, if available, then take service
+	my $SQL = "SELECT ardiscount from ratedata where ownertypeid=4 and ownerid='$serviceid' and armin='$ZoneNumber' and ardiscount is not null";
+	warn "GetZoneDiscount: " . $SQL;
+	my $STH = $self->{'object_dbref'}->prepare($SQL) or die "Could not prepare SQL statement";
+
+	$STH->execute() or die "Cannot execute sql statement";
+
+	my ($Percent) = $STH->fetchrow_array();
+
+	$STH->finish();
+	warn "\nDISCOUNT: $Percent";
+	return $Percent;
+	}
+
 sub GetCustomerDiscount
 	{
 	my $self = shift;
@@ -1702,6 +1728,10 @@ sub GetDiscountPercent
 		elsif ( $DiscountPercent = $self->GetClassValue('discountpercent',$ShipmentRef->{'class'},$ShipmentRef->{'class'}) )
 		{
 			# Class based discount percent
+		}
+		elsif ( $DiscountPercent = $self->GetZoneDiscount($ShipmentRef->{'zonenumber'}) )
+		{
+			# Zone based discount percent
 		}
 		elsif ( $DiscountPercent = $self->GetCustomerDiscount($ShipmentRef->{'customerid'}) )
 		{
