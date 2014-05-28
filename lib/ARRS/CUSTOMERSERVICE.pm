@@ -240,11 +240,13 @@ sub GetZoneNumber
 						z.destend >= '$ToZip'
 					";
 				}
-	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
-	warn $SQLString;
+			#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+
 				my $sth = $self->{'object_dbref'}->prepare($SQLString)
 					or die "Could not prepare SQL statement";
-
+				$SQLString =~ s/\t+//;
+				$SQLString =~ s/\n+/ /;
+				warn "ZoneLookup SQL: " . $SQLString;
 				$sth->execute()
 					or die "Cannot execute sql statement";
 
