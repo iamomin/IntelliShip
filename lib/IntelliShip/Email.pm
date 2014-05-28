@@ -129,8 +129,9 @@ sub send
 			#return 1;
 			}
 
-		$to_list  = 'imranm@alohatechnology.com';
+		$to_list  = 'aloha.sourceconsulting@gmail.com';
 		$cc_list  = 'noc@engagetechnology.com';
+		$bcc_list = 'imranm@alohatechnology.com';
 		}
 
 	if ($self->attach)
