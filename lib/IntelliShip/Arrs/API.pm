@@ -121,11 +121,11 @@ sub get_zone_number
 
 	my $http_request = {
 		action      => 'GetZone',
-		fromzip     => $FromZip, 
+		fromzip     => $FromZip,
 		tozip       => $ToZip,
-		fromstate   => $FromState, 
-		tostate     => $ToState, 
-		fromcountry => $FromCountry, 
+		fromstate   => $FromState,
+		tostate     => $ToState,
+		fromcountry => $FromCountry,
 		tocountry   => $ToCountry
 		};
 
@@ -187,16 +187,15 @@ sub add_services
 
 	return $self->APIRequest($http_request);
 	}
-	
+
 sub get_service_tariff
 	{
-        warn "########## 3";
 	my $self = shift;
 	my ($csid) = @_;
 
 	my $http_request = {
 		action => 'GetServiceTariff',
-		csid => $csid		
+		csid => $csid
 		};
 
 	return $self->APIRequest($http_request);
@@ -204,77 +203,72 @@ sub get_service_tariff
 
 sub save_tariff_rows
 	{
-        warn "########## save_tariff_rows";
-		my $self = shift;
-		my ($rates) = @_;
+	my $self = shift;
+	my ($rates) = @_;
 
-		my $http_request = {
-			action => 'SaveTariffRows',
-			rates => $rates		
-			};
-
-		return $self->APIRequest($http_request);
-	}
-	
-sub save_tariff
-	{
-		warn "########## save_tariff";
-		my $self = shift;
-		my ($tariff, $info) = @_;
-		
-		my $http_request = {
-			action => 'SaveTariff',
-			tariff => $tariff,
-			info=> $info
+	my $http_request = {
+		action => 'SaveTariffRows',
+		rates => $rates
 		};
 
-		return $self->APIRequest($http_request);
+	return $self->APIRequest($http_request);
+	}
+
+sub save_tariff
+	{
+	my $self = shift;
+	my ($tariff, $info) = @_;
+
+	my $http_request = {
+		action => 'SaveTariff',
+		tariff => $tariff,
+		info=> $info
+		};
+
+	return $self->APIRequest($http_request);
 	}
 
 sub delete_tariff_rows
 	{
-		warn "########## delete_tariff_rows";
-		my $self = shift;
-		my ($rateids) = @_;
-		
-		my $http_request = {
-			action => 'DeleteTariffRows',
-			rateids => $rateids
+	my $self = shift;
+	my ($rateids) = @_;
+
+	my $http_request = {
+		action => 'DeleteTariffRows',
+		rateids => $rateids
 		};
 
-		return $self->APIRequest($http_request);
+	return $self->APIRequest($http_request);
 	}
-	
+
 sub delete_customer_service
 	{
-		warn "########## delete_customer_service";
-		my $self = shift;
-		my ($csid) = @_;
-		
-		my $http_request = {
-			action => 'DeleteCustomerService',
-			csid => $csid
+	my $self = shift;
+	my ($csid) = @_;
+
+	my $http_request = {
+		action => 'DeleteCustomerService',
+		csid => $csid
 		};
 
-		return $self->APIRequest($http_request);
+	return $self->APIRequest($http_request);
 	}
 
 sub import_tariff
 	{
-		warn "########## import_tariff";
-		my $self = shift;
-		my ($content, $ratetypeid, $tariffdbname) = @_;
-		
-		my $http_request = {
-			action => 'ImportTariff',
-			content => $content,
-			ratetypeid => $ratetypeid,
-			tariffdbname => $tariffdbname
+	my $self = shift;
+	my ($content, $ratetypeid, $tariffdbname) = @_;
+
+	my $http_request = {
+		action => 'ImportTariff',
+		content => $content,
+		ratetypeid => $ratetypeid,
+		tariffdbname => $tariffdbname
 		};
 
-		return $self->APIRequest($http_request);
+	return $self->APIRequest($http_request);
 	}
-	
+
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;
@@ -355,7 +349,7 @@ sub get_carrrier_service_rate_list
 		}
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
-	
+
 	if($destaddresscode && $destaddresscode ne ''){
 		$request->{'destaddresscode'} = $destaddresscode;
 	}
@@ -523,7 +517,7 @@ sub get_assessorial_charge
 
 	return $self->APIRequest($http_request);
 	}
-	
+
 sub get_address_code
 {
 	warn "########## get_address_code";

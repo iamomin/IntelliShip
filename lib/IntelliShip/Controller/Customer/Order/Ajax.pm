@@ -255,9 +255,9 @@ sub get_carrier_service_list
 
 	my $ToAddress = $CO->destination_address;
 	my $addresscode = $ToAddress->addresscode;
-														
+
 	warn "########## \$addresscode: ".$addresscode;
-	
+
 	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
@@ -893,7 +893,7 @@ sub cancel_shipment
 	my $self = shift;
 	return { voided => $self->VOID_SHIPMENT($self->context->req->params->{'shipmentid'}) };
 	}
-	
+
 sub get_consolidate_orders_list
 	{
 	my $self = shift;
@@ -923,7 +923,7 @@ sub get_consolidate_orders_list
 				)
 			)
 		";
-		
+
 	# Select on Ship from address
 	$OrderSQL .= " AND oa.addressname = " . "'$params->{'fromname'}'" if $params->{'fromname'} ne '';
 	$OrderSQL .= " AND oa.address1 = " . "'$params->{'fromaddress1'}'" if $params->{'fromaddress1'} ne '';
@@ -980,7 +980,7 @@ sub consolidate_orders
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	
+
 	my $CO     = $self->get_order;
 	$c->log->debug("Order Id: " . $CO->coid);
 	$c->stash->{ROW_COUNT} = 0;

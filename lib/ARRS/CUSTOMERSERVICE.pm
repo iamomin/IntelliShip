@@ -69,7 +69,7 @@ sub GetZoneNumber
 			my $lookuptype = $ZoneType->GetValueHashRef()->{'lookuptype'};
 
 			warn "########## \$lookuptype: ". $lookuptype;
-			
+
 			# Make sure we have all the right data for the zone lookup - if not, return undef
 			# Zip Lookup
 			if
@@ -217,7 +217,7 @@ sub GetZoneNumber
 				}
 				#Zip to AddressCode. VERY SPECIFIC.
 				elsif ( defined($lookuptype) && $lookuptype eq '8' )
-				{					
+				{
 					$SQLString = "
 							SELECT
 								zonenumber
@@ -227,7 +227,7 @@ sub GetZoneNumber
 								typeid = '$zonetypeid' AND
 								originbegin <= '$FromZip' AND
 								originend >= '$FromZip' AND
-								destaddresscode = '$DestAddressCode' 
+								destaddresscode = '$DestAddressCode'
 					";
 				}
 				# Postalcode based zones
@@ -1343,7 +1343,7 @@ sub GetSuperCost
 				$ShipmentRef->{'fromstate'},
 				$ShipmentRef->{'tostate'},
 				$ShipmentRef->{'fromcountry'},
-				$ShipmentRef->{'tocountry'},				
+				$ShipmentRef->{'tocountry'},
 				undef,
 				$ShipmentRef->{'band'},
 				$ShipmentRef->{'zonenumber'},
