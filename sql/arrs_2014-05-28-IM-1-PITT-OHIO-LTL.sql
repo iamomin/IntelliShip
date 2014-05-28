@@ -12,7 +12,7 @@ ratetypeid : CZ00020140430 (CZarlite LTL Rates)
 
 */
 
-INSERT INTO zonetype (typeid,serviceid,zonetypename,logiczonetable,lookuptype) VALUES ('PITTOHIOZONE1',NULL,'Pitt-Ohio Trucking Zone',NULL,2);
+INSERT INTO zonetype (typeid,serviceid,zonetypename,logiczonetable,lookuptype) VALUES ('PITTOHIOZONE1','PITTOHIOEXPRL','Pitt-Ohio Trucking Zone',NULL,2);
 
 INSERT INTO customerservice (customerserviceid,serviceid,customerid,ratetypeid,zonetypeid) VALUES ('AMFPITTOHIO01','PITTOHIOEXPRL','8ETK66F0Z35K5','CZ00020140430','PITTOHIOZONE1');
 INSERT INTO customerservice (customerserviceid,serviceid,customerid,ratetypeid,zonetypeid) VALUES ('AMFPITTOHIO02','PITTOHIOEXPRL','8ETK66F1SSJLY','CZ00020140430','PITTOHIOZONE1');

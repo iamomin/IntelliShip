@@ -546,7 +546,7 @@ sub GetShipmentCosts
 		my ($ShipmentRef) = @_;
 		#WarnHashRefValues($ShipmentRef);
 		# Check if this CS/Service is inactive...if it is, return *immediately*
-		if $self->GetCSValue('inactive')
+		if ($self->GetCSValue('inactive'))
 			{
 			warn "\n... Service or CustomerService is inactive";
 			return(undef,undef,undef);
