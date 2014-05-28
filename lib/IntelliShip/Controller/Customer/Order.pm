@@ -2232,10 +2232,12 @@ sub SendShipNotification :Private
 	#	$Email->add_to($Shipment->deliverynotification);
 	#	}
 
-	$Email->add_line('<br>');
-	$Email->add_line('<p>Shipment notification</p>');
-	$Email->add_line('<br>');
-
+	#$Email->add_line('<br>');
+	#$Email->add_line('<p>Shipment notification</p>');
+	#$Email->add_line('<br>');
+	
+	$self->set_header_section;
+	
 	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
 	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
 
