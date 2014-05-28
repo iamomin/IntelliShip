@@ -164,7 +164,8 @@
 				next;
 			}
 
-			warn "ONLINE: $CSName " if $Debug;
+			warn "-" x 50;
+			warn "\nONLINE, CustomerService Name: $CSName ";
 			#warn "ONLINE: $CSName " if $CSID eq 'TOTALTRANSPO1';
 
 			my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
@@ -230,7 +231,7 @@
 				$DefaultCSID = $CSID;
 			}
 
-warn "STILL HERE0" if $Debug;
+			warn "STILL HERE - GetShipmentCosts" if $Debug;
 			my ($Cost,$ZoneNumber,$PackageCosts,$CostWeight,$TransitDays);
 			if
 			(
@@ -243,7 +244,7 @@ warn "STILL HERE0" if $Debug;
 			{
 				my $S3 = &Benchmark() if $Benchmark;
 				($Cost,$ZoneNumber,$PackageCosts,$CostWeight,$TransitDays) = $CS->GetShipmentCosts($CgiRef);
-warn "STILL HERE Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
+				warn "Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 
 				$CostTotal += &Benchmark($S3,"Calculate Cost - $CSID, $CSName") if $Benchmark;
 
