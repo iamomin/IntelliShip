@@ -1607,10 +1607,10 @@ sub GetZoneDiscount
 
 	return unless $ZoneNumber;
 
-	my $serviceid = $self->GetValueHashRef()->{'serviceid'};
+	my $customerserviceid = $self->GetValueHashRef()->{'customerserviceid'};
 
 	# Take cs, if available, then take service
-	my $SQL = "SELECT ardiscount from ratedata where ownertypeid=4 and ownerid='$serviceid' and armin='$ZoneNumber' and ardiscount is not null";
+	my $SQL = "SELECT ardiscount from ratedata where ownertypeid=4 and ownerid='$customerserviceid' and zone='$ZoneNumber' and ardiscount is not null";
 	warn "GetZoneDiscount: " . $SQL;
 	my $STH = $self->{'object_dbref'}->prepare($SQL) or die "Could not prepare SQL statement";
 
