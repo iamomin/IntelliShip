@@ -46,12 +46,6 @@
     box-shadow: 0 0 2px #ccc;
 }
 
-:root .css3-radios label:hover span,
-:root .css3-checkboxes label:hover span
-{
-    color: #000;
-}
-
 :root .css3-radios input[type="radio"] + span::before,
 :root .css3-checkboxes input[type="checkbox"] + span::before
 {

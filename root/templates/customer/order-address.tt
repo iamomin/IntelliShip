@@ -194,7 +194,7 @@
 					<td><label for="description" class="float-right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
 				<tr>
-					<td><label for="deliverymethod" class="float-right">Delivery Method:</label></td>
+					<td><label for="deliverymethod" class="float-right">Billing Type:</label></td>
 					<td class="css3-radios">
 						<div id="third-party-details"></div>
 						<ul>
