@@ -86,8 +86,8 @@ sub setup_supply_ordering :Private
 		my $data = $sth->fetchrow($row);
 		$data->{carrier} =~ s/^\s+//;
 		$data->{carrier} =~ s/\s+$//;
-		my $virtual_path = '/static/branding/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.jpg';
-		my $physical_path = IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.jpg';
+		my $virtual_path = '/static/branding/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.GIF';
+		my $physical_path = IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.GIF';
 		$c->log->debug("... ProductSku Path: " . $physical_path);
 
 		if (-e $physical_path)
