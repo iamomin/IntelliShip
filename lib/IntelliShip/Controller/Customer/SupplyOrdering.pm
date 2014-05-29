@@ -237,8 +237,8 @@ sub get_carrier_productsku :Private
 	foreach my $Productsku (@arr)
 		{
 		my $data = $Productsku->{_column_data};
-		my $img = '/static/branding/engage/images/sku/' . lc($params->{carrier}) . '/' . $Productsku->customerskuid . '.jpg';
-		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($params->{carrier}) . '/' . $Productsku->customerskuid . '.jpg')
+		my $img = '/static/branding/engage/images/sku/' . lc($params->{carrier}) . '/' . $Productsku->customerskuid . '.gif';
+		if (-e IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($params->{carrier}) . '/' . $Productsku->customerskuid . '.gif')
 			{
 			$data->{SRC} = $img;
 			}
