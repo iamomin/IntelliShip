@@ -101,6 +101,7 @@ sub setup_supply_ordering :Private
 	$c->stash(carrier_loop => $carrier_loop);
 	$c->stash(productsku_loop => $productsku_loop);
 	$c->stash(toAddress => $self->customer->address);
+	$c->stash(toemail => $self->contact->email);
 	$c->stash(ordernumber => $self->get_auto_order_number);
 	$c->stash(datetoship => IntelliShip::DateUtils->current_date('/'));
 	$c->stash(countrylist_loop => $self->get_select_list('COUNTRY'));
