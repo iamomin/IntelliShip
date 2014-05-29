@@ -147,6 +147,10 @@
 
 		});
 
+		$("#color-picker-tab").click(function() {
+			updateBranding();
+		});
+		
 		function updateBranding() {
 			var iframe = document.getElementById('branding-demo-iframe');
 			iframe.src = iframe.src;
