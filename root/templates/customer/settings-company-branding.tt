@@ -11,9 +11,8 @@
 <div id="branding" class="ui-helper-clearfix">
 	<ul>
 		<li><a href="#branding-logo">Branding Logo's</a></li>
-		<li><a href="#color-picker">Set Colors</a></li>
+		<li><a href="#color-picker" id="color-picker-tab">Set Colors</a></li>
 		<li><a href="#branding-css-content">Edit Branding CSS</a></li>
-		<li><a href="#branding-demo" id="branding-demo-link">Preview</a></li>
 	</ul>
 
 	<div id="branding-logo">
@@ -57,8 +56,8 @@
 			[% FOREACH item IN stylesetting_loop %]
 			<tr>
 				<td><label for="[% item.bgcolor %]" class="float-left">[% item.name %]: </label></td>
-				<td><input type="text" class="color-picker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"></input></td>
-				<td><input type="text" class="color-picker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"></input></td>
+				<td><input type="text" class="color-picker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"  onChange="updateBranding();"></input></td>
+				<td><input type="text" class="color-picker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"  onChange="updateBranding();"></input></td>
 				<td>
 				[% IF item.size %]
 				<label>
@@ -73,6 +72,10 @@
 			</tr>
 			[% END %]
 		</table>
+
+		<br/>
+		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="https://dintelliship2.engagetechnology.com/customer/order/quickship">Please wait...</iframe>
+		
 	</div>
 	<div id="branding-css-content">
 		<table class="center-app">
@@ -83,9 +86,6 @@
 				<td><textarea rows="25" id="custom-style-sheet" name="custom-style-sheet" cols="85" style="resize: none">[% BRANDING_CSS %]</textarea></td>
 			</tr>
 		</table>
-	</div>
-	<div id="branding-demo">
-		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="">Please wait...</iframe>
 	</div>
 </div>
 <br/>
@@ -147,12 +147,12 @@
 
 		});
 
-	$("#branding-demo-link").click(function() {
-		var iframe = document.getElementById('branding-demo-iframe');
-		iframe.src = iframe.src;
-		updateCompanyBranding();
-		});
-
+		function updateBranding() {
+			var iframe = document.getElementById('branding-demo-iframe');
+			iframe.src = iframe.src;
+			updateCompanyBranding();
+			}
+	
 	/**** DISABLE IFRAME CONTENTS ****/
 	$("#branding-demo-iframe").load(function() {
 		var iFrame = $(this);
