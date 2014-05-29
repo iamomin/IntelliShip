@@ -34,7 +34,7 @@
 			<td><label for="dryicewt">Dry Ice Weight</label></td>
 			[% END %]
 			<td><label for="description">Comments</label></td>
-			<td><label for="deliverymethod">Delivery Method:</label></td>
+			<td><label for="deliverymethod">Billing Type:</label></td>
 		</tr>
 		<tr>
 			<td><input type="text" name="datetoship" id="datetoship" value="[% datetoship %]" readonly class="reset-cs-onchange"/></td>
