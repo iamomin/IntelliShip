@@ -2207,6 +2207,9 @@ sub GetNotificationShipments :Private
 			s.shipmentid,
 			to_char(s.dateshipped,'MM/DD/YYYY') as dateshipped,
 			to_char(s.datecreated,'MM/DD/YYYY') as datecreated,
+			to_char(co.dateneeded,'MM/DD/YYYY') as dateneeded,
+			a.addressname,
+			a.city,
 			s.tracking1,
 			s.carrier,
 			s.service,
@@ -2252,14 +2255,13 @@ sub SendShipNotification :Private
 
 	my $c = $self->context;
 	my $Customer = $self->customer;
-
+	my $Contact=$self->contact;
 	my $Email = IntelliShip::Email->new;
 
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 	$Email->from_name('IntelliShip2');
-	$Email->subject("NOTICE: Shipment Prepared (" .$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
-
+	
 	$Email->add_to($Shipment->shipmentnotification) if $Shipment->shipmentnotification;
 	$Email->add_to($Shipment->deliverynotification) if $Shipment->deliverynotification;
 
@@ -2274,14 +2276,21 @@ sub SendShipNotification :Private
 
 	$self->set_header_section;
 
-	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
-	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
-
+	$c->stash->{SHIPMENT_ID} = $Shipment->shipmentid;
+	$c->stash->{COID} = $Shipment->coid;
+	$c->stash->{packinglist} = $Contact->default_packing_list;
 	my $LabelImageFile = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	if (-e $LabelImageFile)
 		{
+		$c->stash->{LABEL_IMG} = 1
 		$Email->attach($LabelImageFile);
 		}
+	my $shipment_information_hash = $self->GetNotificationShipments($Shipment);
+	$c->stash->{notification_list} = $shipment_information_hash;
+	
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/shipment-notification.tt' ]));
+
+	$Email->subject("NOTICE: Shipment Prepared (".$shipment_information_hash->[0]{'addressname'}." of ".$shipment_information_hash->[0]{'city'}.",".$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
 
 	if ($Email->send)
 		{
@@ -2404,7 +2413,8 @@ sub SendShipmentVoidEmail
 	{
 	my $self = shift;
 	my $Shipment = shift;
-
+	my $c = $self->context;
+	
 	my $Contact        = $self->contact;
 	my $Customer       = $self->customer;
 	my $OrderNumber    = $Shipment->CO->ordernumber;
@@ -2413,7 +2423,7 @@ sub SendShipmentVoidEmail
 
 	my ($Carrier,$Service) = $self->API->get_carrier_service_name($Shipment->customerserviceid);
 
-	my $subject = "WARNING: " . $Customer->customername . ", $Carrier $Service $TrackingNumber (Voided By " . $Contact->full_name  . "/$ipaddress )";
+	my $subject = "WARNING: Shipment Voided (" . $Customer->customername . ", $Carrier $Service $TrackingNumber By " . $Contact->full_name  . "/$ipaddress )";
 	my $Email = IntelliShip::Email->new;
 
 	$Email->content_type('text/html');
@@ -2422,15 +2432,15 @@ sub SendShipmentVoidEmail
 	$Email->subject($subject);
 	$Email->add_to($Customer->losspreventemail);
 
-	$Email->add_line('');
-	$Email->add_line('=' x 60);
-	$Email->add_line('ShipmentID  : ' . $Shipment->shipmentid);
-	$Email->add_line('Carrier     : ' . $Carrier);
-	$Email->add_line('Service     : ' . $Service);
-	$Email->add_line('Tracking1   : ' . $TrackingNumber);
-	$Email->add_line('OrderNumber : ' . $OrderNumber);
-	$Email->add_line('=' x 60);
-	$Email->add_line('');
+	$self->set_header_section;
+	
+	$c->stash->{ShipmentID} = $Shipment->shipmentid;
+	$c->stash->{Carrier} = $Carrier;
+	$c->stash->{Service} = $Service;;
+	$c->stash->{Tracking1} = $TrackingNumber;
+	$c->stash->{OrderNumber} = $OrderNumber;
+	
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/void-notification.tt' ]));
 
 	if ($Email->send)
 		{
