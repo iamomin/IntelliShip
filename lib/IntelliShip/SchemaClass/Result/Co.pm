@@ -895,6 +895,16 @@ sub co_products
 	return $self->packprodata($WHERE, { order_by => 'datecreated' });
 	}
 
+sub product_count
+	{
+	my $self = shift;
+	my $count=0;
+	my @packages = $self->packages;
+	$count += $_->products->count foreach @packages;
+	$count += $self->co_products;
+	return $count;
+	}
+
 sub package_details
 	{
 	my $self = shift;

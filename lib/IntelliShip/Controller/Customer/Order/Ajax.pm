@@ -81,7 +81,7 @@ sub get_HTML :Private
 		{
 		$self->get_consolidate_orders_list;
 		}
-	elsif ($action eq 'consolidate')
+	elsif ($action eq 'consolidate_orders')
 		{
 		$self->consolidate_orders;
 		}
@@ -208,7 +208,7 @@ sub set_international_details
 	$c->stash->{partiestotransaction}  = $CO->partiestotransaction;
 
 	$c->stash->{commodityquantity}     = $CO->commodityquantity;
-	$c->stash->{commodityunits}        = $CO->commodityunits ? $CO->commodityunits : "PCS" ;
+	$c->stash->{commodityunits}        = $CO->commodityunits ? $CO->commodityunits : "PCS";
 	$c->stash->{commoditycustomsvalue} = $CO->commoditycustomsvalue ? $CO->commoditycustomsvalue :"0.00";
 	$c->stash->{commodityunitvalue}    = $CO->commodityunitvalue ? $CO->commodityunitvalue :"0.00";
 	$c->stash->{currencytype}          = $CO->currencytype ? $CO->currencytype : "USD";
@@ -903,6 +903,8 @@ sub get_consolidate_orders_list
 	my $CO = $self->get_order;
 	my $CustomerID = $self->customer->customerid;
 
+	$self->save_CO_details;
+
 	my $DestinationAddressID;
 	if ($params->{'toaddress1'})
 		{
@@ -983,7 +985,9 @@ sub get_consolidate_orders_list
 				service      => $CO->extservice,
 				datetoship   => IntelliShip::DateUtils->american_date($CO->datetoship),
 				dateneeded   => IntelliShip::DateUtils->american_date($CO->dateneeded),
-				toAddress    => $CO->to_address
+				toAddress    => $CO->to_address,
+				packagecount => $CO->packages->count,
+				productcount => $CO->product_count,
 				});
 			}
 		}
@@ -1013,41 +1017,86 @@ sub consolidate_orders
 
 	if (@$Coids > 1)
 		{
-		$c->stash->{CONSOLIDATED_ORDER} = 1 ;
+		$c->stash->{CONSOLIDATED_ORDER} = 1;
 		$c->stash->{coids} = join(',', @$Coids);
 		}
 
-	$c->log->debug(" Size of the Coids: " . @$Coids);
-	$c->log->debug("CONSOLIDATED_ORDER: " . $c->stash->{CONSOLIDATED_ORDER});
+	$c->log->debug("...Total Coids: " . @$Coids);
 
-	my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
-	my $package_detail_section_html = '';
-
-	foreach my $coid (@$Coids)
+	my @arr = $CO->packages;
+	my $Package;
+	if (@arr)
 		{
-		$c->log->debug("coid: " . $coid);
-		my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
-		my @packages = $CoObj->packages;
-		foreach (@packages)
-			{
-			$package_detail_section_html .= $self->add_package_detail_row($_) ;
+		$Package = $arr[0];
+		}
+	else
+		{
+		$Package = $c->model("MyDBI::Packprodata")->new({
+				packprodataid => $self->get_token_id,
+				ownerid       => $CO->coid,
+				ownertypeid   => 1000,
+				datatypeid    => 1000,
+				}) ;
 
-			$insurance += $_->decval;
-			$totalweight += $_->weight;
-			$freightinsurance += $_->frtins;
+		$Package->insert;
+		}
+
+	my @packages;
+	if ($params->{'combine'} == 1)
+		{
+		$c->log->debug("..... COMBINE");
+
+		foreach my $coid (@$Coids)
+			{
+			my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+			my @arrs = $CoObj->packages;
+			foreach (@arrs)
+				{
+				foreach my $Product ($_->products)
+					{
+					$Product->ownerid($Package->packprodataid);
+					$Product->update;
+					}
+				}
 			}
 
-		$c->log->debug("Total No of Packages in COID ($coid): " . @packages);
+		push(@packages, { PACKAGE => $Package });
 		}
+	else
+		{
+		foreach my $coid (@$Coids)
+			{
+			my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+			my @arrs = $CoObj->packages;
+			push(@packages, { CO => $CoObj, PACKAGE => $_ } ) foreach @arrs;
+			}
+		}
+
+	$c->log->debug("Total No of Packages: " . @packages);
+
+	my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
+	my $package_detail_section_HTML = '';
+
+	my $OriginalCO = $self->get_order;
+	foreach (@packages)
+		{
+		my ($cCO,$Package) = ($_->{CO},$_->{PACKAGE});
+
+		$c->stash->{SHIPPER_NUMBER} = $cCO->ordernumber if $Package->datatypeid == 1000;
+		$package_detail_section_HTML .= $self->add_package_detail_row($Package);
+
+		$insurance += $Package->decval;
+		$totalweight += $Package->weight;
+		$freightinsurance += $Package->frtins;
+		}
+
+	$c->stash->{CO} = $OriginalCO;
 
 	$c->stash->{insurance} = $insurance;
 	$c->stash->{totalweight} = $totalweight;
 	$c->stash->{freightinsurance} = $freightinsurance;
 
-	## Don't move this above foreach block
-	$c->stash->{description} = $CO->description;
-
-	$c->stash->{PACKAGE_DETAILS} = $package_detail_section_html;
+	$c->stash->{PACKAGE_DETAILS} = $package_detail_section_HTML;
 	}
 
 =encoding utf8

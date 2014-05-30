@@ -415,7 +415,7 @@ sub save_CO_details :Private
 	$coData->{'isinbound'}  = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'inbound') || 0;
 	$coData->{'isdropship'} = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'dropship') || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
-	$coData->{'ordernumber'} = ($params->{'ordernumber'} and !$params->{'consolidatedorder'})? $params->{'ordernumber'} : $CO->coid;
+	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
 	$coData->{'department'} = $coData->{'isinbound'} ? $params->{'todepartment'} : $params->{'fromdepartment'};
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
 	$coData->{'oacontactname'}  = $params->{'fromcontact'} if $params->{'fromcontact'};
@@ -1380,22 +1380,10 @@ sub add_package_detail_row :Private
 	$c->stash($Package->{_column_data});
 	$c->stash->{'coid'} = $Package->ownerid;
 
-	if (my $UnitType = $Package->unittype)
+	if ($Package->unittypeid)
 		{
+		my $UnitType = $Package->unittype;
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
-		}
-
-	if ($c->stash->{CONSOLIDATED_ORDER})
-		{
-		$c->stash->{SHIPPER_NUMBER} = '';
-		if ($params->{'action'} eq 'consolidate')
-			{
-			$c->stash->{SHIPPER_NUMBER} = $Package->ownerid;
-			}
-		elsif ($Package->originalcoid)
-			{
-			$c->stash->{SHIPPER_NUMBER} = $Package->originalcoid;
-			}
 		}
 
 	$c->stash->{ROW_COUNT}++;

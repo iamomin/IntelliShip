@@ -302,14 +302,13 @@
 			}
 		});
 
-
+	[% IF CONSOLIDATE_COMBINE %]
 	$("#consolidate").click(function() {
 
 		$('#dialog-message').dialog( {
 			autoOpen: false,
 			title: 'Consolidate Orders',
 			width: '1000px',
-			maxHeight: 600,
 			buttons: {
 				Ok: function() {
 					var count = +$('#select-count').text();
@@ -317,7 +316,12 @@
 						$("#dialog-message").dialog("close");
 						return;
 						}
-					send_ajax_request('order-packages', 'HTML', 'order', 'consolidate', $("#frm_consolidate").serialize(), function () {
+
+					alert(1);
+					$('#shipment-summary-list tr:not(:first)').remove();
+					alert(2);
+
+					send_ajax_request('order-packages', 'HTML', 'order', 'consolidate_orders', $("#frm_consolidate").serialize(), function () {
 						$("#dialog-message").dialog("close");
 						});
 					}
@@ -325,13 +329,15 @@
 			});
 
 		$("#consolidate").prop('disabled', true);
-
 		$("#consolidate").val('Please wait...');
-		send_ajax_request('dialog-message', 'HTML', 'order', 'get_consolidate_orders_list', $("#equal :input").serialize() + '&coid=' + $("#coid").val(), function () {
+
+		send_ajax_request('dialog-message', 'HTML', 'order', 'get_consolidate_orders_list', $("#frm_order").serialize(), function () {
 			$( "#dialog-message" ).dialog("open");
 			$("#consolidate").prop('disabled', false);
 			$("#consolidate").val('Consolidate');
+			updateShipmentSummary();
 			});
 		});
+	[% END %]
 
 </script>

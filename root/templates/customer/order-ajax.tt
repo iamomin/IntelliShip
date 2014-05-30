@@ -380,7 +380,7 @@
 		</tr>
 	</table>
 	</div>
-	<div id="myShipments">
+	<div id="myShipments" style="height: 400px; overflow-y: scroll;">
 	<table class="css3-checkboxes">
 		<tr>
 			<th><label><input type="checkbox" id="checkAll" onclick="CheckUncheckAll();"/><span></span></label></th>
@@ -391,6 +391,8 @@
 			<th>State</th>
 			<th>Zip</th>
 			<th>Country</th>
+			<th>Packages</th>
+			<th>Products</th>
 		</tr>
 		[% FOREACH item IN consolidate_order_list %]
 		<tr>
@@ -402,6 +404,8 @@
 			<td>[% item.toAddress.state %]</td>
 			<td>[% item.toAddress.zip %]</td>
 			<td>[% item.toAddress.country %]</td>
+			<td>[% item.packagecount %]</td>
+			<td>[% item.productcount %]</td>
 		</tr>
 		[% END %]
 	</table>
