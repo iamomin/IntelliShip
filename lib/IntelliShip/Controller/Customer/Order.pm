@@ -1392,11 +1392,12 @@ sub add_package_detail_row :Private
 		}
 
 	$c->stash->{ROW_COUNT}++;
-	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
+	$c->stash->{RODUCT_DETAILS} = $product_HTML;
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
 	$c->stash->{PACKAGE_DETAIL_ROW} = 0;
+	$c->stash->{RODUCT_DETAILS} = undef;
 
 	return $HTML;
 	}
