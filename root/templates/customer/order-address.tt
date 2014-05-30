@@ -193,6 +193,7 @@
 				<tr>
 					<td><label for="description" class="float-right">Comments:</label></td><td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
 				</tr>
+				[% IF deliverymethod_loop.count > 1 %]
 				<tr>
 					<td><label for="deliverymethod" class="float-right">Billing Type:</label></td>
 					<td class="css3-radios">
@@ -209,6 +210,7 @@
 						</ul>
 					</td>
 				</tr>
+				[% END %]
 
 				[% IF SHOW_PONUMBER %]
 				<tr>
