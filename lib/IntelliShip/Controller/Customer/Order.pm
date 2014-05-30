@@ -2287,7 +2287,7 @@ sub SendShipNotification :Private
 	my $LabelImageFile = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	if (-e $LabelImageFile)
 		{
-		$c->stash->{LABEL_IMG} = 1
+		$c->stash->{LABEL_IMG} = 1;
 		$Email->attach($LabelImageFile);
 		}
 	my $shipment_information_hash = $self->GetNotificationShipments($Shipment);
