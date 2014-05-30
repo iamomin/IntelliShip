@@ -166,7 +166,7 @@ sub send_email :Private
 		}
 
 	my $sql = "SELECT DISTINCT(webaccount) FROM customerservice INNER JOIN service ON service.serviceid = customerservice.serviceid INNER JOIN carrier ON carrier.carrierid = service.carrierid WHERE lower(carrier.carriername) = lower('$carrier') AND customerid = '" . $Contact->customerid . "' AND webaccount <> ''";
-	my $sth = $c->model('MyArrs::CustomerService')->select($sql);
+	my $sth = $c->model('MyArrs')->select($sql);
 	my $WebAccount = $sth->fetchrow(0)->{'webaccount'} if $sth->numrows;
 
 	## Footer
