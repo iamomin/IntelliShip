@@ -41,17 +41,17 @@ INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate,
 INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000038', 'CONAMF0000001', '23111', '23111', 'VA', 'TX', '2');
 INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000039', 'CONAMF0000001', '23111', '23111', 'VA', 'VA', '2');
  
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000040', 'CONAMF0000001', '23111', '23111', 'VA', 'AZ', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000041', 'CONAMF0000001', '23111', '23111', 'VA', 'CA', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000042', 'CONAMF0000001', '23111', '23111', 'VA', 'CO', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000043', 'CONAMF0000001', '23111', '23111', 'VA', 'ID', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000044', 'CONAMF0000001', '23111', '23111', 'VA', 'MT', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000045', 'CONAMF0000001', '23111', '23111', 'VA', 'NM', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000046', 'CONAMF0000001', '23111', '23111', 'VA', 'NV', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000047', 'CONAMF0000001', '23111', '23111', 'VA', 'OR', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000048', 'CONAMF0000001', '23111', '23111', 'VA', 'UT', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000049', 'CONAMF0000001', '23111', '23111', 'VA', 'WA', '3');
-INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000050', 'CONAMF0000001', '23111', '23111', 'VA', 'WY', '3') 
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000040', 'CONAMF0000001', '23111', '23111', 'VA', 'AZ', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000041', 'CONAMF0000001', '23111', '23111', 'VA', 'CA', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000042', 'CONAMF0000001', '23111', '23111', 'VA', 'CO', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000043', 'CONAMF0000001', '23111', '23111', 'VA', 'ID', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000044', 'CONAMF0000001', '23111', '23111', 'VA', 'MT', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000045', 'CONAMF0000001', '23111', '23111', 'VA', 'NM', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000046', 'CONAMF0000001', '23111', '23111', 'VA', 'NV', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000047', 'CONAMF0000001', '23111', '23111', 'VA', 'OR', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000048', 'CONAMF0000001', '23111', '23111', 'VA', 'UT', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000049', 'CONAMF0000001', '23111', '23111', 'VA', 'WA', '3');
+INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber)   values ('AMFCON0000050', 'CONAMF0000001', '23111', '23111', 'VA', 'WY', '3') 
 INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, destcountry, zonenumber) values ('AMFCON0000051', 'CONAMF0000001', '23111', '23111', 'VA', 'CA', '4');
 
 INSERT INTO zone(zoneid, typeid, originbegin, originend, originstate, deststate, zonenumber) values ('AMFCON0000101', 'CONAMF0000001', '13367', '13367', 'NY', 'CT', '5');
