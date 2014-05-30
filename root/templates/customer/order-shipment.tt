@@ -34,7 +34,9 @@
 			<td><label for="dryicewt">Dry Ice Weight</label></td>
 			[% END %]
 			<td><label for="description">Comments</label></td>
+			[% IF deliverymethod_loop.count > 1 %]
 			<td><label for="deliverymethod">Billing Type:</label></td>
+			[% END %]
 		</tr>
 		<tr>
 			<td><input type="text" name="datetoship" id="datetoship" value="[% datetoship %]" readonly class="reset-cs-onchange"/></td>
@@ -43,6 +45,7 @@
 			<td><input type="text" class="text" id="ponumber" name="ponumber"/></td>
 			[% END %]
 			<td><input type="text" class="text" name="description" id="description" value="[% comments %]"/></td>
+			[% IF deliverymethod_loop.count > 1 %]
 			<td class="css3-radios">
 				[% FOREACH item IN deliverymethod_loop %]
 				<label>
@@ -52,6 +55,7 @@
 				[% END %]
 				<div id="third-party-details"></div>
 			</td>
+			[% END %]
 		</tr>
 	</table>
 
