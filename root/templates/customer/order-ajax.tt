@@ -444,5 +444,3 @@
 	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
 	<input type="hidden" id="coids" name="coids" value="[% coids %]"/>
 [% END %]
-
-[% PACKAGE_DETAILS %]

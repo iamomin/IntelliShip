@@ -81,10 +81,6 @@ sub get_HTML :Private
 		{
 		$self->get_consolidate_orders_list;
 		}
-	elsif ($action eq 'consolidate_orders')
-		{
-		$self->consolidate_orders;
-		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -172,6 +168,10 @@ sub get_JSON_DATA :Private
 	elsif ($action eq 'cancel_shipment')
 		{
 		$dataHash = $self->cancel_shipment;
+		}
+	elsif ($action eq 'consolidate_orders')
+		{
+		$dataHash = $self->consolidate_orders;
 		}
 	else
 		{
@@ -1074,7 +1074,6 @@ sub consolidate_orders
 
 	$c->log->debug("Total No of Packages: " . @packages);
 
-	my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
 	my $package_detail_section_HTML = '';
 
 	my $OriginalCO = $self->get_order;
@@ -1084,19 +1083,11 @@ sub consolidate_orders
 
 		$c->stash->{SHIPPER_NUMBER} = $cCO->ordernumber if $cCO && $Package->datatypeid == 1000;
 		$package_detail_section_HTML .= $self->add_package_detail_row($Package);
-
-		$insurance += $Package->decval;
-		$totalweight += $Package->weight;
-		$freightinsurance += $Package->frtins;
 		}
 
 	$c->stash->{CO} = $OriginalCO;
 
-	$c->stash->{insurance} = $insurance;
-	$c->stash->{totalweight} = $totalweight;
-	$c->stash->{freightinsurance} = $freightinsurance;
-
-	$c->stash->{PACKAGE_DETAILS} = $package_detail_section_HTML;
+	return { HTML => $package_detail_section_HTML };
 	}
 
 =encoding utf8

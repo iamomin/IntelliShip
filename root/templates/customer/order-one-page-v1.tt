@@ -319,7 +319,8 @@
 
 					$('#shipment-summary-list tr:not(:first)').remove();
 
-					send_ajax_request('order-packages', 'HTML', 'order', 'consolidate_orders', $("#frm_consolidate").serialize(), function () {
+					send_ajax_request('', 'JSON', 'order', 'consolidate_orders', $("#frm_consolidate").serialize(), function () {
+						$('#order-packages').html(JSON_data.HTML);
 						$("#dialog-message").dialog("close");
 						configureShipmentDetails();
 						});
