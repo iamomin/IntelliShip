@@ -74,7 +74,7 @@ sub setup_supply_ordering :Private
 
 	$c->log->debug("... Total carriers found: " . @$carrier_loop);
 
-	$SQL = "SELECT carrier, customerskuid FROM productsku WHERE carrier = '$first_carrier'";
+	$SQL = "SELECT * FROM productsku WHERE carrier = '$first_carrier'";
 	$c->log->debug("... SQL 1: " . $SQL);
 	$sth = $self->myDBI->select($SQL);
 
