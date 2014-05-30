@@ -317,12 +317,11 @@
 						return;
 						}
 
-					alert(1);
 					$('#shipment-summary-list tr:not(:first)').remove();
-					alert(2);
 
 					send_ajax_request('order-packages', 'HTML', 'order', 'consolidate_orders', $("#frm_consolidate").serialize(), function () {
 						$("#dialog-message").dialog("close");
+						configureShipmentDetails();
 						});
 					}
 				}

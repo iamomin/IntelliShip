@@ -1082,7 +1082,7 @@ sub consolidate_orders
 		{
 		my ($cCO,$Package) = ($_->{CO},$_->{PACKAGE});
 
-		$c->stash->{SHIPPER_NUMBER} = $cCO->ordernumber if $Package->datatypeid == 1000;
+		$c->stash->{SHIPPER_NUMBER} = $cCO->ordernumber if $cCO && $Package->datatypeid == 1000;
 		$package_detail_section_HTML .= $self->add_package_detail_row($Package);
 
 		$insurance += $Package->decval;
