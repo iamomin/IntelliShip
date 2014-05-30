@@ -256,8 +256,6 @@ sub get_carrier_service_list
 	my $ToAddress = $CO->destination_address;
 	my $addresscode = $ToAddress->addresscode;
 
-	warn "########## \$addresscode: ".$addresscode;
-
 	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
@@ -899,60 +897,85 @@ sub get_consolidate_orders_list
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
 	IntelliShip::Utils->hash_decode($params);
+
+	my $CO = $self->get_order;
 	my $CustomerID = $self->customer->customerid;
-	my $OrderSQL = "
-		SELECT
-			coid
-		FROM
-			co
-			INNER JOIN address oa ON oa.addressid = co.oaaddressid INNER JOIN address da ON da.addressid = co.addressid AND co.customerid = '$CustomerID'
-		WHERE
-			co.cotypeid = 1
-			AND co.estimatedweight IS NOT NULL
-			AND co.coid != '$params->{'coid'}'
-			AND
-			(
-				(
-					co.extcarrier IS NOT NULL
-					AND co.extservice IS NOT NULL
-				)
-				OR
-				(
-					co.dateneeded IS NOT NULL
-				)
-			)
+
+	my $DestinationAddressID;
+	if ($params->{'toaddress1'})
+		{
+		## Save address details
+		$self->save_address;
+		my $ToAddress = $CO->to_address;
+		$DestinationAddressID = $ToAddress->addressid;
+		}
+	else
+		{
+		return $c->stash->{MESSAGE} = 'Please select destination address to consolidate matching orders';
+		}
+
+	my $OrderSQL = "SELECT
+				coid,
+				CASE
+				WHEN daterouted is not null THEN 1
+				WHEN datepacked is not null THEN 2
+				WHEN datereceived is not null THEN 3
+				WHEN daterouted is null and datepacked is null and datereceived is null THEN 4 END
+				as condition
+			FROM
+				co
+			WHERE
+				co.addressid = '$DestinationAddressID'
+				AND co.customerid = '$CustomerID'
+				AND (co.combine = 0 OR co.combine IS NULL)
+				AND statusid not in (5,6,7,200)
 		";
 
-	# Select on Ship from address
-	$OrderSQL .= " AND oa.addressname = " . "'$params->{'fromname'}'" if $params->{'fromname'} ne '';
-	$OrderSQL .= " AND oa.address1 = " . "'$params->{'fromaddress1'}'" if $params->{'fromaddress1'} ne '';
-	$OrderSQL .= " AND oa.address2 = " . "'$params->{'fromaddress2'}'" if $params->{'fromaddress2'} ne '';
-	$OrderSQL .= " AND oa.city = " . "'$params->{'fromcity'}'" if $params->{'fromcity'} ne '';
-	$OrderSQL .= " AND oa.state = " . "'$params->{'fromstate'}'" if $params->{'fromstate'} ne '';
-	$OrderSQL .= " AND oa.zip = " . "'$params->{'fromzip'}'" if $params->{'fromzip'} ne '';
+	if ($self->customer->get_contact_data_value('dateconsolidation'))
+		{
+		$OrderSQL .= " AND (daterouted is not null OR datepacked is not null OR datereceived is not null) ";
+		}
 
-	# Select on delivery address
-	$OrderSQL .= " AND da.addressname = " . "'$params->{'toname'}'" if $params->{'toname'} ne '';
-	$OrderSQL .= " AND da.address1 = " . "'$params->{'toaddress1'}'" if $params->{'toaddress1'} ne '';
-	$OrderSQL .= " AND da.address2 = " . "'$params->{'toaddress2'}'" if $params->{'toaddress2'} ne '';
-	$OrderSQL .= " AND da.city = " . "'$params->{'tocity'}'" if $params->{'tocity'} ne '';
-	$OrderSQL .= " AND da.state = " . "'$params->{'tostate'}'" if $params->{'tostate'} ne '';
-	$OrderSQL .= " AND da.zip = " . "'$params->{'tozip'}'" if $params->{'tozip'} ne '';
+	if ( $self->contact->is_restricted)
+		{
+		my $RestrictedDataRow = $c->model('MyDBI')->select("
+			SELECT
+				fieldvalue
+			FROM
+				restrictcontact
+			WHERE
+				contactid = '" . $self->contact->contactid . "'
+				AND fieldname = 'extcustnum'
+		");
 
-	$c->log->debug("OrderSQL: " . $OrderSQL);
+		while ( my ($Value) = $RestrictedDataRow->fetchrow_array() )
+			{
+			$OrderSQL .= " AND upper(co.extcustnum) in " ."'" . uc($Value) . "',";
+			}
+		}
+
+	$OrderSQL .= " ORDER BY condition,ordernumber";
+
+	#$c->log->debug("OrderSQL: " . $OrderSQL);
 
 	my $STH = $c->model('MyDBI')->select($OrderSQL);
 
+	my $consolidate_order_list = [];
 	if ($STH->numrows)
 		{
 		my $arr = $STH->query_data;
 		#$c->log->debug("CO IDs: " . Dumper $arr);
 		my @COS = $c->model('MyDBI::CO')->search({ coid => $arr });
 
-		my $consolidate_order_list = [];
 		foreach my $CO (@COS)
 			{
+			if ($params->{coid} ne $CO->coid && $CO->packages->count == 0) ## Don't include any order which don't have package details
+				{
+				next;
+				}
+
 			push(@$consolidate_order_list, {
 				coid         => $CO->coid,
 				ordernumber  => $CO->ordernumber,
@@ -963,16 +986,18 @@ sub get_consolidate_orders_list
 				toAddress    => $CO->to_address
 				});
 			}
-		#$c->log->debug("Customer Orders: " . Dumper @COS);
-		$c->stash->{consolidate_order_list} = $consolidate_order_list;
-		}
-	else
-		{
-		$c->stash->{MESSAGE} = 'No matching orders found for batch ship';
 		}
 
-	$c->stash->{coid} = $params->{'coid'};
-	$c->stash->{CONSOLIDATE_ORDERS} = 1;
+	$c->log->debug("Total Orders Found: " . @$consolidate_order_list);
+
+	if (@$consolidate_order_list <= 1)
+		{
+		$consolidate_order_list = undef;
+		$c->stash->{MESSAGE} = 'No matching orders found to consolidate';
+		}
+
+	$c->stash($params);
+	$c->stash->{consolidate_order_list} = $consolidate_order_list;
 	}
 
 sub consolidate_orders
@@ -980,16 +1005,24 @@ sub consolidate_orders
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+	my $CO = $self->get_order;
 
-	my $CO     = $self->get_order;
-	$c->log->debug("Order Id: " . $CO->coid);
 	$c->stash->{ROW_COUNT} = 0;
-	my $packages = [];
+
+	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
+
+	if (@$Coids > 1)
+		{
+		$c->stash->{CONSOLIDATED_ORDER} = 1 ;
+		$c->stash->{coids} = join(',', @$Coids);
+		}
+
+	$c->log->debug(" Size of the Coids: " . @$Coids);
+	$c->log->debug("CONSOLIDATED_ORDER: " . $c->stash->{CONSOLIDATED_ORDER});
 
 	my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
 	my $package_detail_section_html = '';
-	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
-	push(@$Coids, $CO->coid);
+
 	foreach my $coid (@$Coids)
 		{
 		$c->log->debug("coid: " . $coid);
@@ -1007,29 +1040,14 @@ sub consolidate_orders
 		$c->log->debug("Total No of Packages in COID ($coid): " . @packages);
 		}
 
-	$c->log->debug("Grand Total Packages: " . @$packages);
-
-	# Step 1: Find Packages belog to Order
-	#my @CoPackages = $CO->packages;
-
-	#$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
-
-	#push @$packages, $_ foreach @CoPackages;
-	$c->log->debug("Total number of packages " . @$packages);
-
-	foreach my $Package (@$packages)
-		{
-		}
-
 	$c->stash->{insurance} = $insurance;
 	$c->stash->{totalweight} = $totalweight;
 	$c->stash->{freightinsurance} = $freightinsurance;
 
 	## Don't move this above foreach block
 	$c->stash->{description} = $CO->description;
-	$c->stash->{coids} = join(',', @$Coids);
-	#$c->log->debug("CONSOLIDATED_PACKAGE_DETAILS : HTML: " . $package_detail_section_html);
-	$c->stash->{CONSOLIDATED_PACKAGE_DETAILS} = $package_detail_section_html;
+
+	$c->stash->{PACKAGE_DETAILS} = $package_detail_section_html;
 	}
 
 =encoding utf8

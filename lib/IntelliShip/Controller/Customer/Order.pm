@@ -415,7 +415,7 @@ sub save_CO_details :Private
 	$coData->{'isinbound'}  = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'inbound') || 0;
 	$coData->{'isdropship'} = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'dropship') || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
-	$coData->{'ordernumber'} = $params->{'ordernumber'} if $params->{'ordernumber'};
+	$coData->{'ordernumber'} = ($params->{'ordernumber'} and !$params->{'consolidatedorder'})? $params->{'ordernumber'} : $CO->coid;
 	$coData->{'department'} = $coData->{'isinbound'} ? $params->{'todepartment'} : $params->{'fromdepartment'};
 	$coData->{'deliverynotification'} = $params->{'fromemail'} if $params->{'fromemail'};
 	$coData->{'oacontactname'}  = $params->{'fromcontact'} if $params->{'fromcontact'};
@@ -469,7 +469,29 @@ sub save_CO_details :Private
 		$coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($coData->{'estimatedweight'}, undef, undef, undef, $coData->{'density'});
 		}
 
-	$coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
+	if ($params->{'consolidatedorder'})
+		{
+		$coData->{'consolidationtype'} = 2;
+
+		my $OriginalCO = $self->get_order;
+
+		my @coids = split(/,/,$params->{'coids'});
+		foreach my $coid (@coids)
+			{
+			next if $coid eq $params->{'coid'};
+
+			## Save consolidated orders in stash to use cancel_order routine
+			my $ConsolidatedCO = $c->model('MyDBI::Co')->find({ coid => $coid });
+			$c->stash->{CO} = $ConsolidatedCO;
+			$self->cancel_order;
+			}
+
+		$c->stash->{CO} = $OriginalCO;
+		}
+	else
+		{
+		$coData->{'consolidationtype'} = 0;
+		}
 
 	## If this order has non-voided shipments, keep it's status as 'shipped' (statusid = 5)
 	if ($CO->shipment_count > 0)
@@ -747,23 +769,28 @@ sub save_package_product_details :Private
 	# Delete packages & products for combined coids
 	if ($params->{'consolidatedorder'})
 		{
-		for (my $i = 1; $i <= $params->{'productcount'}; $i++)
+		for (my $i = 1; $i <= $params->{'pkg_detail_row_count'}; $i++)
 			{
 			# Only packages are relevent for normal consolidates, skip products
-			if (!$params->{'cotypeid'} or $params->{'cotypeid'} != 2)
+			if ($params->{"datatypeid_" . $i} and (!$params->{'cotypeid'} or $params->{'cotypeid'} != 2))
 				{
 				next if $params->{"datatypeid_" . $i} == 2000;
 				}
 
-			my $ComboCO = $c->model('MyDBI::CO')->find({ coid => $params->{"consolidatedcoid_" . $i} });
+			my $ComboCO = $c->model('MyDBI::CO')->find({ coid => $params->{"originalcoid_" . $i} });
+
 			next unless $ComboCO;
+
+			$c->log->debug("\n___ ComboCO->coid: " . $ComboCO->coid . "params->{'coid'}" . $params->{'coid'});
 
 			$c->log->debug("___ consolidatedorder: Flush old PackProData for ComboCO: " . $ComboCO->coid);
 			$ComboCO->delete_all_package_details;
 
 			my $ConsolidationType = $ComboCO->consolidationtype || 0;
+			$c->log->debug("___ ConsolidationType: " . $ConsolidationType);
+			$c->log->debug("___ params->{'consolidationtype'}: " . $params->{'consolidationtype'});
 			my $Status = $ComboCO->statusid || 0;
-
+			$c->log->debug("___ Status: " . $Status);
 			if ($Status == 200)
 				{
 				$ComboCO->consolidationtype($ConsolidationType);
@@ -816,6 +843,7 @@ sub save_package_product_details :Private
 		my $unittypeid      = ($params->{'unittype_' . $PackageIndex } ? $params->{'unittype_' . $PackageIndex } : undef);
 		my $unitofmeasure   = $params->{'unitofmeasure_' . $PackageIndex} || 0;
 		my $quantityxweight = $params->{'quantityxweight_' . $PackageIndex} || 0;
+		my $originalcoid    = $params->{'originalcoid_' . $PackageIndex} || '';
 
 		my $PackProData = {
 				ownertypeid     => $ownertypeid,
@@ -835,7 +863,8 @@ sub save_package_product_details :Private
 				decval          => $decval,
 				frtins          => $frtins,
 				dryicewt        => int $dryicewt,
-				quantityxweight => $quantityxweight
+				quantityxweight => $quantityxweight,
+				originalcoid    => $originalcoid,
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
@@ -948,7 +977,7 @@ sub cancel_order :Private
 	my $CO = $self->get_order;
 	$CO->update({ statusid => '200' });
 
-	return if $params->{'consolidate'};
+	return if $params->{'consolidatedorder'};
 
 	my $parent = $params->{'parent'} || '';
 	if (length $parent)
@@ -1035,16 +1064,13 @@ sub get_order :Private
 			$params->{'ordernumber'} = $OrderNumber;
 			$c->stash->{ordernumber} = $OrderNumber;
 
-			my $addressid = $self->contact->address->addressid if $self->contact->address;
-			   $addressid = $self->customer->address->addressid if !$addressid and $self->customer->address;
-
 			my $coData = {
 				ordernumber       => $OrderNumber,
 				clientdatecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
 				contactid         => $self->contact->contactid,
-				addressid         => $addressid,
+				addressid         => '',
 				cotypeid          => $cotypeid,
 				freightcharges    => 0,
 				statusid          => 1
@@ -1164,6 +1190,7 @@ sub populate_order :Private
 
 		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total number of packages " . @$packages);
+		$c->stash->{CONSOLIDATED_ORDER} = 1 if ($CO->consolidationtype == 2);
 
 		if ($c->stash->{one_page})
 			{
@@ -1176,6 +1203,16 @@ sub populate_order :Private
 				$insurance += $Package->decval;
 				$totalweight += $Package->weight;
 				$freightinsurance += $Package->frtins;
+				}
+
+			if ($c->stash->{CONSOLIDATED_ORDER})
+				{
+				my $coids = '';
+				foreach my $Package (@$packages)
+					{
+					 $coids .= $Package->originalcoid unless ($coids =~ m/$Package->originalcoid/);
+					}
+				$c->stash->{coids} = $coids;
 				}
 
 			$c->stash->{insurance} = $insurance;
@@ -1348,7 +1385,18 @@ sub add_package_detail_row :Private
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		}
 
-	$c->stash->{SHIPPER_NUMBER} = $Package->ownerid if $params->{'action'} eq 'consolidate';
+	if ($c->stash->{CONSOLIDATED_ORDER})
+		{
+		$c->stash->{SHIPPER_NUMBER} = '';
+		if ($params->{'action'} eq 'consolidate')
+			{
+			$c->stash->{SHIPPER_NUMBER} = $Package->ownerid;
+			}
+		elsif ($Package->originalcoid)
+			{
+			$c->stash->{SHIPPER_NUMBER} = $Package->originalcoid;
+			}
+		}
 
 	$c->stash->{ROW_COUNT}++;
 	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
@@ -2235,9 +2283,9 @@ sub SendShipNotification :Private
 	#$Email->add_line('<br>');
 	#$Email->add_line('<p>Shipment notification</p>');
 	#$Email->add_line('<br>');
-	
+
 	$self->set_header_section;
-	
+
 	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
 	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
 

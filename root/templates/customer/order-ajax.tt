@@ -369,21 +369,21 @@
   [% END %]
 [% END %]
 
-[% IF CONSOLIDATE_ORDERS %]
-	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
-
+[% IF consolidate_order_list %]
 	<form id="frm_consolidate" name="frm_consolidate" method="post" action="/customer/order/consolidate_orders">
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-	<table>
+	<div>
+	<table class="css3-checkboxes dialog-header">
 		<tr>
-			<td>Total <strong><span id="select-count"></span></strong> orders selected</td>
+			<td width="180px">Total <strong><span id="select-count">1</span></strong> orders selected</td>
+			<td><label><input type="checkbox" name="combine" value="1"/><span><label for="combine">Combine</label></span></label></td>
 		</tr>
 	</table>
-
+	</div>
 	<div id="myShipments">
 	<table class="css3-checkboxes">
 		<tr>
-			<th><label><input type="checkbox" id="checkAll" CHECKED onclick="check_uncheck_all();"/><span></span></label></th>
+			<th><label><input type="checkbox" id="checkAll" onclick="CheckUncheckAll();"/><span></span></label></th>
 			<th>Order Number</th>
 			<th>Consignee</th>
 			<th>Address</th>
@@ -394,7 +394,7 @@
 		</tr>
 		[% FOREACH item IN consolidate_order_list %]
 		<tr>
-			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" class="orders" value="[% item.coid %]" CHECKED/><span></span></label></td>
+			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]" [% IF item.coid == coid %]CHECKED onclick="return false;"[% ELSE %]class="orders"[% END %]/><span></span></label></td>
 			<td>[% item.ordernumber %]</td>
 			<td>[% item.toAddress.addressname %]</td>
 			<td>[% item.toAddress.address1 _ toAddress.address2%]</td>
@@ -409,15 +409,13 @@
 	</form>
 
 	<script>
-		$("#select-count").html([% consolidate_order_list.size %]);
-
 		$('.orders').change(function(){
 			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
 			if ($("#checkAll").is(':checked'))
 				$("#checkAll").prop( "checked", false )
 			});
 
-		function check_uncheck_all() {
+		function CheckUncheckAll() {
 			if($("#checkAll").is(':checked'))
 				{
 				$("input:checkbox[name=coids]").each(function() {
@@ -430,18 +428,17 @@
 					$(this).prop( "checked", false );
 					});
 				}
-
 			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
 			}
-			
-		function consolidate_order() {
-			
-			}
 	</script>
+[% ELSE %]
+	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 [% END %]
 
-[% IF CONSOLIDATED_PACKAGE_DETAILS %]
-	<input type="hidden" id="consolidate" name="consolidate" value="1"/>
+[% IF CONSOLIDATED_ORDER %]
+	<input type="hidden" id="consolidatedorder" name="consolidatedorder" value="1"/>
+	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
 	<input type="hidden" id="coids" name="coids" value="[% coids %]"/>
-	[% CONSOLIDATED_PACKAGE_DETAILS %]
 [% END %]
+
+[% PACKAGE_DETAILS %]

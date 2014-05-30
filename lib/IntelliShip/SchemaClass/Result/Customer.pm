@@ -608,19 +608,19 @@ __PACKAGE__->has_many(
 	);
 
 __PACKAGE__->has_many(
-	custcondata => 
+	custcondata =>
 		'IntelliShip::SchemaClass::Result::Custcondata',
 		'ownerid'
 	);
 
 __PACKAGE__->has_many(
-	droplist_data => 
+	droplist_data =>
 		'IntelliShip::SchemaClass::Result::Droplistdata',
 		{ "foreign.customerid" => "self.customerid" },
 	);
 
 __PACKAGE__->has_many(
-	thirdpartyaccts => 
+	thirdpartyaccts =>
 		'IntelliShip::SchemaClass::Result::Thirdpartyacct',
 		{ "foreign.customerid" => "self.customerid" },
 	);
@@ -701,7 +701,7 @@ sub get_sop_id
 
 	return $sop_id;
 	}
-	
+
 sub is_single_sign_on_customer
 	{
 	my $self = shift;

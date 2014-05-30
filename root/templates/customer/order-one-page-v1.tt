@@ -28,6 +28,12 @@
 		</table>
 	</h1>
 
+	[% IF CONSOLIDATED_ORDER %]
+	<input type="hidden" id="consolidatedorder" name="consolidatedorder" value="1"/>
+	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
+	<input type="hidden" id="coids" name="coids" value="[% coids %]"/>
+	[% END %]
+
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
@@ -62,9 +68,11 @@
 	[% IF print_return_shipment > 1 %]<input type="hidden" name="printreturnshipment" value="1"/>[% END %]
 	[% IF default_packing_list > 1 %]<input type="hidden" name="printpackinglist" value="1"/>[% END %]
 	</h1>
+
 	<div id="order-packages">
 	[% PACKAGE_DETAIL_SECTION %]
 	</div>
+
 	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
 
 	<div id="clear">&nbsp;</div>
@@ -295,30 +303,35 @@
 		});
 
 
-		$("#consolidate").click(function() {
+	$("#consolidate").click(function() {
 
-			$('#dialog-message').dialog( {
-				autoOpen: false,
-				title: 'Consolidate Orders',
-				width: '1000px',
-				buttons: {
-					Ok: function() {
-
-						send_ajax_request('order-packages', 'HTML', 'order', 'consolidate', $("#frm_consolidate").serialize(), function () {
-
-							$( "#dialog-message" ).dialog("close");
-							});
+		$('#dialog-message').dialog( {
+			autoOpen: false,
+			title: 'Consolidate Orders',
+			width: '1000px',
+			maxHeight: 600,
+			buttons: {
+				Ok: function() {
+					var count = +$('#select-count').text();
+					if (count <= 1) {
+						$("#dialog-message").dialog("close");
+						return;
 						}
+					send_ajax_request('order-packages', 'HTML', 'order', 'consolidate', $("#frm_consolidate").serialize(), function () {
+						$("#dialog-message").dialog("close");
+						});
 					}
-				});
-			$("#consolidate").prop('disabled', true);
-
-			$("#consolidate").val('Please wait...');
-			send_ajax_request('dialog-message', 'HTML', 'order', 'get_consolidate_orders_list', $("#equal :input").serialize() + '&coid=' + $("#coid").val(), function () {
-				$( "#dialog-message" ).dialog("open");
-				$("#consolidate").prop('disabled', false);
-				$("#consolidate").val('Consolidate');
-				});
+				}
 			});
+
+		$("#consolidate").prop('disabled', true);
+
+		$("#consolidate").val('Please wait...');
+		send_ajax_request('dialog-message', 'HTML', 'order', 'get_consolidate_orders_list', $("#equal :input").serialize() + '&coid=' + $("#coid").val(), function () {
+			$( "#dialog-message" ).dialog("open");
+			$("#consolidate").prop('disabled', false);
+			$("#consolidate").val('Consolidate');
+			});
+		});
 
 </script>
