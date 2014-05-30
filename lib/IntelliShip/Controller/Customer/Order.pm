@@ -242,6 +242,11 @@ sub setup_shipment_information :Private
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
 
+	if ($c->stash->{default_package_type_text} eq 'ENVELOPE' and $c->stash->{default_packing_list} == 2)
+		{
+		$c->stash->{default_packing_list} = 1;
+		}
+
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 
