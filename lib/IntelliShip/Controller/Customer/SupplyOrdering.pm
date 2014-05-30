@@ -80,26 +80,7 @@ sub setup_supply_ordering :Private
 
 	$c->log->debug("... Total Productsku found: " . $sth->numrows);
 
-	my $productsku_loop = [];
-	foreach (my $row=0; $row < $sth->numrows; $row++)
-		{
-		my $data = $sth->fetchrow($row);
-		$data->{carrier} =~ s/^\s+//;
-		$data->{carrier} =~ s/\s+$//;
-		my $virtual_path = '/static/branding/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.gif';
-		my $physical_path = IntelliShip::MyConfig->branding_file_directory . '/engage/images/sku/' . lc($data->{carrier}) . '/' . $data->{customerskuid} . '.gif';
-		$c->log->debug("... ProductSku Path: " . $physical_path);
-
-		if (-e $physical_path)
-			{
-			$data->{SRC} = $virtual_path;
-			}
-
-		push(@$productsku_loop, $data);
-		}
-
 	$c->stash(carrier_loop => $carrier_loop);
-	$c->stash(productsku_loop => $productsku_loop);
 	$c->stash(toAddress => $self->customer->address);
 	$c->stash(toemail => $self->contact->email);
 	$c->stash(ordernumber => $self->get_auto_order_number);
@@ -109,9 +90,17 @@ sub setup_supply_ordering :Private
 
 	$c->stash(requiredfield_list => [
 			{ name => 'toname',  details => "{ minlength: 2 }"},
-			{ name => 'supplyquantity',  details => "{ numeric: true }"},
+			{ name => 'toaddress1',  details => "{ minlength: 2 }"},
+			{ name => 'tocity',  details => "{ minlength: 2 }"},
+			{ name => 'tostate',  details => "{ minlength: 2 }"},
+			{ name => 'tozip',  details => "{ minlength: 2 }"},
+			{ name => 'tocountry',  details => "{ minlength: 2 }"},
+			{ name => 'tocontact', details => "{ minlength: 2 }"},
+			{ name => 'tophone', details => "{ phone: true }"},
+			{ name => 'toemail', details => "{ email: true }"},
+			{ name => 'todepartment', details => "{ minlength: 2 }"},
 			{ name => 'carrier', details => "{ minlength: 2 }"},
-			{ name => 'toemail', details => "{ email: false }"},
+			{ name => 'supplyquantity',  details => "{ numeric: true }"},
 			]);
 
 	$c->stash(template => "templates/customer/supply-ordering.tt");
