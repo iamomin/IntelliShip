@@ -171,7 +171,7 @@ sub send_email :Private
 
 	## Footer
 	$UserEmail->add_line(qq~\n\n\n***************************************\n** This email is not authorized for redistribution **\n***************************************~);
-	$CompanyEmail->add_line(qq~\n\n\n**********************************************************\n** This email is not authorized for redistribution\t**\n** The confidential $params->{'toname'} $carrier \t\t\t**\n** Acct\# is $WebAccount and cannot be disclosed\t\t**\n** verbally or electronically\t\t\t\t**\n**********************************************************\n~);
+	$CompanyEmail->add_line(qq~\n\n\n**********************************************************\n** This email is not authorized for redistribution\t**\n** The confidential $params->{'toname'} $carrier \t\t**\n** Acct\# is $WebAccount and cannot be disclosed\t\t**\n** verbally or electronically\t\t\t\t**\n**********************************************************\n~);
 
 	## END Body
 	$UserEmail->add_line('</PRE>');
