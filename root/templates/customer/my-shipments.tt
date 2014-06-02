@@ -330,26 +330,49 @@
 					$("#dateto").datepicker('setDate', '-1d');
 					}
 				if (vDate == 'this_week') {
-					$("#datefrom").datepicker('setDate', '-1w');
-					$("#dateto").datepicker('setDate', '+0d');
+					
+					$("#datefrom").datepicker('setDate', getLastSunday());
+					$("#dateto").datepicker('setDate', getNextSaturday());
 					}
 				if (vDate == 'last_week') {
-					$("#datefrom").datepicker('setDate', '-2w');
-					$("#dateto").datepicker('setDate', '-1w');
+					var date = new Date();
+					date.setDate(date.getDate() - date.getDay() - 7); 
+					$("#datefrom").datepicker('setDate',date);
+					date.setDate(date.getDate() - date.getDay() + 6);
+					$("#dateto").datepicker('setDate',date);
 					}
 				if(vDate == 'last_month') {
-					$("#datefrom").datepicker('setDate', '-2m');
-					$("#dateto").datepicker('setDate', '-1m');
+					var date = new Date();
+					var firstDayOfMonth = new Date(date.getFullYear(), date.getMonth()-1, 1);
+					$("#datefrom").datepicker('setDate',firstDayOfMonth);
+					var lastDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 0);
+					$("#dateto").datepicker('setDate', lastDayOfMonth);
 					}
 				if(vDate == 'this_month') {
-					$("#datefrom").datepicker('setDate', '-1m');
-					$("#dateto").datepicker('setDate', '+0d');
+					var date = new Date();
+					var firstDayOfCurMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+					$("#datefrom").datepicker('setDate', firstDayOfCurMonth);
+					var lastDayOfCurMonth = new Date(date.getFullYear(), date.getMonth()+1, 0);
+					$("#dateto").datepicker('setDate', lastDayOfCurMonth);
 					}
 				var query_param = "&view_date=" + vDate + "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val();
 				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 				$("#count").html("0");
 				clickCount = -1;
 				});
+
+		function getNextSaturday() {
+			var today = new Date();
+			var offset = (today.getDay() < 6) ? 0 : 7;
+			var daysUntilSaturday = 6 + offset - today.getDay();
+			return '+'+daysUntilSaturday;
+			}
+		
+		function getLastSunday() {
+			var sday = new Date();
+			sday.setDate(sday.getDate() - sday.getDay());
+			return sday;
+			}
 
 		$("#btn_submit").click(function() {
 			var action = $("input:radio[name=batch_action]:checked").val();
