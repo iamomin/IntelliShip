@@ -158,7 +158,7 @@
 			});
 
 		$("#datefrom").datepicker({ maxDate: '0d' });
-		$("#dateto").datepicker({ maxDate: '2w' });
+		$("#dateto").datepicker({ maxDate: '1m' });
 		
 		function check_uncheck_all() {
 			if($("#checkAll").is(':checked'))
