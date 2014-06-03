@@ -298,8 +298,15 @@ function validatePackageDetails()
 			var element = controls[i];
 			if (element == 'quantity') requiredPkgProduct[element+'_'+row_ID] = { nonzero: true };
 			if (element == 'description' && $('#ppd_'+row_ID).val() == 'product') requiredPkgProduct[element+'_'+row_ID] = { minlength: 2 };
-			if (element == 'weight') requiredPkgProduct[element+'_'+row_ID] = { nonzero: true };
+			if (element == 'weight')
+			{
+				var unittypeid = $('#unittype').val();
+				if (unittypeid == 18)
+				      requiredPkgProduct[element+'_'+row_ID] = { numeric: false };
+				else
+				      requiredPkgProduct[element+'_'+row_ID] = { nonzero: true };
 			}
+		}
 		});
 
 	return !validateForm(requiredPkgProduct);
