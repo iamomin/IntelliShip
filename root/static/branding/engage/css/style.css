@@ -140,16 +140,6 @@ img { border: none; vertical-align: middle }
     float: right;
 }
 
-#header nav ul ul {
-    display: none;
-    background-color: #FFF;
-    z-index: 1;
-}
-
-#header nav ul li:hover > ul {
-    display: block;
-}
-
 #header nav a {
     display: block;
     color: #1875BA;
@@ -184,10 +174,17 @@ img { border: none; vertical-align: middle }
     padding-bottom: 10px 30px 10px 10px;
 }
 
+#header nav ul li:hover > ul {
+    display: block;
+}
+
 #header nav ul ul {
-    border: 1px solid #1875BA;
+    display: none;
     position: absolute;
     top: 100%;
+    border: 1px solid #1875BA;
+    background-color: #FFF;
+    z-index: 1;
 }
 
 #header nav ul ul li {
