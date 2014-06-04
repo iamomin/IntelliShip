@@ -439,8 +439,10 @@
 	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 [% END %]
 
-[% IF CONSOLIDATED_ORDER %]
-	<input type="hidden" id="consolidatedorder" name="consolidatedorder" value="1"/>
-	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
+[% IF CONSOLIDATED_PACKAGE %]
 	<input type="hidden" id="coids" name="coids" value="[% coids %]"/>
+	<input type="hidden" id="consolidate" name="consolidate" value="1"/>
+	[% IF combine %]<input type="hidden" id="combine" name="combine" value="[% combine %]"/>[% END %]
+	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
+	[% CONSOLIDATED_PACKAGE %]
 [% END %]

@@ -879,9 +879,93 @@ sub prepare_com_inv
 sub ship_to_carrier
 	{
 	my $self = shift;
-	my $shipmentid = $self->SHIP_ORDER;
-	my $response = { SUCCESS => $shipmentid ? 1 : 0 };
-	$response->{shipmentid} = $shipmentid;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my @shipmentids;
+
+	$self->save_order;
+
+	if ($params->{'consolidate'} == 1 && !$params->{'combine'})
+		{
+		$c->log->debug("... CONSOLIDATE");
+		my $consolidatedOrders = {};
+
+		my $CO = $self->get_order;
+		my @packages = $CO->packages;
+
+		foreach my $Package (@packages)
+			{
+			my $key = $Package->originalcoid;
+			$consolidatedOrders->{$key} = {} unless $consolidatedOrders->{$key};
+
+			$consolidatedOrders->{$key}->{'packages'} = [] unless $consolidatedOrders->{$key}->{'packages'};
+			push(@{$consolidatedOrders->{$key}->{'packages'}},$Package);
+
+			$consolidatedOrders->{$key}->{'enteredweight'} = 0 unless $consolidatedOrders->{$key}->{'enteredweight'};
+			$consolidatedOrders->{$key}->{'dimweight'} = 0 unless $consolidatedOrders->{$key}->{'dimweight'};
+			$consolidatedOrders->{$key}->{'quantity'} = 0 unless $consolidatedOrders->{$key}->{'quantity'};
+
+			$consolidatedOrders->{$key}->{'enteredweight'} += $Package->weight;
+			$consolidatedOrders->{$key}->{'dimweight'} += $Package->dimweight;
+			$consolidatedOrders->{$key}->{'quantity'} += $Package->quantity;
+			}
+
+		foreach my $COID (keys %$consolidatedOrders)
+			{
+			my $DummyCO = $c->model('MyDBI::Co')->new($CO->{_column_data});
+			$DummyCO->coid($self->get_token_id);
+
+			my $packages = $consolidatedOrders->{$COID}->{'packages'};
+			foreach my $Package (@$packages)
+				{
+				my $DummyPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
+				$DummyPackage->packprodataid($self->get_token_id);
+				$DummyPackage->ownerid($DummyCO->coid);
+				$DummyPackage->insert;
+
+				my @products = $Package->products;
+				foreach my $Product (@products)
+					{
+					my $DummyProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
+					$DummyProduct->packprodataid($self->get_token_id);
+					$DummyProduct->ownerid($Package->packprodataid);
+					$DummyProduct->insert;
+					}
+
+				if (!$DummyCO->ordernumber && $Package->originalcoid)
+					{
+					$DummyCO->ordernumber($Package->originalcoid);
+					}
+				}
+
+			$DummyCO->insert;
+			$c->log->debug("... DummyCO, coid : " . $DummyCO->coid);
+
+			$params->{'enteredweight'} = $consolidatedOrders->{$COID}->{'enteredweight'};
+			$params->{'dimweight'} = $consolidatedOrders->{$COID}->{'dimweight'};
+			$params->{'quantity'} = $consolidatedOrders->{$COID}->{'quantity'};
+
+			$c->log->debug("... enteredweight: " . $params->{'enteredweight'});
+			$c->log->debug("... dimweight    : " . $params->{'dimweight'});
+			$c->log->debug("... quantity     : " . $params->{'quantity'});
+
+			$c->stash->{CO} = $DummyCO;
+
+			## SHIP ORDER
+			push @shipmentids, $self->SHIP_ORDER;
+
+			$DummyCO->delete_order;
+			}
+		}
+	else
+		{
+		## SHIP ORDER
+		push @shipmentids, $self->SHIP_ORDER;
+		}
+
+	my $response = { SUCCESS => @shipmentids ? 1 : 0 };
+	$response->{shipmentid} = join(',',@shipmentids);
 	$response->{error} = $self->errors->[0] if $self->has_errors;
 	return $response;
 	}
@@ -1013,16 +1097,6 @@ sub consolidate_orders
 
 	$c->stash->{ROW_COUNT} = 0;
 
-	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
-
-	if (@$Coids > 1)
-		{
-		$c->stash->{CONSOLIDATED_ORDER} = 1;
-		$c->stash->{coids} = join(',', @$Coids);
-		}
-
-	$c->log->debug("...Total Coids: " . @$Coids);
-
 	my @arr = $CO->packages;
 	my $Package;
 	if (@arr)
@@ -1040,6 +1114,10 @@ sub consolidate_orders
 
 		$Package->insert;
 		}
+
+	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
+
+	$c->log->debug("...Total Coids: " . @$Coids);
 
 	my @packages;
 	if ($params->{'combine'} == 1)
@@ -1085,9 +1163,14 @@ sub consolidate_orders
 		$package_detail_section_HTML .= $self->add_package_detail_row($Package);
 		}
 
+	$c->stash($params);
 	$c->stash->{CO} = $OriginalCO;
+	$c->stash->{coids} = join(',', @$Coids);
+	$c->stash->{CONSOLIDATED_PACKAGE} = $package_detail_section_HTML;
 
-	return { HTML => $package_detail_section_HTML };
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	return { HTML => $HTML };
 	}
 
 =encoding utf8

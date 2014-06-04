@@ -1009,6 +1009,13 @@ sub is_fullfilled
 	return 1;
 	}
 
+sub delete_order
+	{
+	my $self = shift;
+	$self->delete_all_package_details;
+	$self->delete;
+	}
+
 sub delete_all_package_details
 	{
 	my $self = shift;

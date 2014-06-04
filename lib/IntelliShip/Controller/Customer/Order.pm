@@ -1650,7 +1650,7 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("------- SHIP_ORDER -------");
 
-	$self->save_order unless $params->{'do'} eq 'load';
+	$self->save_order unless $params->{'do'} eq 'load' || $params->{'consolidate'};
 
 	my $CO = $self->get_order;
 
@@ -1736,6 +1736,12 @@ sub SHIP_ORDER :Private
 		my ($CustomerServiceID) = $params->{'customerserviceid'} =~ m/OTHER_(.*)/;
 		if ($CustomerServiceID eq 'NEW')
 			{
+			unless ($params->{'other'})
+				{
+				$self->add_error("Other carrier name not specified");
+				return;
+				}
+
 			my $Other = $c->model("MyDBI::Other")->new({});
 			$Other->insert({
 				'othername' => $params->{'other'},
@@ -1959,12 +1965,6 @@ sub SHIP_ORDER :Private
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
-	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
-	#$params = {%$params, %{$Shipment->{'_column_data'}}};
-	#$c->log->debug("Shipment->{'_column_data'}: " . Dumper $Shipment->{'_column_data'});
-
-	$params->{'pickuprequest'} = $params->{'storepickuprequest'};
-
 	# Process good shipment
 
 	# If the customer has an email address, check to see if the shipment address is different
@@ -2002,6 +2002,7 @@ sub SHIP_ORDER :Private
 		}
 
 	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
+
 	# If we don't have a csid and service, and *do* have a freight charge (s/b through overrride),
 	# stuff a shipment charge entry in - this is an 'Other' shipment with an overriden freight charge
 	if (!$params->{'customerserviceid'} and !$params->{'service'} and $params->{'freightcharge'})
@@ -2119,11 +2120,27 @@ sub generate_label :Private
 sub setup_label_to_print
 	{
 	my $self = shift;
-
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my @shipmentids = split(',',$params->{'shipmentid'});
+
+	foreach my $shipmentid (@shipmentids)
+		{
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
+		$self->setup_label($Shipment);
+		}
+	}
+
+sub setup_label
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	return unless $Shipment;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
 
 	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
