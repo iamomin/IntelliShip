@@ -71,7 +71,7 @@
 		}
 	[% END %]
 
-	[% IF LABEL_IMG %]
+	[% IF LABEL_IMG_LOOP %]
 	function PrintImageLabel()
 		{
 		if (notReady()) { return alert("Printer not Ready"); }
@@ -113,7 +113,7 @@
 					[% IF printerstring_loop %]
 						PrintEplLabel();
 					[% END %]
-					[% IF LABEL_IMG %]
+					[% IF LABEL_IMG_LOOP %]
 						PrintImageLabel();
 					[% END %]
 					}
