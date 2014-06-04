@@ -76,8 +76,8 @@
 		{
 		if (notReady()) { return alert("Printer not Ready"); }
 
-		[% FOREACH shipmentid IN shipmentids %]
-		qz.appendImage(getPath() + '/' + $('#lbl_[% shipmentid %]').attr('src'));
+		[% FOREACH shipment_id IN shipmentids %]
+		qz.appendImage(getPath() + '/' + $('#lbl_[% shipment_id %]').attr('src'));
 		[% END %]
 
 		// Automatically gets called when "qz.appendImage()" is finished.
