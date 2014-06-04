@@ -955,11 +955,15 @@ sub ship_to_carrier
 		push @shipmentids, $self->SHIP_ORDER;
 		}
 
-	my $response = { SUCCESS => @shipmentids ? 1 : 0 };
+	my $response = { SUCCESS => 0 };
 	$response->{shipmentid} = join('_',@shipmentids);
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 
-	$response->{error} = $self->errors->[0] if $self->has_errors;
+	if ($self->has_errors)
+		$response->{error} = $self->errors->[0];
+	else
+		$response->{SUCCESS} = 1;
+
 	return $response;
 	}
 
