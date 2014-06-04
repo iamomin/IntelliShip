@@ -966,7 +966,10 @@ sub ship_to_carrier
 sub cancel_shipment
 	{
 	my $self = shift;
-	return { voided => $self->VOID_SHIPMENT($self->context->req->params->{'shipmentid'}) };
+	my $shipment_id = $self->context->req->params->{'shipmentid'};
+	my @shipmentids = split(',',$shipment_id);
+	$self->VOID_SHIPMENT($_) foreach @shipmentids;
+	return { voided => 1 };
 	}
 
 sub get_consolidate_orders_list
