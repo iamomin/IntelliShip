@@ -2125,11 +2125,16 @@ sub setup_label_to_print
 
 	my @shipmentids = split(',',$params->{'shipmentid'});
 
+	my $HTML = '';
 	foreach my $shipmentid (@shipmentids)
 		{
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
 		$self->setup_label($Shipment);
+
+		$HTML .= $c->forward($c->view('Label'), "render", [ "templates/customer/order-label.tt" ]) if @shipmentids > 1;
 		}
+
+	$c->response->body($HTML) if @shipmentids > 1;
 	}
 
 sub setup_label

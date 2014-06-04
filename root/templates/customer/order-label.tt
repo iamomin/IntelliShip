@@ -3,6 +3,8 @@
 <script type="text/javascript" src="/static/js/deployJava.js"></script>
 <script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
+<script type="text/javascript" src="/static/js/customer-order-label.js"></script>
+
 <h2 class="DoNotPrint">SHIP A PACKAGE</h2>
 [% END %]
 
@@ -11,7 +13,7 @@
 [% END %]
 
 <div id="forms">
-<form id="frm_label" name="frm_label" action="/customer/order/quickship">
+<form id="frm_label_[% shipmentid %]" name="frm_label_[% shipmentid %]" action="/customer/order/quickship">
 	<input type="hidden" id="do" name="do"/>
 	<input type="hidden" id="force_edit" name="force_edit"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
@@ -24,12 +26,12 @@
 	<table class="center DoNotPrint">
 		<tr>
 			[% IF LABEL_IMG %]
-			<td><input type="button" class="blue"  value="Download/Save and Ship" id="download" onclick="DownloadLabelImage();"/></td>
+			<td><input type="button" class="blue"  value="Download/Save and Ship" id="download" onclick="DownloadLabelImage('[% coid %]','[% shipmentid %]');"/></td>
 			[% END %]
 			<td><input type="button" class="green" value="Print and Ship" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-			<td><input type="button" class="red"   value="Cancel" onclick="CancelShipment();"/></td>
+			<td><input type="button" class="red"   value="Cancel" onclick="CancelShipment('[% shipmentid %]');"/></td>
 			[% IF SEND_EMAIL %]
-			<td><input type="button" class="blue" value="Email" onclick="SendEmailNotification();"/></td>
+			<td><input type="button" class="blue" value="Email" onclick="SendEmailNotification('[% coid %]','[% shipmentid %]');"/></td>
 			[% END %]
 		</tr>
 	</table>
@@ -37,7 +39,7 @@
 
 	<center>
 	[% IF LABEL_IMG %]
-		<img id="lblimg" src="[% LABEL_IMG %]"/>
+		<img id="lbl_[% shipmentid %]" src="[% LABEL_IMG %]"/>
 	[% ELSE %]
 		[% LABEL %]
 	[% END %]
@@ -47,119 +49,6 @@
 </div>
 
 <script>
-	var PrintFormSequence_[% shipmentid %] = new Array();
-
-	[% UNLESS REPRINT_LABEL %]
-	function SendEmailNotification()
-		{
-		var query_param = 'coid=' + $("#coid").val() + '&shipmentid=' + $("#shipmentid").val();
-		send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param, function() {
-			if ( JSON_data.EMAIL_SENT ) showMessage("Email notification sent.", "Shipment Notification");
-			CheckAfterLabelPrintActivities_[% shipmentid %]();
-			});
-		}
-
-	function DownloadLabelImage() {
-		var img = document.getElementById('lblimg');
-		var url = img.src.replace("/print", "/download");
-		window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
-		CheckAfterLabelPrintActivities_[% shipmentid %]();
-		}
-
-	function CancelShipment()
-		{
-		var query_param = "shipmentid=" + $("#shipmentid").val();
-		send_ajax_request('', 'JSON', 'order', 'cancel_shipment', query_param, function () {
-			if ( JSON_data.voided ) {
-				showMessage("<div class='notice'>Shipment voided successfully</div>", "Void Shipment", function() {
-					$("#dialog-message").html("<div class='notice'>Please wait...</div>");
-					$("#do").val('');
-					$("#force_edit").val('1');
-					$("#frm_label").attr('action',window.location.href);
-					$('#frm_label').submit();
-					});
-				} else {
-				showMessage("Shipment void operation failed...", "Void Shipment");
-				}
-			});
-		}
-
-	function MarkShipmentAsPrinted(coid, shipmentid)
-		{
-		var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
-		send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
-			var href = window.location.href.split('?')[0];
-			if (JSON_data.RETURN_SHIPMENT == 1) href += '?coid=' + JSON_data.RET_COID;
-			window.location.href = href;
-			});
-		}
-	[% END %]
-
-	function GeneratePrintPackingList(coid, shipmentid)
-		{
-		var query_param = 'action=generate_packing_list&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
-		//var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		//myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
-
-		window.location.href = '/customer/order/ajax?' + query_param;
-		return;
-
-		var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
-		send_ajax_request('', 'JSON', 'order', 'generate_packing_list', query_param, function() {
-			var packingListWin = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-			packingListWin.document.write(JSON_data.PACKING_LIST);
-
-			if (PrintFormSequence_[% shipmentid %].length == 0) return;
-
-			var functionPointer = PrintFormSequence_[% shipmentid %].shift();
-			if (functionPointer != null) functionPointer(coid, shipmentid);
-			});
-		}
-
-	function GenerateBillOfLading(coid, shipmentid)
-		{
-		var query_param = 'action=generate_bill_of_lading&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
-		//var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		//myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
-
-		window.location.href = '/customer/order/ajax?' + query_param;
-		return;
-
-		var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
-		send_ajax_request('', 'JSON', 'order', 'generate_bill_of_lading', query_param, function() {
-			var BOL_window = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-			BOL_window.document.write(JSON_data.BOL);
-
-			if (PrintFormSequence_[% shipmentid %].length == 0) return;
-
-			var functionPointer = PrintFormSequence_[% shipmentid %].shift();
-			if (functionPointer != null) functionPointer(coid, shipmentid);
-			});
-		}
-
-	function GenerateCommercialInvoice(coid, shipmentid)
-		{
-		var query_param = 'action=generate_commercial_invoice&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
-		//var myWin = window.open('/customer/order/ajax?'+query_param, '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-		//myWin.onbeforeunload = function (event) { /*alert("I am here on before unload");*/ MarkShipmentAsPrinted(coid,shipmentid); };
-
-		window.location.href = '/customer/order/ajax?' + query_param;
-		return;
-	/*
-		send_ajax_request('', 'JSON', 'order', 'generate_commercial_invoice', query_param, function() {
-
-			var ComInvWin = window.open('', '', 'left=0,top=0,resizable=yes,scrollbars=yes,toolbar=no,menubar=no');
-			ComInvWin.document.write(JSON_data.ComInv);
-
-			if (PrintFormSequence_[% shipmentid %].length == 0) return;
-
-			var functionPointer = PrintFormSequence_[% shipmentid %].shift();
-			if (functionPointer != null) functionPointer(coid, shipmentid);
-
-			});
-	*/
-		}
-
 	[% IF printerstring_loop %]
 	function PrintEplLabel_[% shipmentid %]()
 		{
@@ -173,7 +62,7 @@
 
 		qz.print();
 
-		CheckAfterLabelPrintActivities_[% shipmentid %]();
+		CheckAfterLabelPrintActivities('[% coid %]','[% shipmentid %]',[% REPRINT_LABEL ? 'true' : 'false' %]);
 		}
 	[% END %]
 
@@ -190,7 +79,7 @@
 			qz.printPS();
 
 			// Check print call back activities.
-			CheckAfterLabelPrintActivities_[% shipmentid %]();
+			CheckAfterLabelPrintActivities('[% coid %]','[% shipmentid %]',[% REPRINT_LABEL ? 'true' : 'false' %]);
 
 			// Remove reference to this function
 			window['qzDoneAppending'] = null;
@@ -234,22 +123,8 @@
 			}
 		}
 
-	function CheckAfterLabelPrintActivities_[% shipmentid %]()
-		{
-		if ($('#printpackinglist').val() == 1) PrintFormSequence_[% shipmentid %].push(GeneratePrintPackingList);
-		if ($('#billoflading').val() == 1)     PrintFormSequence_[% shipmentid %].push(GenerateBillOfLading);
-		if ($('#printcominv').val() == 1)   PrintFormSequence_[% shipmentid %].push(GenerateCommercialInvoice);
-
-		[% UNLESS REPRINT_LABEL %]PrintFormSequence_[% shipmentid %].push(MarkShipmentAsPrinted);[% END %]
-
-		var functionPointer = PrintFormSequence_[% shipmentid %].shift();
-		if (functionPointer != undefined) functionPointer('[% coid %]', '[% shipmentid %]');
-		}
-
 	$(document).ready(function() {
-		[% IF AUTO_PRINT || REPRINT_LABEL %]
-		PrintThermalLabel_[% shipmentid %]();
-		[% END %]
+		[% IF AUTO_PRINT || REPRINT_LABEL %]PrintThermalLabel_[% shipmentid %]();[% END %]
 		});
 
 </script>
