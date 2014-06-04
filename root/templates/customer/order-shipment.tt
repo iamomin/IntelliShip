@@ -140,7 +140,6 @@
 	function SpecialServices()
 		{
 		var linkObject = $('#special-services-cmd');
-
 		if ($('#special-services').html().length > 0)
 			{
 			if (linkObject.text() == "+" ){
