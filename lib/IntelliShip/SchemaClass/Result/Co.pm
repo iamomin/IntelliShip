@@ -1012,8 +1012,9 @@ sub is_fullfilled
 sub delete_order
 	{
 	my $self = shift;
-	$self->delete_all_package_details;
-	$self->delete;
+	#$self->delete_all_package_details;
+	$self->statusid('200'); #Void
+	$self->update;
 	}
 
 sub delete_all_package_details
