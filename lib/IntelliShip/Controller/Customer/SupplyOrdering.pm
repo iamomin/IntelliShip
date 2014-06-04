@@ -99,7 +99,6 @@ sub setup_supply_ordering :Private
 			{ name => 'tophone', details => "{ phone: true }"},
 			{ name => 'toemail', details => "{ email: true }"},
 			{ name => 'todepartment', details => "{ minlength: 2 }"},
-			{ name => 'carrier', details => "{ minlength: 2 }"},
 			{ name => 'supplyquantity',  details => "{ numeric: true }"},
 			]);
 

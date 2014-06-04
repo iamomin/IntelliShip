@@ -247,7 +247,7 @@ function validateForm( requireFields )
 			//alert("proerty= " + proerty + ", value = " + value + ", boolRequired = " + boolRequired);
 			});
 
-		//alert("messageStr= " + messageStr);
+		//alert("messageStr= " + messageStr + ", boolRequired: " + boolRequired);
 
 		if (boolRequired) {
 			boolResult = false;
