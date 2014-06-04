@@ -3,17 +3,17 @@
 <script type="text/javascript" src="/static/js/deployJava.js"></script>
 <script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
-<script type="text/javascript" src="/static/js/customer-order-label.js"></script>
-
 <h2 class="DoNotPrint">SHIP A PACKAGE</h2>
 [% END %]
+
+<script type="text/javascript" src="/static/js/customer-order-label.js"></script>
 
 [% IF MESSAGE %]
 <div class="notice">[% MESSAGE %]</div>
 [% END %]
 
 <div id="forms">
-<form id="frm_label_[% shipmentid %]" name="frm_label_[% shipmentid %]" action="/customer/order/quickship">
+<form id="frm_label" name="frm_label" action="/customer/order/quickship">
 	<input type="hidden" id="do" name="do"/>
 	<input type="hidden" id="force_edit" name="force_edit"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
@@ -21,11 +21,12 @@
 	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
 	<input type="hidden" id="billoflading" name="billoflading" value="[% billoflading %]"/>
 	<input type="hidden" id="printcominv" name="printcominv" value="[% printcominv %]"/>
+	<input type="hidden" id="shipmentids" name="shipmentids" value="[% shipmentids %]"/>
 
 	[% UNLESS REPRINT_LABEL %]
 	<table class="center DoNotPrint">
 		<tr>
-			[% IF LABEL_IMG %]
+			[% IF LABEL_IMG_LOOP %]
 			<td><input type="button" class="blue"  value="Download/Save and Ship" id="download" onclick="DownloadLabelImage('[% coid %]','[% shipmentid %]');"/></td>
 			[% END %]
 			<td><input type="button" class="green" value="Print and Ship" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
@@ -38,10 +39,14 @@
 	[% END %]
 
 	<center>
-	[% IF LABEL_IMG %]
-		<img id="lbl_[% shipmentid %]" src="[% LABEL_IMG %]"/>
+	[% IF LABEL_IMG_LOOP %]
+		[% FOREACH item IN LABEL_IMG_LOOP %]
+		<img id="lbl_[% item.shipmentid %]" src="[% item.src %]"/>
+		[% END %]
 	[% ELSE %]
-		[% LABEL %]
+		[% FOREACH LABEL IN LABEL_LOOP %]
+			[% LABEL %]
+		[% END %]
 	[% END %]
 	</center>
 
@@ -50,7 +55,7 @@
 
 <script>
 	[% IF printerstring_loop %]
-	function PrintEplLabel_[% shipmentid %]()
+	function PrintEplLabel()
 		{
 		if (notReady()) { return alert("Printer not Ready"); }
 
@@ -67,11 +72,13 @@
 	[% END %]
 
 	[% IF LABEL_IMG %]
-	function PrintImageLabel_[% shipmentid %]()
+	function PrintImageLabel()
 		{
 		if (notReady()) { return alert("Printer not Ready"); }
 
-		qz.appendImage(getPath() + '/' + $('#lblimg').attr('src'));
+		[% FOREACH shipmentid IN shipmentids %]
+		qz.appendImage(getPath() + '/' + $('#lbl_[% shipmentid %]').attr('src'));
+		[% END %]
 
 		// Automatically gets called when "qz.appendImage()" is finished.
 		window['qzDoneAppending'] = function() {
@@ -104,10 +111,10 @@
 				for (var count=0; count < label_print_count; ++count)
 					{
 					[% IF printerstring_loop %]
-						PrintEplLabel_[% shipmentid %]();
+						PrintEplLabel();
 					[% END %]
 					[% IF LABEL_IMG %]
-						PrintImageLabel_[% shipmentid %]();
+						PrintImageLabel();
 					[% END %]
 					}
 				});

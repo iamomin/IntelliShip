@@ -957,6 +957,8 @@ sub ship_to_carrier
 
 	my $response = { SUCCESS => @shipmentids ? 1 : 0 };
 	$response->{shipmentid} = join(',',@shipmentids);
+	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
+
 	$response->{error} = $self->errors->[0] if $self->has_errors;
 	return $response;
 	}

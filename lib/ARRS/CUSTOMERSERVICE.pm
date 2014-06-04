@@ -246,7 +246,7 @@ sub GetZoneNumber
 					or die "Could not prepare SQL statement";
 				$SQLString =~ s/\t+//;
 				$SQLString =~ s/\n+/ /;
-				warn "ZoneLookup SQL: " . $SQLString;
+				#warn "ZoneLookup SQL: " . $SQLString;
 				$sth->execute()
 					or die "Cannot execute sql statement";
 

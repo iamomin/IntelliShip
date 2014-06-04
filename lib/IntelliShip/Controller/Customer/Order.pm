@@ -2025,24 +2025,10 @@ sub SHIP_ORDER :Private
 
 	## Set shipment and order statuses (ship complete and shipped, respectively)
 	$Shipment->statusid(4);
-	$CO->statusid(5);
-
-	# Extra, carrier specific bits
-	#if ($Shipment->{'screen'} eq 'displayawb_airborne_preprint')
-	#	{
-	#	my $trackinglast3 = $Shipment->tracking1 =~ /\d+(\d{3})$/;
-	#	if ($Shipment->partiestotransaction eq 'Y')
-	#		{
-	#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;X';
-	#		}
-	#	elsif ( $Shipment->partiestotransaction eq 'N' )
-	#		{
-	#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X';
-	#		}
-	#	}
-
-	$CO->update;
 	$Shipment->update;
+
+	$CO->statusid(5);
+	$CO->update;
 
 	$params->{'shipmentid'} = $Shipment->shipmentid;
 
@@ -2125,16 +2111,18 @@ sub setup_label_to_print
 
 	my @shipmentids = split(',',$params->{'shipmentid'});
 
-	my $HTML = '';
 	foreach my $shipmentid (@shipmentids)
 		{
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
+		unless ($Shipment)
+			{
+			$c->log->debug("shipment not found, shipmentid: " . $shipmentid);
+			next;
+			}
 		$self->setup_label($Shipment);
-
-		$HTML .= $c->forward($c->view('Label'), "render", [ "templates/customer/order-label.tt" ]) if @shipmentids > 1;
 		}
 
-	$c->response->body($HTML) if @shipmentids > 1;
+	$c->stash(template => "templates/customer/order-label.tt");
 	}
 
 sub setup_label
@@ -2142,10 +2130,10 @@ sub setup_label
 	my $self = shift;
 	my $Shipment = shift;
 
-	return unless $Shipment;
-
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	return unless $Shipment;
 
 	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
@@ -2183,7 +2171,8 @@ sub setup_label
 
 	if ($label_file =~ /JPG/i)
 		{
-		$c->stash->{LABEL_IMG} = '/print/label/' . $Shipment->shipmentid . '.jpg';
+		$c->stash->{LABEL_IMG_LOOP} = [] unless $c->stash->{LABEL_IMG_LOOP};
+		push(@{$c->stash->{LABEL_IMG_LOOP}}, { src => '/print/label/' . $Shipment->shipmentid . '.jpg', shipmentid => $Shipment->shipmentid });
 		}
 	else
 		{
@@ -2213,13 +2202,17 @@ sub setup_label
 
 		my $template = $params->{'carrier'} || $Shipment->carrier ;
 		   $template = 'default' unless $template;
-		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+
+		$c->stash->{LABEL_LOOP} = [] unless $c->stash->{LABEL_LOOP};
+		push (@{$c->stash->{LABEL_LOOP}}, $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 		}
+
+	$c->stash->{shipmentids} = [] unless $c->stash->{shipmentids};
+
+	push(@{$c->stash->{shipmentids}},$Shipment->shipmentid);
 
 	$c->stash->{SEND_EMAIL} = IntelliShip::Utils->is_valid_email($Shipment->deliverynotification);
 	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
-
-	$c->stash(template => "templates/customer/order-label.tt");
 	}
 
 sub GetNotificationShipments :Private
@@ -2607,7 +2600,9 @@ sub SetupPrinterStream
 
 	close $FILE;
 
-	my $printerstring_loop = [];
+	$c->stash->{printerstring_loop} = [] unless $c->stash->{printerstring_loop};
+	my $printerstring_loop = $c->stash->{printerstring_loop};
+
 	foreach my $line (@PSLINES)
 		{
 		chomp $line;
