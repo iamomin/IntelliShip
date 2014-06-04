@@ -34,7 +34,7 @@ sub index :Path :Args(0) {
 	## Display file upload type link
 	my $links = [
 				{ name => ($self->customer->customerid eq '8ETKEK130WAQ0' ? 'Order' : 'Order/Product') . ' File Upload', url => '/customer/uploadfile/setup?type=ORDER'},
-				{ name => 'Sku Management File Upload', url => '/customer/uploadfile/setup?type=PRODUCTSKU'},
+				#{ name => 'Sku Management File Upload', url => '/customer/uploadfile/setup?type=PRODUCTSKU'},
 			];
 
 	$c->stash->{UPLOADFILE_LINKS} = $links;
