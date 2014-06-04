@@ -74,8 +74,7 @@
 		</table>
 
 		<br/>
-		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="https://dintelliship2.engagetechnology.com/customer/order/quickship">Please wait...</iframe>
-		
+		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="/customer/order/quickship">Please wait...</iframe>
 	</div>
 	<div id="branding-css-content">
 		<table class="center-app">
@@ -150,13 +149,13 @@
 		$("#color-picker-tab").click(function() {
 			updateBranding();
 		});
-		
+
 		function updateBranding() {
 			var iframe = document.getElementById('branding-demo-iframe');
 			iframe.src = iframe.src;
 			updateCompanyBranding();
 			}
-	
+
 	/**** DISABLE IFRAME CONTENTS ****/
 	$("#branding-demo-iframe").load(function() {
 		var iFrame = $(this);
