@@ -960,9 +960,13 @@ sub ship_to_carrier
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 
 	if ($self->has_errors)
+		{
 		$response->{error} = $self->errors->[0];
+		}
 	else
+		{
 		$response->{SUCCESS} = 1;
+		}
 
 	return $response;
 	}
