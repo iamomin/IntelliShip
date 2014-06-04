@@ -956,7 +956,7 @@ sub ship_to_carrier
 		}
 
 	my $response = { SUCCESS => @shipmentids ? 1 : 0 };
-	$response->{shipmentid} = join(',',@shipmentids);
+	$response->{shipmentid} = join('_',@shipmentids);
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 
 	$response->{error} = $self->errors->[0] if $self->has_errors;
@@ -967,7 +967,7 @@ sub cancel_shipment
 	{
 	my $self = shift;
 	my $shipment_id = $self->context->req->params->{'shipmentid'};
-	my @shipmentids = split(',',$shipment_id);
+	my @shipmentids = split('_',$shipment_id);
 	$self->VOID_SHIPMENT($_) foreach @shipmentids;
 	return { voided => 1 };
 	}

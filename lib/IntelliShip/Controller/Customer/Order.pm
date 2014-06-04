@@ -2109,7 +2109,7 @@ sub setup_label_to_print
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my @shipmentids = split(',',$params->{'shipmentid'});
+	my @shipmentids = split('_',$params->{'shipmentid'});
 
 	foreach my $shipmentid (@shipmentids)
 		{

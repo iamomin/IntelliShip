@@ -29,7 +29,7 @@ function MarkShipmentAsPrinted(coid, shipmentid)
 
 function SendEmailNotification(coid,shipmentid)
 	{
-	var arr = shipmentid.split(",");
+	var arr = shipmentid.split("_");
 	jQuery.each(substr, function(index, item) {
 		var query_param = 'coid=' + coid + '&shipmentid=' + item;
 		send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param, function() {
@@ -42,7 +42,7 @@ function SendEmailNotification(coid,shipmentid)
 
 function DownloadLabelImage(coid,shipmentid)
 	{
-	var arr = shipmentid.split(",");
+	var arr = shipmentid.split("_");
 	jQuery.each(substr, function(index, item) {
 		var img = document.getElementById('lbl_'+item);
 		var url = img.src.replace("/print", "/download");
