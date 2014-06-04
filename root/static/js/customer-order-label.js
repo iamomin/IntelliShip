@@ -29,19 +29,27 @@ function MarkShipmentAsPrinted(coid, shipmentid)
 
 function SendEmailNotification(coid,shipmentid)
 	{
-	var query_param = 'coid=' + coid + '&shipmentid=' + shipmentid;
-	send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param, function() {
-		if ( JSON_data.EMAIL_SENT ) showMessage("Email notification sent.", "Shipment Notification");
-		CheckAfterLabelPrintActivities(coid,shipmentid);
+	var arr = shipmentid.split(",");
+	jQuery.each(substr, function(index, item) {
+		var query_param = 'coid=' + coid + '&shipmentid=' + item;
+		send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param, function() {
+			if ( JSON_data.EMAIL_SENT ) showMessage("Email notification sent.", "Shipment Notification");
+
+			if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
+			});
 		});
 	}
 
 function DownloadLabelImage(coid,shipmentid)
 	{
-	var img = document.getElementById('lbl_'+shipmentid);
-	var url = img.src.replace("/print", "/download");
-	window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
-	CheckAfterLabelPrintActivities(coid,shipmentid);
+	var arr = shipmentid.split(",");
+	jQuery.each(substr, function(index, item) {
+		var img = document.getElementById('lbl_'+item);
+		var url = img.src.replace("/print", "/download");
+		window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
+
+		if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
+		});
 	}
 
 function CheckAfterLabelPrintActivities(coid,shipmentid,boolReprintLabel)
