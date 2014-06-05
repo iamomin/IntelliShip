@@ -73,6 +73,8 @@ sub setup :Local
 	my $params = $c->req->params;
 
 	my $Customer = $self->get_customer;
+	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
+
 	if ($Customer)
 		{
 		$params->{'customerid'} = $Customer->customerid unless $params->{'customerid'};
@@ -82,6 +84,9 @@ sub setup :Local
 		$c->stash->{customerAuxFormAddress} = $Customer->auxilary_address;
 		$c->stash->{cust_defaulttoquickship} = 1 if ($Customer->quickship eq '2');
 		$c->stash->{SSO_CUSTOMER}            = 1 if $Customer->is_single_sign_on_customer;
+
+		$self->get_branding_settings;
+		$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);
 
 		my @shipmentmarkupdata =$c->model('MyArrs::RateData')->search({
 			-and => [
@@ -174,11 +179,7 @@ sub setup :Local
 	$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 	$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 
-	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
-
-	$self->get_branding_settings;
 	$c->stash->{CURRENT_COMPANY} = ($params->{'customerid'} eq $self->customer->customerid);
-	$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);;
 
 	$c->stash->{SETUP_CUSTOMER} = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
@@ -192,7 +193,12 @@ sub configure :Local
 	my $params = $c->req->params;
 
 	my $Customer = $self->get_customer;
-	$Customer = $c->model('MyDBI::Customer')->new({}) unless $Customer;
+	unless ($Customer)
+		{
+		$Customer = $c->model('MyDBI::Customer')->new({});
+		$Customer->createdby($self->customer->customerid);
+		$Customer->datecreated(IntelliShip::DateUtils->get_timestamp_with_time_zone);
+		}
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
@@ -261,12 +267,8 @@ sub configure :Local
 			country     => $params->{'country'},
 			};
 
-	my $Address;
-	if ($Customer->addressid)
-		{
-		$Address = $Customer->address;
-		}
-	else
+	my $Address = $Customer->address if $Customer->addressid;
+	unless ($Address)
 		{
 		my @address = $c->model('MyDBI::Address')->search($addressData);
 
@@ -295,8 +297,8 @@ sub configure :Local
 			country     => $params->{'auxcountry'},
 			};
 
-	my $AuxilaryAddress;
-	if ($AuxilaryAddress = $Customer->auxilary_address)
+	my $AuxilaryAddress = $Customer->auxilary_address if $Customer->auxformaddressid;
+	unless ($AuxilaryAddress)
 		{
 		my @auxaddress = $c->model('MyDBI::Address')->search($auxAddressData);
 
@@ -318,6 +320,9 @@ sub configure :Local
 	$Customer->settings->delete;
 
 	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
+	push(@$CUSTOMER_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']}) if $self->contact->is_superuser;
+
+	$CUSTOMER_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CUSTOMER_RULES];
 
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
@@ -490,7 +495,13 @@ sub get_JSON_DATA :Private
 		}
 	elsif ($action eq 'search_customer')
 		{
-		my $sql = "SELECT customername FROM customer WHERE customername LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
+		my $WHERE = "WHERE customername LIKE '%" . $params->{'term'} . "%' ";
+
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE .= "AND (createdby = '" . $self->customer->customerid ."' OR customerid = '".$self->customer->customerid."') ";
+			}
+		my $sql = "SELECT customername FROM customer $WHERE ORDER BY 1";
 		my $sth = $c->model('MyDBI')->select($sql);
 		my $arr = [];
 		push(@$arr, $_->[0]) foreach @{$sth->query_data};
@@ -749,12 +760,15 @@ sub get_company_setting_list :Private
 	my $Customer = shift;
 	my $c = $self->context;
 
-	return unless $Customer;
-
 	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
+
+	push(@$CUSTOMER_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']}) if $self->contact->is_superuser;
+
+	$CUSTOMER_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CUSTOMER_RULES];
+
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
-	my @Settings = $Customer->settings;
+	my @Settings = $Customer->settings if $Customer;
 	my %customerRules = map { $_->datatypename => $_->value } @Settings;
 
 	my $list = [];

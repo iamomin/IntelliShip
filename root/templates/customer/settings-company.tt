@@ -154,12 +154,12 @@
 			<ul>
 				<li><a id="company-profile-tab"  href="#company-profile">Profile</a></li>
 				<li><a id="company-rules-tab"    href="#company-rules">Rules</a></li>
-				<li><a id="company-settings-tab" href="#company-settings">Default Settings</a></li>
-				<li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
+				<li><a id="company-settings-tab" href="#company-default-settings">Default Settings</a></li>
 				[% IF customerid %]
+				<li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
 				<li><a id="company-branding-tab" href="#company-branding">Branding</a></li>
-				[% END %]
 				<li><a id="tariff-pricing-tab"   href="#tariff-pricing">Tariff Pricing</a></li>
+				[% END %]
 			</ul>
 			<div id="company-profile">
 				<table class="center-app">
@@ -180,11 +180,7 @@
 					<tr>
 						<td><label class="float-right" for="username">User Name:</label></td>
 						<td>
-							[% IF SUPER_USER %]
-								<input type="text" name="username" id="username" value="[% username %]" class="broad-text" onchange="validateCustomerUsername();">
-							[% ELSE %]
-								[% username %]
-							[% END %]
+							<input type="text" name="username" id="username" value="[% username %]" class="broad-text" onchange="validateCustomerUsername();">
 						</td>
 						<td><label class="float-right" for="fax">Fax:</label></td>
 						<td><input type="text" class="broad-text" name="fax" id="fax" value="[% fax %]"/></td>
@@ -192,11 +188,7 @@
 					<tr>
 						<td><label class="float-right" for="password">Password:</label></td>
 						<td>
-							[%IF SUPER_USER %]
-								<input type="text" class="broad-text" name="password" id="password" value="[% password %]"/>
-							[%ELSE%]
-								[%password%]
-							[%END%]
+							<input type="text" class="broad-text" name="password" id="password" value="[% password %]"/>
 						</td>
 						<td><label class="float-right" for="ssnein">EIN:</label></td>
 						<td><input type="text" class="broad-text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
@@ -319,7 +311,7 @@
 					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
 				</center>
 			</div>
-			<div id="company-settings">
+			<div id="company-default-settings">
 				<table class="center-app">
 					<tr>
 						<td><label class="float-right" for="cust_sopid">SOP:</label></td>
@@ -699,8 +691,10 @@
 					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
 				</center>
 			</div>
+			[% IF customerid %]
 			<div id="company-contacts"></div>
 			<div id="company-branding">[% COMPANY_BRANDING_HTML %]</div>
+			[% END %]
 			<div id="tariff-pricing"></div>
 		</div>
 	</form>
@@ -760,6 +754,7 @@
 		$("#phone").mask("999-999-9999");
 		$("#fax").mask("999-999-9999");
 
+		[% IF customerid %]
 		$("#company-contacts-tab").click(function() {
 			if($("#company-contacts").html().length == 0) {
 				$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
@@ -788,6 +783,7 @@
 			[% END %]
 			});
 			}
+		[% END %]
 
 		$("#tariff-pricing-tab").click(function(event) {						
 			if($("#tariff-pricing").html().length == 0) {

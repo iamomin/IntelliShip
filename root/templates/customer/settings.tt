@@ -620,11 +620,7 @@ $(document).ready(function(){
 			<td><label class="float-right" for="contact_username">User Name:</label></td>
 			<td>
 			[% UNLESS SSO_CUSTOMER%]
-			[% IF READONLY %]
-				[% contactInfo.username %]
-			[% ELSE  %]
-				<input type="text" name="contact_username" id="contact_username" value="[% contactInfo.username %]" class="broad-text" onchange="validateContactUsername();">
-			[% END %]
+			<input type="text" name="contact_username" id="contact_username" value="[% contactInfo.username %]" class="broad-text" onchange="validateContactUsername();">
 			[% END %]
 			</td>
 			<td><label class="float-right" for="firstname">First Name:</label></td>
@@ -640,11 +636,7 @@ $(document).ready(function(){
 			<td><label class="float-right" for="password">Password:</label></td>
 			<td>
 			[% UNLESS SSO_CUSTOMER%]
-			[% IF READONLY %]
-				[% password %]
-			[% ELSE %]
-				<input type="text" name="contact_password" id="contact_password" value="[% contact_password %]" class="broad-text">
-			[% END %]
+			<input type="text" name="contact_password" id="contact_password" value="[% contact_password %]" class="broad-text">
 			[% END %]
 			</td>
 			<td><label class="float-right" for="lastname">Last Name:</label></td>

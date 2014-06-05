@@ -399,6 +399,12 @@ __PACKAGE__->table("customer");
   is_nullable: 1
   size: 13
 
+=head2 createdby
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 13
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -534,6 +540,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 100 },
   "auxformaddressid",
   { data_type => "char", is_nullable => 1, size => 13 },
+  "createdby",
+  { data_type => "varchar", is_nullable => 1, size => 13 },
 );
 
 =head1 PRIMARY KEY
