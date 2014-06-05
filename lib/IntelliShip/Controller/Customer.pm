@@ -291,35 +291,9 @@ sub get_branding_id
 
 	return $c->stash->{branding_id} if $c->stash->{branding_id};
 
-	my $branding_id = 'engage';
+	#$c->log->debug("**** HTTP_HOST: " . $ENV{HTTP_HOST});
 
-	my $http_host = $ENV{HTTP_HOST} || '';
-
-	#$c->log->debug("**** ENV: " . Dumper %ENV);
-	#$c->log->debug("**** HTTP_HOST: " . $http_host);
-
-	#override brandingid based on url
- 	if ( $http_host =~ /d?visionship\d?\.*\.*/ )
-		{
-		$branding_id = 'visionship';
-		}
-	elsif ( $http_host =~ /d?eraship\d?\.engage*\.*/ )
-		{
-		$branding_id = 'eraship';
-		}
-	elsif ( $http_host =~ /d?accellent\d?\.engage*\.*/ or  $http_host =~ /d?ais\d?\.engage*\.*/)
-		{
-		$branding_id = 'accellent';
-		}
-	elsif ( $http_host =~ /d?gintelliship\d?\.engage*\.*/ )
-		{
-		$branding_id = 'greating';
-		}
-	elsif ( $http_host =~ /d?mintelliship\d?\.engage*\.*/ or $http_host =~ /motorolasolutions/ )
-		{
-		$branding_id = 'motorola';
-		}
-
+	my $branding_id = IntelliShip::Utils->get_branding_id;
 	$c->stash->{branding_id} = $branding_id;
 
 	#$c->log->debug("**** BRANDING: " . $branding_id);

@@ -321,7 +321,8 @@ sub SendPickUpEmail
 	my $Message = shift;
 	my $CustomerTransactionId = shift;
 	my $ConfirmationNumber = shift;
-
+	my $c = $self->context;
+	
 	my $Shipment = $self->SHIPMENT;
 
 	my $subject;
@@ -343,23 +344,22 @@ sub SendPickUpEmail
 	$Email->add_to('noc@engagetechnology.com');
 	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
-	$Email->add_line('');
-	$Email->add_line('=' x 60);
-	$Email->add_line('');
-	$Email->add_line('Weight      : ' . $Shipment->total_weight);
-	$Email->add_line('DIM Weight  : ' . $Shipment->dimweight);
-	$Email->add_line('Pickup Date : ' . $Shipment->datepacked);
-	$Email->add_line('Origin      : ' . $Shipment->addressidorigin);
-	$Email->add_line('Tracking    : ' . $Shipment->tracking1);
-	$Email->add_line('');
-	$Email->add_line('=' x 60);
-	$Email->add_line('');
-	$Email->add_line('Message                    : ' . $Message . '<br>');
-	$Email->add_line('Code                       : ' . $ResponseCode . '<br>');
-	$Email->add_line('Customer-Transaction-Id    : ' . $CustomerTransactionId . '<br>') if $CustomerTransactionId;
-	$Email->add_line('PickUP Confirmation Number : ' . $ConfirmationNumber . '<br>') if $ConfirmationNumber;
-	$Email->add_line('');
-	$Email->add_line('=' x 60);
+	my $CO = $self->CO;
+	my $Customer = $CO->customer;
+	
+	my $company_logo = $Customer->username . '-light-logo.png';
+	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . IntelliShip::Utils->get_branding_id . '/images/header/' . $company_logo;
+	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
+	$c->stash->{logo} = $company_logo;
+
+	$c->stash->{Shipment_list} = $Shipment;
+
+	$c->stash->{Message} = $Message;
+	$c->stash->{ResponseCode} = $ResponseCode;
+	$c->stash->{CustomerTransactionId} = $CustomerTransactionId if $CustomerTransactionId;
+	$c->stash->{ConfirmationNumber} = $ConfirmationNumber if $ConfirmationNumber;
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/pickup-notification.tt' ]));
 
 	if ($Email->send)
 		{

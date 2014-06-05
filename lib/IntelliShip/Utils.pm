@@ -33,6 +33,39 @@ sub new
 	return $obref;
 	}
 
+sub get_branding_id
+	{
+	my $self = shift;
+
+	my $branding_id = 'engage';
+
+	my $http_host = $ENV{HTTP_HOST} || '';
+
+	#override brandingid based on url
+ 	if ( $http_host =~ /d?visionship\d?\.*\.*/ )
+		{
+		$branding_id = 'visionship';
+		}
+	elsif ( $http_host =~ /d?eraship\d?\.engage*\.*/ )
+		{
+		$branding_id = 'eraship';
+		}
+	elsif ( $http_host =~ /d?accellent\d?\.engage*\.*/ or  $http_host =~ /d?ais\d?\.engage*\.*/)
+		{
+		$branding_id = 'accellent';
+		}
+	elsif ( $http_host =~ /d?gintelliship\d?\.engage*\.*/ )
+		{
+		$branding_id = 'greating';
+		}
+	elsif ( $http_host =~ /d?mintelliship\d?\.engage*\.*/ or $http_host =~ /motorolasolutions/ )
+		{
+		$branding_id = 'motorola';
+		}
+
+	return $branding_id;
+	}
+
 sub get_freight_class_from_density
 	{
 	my $self = shift;
