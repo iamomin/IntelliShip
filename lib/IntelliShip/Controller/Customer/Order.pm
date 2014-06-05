@@ -51,6 +51,10 @@ sub quickship :Local
 		$self->cancel_order;
 		$self->setup_one_page;
 		}
+	elsif ($do_value eq 'delete')
+		{
+		$self->delete_order;
+		}
 	else
 		{
 		$c->stash->{quickship} = 1;
@@ -58,39 +62,16 @@ sub quickship :Local
 		}
 	}
 
-sub _setup_one_page :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	my $CO = $self->get_order;
-
-	if ($self->order_can_auto_process)
-		{
-		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
-		$self->SHIP_ORDER;
-		return $self->display_error_details($self->errors->[0]) if $self->has_errors;
-		return $self->setup_label_to_print;
-		}
-
-	$c->stash->{one_page} = 1;
-
-	#DYNAMIC FIELD VALIDATIONS
-	$self->set_required_fields;
-
-	$self->setup_address;
-	$self->setup_shipment_information;
-	$self->setup_carrier_service;
-
-	$c->stash(template => "templates/customer/order-one-page.tt");
-	}
-
 sub setup_one_page :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
 
+	$c->log->debug("... SETUP_ONE_PAGE ...");
+
 	my $CO = $self->get_order;
+	my $Contact = $self->contact;
+	my $Customer = $self->customer;
 
 	if ($self->order_can_auto_process)
 		{
@@ -108,7 +89,10 @@ sub setup_one_page :Private
 	$self->setup_address;;
 	$self->setup_shipment_information;
 	$self->setup_carrier_service;
-	$c->stash->{ROUTE_CAPTION} = ($self->customer->is_single_sign_on_customer and $self->customer->get_contact_data_value('routebuttonname')) ? uc($self->customer->get_contact_data_value('routebuttonname')) : 'ROUTE NOW';
+
+	$c->stash->{SUPER_USER} = ($Contact->is_superuser or $Contact->is_administrator);
+	$c->stash->{ROUTE_CAPTION} = ($Customer->is_single_sign_on_customer and $Customer->get_contact_data_value('routebuttonname')) ? uc($Customer->get_contact_data_value('routebuttonname')) : 'ROUTE NOW';
+
 	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 
@@ -993,6 +977,42 @@ sub cancel_order :Private
 		{
 		$self->clear_CO_details;
 		$params->{do} = undef;
+		$c->detach($c->action);
+		}
+	}
+
+sub delete_order :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ DELETE ORDER ___");
+
+	my $CO = $self->get_order;
+
+	if (my @assessorials = $CO->assessorials)
+		{
+		$c->log->debug("assessorials found, delete");
+		foreach my $AssData (@assessorials)
+			{
+			$AssData->delete;
+			}
+		}
+
+	$c->log->debug("delete all package product details");
+	$CO->delete_all_package_details;
+
+	$CO->delete;
+
+	my $parent = $params->{'parent'} || '';
+	if (length $parent)
+		{
+		$c->response->redirect($c->uri_for('/customer/' . $parent));
+		}
+	else
+		{
+		$self->clear_CO_details;
 		$c->detach($c->action);
 		}
 	}

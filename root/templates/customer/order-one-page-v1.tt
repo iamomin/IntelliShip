@@ -137,9 +137,14 @@
 	<div style="clear: both;">&nbsp;</div>
 
 	<div class="float-right">
-		[% UNLESS ONLY_SHIP %]<input type="button" class="green" id="save" value="SAVE"/>[% END %]
-		[% IF quickship %]<input type="button" class="green" id="ship_now" value="SHIP"/>[% END %]
-		<input type="button" class="gray" id="cancel" value="CANCEL"/>
+		<table>
+		<tr>
+		[% UNLESS ONLY_SHIP %]<td><input type="button" class="green" id="save" value="SAVE"/></td>[% END %]
+		[% IF quickship %]<td><input type="button" class="green" id="ship_now" value="SHIP"/></td>[% END %]
+		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
+		[% IF SUPER_USER %]<td><input type="button" class="red" id="deleted" value="DELETE"/></td>[% END %]
+		</tr>
+		</table>
 	</div>
 
 </form>
@@ -269,6 +274,12 @@
 		requiredFieldHash = {};
 		$("#do").val("cancel");
 		$("#frm_order").submit();
+		});
+
+	$('#deleted').click(function() {
+		requiredFieldHash = {};
+		$("#do").val("delete");
+		$('#frm_order').submit();
 		});
 
 	$("#frm_order").submit(function() {

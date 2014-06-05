@@ -135,8 +135,9 @@ input.orange[type=button]:hover{
     cursor: pointer;
     opacity: 0.9;
 }
-input.gray, button.quick-ship {
+input.gray, input.red, button.quick-ship {
     margin-top: 18px;
+    margin-left:25px;
 }
 /*SHIPMENT DETAILS PAGE*/
 #frm_shipment label {

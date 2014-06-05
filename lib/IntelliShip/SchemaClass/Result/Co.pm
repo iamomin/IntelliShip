@@ -1009,10 +1009,9 @@ sub is_fullfilled
 	return 1;
 	}
 
-sub delete_order
+sub archive_order
 	{
 	my $self = shift;
-	#$self->delete_all_package_details;
 	$self->statusid('200'); #Void
 	$self->update;
 	}

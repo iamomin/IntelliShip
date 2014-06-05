@@ -946,7 +946,7 @@ sub ship_to_carrier
 			## SHIP ORDER
 			push @shipmentids, $self->SHIP_ORDER;
 
-			$DummyCO->delete_order;
+			$DummyCO->archive_order;
 			}
 		}
 	else
