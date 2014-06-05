@@ -235,11 +235,10 @@ sub GetZoneNumber
 				#City to International City/Country
 				elsif ( defined($lookuptype) && $lookuptype eq '9' )
 				{
-					warn "########## In lookuptype 9: $FromCity, $ToCity";
-					my $origincitycode = &StripNaked($FromCity);
+					warn "########## In lookuptype 9: $FromCity, $ToCity";					
 					my $destcitycode = &StripNaked($ToCity);
 					
-					warn "########## city codes: $origincitycode, $destcitycode";
+					warn "########## From To: $FromState, $destcitycode-$ToCountry";
 					$SQLString = "
 							SELECT
 								zonenumber
@@ -259,7 +258,7 @@ sub GetZoneNumber
 					my $origincitycode = &StripNaked($FromCity);
 					my $destcitycode = &StripNaked($ToCity);
 					
-					warn "########## city codes: $origincitycode, $destcitycode";
+					warn "########## From To: $origincitycode-$FromCountry, $ToState";
 					$SQLString = "
 							SELECT
 								zonenumber
@@ -268,7 +267,7 @@ sub GetZoneNumber
 							WHERE
 								typeid = '$zonetypeid' AND
 								origincity = '$origincitycode' AND
-								destcity = '$destcitycode' AND
+								deststate = '$ToState' AND
 								origincountry = '$FromCountry'
 					";
 				}
