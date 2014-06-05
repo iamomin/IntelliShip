@@ -814,7 +814,7 @@ sub search_ordernumber :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my @cos = $c->model('MyDBI::Co')->search({ ordernumber => $params->{'ordernumber'}, coid => { '!=' => $params->{'coid'} }});
+	my @cos = $c->model('MyDBI::Co')->search({ customerid => $self->customer->customerid, ordernumber => $params->{'ordernumber'}, coid => { '!=' => $params->{'coid'} }});
 	my $CO = $cos[0] if @cos;
 	my $resDS = { ORDER_FOUND => 0 };
 	if ($CO)

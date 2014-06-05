@@ -310,14 +310,14 @@
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
 	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
-			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
-			<li><a href="#freight-charges-list-2">TRANSIT DAYS</a></li>
-			<li><a href="#freight-charges-list-3">VIEW ALL</a></li>
+			<li><a href="#carrier-service-list-1">RECOMMENDED</a></li>
+			<li><a href="#carrier-service-list-2">TRANSIT DAYS</a></li>
+			<li><a href="#carrier-service-list-3">VIEW ALL</a></li>
 		</ul>
 
-		<div id="freight-charges-list-1">[% recommendedcarrierlist %]</div>
-		<div id="freight-charges-list-2">[% transitdayscarrierlist %]</div>
-		<div id="freight-charges-list-3">[% viewallcarrierlist %]</div>
+		<div id="carrier-service-list-1">[% recommendedcarrierlist %]</div>
+		<div id="carrier-service-list-2">[% transitdayscarrierlist %]</div>
+		<div id="carrier-service-list-3">[% viewallcarrierlist %]</div>
 	</div>
 
 	<div id="SC-DLG"></div>

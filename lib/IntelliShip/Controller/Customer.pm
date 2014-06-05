@@ -1253,12 +1253,14 @@ sub SaveStringToFile
 	return unless $FileName;
 	return unless $FileString;
 
-	$self->context->log->debug("SaveStringToFile File: " . $FileName);
+	my $c = $self->context;
+
+	$c->log->debug("SaveStringToFile, file: " . $FileName);
 
 	my $FILE = new IO::File;
 	unless (open ($FILE,">$FileName"))
 		{
-		warn "\nLabel String Save Error: " . $!;
+		$c->log->debug("*** Label String Save Error: " . $!);
 		return;
 		}
 

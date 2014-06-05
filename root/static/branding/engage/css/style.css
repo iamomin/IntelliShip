@@ -1102,3 +1102,10 @@ table.dialog-header {
     overflow:hidden;
     margin:auto;
 }
+
+#carrier-service-list-1,
+#carrier-service-list-2,
+#carrier-service-list-3 {
+    max-height: 300px;
+    overflow-y: scroll;
+}
