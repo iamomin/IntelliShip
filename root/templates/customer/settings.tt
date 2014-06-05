@@ -142,6 +142,7 @@ $(document).ready(function(){
 			<th>unit of measure</th>
 			<th>unit type</th>
 			<th>balance on hand</th>
+			[% IF SUPER_USER %]<th>carrier</th>[% END %]
 		</tr>
 		[% FOREACH item IN productskulist %]
 			<tr>
@@ -159,6 +160,7 @@ $(document).ready(function(){
 				<td>[% item.unitofmeasure %]</td>
 				<td>[% item.unittypedescription %]</td>
 				<td>[% item.balanceonhand %]</td>
+				[% IF SUPER_USER %]<td>[% item.carrier %]</td>[% END %]
 			</tr>
 		[% END %]
 	</table>
@@ -312,8 +314,18 @@ $(document).ready(function(){
 						<option value="[% item.value %]"[% (unittypeid == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
+				[% IF SUPER_USER %]
+				<td>Carrier</td>
+				<td><select name="carrier" id="carrier">
+						<option></option>
+						[% FOREACH item IN carrier_list %]
+						<option value="[% item.value %]"[% (carrier == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select></td>
+				[% ELSE %]
 				<td></td>
 				<td></td>
+				[% END %]
 			</tr>
 		</table>
 		<table class="center-app">

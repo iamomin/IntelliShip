@@ -164,6 +164,8 @@ sub skumanagement :Local
 	$c->stash->{PRODUCT_SKU_LIST} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
 
+	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
+
 	$c->stash(template => "templates/customer/settings.tt");
 	}
 
@@ -279,12 +281,14 @@ sub productskusetup :Local
 		$c->stash->{weighttype_list} = $self->get_select_list('WEIGHT_TYPE');
 		$c->stash->{class_list} = $self->get_select_list('CLASS');
 		$c->stash->{unitofmeasure_list} = $self->get_select_list('UNIT_OF_MEASURE');
+		$c->stash->{carrier_list} = $self->get_select_list('CARRIER');
 
 		#my $unit_type_description = {};
 		#$unit_type_description->{$_->unittypeid} = $_->unittypename foreach $self->context->model('MyDBI::Unittype')->all;
 		#$c->stash->{unit_type_description} = $unit_type_description;
 
 		$c->stash->{SETUP_PRODUCT_SKU} = 1;
+		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 		}
 	elsif ($params->{'do'} eq 'configure')
 		{
@@ -301,6 +305,7 @@ sub productskusetup :Local
 		$ProductSku->unitofmeasure($params->{unitofmeasure});
 		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : undef);
 		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : undef);
+		$ProductSku->carrier($params->{carrier} ? $params->{carrier} : undef);
 		## SKU
 		$ProductSku->weight($params->{weight} ? $params->{weight} : undef);
 		$ProductSku->weighttype($params->{weighttype});
