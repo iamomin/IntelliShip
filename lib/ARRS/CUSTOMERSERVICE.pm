@@ -39,7 +39,7 @@ sub new
 sub GetZoneNumber
 	{
 		my $self = shift;
-		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode) = @_;
+		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity) = @_;
 
 		warn "########## GetZoneNumber: ".$DestAddressCode;
 		# Check if this zone is exluded from the customerservice/service
@@ -230,6 +230,44 @@ sub GetZoneNumber
 								destaddresscode = '$DestAddressCode'
 					";
 				}
+				#City to International City/Country
+				elsif ( defined($lookuptype) && $lookuptype eq '9' )
+				{
+					my $origincitycode = &StripNake($FromCity);
+					my $destcitycode = &StripNake($ToCity);
+					
+					warn "########## city codes: $origincitycode, $destcitycode";
+					$SQLString = "
+							SELECT
+								zonenumber
+							FROM
+								zone
+							WHERE
+								typeid = '$zonetypeid' AND
+								origincity = '$origincitycode' AND
+								destcity = '$destcitycode' AND
+								destcountry = '$ToCountry'
+					";
+				}
+				#International City/Country to City
+				elsif ( defined($lookuptype) && $lookuptype eq '10' )
+				{
+					my $origincitycode = &StripNake($FromCity);
+					my $destcitycode = &StripNake($ToCity);
+					
+					warn "########## city codes: $origincitycode, $destcitycode";
+					$SQLString = "
+							SELECT
+								zonenumber
+							FROM
+								zone
+							WHERE
+								typeid = '$zonetypeid' AND
+								origincity = '$origincitycode' AND
+								destcity = '$destcitycode' AND
+								origincountry = '$FromCountry'
+					";
+				}
 				# Postalcode based zones
 				else
 				{
@@ -293,13 +331,13 @@ sub GetZoneNumber
 sub GetCost
 	{
 		my $self = shift;
-		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date, $DestAddressCode) = @_;
+		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date, $DestAddressCode, $FromCity, $ToCity) = @_;
 
 
 		# Get Zone Number, if it's not passed in
 		if ( !$ZoneNumber )
 		{
-			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode);
+			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity);
 		}
 	#warn "\nGetCost: $Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band, zone=$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date";
 
@@ -1441,7 +1479,9 @@ sub GetSuperCost
 					$ShipmentRef->{'tostate'},
 					$ShipmentRef->{'fromcountry'},
 					$ShipmentRef->{'tocountry'},
-					$ShipmentRef->{'destaddresscode'}
+					$ShipmentRef->{'destaddresscode'}, 
+					$ShipmentRef->{'fromcity'},
+					$ShipmentRef->{'tocity'}
 				);
 				#warn "\n$Zone|" . $self->GetValueHashRef()->{'customerserviceid'};
 				if ( !$Zone )

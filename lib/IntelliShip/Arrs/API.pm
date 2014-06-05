@@ -290,11 +290,13 @@ sub get_carrrier_service_rate_list
 	$request->{'fromzip'} = $FromAddress->zip;
 	$request->{'fromstate'} = $FromAddress->state;
 	$request->{'fromcountry'} = $FromAddress->country;
+	$request->{'fromcity'} = $FromAddress->city;
 
 	my $ToAddress = $CO->destination_address;
 	$request->{'tozip'} = $ToAddress->zip;
 	$request->{'tostate'} = $ToAddress->state;
 	$request->{'tocountry'} = $ToAddress->country;
+	$request->{'tocity'} = $ToAddress->city;
 
 	$request->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
