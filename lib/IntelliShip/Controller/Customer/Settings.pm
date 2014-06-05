@@ -591,6 +591,7 @@ sub contactinformation :Local
 			$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
 
 			my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+			push(@$CONTACT_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1}) if $self->contact->is_superuser;
 
 			$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
 
@@ -815,7 +816,9 @@ sub get_contact_setting_list :Private
 	my $c = $self->context;
 
 	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+	push(@$CONTACT_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1}) if $self->contact->is_superuser;
 
+	$CONTACT_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CONTACT_RULES];
 	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
 
 	#my $list = [];

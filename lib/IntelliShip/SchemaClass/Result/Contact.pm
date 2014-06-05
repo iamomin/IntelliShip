@@ -304,13 +304,13 @@ sub login_level
 sub is_superuser
 	{
 	my $self = shift;
-	return ($self->get_contact_data_value('superuser'));
+	return ($self->get_only_contact_data_value('superuser'));
 	}
 
 sub is_administrator
 	{
 	my $self = shift;
-	return ($self->get_contact_data_value('administrator'));
+	return ($self->get_only_contact_data_value('administrator'));
 	}
 
 sub default_package_type

@@ -320,9 +320,6 @@ sub configure :Local
 	$Customer->settings->delete;
 
 	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
-	push(@$CUSTOMER_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']}) if $self->contact->is_superuser;
-
-	$CUSTOMER_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CUSTOMER_RULES];
 
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
@@ -761,8 +758,6 @@ sub get_company_setting_list :Private
 	my $c = $self->context;
 
 	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
-
-	push(@$CUSTOMER_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']}) if $self->contact->is_superuser;
 
 	$CUSTOMER_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CUSTOMER_RULES];
 
