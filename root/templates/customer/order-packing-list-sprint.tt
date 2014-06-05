@@ -110,10 +110,14 @@
 	</head>
 
 	<body >
-		[% IF LABEL_IMG %]
-			<img id="lblimg" src="[% LABEL_IMG %]"/>
+		[% IF LABEL_IMG_LOOP %]
+			[% FOREACH item IN LABEL_IMG_LOOP %]
+			<img src="[% item.src %]"/>
+			[% END %]
 		[% ELSE %]
-			[% LABEL %]
+			[% FOREACH LABEL IN LABEL_LOOP %]
+				[% LABEL %]
+			[% END %]
 		[% END %]
 		<div id="packing-list">
 			<table>
