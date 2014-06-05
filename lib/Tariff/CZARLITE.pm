@@ -71,9 +71,10 @@
 				AND originend >= '$OriginZip'
 				AND destbegin <= '$DestZip'
 				AND destend >= '$DestZip'
-				AND class = '$Class'
+				AND class = '$Class' order by originbegin desc, destbegin desc
 		";
 
+		warn "########## $STH_SQL";
 		my $STH = $self->{'dbref'}->prepare($STH_SQL)
 			or die "Could not prepare Czar Lite select sql statement";
 
