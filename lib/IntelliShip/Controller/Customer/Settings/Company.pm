@@ -698,26 +698,12 @@ sub upload :Local
 
 	my $c = $self->context;
 	my $params = $c->req->params;
-	my $FILE_name;
-	if($params->{'customerid'})
+
+	my $Customer = $self->get_customer;
+	unless ($Customer)
 		{
-		my $Customer = $self->get_customer;
-		unless ($Customer)
-			{
-			$c->log->debug("Customer not found");
-			return;
-			}
-		$FILE_name = $Customer->username . '-' . $params->{'type'} . '-logo.png';
-		}
-	else
-		{
-		my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
-		unless ($Contact)
-			{
-			$c->log->debug("Contact not found");
-			return;
-			}
-		$FILE_name = $Contact->username . '-' . $params->{'type'} . '.png';
+		$c->log->debug("Customer not found");
+		return;
 		}
 
 	my $Upload = $c->request->upload('Filedata');
@@ -727,6 +713,7 @@ sub upload :Local
 		return;
 		}
 
+	my $FILE_name = $Customer->username . '-' . $params->{'type'} . '-logo.png';
 	my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $FILE_name;
 	$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
 

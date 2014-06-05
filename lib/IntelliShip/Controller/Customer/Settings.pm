@@ -645,7 +645,6 @@ sub contactinformation :Local
 			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
 			$c->stash->{SSO_CUSTOMER}		= 1 if $Contact->customer->is_single_sign_on_customer;
-			$c->stash->{CURRENT_CONTACT} = ($Contact->contactid eq $self->contact->contactid);
 			}
 
 		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
@@ -674,6 +673,39 @@ sub contactinformation :Local
 		$self->set_required_fields;
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
+		}
+	}
+
+sub uploadprofile :Local
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+	unless ($Contact)
+		{
+		$c->log->debug("Contact not found");
+		return;
+		}
+
+	my $FILE_name = $Contact->customer->username  . '-' . $Contact->username . '.png';
+
+	my $Upload = $c->request->upload('Filedata');
+
+	unless ($Upload)
+		{
+		$c->log->debug("File to be uploaded is not provided");
+		return;
+		}
+
+	my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $FILE_name;
+	$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
+
+	if ($Upload->copy_to($FullPath))
+		{
+		$c->log->debug("File Upload Path, " . $FullPath);
 		}
 	}
 

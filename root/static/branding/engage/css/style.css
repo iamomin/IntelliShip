@@ -109,7 +109,7 @@ img { border: none; vertical-align: middle }
 #header img {
     max-height: 50px;
     max-width: 450px;
-    vertical-align: middle; 
+    vertical-align: middle;
 }
 
 #header input[type=text] {
@@ -149,7 +149,7 @@ img { border: none; vertical-align: middle }
 
 #header nav a span {
     font: bold 12px Arial;
-    padding: 14px 23px; 
+    padding: 14px 23px;
     color: #FFF;
 }
 
@@ -423,7 +423,7 @@ button.left-rounded-btn   { padding: 2px 3px; width: 100px; border: 1px solid #F
 button.right-rounded-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
 button.green { color: #FFF; background: #5DBD53 }
 
-.round-black-button { 
+.round-black-button {
     padding: 1px 4px;
     display: inline;
     width:10px;
@@ -1090,15 +1090,15 @@ table.dialog-header {
     width:100%;
     background: #18749A;
 }
+
 /* To show profile picture circular */
-.profile-image
-{
-  background:url("/static/branding/engage/images/header/profile.png") no-repeat;
-  background-size:48px 48px;
-  background-position:0px 0px;
-  height:48px;
-  width:48px;
-  border-radius:50%;
-  overflow:hidden;
-  margin:auto;
+.profile-image {
+    background:url("/static/branding/engage/images/profile/user-default.png") no-repeat;
+    background-size:48px 48px;
+    background-position:0px 0px;
+    height:48px;
+    width:48px;
+    border-radius:50%;
+    overflow:hidden;
+    margin:auto;
 }
