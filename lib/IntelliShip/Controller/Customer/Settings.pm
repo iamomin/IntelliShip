@@ -579,33 +579,36 @@ sub contactinformation :Local
 		$Contact->phonebusiness($params->{'phonebusiness'});
 		$Contact->phonehome($params->{'phonehome'});
 
-	# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
-	$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
-	$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
-
-	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
-
-	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
-
-	#INSERT NEW CONTACT SETTING RECORDS
-	foreach my $ruleHash (@$CONTACT_RULES)
-		{
-		#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
-		if (defined $params->{$ruleHash->{value}})
+		if ($params->{'ajax'} == 1)
 			{
-			my $customerContactData = {
-				ownertypeid  => 2,
-				ownerid      => $Contact->contactid,
-				datatypeid   => $ruleHash->{datatypeid},
-				datatypename => $ruleHash->{value},
-				value        => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
-				};
+			# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
+			$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
+			$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
 
-			my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
-			$NewCCData->custcondataid($self->get_token_id);
-			$NewCCData->insert;
+			my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+
+			$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
+
+			#INSERT NEW CONTACT SETTING RECORDS
+			foreach my $ruleHash (@$CONTACT_RULES)
+				{
+				#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
+				if (defined $params->{$ruleHash->{value}})
+					{
+					my $customerContactData = {
+						ownertypeid  => 2,
+						ownerid      => $Contact->contactid,
+						datatypeid   => $ruleHash->{datatypeid},
+						datatypename => $ruleHash->{value},
+						value        => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
+						};
+
+					my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
+					$NewCCData->custcondataid($self->get_token_id);
+					$NewCCData->insert;
+					}
+				}
 			}
-		}
 
 		$Contact->update;
 
