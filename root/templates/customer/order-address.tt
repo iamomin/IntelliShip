@@ -18,6 +18,9 @@
 	<form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 		<input type="hidden" id="do" name="do" value="step1"/>
 		<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+		[% IF ordernumber %]
+		<input type="hidden" id="ordernumber" name="ordernumber" value="[% ordernumber %]"/>
+		[% END %]
 		<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
 [% END %]
 

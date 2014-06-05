@@ -6,10 +6,10 @@
 <form id="supplyOrder" action="/customer/supplyordering" method="post">
 	<input type="hidden" name="do" value="send"/>
 
-	<table width="100%">
+	<table>
 		<tr>
 			<td>Order Number:</td>
-			<td><input type="text" class="labellike" name="ordernumber" value="[% ordernumber %]"/></td>
+			<td><input type="text" [% IF ordernumber %]class="labellike"[% END %] name="ordernumber" value="[% ordernumber %]"/></td>
 		</tr>
 	</table>
 

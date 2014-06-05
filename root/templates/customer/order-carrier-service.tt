@@ -24,6 +24,9 @@
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
 	<input type="hidden" id="do" name="do" value="ship"/>
 	<input type="hidden" name="interview" value="1"/>
+	[% IF ordernumber %]
+	<input type="hidden" id="ordernumber" name="ordernumber" value="[% ordernumber %]"/>
+	[% END %]
 
 	<div id="equal">
 		<div id="row">

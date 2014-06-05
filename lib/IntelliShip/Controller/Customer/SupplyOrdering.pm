@@ -158,7 +158,7 @@ sub send_email :Private
 	my $WebAccount = $sth->fetchrow(0)->{'webaccount'} if $sth->numrows;
 
 	## Footer
-	$UserEmail->add_line(qq~\n\n\n***************************************\n** This email is not authorized for redistribution **\n***************************************~);
+	$UserEmail->add_line(qq~\n\n\n*****************************************************\n** This email is not authorized for redistribution **\n*****************************************************~);
 	$CompanyEmail->add_line(qq~\n\n\n**********************************************************\n** This email is not authorized for redistribution\t**\n** The confidential $params->{'toname'} $carrier \t\t**\n** Acct\# is $WebAccount and cannot be disclosed\t\t**\n** verbally or electronically\t\t\t\t**\n**********************************************************\n~);
 
 	## END Body
