@@ -81,12 +81,12 @@ sub GetZoneNumber
 					!defined($ToZip) || $ToZip eq ''
 				)
 			)
-			{
+			{	warn "CUSTOMERSERVICE:: 1";
 				return undef;
 			}
 			# State Lookup
 			elsif
-			(
+			(	
 				defined($lookuptype) && $lookuptype eq '2'
 				&&
 				(
@@ -94,7 +94,7 @@ sub GetZoneNumber
 					!defined($ToState) || $ToState eq ''
 				)
 			)
-			{
+			{	warn "CUSTOMERSERVICE:: 2";
 				return undef;
 			}
 			# Country Lookup
@@ -107,9 +107,11 @@ sub GetZoneNumber
 					!defined($ToCountry) || $ToCountry eq ''
 				)
 			)
-			{
+			{	warn "CUSTOMERSERVICE:: 3";
 				return undef;
 			}
+
+			warn "CUSTOMERSERVICE:: Starting to prepare query";
 
 			# 'Normal' zones
 			if ( defined($lookuptype) && $lookuptype < '1000' )
@@ -233,8 +235,9 @@ sub GetZoneNumber
 				#City to International City/Country
 				elsif ( defined($lookuptype) && $lookuptype eq '9' )
 				{
-					my $origincitycode = &StripNake($FromCity);
-					my $destcitycode = &StripNake($ToCity);
+					warn "########## In lookuptype 9: $FromCity, $ToCity";
+					my $origincitycode = &StripNaked($FromCity);
+					my $destcitycode = &StripNaked($ToCity);
 					
 					warn "########## city codes: $origincitycode, $destcitycode";
 					$SQLString = "
@@ -244,7 +247,7 @@ sub GetZoneNumber
 								zone
 							WHERE
 								typeid = '$zonetypeid' AND
-								origincity = '$origincitycode' AND
+								originstate = '$FromState' AND
 								destcity = '$destcitycode' AND
 								destcountry = '$ToCountry'
 					";
@@ -252,8 +255,9 @@ sub GetZoneNumber
 				#International City/Country to City
 				elsif ( defined($lookuptype) && $lookuptype eq '10' )
 				{
-					my $origincitycode = &StripNake($FromCity);
-					my $destcitycode = &StripNake($ToCity);
+					warn "########## In lookuptype 10";
+					my $origincitycode = &StripNaked($FromCity);
+					my $destcitycode = &StripNaked($ToCity);
 					
 					warn "########## city codes: $origincitycode, $destcitycode";
 					$SQLString = "
@@ -284,7 +288,7 @@ sub GetZoneNumber
 					or die "Could not prepare SQL statement";
 				$SQLString =~ s/\t+//;
 				$SQLString =~ s/\n+/ /;
-				#warn "ZoneLookup SQL: " . $SQLString;
+				warn "########## ZoneLookup SQL: " . $SQLString;
 				$sth->execute()
 					or die "Cannot execute sql statement";
 
@@ -337,6 +341,7 @@ sub GetCost
 		# Get Zone Number, if it's not passed in
 		if ( !$ZoneNumber )
 		{
+			warn "######## Calling GetZoneNumber 1: $ToCity";
 			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity);
 		}
 	#warn "\nGetCost: $Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band, zone=$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date";
@@ -1399,7 +1404,9 @@ sub GetSuperCost
 				$automated,
 				$ShipmentRef->{'customerid'},
 				$ShipmentRef->{'dateshipped'},
-				$ShipmentRef->{'destaddresscode'}
+				$ShipmentRef->{'destaddresscode'},
+				$ShipmentRef->{'fromcity'},
+				$ShipmentRef->{'tocity'}
 			);
 
 		#warn "\nGO OUT OF HERE: $Cost";
@@ -1472,6 +1479,7 @@ sub GetSuperCost
 				$self->GetValueHashRef()->{'zonetypeid'}
 			)
 			{
+				warn "######## Calling GetZoneNumber 2: ". $ShipmentRef->{'tocity'};
 				($Zone) = $self->GetZoneNumber(
 					$ShipmentRef->{'fromzip'},
 					$ShipmentRef->{'tozip'},
