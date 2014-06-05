@@ -39,18 +39,19 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 			<th>SERVICE</th><td>[% item.service %]</td>
 		</tr>
 		<tr>
-			<th>CONTENT DESC</th><td>[% item.description %]</td>
+			<th>CONTENT DESCRIPTION</th><td>[% item.description %]</td>
 		</tr>
-		
 		[% END %]
 	</table>
 	<div id="lebel link">
-	<h4>Shipment Documentation:</h4>
-	[% IF packinglist %]
-		<a href="https://dintelliship2.engagetechnology.com/customer/order/ajax?action=generate_packing_list&ajax=1&type=HTML&coid=[% COID %]&shipmentid=[% SHIPMENT_ID %]" >Packing List</a><br>
-	[% END %]
-	[% IF LABEL_IMG %]
-		<a href="https://dintelliship2.engagetechnology.com/print/label/[% SHIPMENT_ID %].jpg" >Lebel</a>
+	[% IF packinglist OR LABEL_IMG %]
+		<h4>Shipment Documentation:</h4>
+		[% IF packinglist %]
+			<a href="https://dintelliship2.engagetechnology.com/customer/order/ajax?action=generate_packing_list&ajax=1&type=HTML&coid=[% COID %]&shipmentid=[% SHIPMENT_ID %]" >Packing List</a><br>
+		[% END %]
+		[% IF LABEL_IMG %]
+			<a href="https://dintelliship2.engagetechnology.com/print/label/[% SHIPMENT_ID %].jpg" >Label</a>
+		[% END %]
 	[% END %]
 	</div>
 
