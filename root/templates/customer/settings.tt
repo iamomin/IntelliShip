@@ -613,7 +613,6 @@ $(document).ready(function(){
 
 	<form id="frm_setup_contact" method="post" action="/customer/settings/contactinformation">
 		<input type="hidden" id="do" name="do" value="configure"/>
-		<input type="hidden" id="ajax" name="ajax" value="[% ajax %]"/>
 		<input type="hidden" id="contactid" name="contactid" value="[% contactInfo.contactid %]"/>
 		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
 		<table class="center-app">
@@ -857,12 +856,11 @@ $(document).ready(function(){
 		{
 		if(validateContactDetials())
 			{
-			if($("#ajax").val())
-				send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '&'+$('#frm_setup_contact').serialize(), '');
-			else
-				{
-				$("#frm_setup_contact").submit();
-				}
+			[% IF ajax %]
+			send_ajax_request('company-contacts', 'HTML', 'settings/contactinformation', '&'+$('#frm_setup_contact').serialize(), '');
+			[% ELSE %]
+			$("#frm_setup_contact").submit();
+			[% END %]
 			}
 		}
 
