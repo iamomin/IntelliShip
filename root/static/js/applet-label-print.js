@@ -157,13 +157,15 @@ function fixHTML(html) {
 ***************************************************************************/
 function printHTML5Page() {
 	html2canvas(document.body, {
+		width: 800,
+		height: 1200,
 		canvas: hidden_screenshot,
 		onrendered: function() {
 			if (notReady()) { return; }
 			// Optional, set up custom page size.  These only work for PostScript printing.
 			// setPaperSize() must be called before setAutoSize(), setOrientation(), etc.
 			qz.setPaperSize("8.5in", "11.0in");  // US Letter
-			//qz.setAutoSize(true);
+			qz.setAutoSize(true);
 			var dataUrl = $("canvas")[0].toDataURL('image/png');
 			qz.appendImage(dataUrl);
 			//window.open(dataUrl, "toDataURL() image", "width=600, height=200");
