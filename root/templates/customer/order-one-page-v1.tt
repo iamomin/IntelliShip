@@ -139,7 +139,7 @@
 	<div class="float-right">
 		<table>
 		<tr>
-		[% UNLESS ONLY_SHIP %]<td><input type="button" class="green" id="save" value="SAVE"/></td>[% END %]
+		<td><input type="button" class="green" id="save" value="SAVE"/></td>
 		[% IF quickship %]<td><input type="button" class="green" id="ship_now" value="SHIP"/></td>[% END %]
 		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
 		[% IF SUPER_USER %]<td><input type="button" class="red" id="deleted" value="DELETE"/></td>[% END %]

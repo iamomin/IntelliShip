@@ -567,7 +567,7 @@ function addNewPackageProduct(package_id,type)
 			if (type == 'package') $('#add-package-btn').before(JSON_data.rowHTML);
 			if (type == 'product') $('#'+product_table_id+' > tbody:last').append(JSON_data.rowHTML);
 
-			configureShipmentDetails();
+			configureShipmentDetails(type);
 			updatePackageProductSequence();
 			});
 	}
@@ -783,13 +783,17 @@ function removePackageDetails(row_ID)
 	{
 	$("#package-"+row_ID).remove();
 	$("#ss-row-"+row_ID).remove();
+	distributeInsuranceAmongProducts();
 	}
 
-function configureShipmentDetails()
+function configureShipmentDetails(type)
 	{
 	resetCSList();
 	calculateTotalWeight();
-	distributeInsuranceAmongProducts();
+	if(type == undefined)
+		{
+		distributeInsuranceAmongProducts();
+		}
 	calculateTotalDeclaredValueInsurance();
 	setCustomsCommodityValue();
 	updateShipmentSummary();

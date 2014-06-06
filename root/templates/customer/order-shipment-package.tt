@@ -9,7 +9,7 @@
 		<th colspan="10">
 			[% IF SHIPPER_NUMBER %]
 				<input type="hidden" id="originalcoid_[% ROW_COUNT%]" name="originalcoid_[% ROW_COUNT%]" value="[% SHIPPER_NUMBER %]"/>
-				<div class="float-left" style="color:#1875BA">Original Sipper # : [% SHIPPER_NUMBER %]</div>
+				<div class="float-left" style="color:#1875BA">Original Shipper # : [% SHIPPER_NUMBER %]</div>
 			[% END %]
 			<div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div>
 		</th>
@@ -102,7 +102,7 @@
 	<td>
 		<input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="product"/>
 		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
-		<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
+		<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();distributeInsuranceAmongProducts();" class="round-black-button">X</a>
 	</td>
 	<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
 	<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% partnumber %]"/></td>

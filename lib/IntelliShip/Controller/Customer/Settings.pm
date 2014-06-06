@@ -305,7 +305,7 @@ sub productskusetup :Local
 		$ProductSku->unitofmeasure($params->{unitofmeasure});
 		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : undef);
 		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : undef);
-		$ProductSku->carrier($params->{carrier} ? $params->{carrier} : undef);
+		$ProductSku->carrier($params->{carriername});
 		## SKU
 		$ProductSku->weight($params->{weight} ? $params->{weight} : undef);
 		$ProductSku->weighttype($params->{weighttype});

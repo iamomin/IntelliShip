@@ -316,10 +316,10 @@ $(document).ready(function(){
 					</select></td>
 				[% IF SUPER_USER %]
 				<td>Carrier</td>
-				<td><select name="carrier" id="carrier">
+				<td><select name="carriername" id="carriername">
 						<option></option>
 						[% FOREACH item IN carrier_list %]
-						<option value="[% item.value %]"[% (carrier == item.value) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						<option value="[% item.name %]"[% (carrier.trim == item.name) ? 'SELECTED' : '' %]>[% item.name %]</option>
 						[% END %]
 					</select></td>
 				[% ELSE %]
