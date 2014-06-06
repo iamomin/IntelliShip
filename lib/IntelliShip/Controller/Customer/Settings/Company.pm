@@ -745,6 +745,20 @@ sub get_customer
 	elsif ($params->{'customername'})
 		{
 		$WHERE->{customername} = $params->{'customername'};
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE->{-and} = [{createdby => $self->customer->customerid}, {-or => {[customerid => $self->customer->customerid]}}];
+			my @customer =  $c->model('MyDBI::Customer')->search(
+				-and => [
+				-or => [
+					createdby => $self->customer->customerid,
+					customerid => $self->customer->customerid,
+					],
+				customername => $params->{'customername'},
+				]);
+
+			return (@customer ? $customer[0] : undef);
+			}
 		}
 
 	return undef unless scalar keys %$WHERE;

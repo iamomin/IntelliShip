@@ -591,14 +591,14 @@ sub contactinformation :Local
 
 		if ($params->{'ajax'} == 1)
 			{
-			# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
-			$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
-			$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
-
 			my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
 			push(@$CONTACT_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1}) if $self->contact->is_superuser;
 
 			$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
+			
+			# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
+			$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
+			$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
 
 			#INSERT NEW CONTACT SETTING RECORDS
 			foreach my $ruleHash (@$CONTACT_RULES)
