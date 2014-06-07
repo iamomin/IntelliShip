@@ -226,6 +226,7 @@ sub configure :Local
 	$Customer->smartaddressbook($params->{'cust_smartaddressbook'}) if $params->{'cust_smartaddressbook'};
 	$Customer->apiaosaddress($params->{'cust_apiaosaddress'}) if $params->{'cust_apiaosaddress'};
 	$Customer->weighttype($params->{'weighttype'}) if $params->{'weighttype'};
+	$Customer->createdby($params->{'createdby'}) if $params->{'createdby'};
 
 	if ($params->{'cust_quickship'} && !$params->{'cust_defaulttoquickship'} )
 		{
@@ -777,7 +778,12 @@ sub get_company_setting_list :Private
 
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
-	my @Settings = $Customer->settings if $Customer;
+	my @Settings;
+	if ($Customer)
+		{
+		@Settings = $Customer->settings ;
+		$c->stash->{SHOW_CREATEDBY} = ($self->contact->is_superuser && $Customer->customerid != $self->customer->customerid);
+		}
 	my %customerRules = map { $_->datatypename => $_->value } @Settings;
 
 	my $list = [];

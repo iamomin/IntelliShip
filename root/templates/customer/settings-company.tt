@@ -673,6 +673,24 @@
 						</td>
 						[% END %]
 					</tr>
+
+					[% IF SHOW_CREATEDBY %]
+					<tr>
+						<td><label class="float-right" for="createdby">Created By:</label></td>
+						<td>
+						<label>
+							<select name="createdby" id="createdby" style="width:217px;">
+								[% FOREACH item IN customerlist_loop %]
+									<option value="[% item.value %]" [% (item.value == createdby) ? 'SELECTED' : '' %]>[% item.name %]</option>
+								[% END %]
+							</select>
+						</label>
+						</td>
+						
+						<td></td>
+						<td></td>
+					</tr>
+					[% END %]
 					[% IF SSO_CUSTOMER %]
 					<tr>
 						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>
