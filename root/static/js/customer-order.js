@@ -612,7 +612,7 @@ function calculateTotalWeight(event_row_ID)
 		var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
 
 		if (packageWeights[ParentPackageID] == undefined) packageWeights[ParentPackageID] = 0;
-		packageWeights[ParentPackageID] = (OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+		packageWeights[ParentPackageID] =  TotalProductWeight.toFixed(2);
 		}
 
 	//alert("packageWeights : " + JSON.stringify(packageWeights));

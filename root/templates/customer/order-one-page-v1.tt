@@ -300,7 +300,7 @@
 	$(document).ready(function() {
 
 		$('#unittype').change();
-		//calculateTotalWeight();
+		calculateTotalWeight();
 		updateShipmentSummary();
 		checkInternationalSection();
 
