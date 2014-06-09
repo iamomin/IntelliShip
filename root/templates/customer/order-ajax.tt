@@ -292,7 +292,12 @@
 				<div class="charge-details" style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table style="font-size: 11px; float:right; background-color: #FFF;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
-						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b><i>[% scd.text %]</i></b></td><td style="text-align: right;"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
+						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><i>[% scd.text %]</i></td><td style="text-align: right; padding:3px 0px 3px 0px;"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
+						
+						<script>
+							$("#SC-[%item.customerserviceid%]").show();
+							$("#showHide-[%item.customerserviceid%]").html("&#8211");
+							</script>
 					[% END %]
 					</table>
 				</div>

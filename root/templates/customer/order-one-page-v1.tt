@@ -204,6 +204,7 @@
 		});
 
 	$('#unittype').change(function() {
+		populatePackageDefaultDetials();
 		$("#add-package-btn").html('<span class="round-green-button">+</span>&nbsp;&nbsp;ADD ' + $("#unittype option:selected").text().toUpperCase());
 		});
 
@@ -299,7 +300,7 @@
 
 	$(document).ready(function() {
 
-		$('#unittype').change();
+		//$('#unittype').change();
 		calculateTotalWeight();
 		updateShipmentSummary();
 		checkInternationalSection();

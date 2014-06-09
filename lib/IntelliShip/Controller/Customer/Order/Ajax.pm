@@ -173,6 +173,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->consolidate_orders;
 		}
+	elsif ($action eq 'populate_package_default_detials')
+		{
+		$dataHash = $self->populate_package_default_detials;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -360,6 +364,7 @@ sub get_carrier_service_list
 			}
 
 		($detail_hash->{'shipment_charge'} =~ /\d+/ and $detail_hash->{'shipment_charge'} > 0) ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
+		$detail_hash->{'shipment_charge'} = sprintf("%.2f",($detail_hash->{'freight_charge'} + $detail_hash->{'other_charge'}));
 		}
 
 	$c->stash->{CARRIER_SERVICE_LIST} = 1;
@@ -723,6 +728,29 @@ sub add_package_product_row :Private
 	return { rowHTML => $row_HTML };
 	}
 
+	
+sub populate_package_default_detials :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	
+	my $response_hash = {};
+	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
+		{
+		$response_hash->{'PACKAGE_TYPE'} = uc $UnitType->unittypename;
+		$response_hash->{'unittypeid'} = uc $UnitType->unittypeid;
+		$response_hash->{'dimlength'} = $UnitType->dimlength;
+		$response_hash->{'dimwidth'}  = $UnitType->dimwidth;
+		$response_hash->{'dimheight'} = $UnitType->dimheight;
+		}
+	else
+		{
+		$response_hash->{'error'} = "Package default details not found";
+		}
+
+	return $response_hash;
+	}
 sub set_third_party_delivery
 	{
 	my $self = shift;

@@ -571,6 +571,34 @@ function addNewPackageProduct(package_id,type)
 			updatePackageProductSequence();
 			});
 	}
+	
+function populatePackageDefaultDetials()
+	{
+	var pkg_detail_row_count = [];
+	$('td[id^="package_type_"]').each(function() {
+		var arr = this.id.split('_');
+		pkg_detail_row_count.push(+arr[2]);
+		});
+		
+	alert(pkg_detail_row_count);
+	
+	var first_row_count = Math.min.apply(Math,pkg_detail_row_count);
+	alert(first_row_count);
+	var query_param = '&unittypeid=' + $("#unittype").val();
+
+	send_ajax_request('', 'JSON', 'order', 'populate_package_default_detials', query_param, function (){
+		if (JSON_data.error) {
+		//clearProductDetails(row_ID);
+		} else {
+		$("#package_type_"+first_row_count).html(JSON_data.PACKAGE_TYPE);
+		$("#unittype_"+first_row_count).val(JSON_data.unittypeid);
+		$("#dimlength_"+first_row_count).val(JSON_data.dimlength);
+		$("#dimwidth_"+first_row_count).val(JSON_data.dimwidth);
+		$("#dimheight_"+first_row_count).val(JSON_data.dimheight);
+		if (JSON_data.unittypeid != "") $("#unittype_"+first_row_count+" option:selected").val(JSON_data.unittypeid);
+		}
+		});
+	}
 
 function calculateTotalWeight(event_row_ID)
 	{
