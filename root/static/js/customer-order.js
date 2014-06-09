@@ -579,11 +579,8 @@ function populatePackageDefaultDetials()
 		var arr = this.id.split('_');
 		pkg_detail_row_count.push(+arr[2]);
 		});
-		
-	alert(pkg_detail_row_count);
-	
+
 	var first_row_count = Math.min.apply(Math,pkg_detail_row_count);
-	alert(first_row_count);
 	var query_param = '&unittypeid=' + $("#unittype").val();
 
 	send_ajax_request('', 'JSON', 'order', 'populate_package_default_detials', query_param, function (){
