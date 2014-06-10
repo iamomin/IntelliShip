@@ -338,11 +338,11 @@ sub GetCost
 
 
 		# Get Zone Number, if it's not passed in
-		if ( !$ZoneNumber )
-		{
+		#if ( !$ZoneNumber )
+		#{
 			warn "######## Calling GetZoneNumber 1: $ToCity";
 			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity);
-		}
+		#}
 	#warn "\nGetCost: $Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band, zone=$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date";
 
 		if (!defined($ZoneNumber))
