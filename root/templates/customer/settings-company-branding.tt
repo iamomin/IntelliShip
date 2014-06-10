@@ -16,10 +16,11 @@
 	</ul>
 
 	<div id="branding-logo">
+		<div class="notice" style="width:100%;">Use image type .JPG, .JPEG, .PNG or .GIF only</div>
 		<table class="center-app">
 			<tr>
 				<td>
-					<div id="show-light-logo"><img id="light-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-light-logo.png' height='50px' width='450px'/></div>
+					<div id="show-light-logo"><img id="light-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-light-logo.png' height='50px' width='435px'/></div>
 				</td>
 				<td>
 					<label class="float-left">Logo (Light Background): </label>
@@ -33,7 +34,7 @@
 			</tr>
 			<tr>
 				<td>
-					<div id="show-dark-logo"><img id="dark-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-dark-logo.png' height='50px' width='450px'/></div>
+					<div id="show-dark-logo"><img id="dark-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-dark-logo.png' height='50px' width='435px'/></div>
 				</td>
 				<td>
 					<label class="float-left">Logo (Dark Background): </label>
@@ -108,12 +109,15 @@
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
 			'uploader' : '/customer/settings/company/upload',
 			'fileDesc': 'Image Files',
-			'fileExt': '*.jpg;*.jpeg;*.gif;*.png',
+			'fileTypeExts' : '*.gif; *.jpg; *.png',
 			'multi': false,
 			'auto': true,
 			'onUploadSuccess': function(file, data, response){
 				$('#light-logo').attr('src', $('#light-logo').attr('src') + '?' + Math.random());
 				},
+			'onError': function (event, ID, fileObj, errorObj) {
+				alert(errorObj.type + ' Error: ' + errorObj.info);
+				}
 			});
 
 		$('#logo-dark-background').uploadify({
@@ -124,9 +128,14 @@
 				},
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
 			'uploader' : '/customer/settings/company/upload',
+			'fileTypeExts' : '*.gif; *.jpg; *.png',
 			'onUploadSuccess': function(file, data, response){
 				$('#dark-logo').attr('src', $('#dark-logo').attr('src') + '?' + Math.random());
 				},
+			'onError': function (event, ID, fileObj, errorObj) {
+				alert(errorObj.type + ' Error: ' + errorObj.info);
+				}
+				
 			});
 
 		/* Set Initial colors */

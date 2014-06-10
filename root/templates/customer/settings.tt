@@ -893,7 +893,7 @@ $(document).ready(function(){
 
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
 			'uploader' : '/customer/settings/uploadprofile',
-			'fileExt'  : '*.jpg;*.jpeg;*.gif;*.png',
+			'fileTypeExts' : '*.gif; *.jpg; *.png',
 			'multi'    : false,
 			'auto'     : true,
 			'formData' : { 'timestamp': jQuery.now(), 'contactid': '[% contactInfo.contactid %]' },
