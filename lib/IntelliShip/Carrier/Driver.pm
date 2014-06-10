@@ -81,7 +81,7 @@ sub void_shipment
 	## Delete any associated orders
 	$Shipment->shipmentcoassocs->delete;
 
-	$CO->delete_all_package_details;
+	#$CO->delete_all_package_details;
 
 	## Set CO to 'unshipped' status
 	## Flush carrier and service details
