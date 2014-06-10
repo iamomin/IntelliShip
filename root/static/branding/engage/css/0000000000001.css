@@ -135,7 +135,7 @@ input.orange[type=button]:hover{
     cursor: pointer;
     opacity: 0.9;
 }
-input.gray, input.red, button.quick-ship {
+input.gray, input.red, input.blue, input.green, button.quick-ship {
     margin-top: 18px;
     margin-left:25px;
 }
@@ -203,7 +203,7 @@ label.bold-text[for=datetoship] {
     background:#519bf5;
 }
 .charge-details table {
-    width: 210px;
+    width: 140px;
 }
 #frm_label img {
   clear: both;
