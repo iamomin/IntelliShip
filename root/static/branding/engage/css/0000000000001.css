@@ -135,13 +135,9 @@ input.orange[type=button]:hover{
     cursor: pointer;
     opacity: 0.9;
 }
-input.gray, input.red, button.quick-ship {
+input.gray, button.quick-ship {
     margin-top: 18px;
     margin-left:25px;
-}
-#frm_label input.red {
-    margin-top: 0px;
-    margin-left:0px;
 }
 /*SHIPMENT DETAILS PAGE*/
 #frm_shipment label {
@@ -334,7 +330,7 @@ td.threecolumns{
 #frm_order form > .float-right:last-child {
     width: 100%;
 }
-#frm_order #save, #frm_order #ship_now {
+#frm_order #save, #frm_order #ship_now  ,#frm_order input.red {
     float: right;
     margin-top: 18px;
     margin-left:25px;

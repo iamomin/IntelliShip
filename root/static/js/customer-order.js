@@ -650,10 +650,10 @@ function calculateTotalWeight(event_row_ID)
 
 		if (type != 'package') return;
 
-		var PackageWeight = parseInt(packageWeights[row_ID]);
+		var PackageWeight = isNaN(packageWeights[row_ID]) ? 0 : parseInt(packageWeights[row_ID]);
 		if (isNaN(event_row_ID)) $("#weight_"+row_ID).val(PackageWeight.toFixed(2));
 
-		if (isNaN(PackageWeight)) PackageWeight=0;
+		//if (isNaN(PackageWeight)) PackageWeight=0;
 
 		//alert("PackageWeight: " + PackageWeight + ", quantity_: " + $("#quantity_"+row_ID).val());
 
