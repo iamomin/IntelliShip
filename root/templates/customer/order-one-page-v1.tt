@@ -304,6 +304,7 @@
 		calculateTotalWeight();
 		updateShipmentSummary();
 		checkInternationalSection();
+		calculateTotalDeclaredValueInsurance();
 
 		if(requiredFieldHash) {
 			markRequiredFields(requiredFieldHash);
