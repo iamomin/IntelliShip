@@ -135,6 +135,7 @@ img { border: none; vertical-align: middle }
 
 
 #header nav {
+    margin: auto;
     max-width: 500px;
     float: right;
 }
