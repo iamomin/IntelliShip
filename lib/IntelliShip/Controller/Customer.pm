@@ -189,44 +189,31 @@ sub get_customer_contact :Private
 	$username = $self->token->active_username if $self->token;
 	#$c->log->debug("Authenticate User: " . $username);
 
-	my ($customerUser, $contactUser) = split(/\//,$username);
+	my $Customer  = $self->token->customer if $self->token;
 
-	$contactUser = $customerUser unless $contactUser;
+	my $contact_search = { email => $username };
+	$contact_search->{password} = $password unless $self->token;
+	$contact_search->{customerid} = $Customer->customerid if $Customer;
 
-	#$c->log->debug("Customer user: " . $customerUser);
-	#$c->log->debug("Contact  user: " . $contactUser);
+	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 
-	my @customerArr;
-	if ($self->token)
+	return unless @contactArr;
+
+	foreach my $Contact (@contactArr)
 		{
-		push @customerArr, $self->token->customer;
-		}
-	else
-		{
-		@customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
-		}
+		$Customer = $Contact->customer unless $Customer;
 
-	return unless @customerArr;
-
-	foreach my $Customer (@customerArr)
-		{
-		my $contact_search = {
-				username => $contactUser,
-				customerid => $Customer->customerid
-				};
-
-		$contact_search->{password} = $password unless $self->token;
-
-		my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
-
-		next unless @contactArr;
+		next unless $Customer;
 
 		my $Contact = $contactArr[0];
 
 		#$c->log->debug("Customer ID : " . $Customer->customerid);
 		#$c->log->debug("Contact ID  : " . $Contact->contactid);
 
-		return ($Customer, $Contact);
+		if ($Customer->customerid eq $Contact->customerid)
+			{
+			return ($Customer, $Contact);
+			}
 		}
 
 	$c->log->debug("No Matching Information Found");
