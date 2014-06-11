@@ -1164,14 +1164,16 @@ sub populate_order :Private
 		$c->stash->{fromemail}  = $CO->deliverynotification;
 		$c->stash->{fromphone}  = $CO->oacontactphone;
 
-		if($CO->isinbound)
+		if ($CO->isinbound)
 			{
 			$c->stash->{fromcustomernumber} = $CO->custnum;
+			$c->stash->{fromcustomernumber} = $CO->extcustnum unless $c->stash->{fromcustomernumber};
 			$c->stash->{todepartment} = $CO->department;
 			}
 		else
 			{
 			$c->stash->{tocustomernumber} = $CO->custnum;
+			$c->stash->{tocustomernumber} = $CO->extcustnum unless $c->stash->{tocustomernumber};
 			$c->stash->{fromdepartment} = $CO->department;
 			}
 
@@ -1181,7 +1183,6 @@ sub populate_order :Private
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
 
-		$c->stash->{tocustomernumber} = $CO->custnum;
 		$c->stash->{description} = $CO->description;
 
 		$c->stash->{fromAddress} = $CO->origin_address;
@@ -2011,7 +2012,7 @@ sub SHIP_ORDER :Private
 	# Change fullfillment status - PO or Pick & Pack Only
 	if ($params->{'cotypeid'} == 2 or $has_pick_and_pack)
 		{
-		if($CO->is_fullfilled($params->{'ordernumber'},$params->{'cotypeid'}))
+		if ($CO->is_fullfilled($params->{'ordernumber'},$params->{'cotypeid'}))
 			{
 			$CO->statusid(350); ## Set PO to 'Fullfilled'
 			}
