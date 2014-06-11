@@ -128,6 +128,18 @@
 		
 		warn "########## inserting row by id: $rateid";
 		
+		
+		$desthighzip =~ s/^\s+//;
+		$desthighzip =~ s/\s+$//;
+		my $dhlength = length($desthighzip);
+		if($dhlength < 5 && length($destlowzip) == 5 && $destlowzip =~ /^[0-9]+$/)
+		{
+			warn "########## \$desthighzip = $desthighzip, \$dhlength=$dhlength";
+			my $dhprefix = substr($destlowzip, 0, 5 - $dhlength);
+			$desthighzip = $dhprefix . "" . $desthighzip;
+			warn "########## \$destlowzip = $destlowzip, new \$desthighzip = $desthighzip";
+		}
+		
 		my $sql = "INSERT INTO rate(
 							rateid, ratetypeid, carrierscac, originbegin, originend, originstate, 
 							destbegin, destend, deststate, class, mc1, mc2, mc3, mc4, l5c, 
