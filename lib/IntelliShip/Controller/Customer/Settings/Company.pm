@@ -426,6 +426,18 @@ sub configure :Local
 	$c->detach("index",$params);
 	}
 
+sub delete :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $Customer = $self->get_customer;
+
+	$Customer->delete;
+	$c->stash->{MESSAGE} = "Customer deleted successfully";
+	$c->detach("index",$params);
+	}
+
 sub ajax :Local
 	{
 	my $self = shift;
@@ -508,6 +520,10 @@ sub get_JSON_DATA :Private
 	elsif ($action eq 'update_branding_settings')
 		{
 		$dataHash = $self->update_branding_settings;
+		}
+	elsif ($action eq 'check_customer_contacts')
+		{
+		$dataHash = $self->check_customer_contacts;
 		}
 
 		#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
@@ -684,6 +700,27 @@ sub update_branding_settings :Private
 	return { SUCCESS => 1, MESSAGE => "Updated successfully..." };
 	}
 
+sub check_customer_contacts
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $Customer = $self->get_customer;
+
+	my $sql = "SELECT contactid FROM contact WHERE customerid = '" . $Customer->customerid ."' ORDER BY username";
+	my $sth = $c->model('MyDBI')->select($sql);
+	if($sth->numrows)
+		{
+		$c->log->debug("___ CONTACTS FOUND: ");
+		return { CONTACTS => $sth->numrows, MESSAGE => "Please delete all contacts and try agian" };
+		}
+	else
+		{
+		#$c->log->debug("___ Flush old custcondata for company: " . $Customer->customerid);
+		#$Customer->settings->delete;
+		return { CONTACTS => 0};
+		}
+	}
+	
 sub brandingdemo :Local
 	{
 	my $self = shift;

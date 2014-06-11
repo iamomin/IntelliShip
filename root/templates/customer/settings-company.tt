@@ -149,7 +149,9 @@
 	<form id="frm_setup_customer" method="post" action="/customer/settings/company/configure">
 		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
 		<input type="hidden" id="do" name="do" value="configure"/>
-
+		[% IF customerid %]
+		<script src="/static/jquery/confirm-dialog/confirm-dialog.min.js"></script>
+		[% END %]
 		<div id="company-settings">
 			<ul>
 				<li><a id="company-profile-tab"  href="#company-profile">Profile</a></li>
@@ -280,6 +282,10 @@
 				<center>
 					<input type="submit" class="green" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />
 					&nbsp;&nbsp;
+					[% IF SUPER_USER AND customerid %]
+					<input type="button" id="delete_customer" class="red" value="Delete"/>
+					&nbsp;&nbsp;
+					[% END %]
 					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
 				</center>
 			</div>
@@ -801,6 +807,30 @@
 			[% END %]
 			});
 			}
+
+		[% IF SUPER_USER %]
+		$("#delete_customer").easyconfirm({locale: {
+			title: 'Delete Confirmation',
+			text: 'Are you sure that you want to delete this customer?',
+			button: ['No','Yes'],
+			}
+		});
+
+		$("#delete_customer").click(function() {
+			var params = 'customerid='+$("#customerid").val();
+			send_ajax_request('', 'JSON', 'settings/company', 'check_customer_contacts', params, function() {
+				if (JSON_data.CONTACTS > 0) {
+					showError(JSON_data.MESSAGE);
+					return;
+					}
+				else{
+					$("#do").val("delete");
+					$('#frm_setup_customer').attr('action', '/customer/settings/company/delete');
+					$('#frm_setup_customer').submit();
+					}
+			});
+		});
+		[% END %]
 		[% END %]
 
 		$("#tariff-pricing-tab").click(function(event) {						

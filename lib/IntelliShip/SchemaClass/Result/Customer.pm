@@ -642,7 +642,7 @@ __PACKAGE__->has_many(
 __PACKAGE__->has_many(
 	altsop =>
 		'IntelliShip::SchemaClass::Result::Altsop',
-		{ "foreign.companyid" => "self.customerid" },
+		{ "foreign.customerid" => "self.customerid" },
 	);
 
 sub settings
