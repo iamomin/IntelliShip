@@ -58,7 +58,7 @@ __PACKAGE__->table("contact");
 
   data_type: 'varchar'
   is_nullable: 1
-  size: 20
+  size: 100
 
 =head2 password
 
@@ -149,7 +149,7 @@ __PACKAGE__->add_columns(
   "customerid",
   { data_type => "char", is_nullable => 1, size => 13 },
   "username",
-  { data_type => "varchar", is_nullable => 1, size => 20 },
+  { data_type => "varchar", is_nullable => 1, size => 100 },
   "password",
   { data_type => "varchar", is_nullable => 1, size => 20 },
   "firstname",
