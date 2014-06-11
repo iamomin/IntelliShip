@@ -191,7 +191,7 @@ sub get_customer_contact :Private
 
 	my $Customer  = $self->token->customer if $self->token;
 
-	my $contact_search = { email => $username };
+	my $contact_search = { username => $username };
 	$contact_search->{password} = $password unless $self->token;
 	$contact_search->{customerid} = $Customer->customerid if $Customer;
 
