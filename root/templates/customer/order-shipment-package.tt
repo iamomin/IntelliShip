@@ -49,7 +49,7 @@
 		<td><select class="small-text" name="unitofmeasure_[% ROW_COUNT %]" id="unitofmeasure_[% ROW_COUNT %]">[% FOREACH item IN measureunit_loop %]<option [% item.value == unitofmeasure ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 		<td class="spacer"><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 		<td><select class="small-text shipment-details" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
-		<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
+		<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value='[% description %]'/></td>
 		<td><input type="text" class="small-text shipment-details" name="decval_[% ROW_COUNT %]" id="decval_[% ROW_COUNT %]" value="[% decval ? decval : '0.00' %]"/></td>
 	</tr>
 	<tr>
@@ -106,7 +106,7 @@
 	</td>
 	<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
 	<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% partnumber %]"/></td>
-	<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
+	<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value='[% description %]'/></td>
 	<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 	<td><select class="small-text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option [% item.value == class ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 	<td><input type="text" class="small-text shipment-details" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>

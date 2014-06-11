@@ -206,6 +206,8 @@
 		$("#add-package-btn").html('<span class="round-green-button">+</span>&nbsp;&nbsp;ADD ' + $("#unittype option:selected").text().toUpperCase());
 		});
 
+	$(document).on('change', '.reset-cs-onchange', resetCSList);
+
 	$('#save').click(function() {
 		delete requiredFieldHash['package-detail-list'];
 		$("#frm_order").submit();
