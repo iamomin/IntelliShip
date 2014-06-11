@@ -665,6 +665,10 @@ sub update_branding_settings :Private
 			$css_contents .= "$_\n" . "\tbackground: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
 			$css_contents .= "$_\n" . "\tcolor: " . $params->{"$style_list->{font}"} . ";" if $params->{"$style_list->{font}"};
 			$css_contents .= "$_\n" . "\tfont-size: " . $params->{"$style_list->{size}"} . "px;" if $params->{"$style_list->{size}"};
+			if($style eq 'input[type=button].active')
+				{
+				$css_contents .= "$_\n" . "\tborder-color: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
+				}
 
 			unless ($css_contents eq $style . "{")
 				{
