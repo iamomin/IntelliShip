@@ -1005,9 +1005,12 @@ sub get_select_list
 			{ name => 'CIF/CIP',  value => '2' },
 			{ name => 'C&F/CPT',  value => '3' },
 			{ name => 'EXW',      value => '4' },
-			{ name => 'DDU',      value => '5' },
-			{ name => 'DDP',      value => '6' },
+			{ name => 'DDP',      value => '5' },
 			];
+		if ($self->customer->username =~ /qamf/)
+			{	push @$list, { name => 'DAP',      value => '6' };}
+		else
+			{   push @$list, { name => 'DDU',      value => '6' };}
 		}
 	elsif ($list_name eq 'DUTY_PAY_TYPE_LIST')
 		{
