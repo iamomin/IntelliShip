@@ -524,7 +524,6 @@ sub validate_contact_username :Private
 
 	my $WHERE = {
 		contactid => { '!=' => $params->{'contactid'}},
-		customerid => $params->{'customerid'},
 		username => $params->{'username'}
 		};
 
