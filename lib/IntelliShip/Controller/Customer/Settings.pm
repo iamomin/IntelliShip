@@ -623,6 +623,12 @@ sub contactinformation :Local
 
 		$Contact->update;
 
+		if ($Contact->contactid eq $self->contact->contactid && $Contact->username ne $self->token->active_username)
+			{
+			$self->token->active_username($Contact->username);
+			$self->token->update;
+			}
+
 		$c->stash->{MESSAGE} = 'Contact information updated successfully';
 
 		if ($params->{'ajax'})

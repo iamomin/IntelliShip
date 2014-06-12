@@ -506,6 +506,12 @@ table.order-nav td.L { padding: 5px 10px 5px  0px; }
 table.order-nav td.C { padding: 5px 10px 5px 10px; }
 table.order-nav td.R { padding: 5px  0px 5px 10px; }
 
+table.order-nav tr td div img {
+    background-color: #1875BA;
+    border-radius: 50%;
+    margin: auto;
+}
+
 table.gray-app {
     margin: 10px 0;
     padding: 10px;
