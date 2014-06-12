@@ -1,20 +1,32 @@
 
 function CancelShipment(shipmentid)
 	{
-	var query_param = "shipmentid=" + shipmentid;
-	send_ajax_request('', 'JSON', 'order', 'cancel_shipment', query_param, function () {
-		if ( JSON_data.voided ) {
-			showMessage("<div class='notice'>Shipment voided successfully</div>", "Void Shipment", function() {
-				$("#dialog-message").html("<div class='notice'>Please wait...</div>");
-				$("#do").val('');
-				$("#force_edit").val('1');
-				$("#frm_label").attr('action',window.location.href);
-				$('#frm_label').submit();
-				});
-			} else {
-			showMessage("Shipment void operation failed...", "Void Shipment");
+	$("#dialog-message").dialog( {
+		title: "Void Shipment",
+		width: '400px',
+		buttons: {
+			Ok: function() {
+				var query_param = "shipmentid=" + shipmentid;
+				send_ajax_request('', 'JSON', 'order', 'cancel_shipment', query_param, function () {
+					if ( JSON_data.voided ) {
+						showMessage("<div class='notice'>Shipment voided successfully</div>", "Void Shipment", function() {
+							$("#dialog-message").html("<div class='notice'>Please wait...</div>");
+							$("#do").val('');
+							$("#force_edit").val('1');
+							$("#frm_label").attr('action',window.location.href);
+							$('#frm_label').submit();
+							});
+						} else {
+						showMessage("Shipment void operation failed...", "Void Shipment");
+						}
+					});
+				},
+				Cancel: function() { $( this ).dialog( "close" ); }
 			}
 		});
+
+		$("#dialog-message").html("<div class='notice'>Are you sure you want to void shipments ?</div>");
+		$("#dialog-message").dialog("open");
 	}
 
 function MarkShipmentAsPrinted(coid, shipmentid)

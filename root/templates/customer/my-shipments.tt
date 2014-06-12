@@ -287,28 +287,40 @@
 
 		function BatchVoidShipment(ShipmentIds)
 			{
-			if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
-			var query_param = "shipmentids=" + ShipmentIds;
+			$("#dialog-message").dialog( {
+			title: "Void Shipment",
+			width: '400px',
+			buttons: {
+				Ok: function() {
+					if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
+					var query_param = "shipmentids=" + ShipmentIds;
 
-			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
-				if ( JSON_data.is_success ) {
-					showMessage("<div class='notice'>Shipment voided successfully...</div>", "Void Shipment");
-					var vDate = $("#view_date").val();
-					var query_param = "view_date=" + vDate;
-					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-					$("#count").html('0');
-					}
-				else if( JSON_data.voided.length > 0 ) {
-					showMessage("Shipments partially voided...", "Void Shipment");
-					var vDate = $("#view_date").val();
-					var query_param = "&view_date=" + vDate;
-					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-					$("#count").html('0');
-					}
-				else {
-					showMessage("Shipment void operation failed...", "Void Shipment");
-					}
-				});
+					send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
+						if ( JSON_data.is_success ) {
+							showMessage("<div class='notice'>Shipment voided successfully...</div>", "Void Shipment");
+							var vDate = $("#view_date").val();
+							var query_param = "view_date=" + vDate;
+							send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+							$("#count").html('0');
+							}
+						else if( JSON_data.voided.length > 0 ) {
+							showMessage("Shipments partially voided...", "Void Shipment");
+							var vDate = $("#view_date").val();
+							var query_param = "&view_date=" + vDate;
+							send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+							$("#count").html('0');
+							}
+						else {
+							showMessage("Shipment void operation failed...", "Void Shipment");
+							}
+						});
+					},
+				Cancel: function() { $( this ).dialog( "close" ); }
+				}
+			});
+
+			$("#dialog-message").html("<div class='notice'>Are you sure you want to void shipment?</div>");
+			$("#dialog-message").dialog("open");
 			}
 
 		var clickCount = 0;
