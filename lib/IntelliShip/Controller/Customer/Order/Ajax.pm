@@ -915,11 +915,10 @@ sub ship_to_carrier
 
 		foreach my $Package (@packages)
 			{
-			my $key = $Package->originalcoid;
+			my $key = $Package->originalcoid . '-' . $Package->packprodataid;
 			$consolidatedOrders->{$key} = {} unless $consolidatedOrders->{$key};
 
-			$consolidatedOrders->{$key}->{'packages'} = [] unless $consolidatedOrders->{$key}->{'packages'};
-			push(@{$consolidatedOrders->{$key}->{'packages'}},$Package);
+			$consolidatedOrders->{$key}->{'package'} = $Package;
 
 			$consolidatedOrders->{$key}->{'enteredweight'} = 0 unless $consolidatedOrders->{$key}->{'enteredweight'};
 			$consolidatedOrders->{$key}->{'dimweight'} = 0 unless $consolidatedOrders->{$key}->{'dimweight'};
@@ -930,40 +929,41 @@ sub ship_to_carrier
 			$consolidatedOrders->{$key}->{'quantity'} += $Package->quantity;
 			}
 
-		foreach my $COID (keys %$consolidatedOrders)
+		foreach my $key (keys %$consolidatedOrders)
 			{
+			my ($COID,$PackProDataID) = split(/\-/,$key);
+
 			my $DummyCO = $c->model('MyDBI::Co')->new($CO->{_column_data});
 			$DummyCO->coid($self->get_token_id);
 
-			my $packages = $consolidatedOrders->{$COID}->{'packages'};
-			foreach my $Package (@$packages)
+			my $Package = $consolidatedOrders->{$key}->{'package'};
+
+			my $DummyPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
+			$DummyPackage->packprodataid($self->get_token_id);
+			$DummyPackage->ownerid($DummyCO->coid);
+			$DummyPackage->insert;
+
+			my @products = $Package->products;
+			foreach my $Product (@products)
 				{
-				my $DummyPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
-				$DummyPackage->packprodataid($self->get_token_id);
-				$DummyPackage->ownerid($DummyCO->coid);
-				$DummyPackage->insert;
+				my $DummyProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
+				$DummyProduct->packprodataid($self->get_token_id);
+				$DummyProduct->ownerid($Package->packprodataid);
+				$DummyProduct->insert;
+				}
 
-				my @products = $Package->products;
-				foreach my $Product (@products)
-					{
-					my $DummyProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
-					$DummyProduct->packprodataid($self->get_token_id);
-					$DummyProduct->ownerid($Package->packprodataid);
-					$DummyProduct->insert;
-					}
-
-				if (!$DummyCO->ordernumber && $Package->originalcoid)
-					{
-					$DummyCO->ordernumber($Package->originalcoid);
-					}
+			if (!$DummyCO->ordernumber && $Package->originalcoid)
+				{
+				$DummyCO->ordernumber($Package->originalcoid);
 				}
 
 			$DummyCO->insert;
+
 			$c->log->debug("... DummyCO, coid : " . $DummyCO->coid);
 
-			$params->{'enteredweight'} = $consolidatedOrders->{$COID}->{'enteredweight'};
-			$params->{'dimweight'} = $consolidatedOrders->{$COID}->{'dimweight'};
-			$params->{'quantity'} = $consolidatedOrders->{$COID}->{'quantity'};
+			$params->{'enteredweight'} = $consolidatedOrders->{$key}->{'enteredweight'};
+			$params->{'dimweight'} = $consolidatedOrders->{$key}->{'dimweight'};
+			$params->{'quantity'} = $consolidatedOrders->{$key}->{'quantity'};
 
 			$c->log->debug("... enteredweight: " . $params->{'enteredweight'});
 			$c->log->debug("... dimweight    : " . $params->{'dimweight'});
