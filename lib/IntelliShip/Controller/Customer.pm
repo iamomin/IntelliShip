@@ -187,31 +187,79 @@ sub get_customer_contact :Private
 	my $c = $self->context;
 
 	$username = $self->token->active_username if $self->token;
-	#$c->log->debug("Authenticate User: " . $username);
 
-	my $Customer  = $self->token->customer if $self->token;
-
-	my $contact_search = { username => $username };
-	$contact_search->{password} = $password unless $self->token;
-	$contact_search->{customerid} = $Customer->customerid if $Customer;
-
-	my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
-
-	return unless @contactArr;
-
-	foreach my $Contact (@contactArr)
+	## Email based user authentication
+	if ($username =~ /@/)
 		{
-		$Customer = $Contact->customer unless $Customer;
+		$c->log->debug("... Email Based User Authentication");
 
-		next unless $Customer;
+		my $Customer  = $self->token->customer if $self->token;
 
-		my $Contact = $contactArr[0];
+		my $contact_search = { username => $username };
+		$contact_search->{password} = $password unless $self->token;
+		$contact_search->{customerid} = $Customer->customerid if $Customer;
 
-		#$c->log->debug("Customer ID : " . $Customer->customerid);
-		#$c->log->debug("Contact ID  : " . $Contact->contactid);
+		my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 
-		if ($Customer->customerid eq $Contact->customerid)
+		return unless @contactArr;
+
+		foreach my $Contact (@contactArr)
 			{
+			$Customer = $Contact->customer unless $Customer;
+
+			next unless $Customer;
+
+			my $Contact = $contactArr[0];
+
+			#$c->log->debug("Customer ID : " . $Customer->customerid);
+			#$c->log->debug("Contact ID  : " . $Contact->contactid);
+
+			if ($Customer->customerid eq $Contact->customerid)
+				{
+				return ($Customer, $Contact);
+				}
+			}
+		}
+	## Backward compatibility authentication
+	else
+		{
+		my ($customerUser, $contactUser) = split(/\//,$username);
+
+		$contactUser = $customerUser unless $contactUser;
+
+		#$c->log->debug("Customer user: " . $customerUser);
+		#$c->log->debug("Contact  user: " . $contactUser);
+
+		my @customerArr;
+		if ($self->token)
+			{
+			push @customerArr, $self->token->customer;
+			}
+		else
+			{
+			@customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
+			}
+
+		return unless @customerArr;
+
+		foreach my $Customer (@customerArr)
+			{
+			my $contact_search = {
+					username => $contactUser,
+					customerid => $Customer->customerid
+					};
+
+			$contact_search->{password} = $password unless $self->token;
+
+			my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
+
+			next unless @contactArr;
+
+			my $Contact = $contactArr[0];
+
+			#$c->log->debug("Customer ID : " . $Customer->customerid);
+			#$c->log->debug("Contact ID  : " . $Contact->contactid);
+
 			return ($Customer, $Contact);
 			}
 		}
