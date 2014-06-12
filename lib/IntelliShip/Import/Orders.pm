@@ -750,6 +750,7 @@ sub ImportOrders
 				}
 
 			$CO->{'dropaddressid'} = $DropAddress->id if $DropAddress;
+			$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
 			###########################
 
 			$CO->{'ordernumber'}           = $CustRef->{'ordernumber'};
