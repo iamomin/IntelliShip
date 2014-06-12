@@ -501,7 +501,7 @@ my $CUSTOMER_CONTACT_RULES = [
 my $CUSTOM_CSS_STYLES = [
 	{ name => 'Site Top Header',           bgcolor => 'header-bgcolor', font => 'header-font', size => 'header-size', section => ['#header', '#header nav a span'] },
 	{ name => 'Menu Buttons',              bgcolor => 'menu-bgcolor',   font => 'menu-font',   size => 'menu-size',   section => ['#menu', '#menu a'] },
-	{ name => 'Primary Section Headers',   bgcolor => 'h1',             font => 'h1-font',     size => 'h1-size',     section => ['h1', 'input[type=button].active' , '.solid-line'] },
+	{ name => 'Primary Section Headers',   bgcolor => 'h1',             font => 'h1-font',     size => 'h1-size',     section => ['h1', 'input[type=button].active', 'table.order-nav tr td div img', '.solid-line'] },
 	{ name => 'Secondary Section Headers', bgcolor => 'h2',             font => 'h2-font',     size => 'h2-size',     section => ['h2'] },
 	{ name => 'Title Headers',             bgcolor => 'title-bgcolor',  font => 'title-font',  size => 'title-size',  section => ['table.summary-app caption', 'table.app caption'] },
 	];
