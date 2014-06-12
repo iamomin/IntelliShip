@@ -1056,9 +1056,13 @@ sub get_select_list
 			{ name => 'DDP',      value => '5' },
 			];
 		if ($self->customer->username =~ /qamf/)
-			{	push @$list, { name => 'DAP',      value => '6' };}
-		else
-			{   push @$list, { name => 'DDU',      value => '6' };}
+			{	
+				foreach my $Terms_Name(@$list)
+				{
+				 $Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
+				 $Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);	
+				}
+			}
 		}
 	elsif ($list_name eq 'DUTY_PAY_TYPE_LIST')
 		{
