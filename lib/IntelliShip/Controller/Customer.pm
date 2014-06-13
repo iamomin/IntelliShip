@@ -498,10 +498,12 @@ sub get_select_list
 			my $sth1 = $self->myDBI->select("SELECT addressid, contactname FROM co WHERE coid = '$data->{'coid'}'");
 			my $address_data = $sth1->fetchrow(0);
 			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
+			my $address_name = $Address->addressname;
+			my $address1 = $Address->address1;
 			push(@$list, {
-					company_name => $Address->addressname,
+					company_name => "\Q$address_name\S",
 					reference_id => $data->{'coid'},
-					address1     => $Address->address1,
+					address1     => "\Q$address1\S",
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
