@@ -935,15 +935,6 @@ sub package_details
 	return @packageArr;
 	}
 
-sub total_dimweight
-	{
-	my $self = shift;
-	my @packages = $self->packages;
-	my $total_dimweight = 0;
-	$total_dimweight += $_->dimweight foreach @packages;
-	return $total_dimweight;
-	}
-
 sub total_weight
 	{
 	my $self = shift;
@@ -955,6 +946,15 @@ sub total_weight
 		$total_weight += ($_->quantity > 1 ? $_->quantity * $weight : $weight);
 		}
 	return $total_weight;
+	}
+
+sub total_dimweight
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_dimweight = 0;
+	$total_dimweight += $_->dimweight foreach @packages;
+	return $total_dimweight;
 	}
 
 sub total_quantity

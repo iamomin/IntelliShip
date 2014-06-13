@@ -2947,7 +2947,8 @@ sub BuildShipmentInfo
 	$ShipmentData->{'usealtsop'} = $CO->usealtsop;
 	$ShipmentData->{'quantityxweight'} = $CO->quantityxweight;
 
-	$ShipmentData->{'dimweight'} = $params->{'dimweight'};
+	$ShipmentData->{'weight'} = $CO->total_weight;
+	$ShipmentData->{'dimweight'} = $CO->total_dimweight;
 	$ShipmentData->{'customsdescription'} = $params->{'customsdescription'};
 	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
 	$ShipmentData->{'commodityweight'} = $params->{'commodityweight'};
@@ -2965,7 +2966,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'carrier'} = ($params->{'carrier'} ? $params->{'carrier'} : $CO->extcarrier);
 	$ShipmentData->{'service'} = ($params->{'service'} ? $params->{'service'} : $CO->extservice);
 
-	$ShipmentData->{'quantity'} = ($params->{'quantity'} ? $params->{'quantity'} : $CO->total_weight);
+	$ShipmentData->{'quantity'} = ($params->{'quantity'} ? $params->{'quantity'} : $CO->total_quantity);
 	$ShipmentData->{'totalquantity'} = $CO->total_quantity;
 	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
 	$ShipmentData->{'weighttype'} = $params->{'weighttype'};

@@ -915,23 +915,28 @@ sub ship_to_carrier
 
 		foreach my $Package (@packages)
 			{
-			my $key = $Package->originalcoid . '-' . $Package->packprodataid;
-			$consolidatedOrders->{$key} = {} unless $consolidatedOrders->{$key};
+			next unless $Package->quantity;
 
-			$consolidatedOrders->{$key}->{'package'} = $Package;
+			my $weight = ($Package->quantityxweight ? ($Package->weight/$Package->quantity) : $Package->weight);
+			my $dimweight = ($Package->quantityxweight ? ($Package->dimweight/$Package->quantity) : $Package->dimweight);
 
-			$consolidatedOrders->{$key}->{'enteredweight'} = 0 unless $consolidatedOrders->{$key}->{'enteredweight'};
-			$consolidatedOrders->{$key}->{'dimweight'} = 0 unless $consolidatedOrders->{$key}->{'dimweight'};
-			$consolidatedOrders->{$key}->{'quantity'} = 0 unless $consolidatedOrders->{$key}->{'quantity'};
+			for (my $count=1; $count <= $Package->quantity; $count++)
+				{
+				my $key = $Package->originalcoid . '-' . $Package->packprodataid . '-' . $count;
 
-			$consolidatedOrders->{$key}->{'enteredweight'} += $Package->weight;
-			$consolidatedOrders->{$key}->{'dimweight'} += $Package->dimweight;
-			$consolidatedOrders->{$key}->{'quantity'} += $Package->quantity;
+				$consolidatedOrders->{$key} = {} unless $consolidatedOrders->{$key};
+
+				$consolidatedOrders->{$key}->{'package'} = $Package;
+
+				$consolidatedOrders->{$key}->{'enteredweight'} = $weight;
+				$consolidatedOrders->{$key}->{'dimweight'} = $dimweight;
+				$consolidatedOrders->{$key}->{'quantity'} = 1;
+				}
 			}
 
 		foreach my $key (keys %$consolidatedOrders)
 			{
-			my ($COID,$PackProDataID) = split(/\-/,$key);
+			my ($COID,$PackProDataID,$Number) = split(/\-/,$key);
 
 			my $DummyCO = $c->model('MyDBI::Co')->new($CO->{_column_data});
 			$DummyCO->coid($self->get_token_id);
@@ -941,6 +946,7 @@ sub ship_to_carrier
 			my $DummyPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
 			$DummyPackage->packprodataid($self->get_token_id);
 			$DummyPackage->ownerid($DummyCO->coid);
+			$DummyPackage->quantity(1);
 			$DummyPackage->insert;
 
 			my @products = $Package->products;
