@@ -56,19 +56,28 @@ sub setup_supply_ordering :Private
 	my $SQL = "SELECT DISTINCT carrier FROM productsku WHERE carrier <> ''";
 	my $sth = $self->myDBI->select($SQL);
 
+	my $customerCarrierDetails = $self->API->get_carrier_list($self->customer->get_sop_id,$CustomerID);
+
+	my %customerCarriers = map { $_ => 1 } split(/\t/,$customerCarrierDetails->{'cnames'});
+
 	my $first_carrier;
 	my $carrier_loop = [];
 	foreach (my $row=0; $row < $sth->numrows; $row++)
 		{
 		my $data = $sth->fetchrow($row);
-		next unless $data->{carrier};
+
 		$data->{carrier} =~ s/^\s+//;
 		$data->{carrier} =~ s/\s+$//;
+
+		next unless $data->{carrier};
+		next unless $customerCarriers{$data->{carrier}};
+
 		unless ($first_carrier)
 			{
 			$first_carrier = $data->{carrier};
 			$data->{selected} = 1;
 			}
+
 		push(@$carrier_loop, { name => $data->{carrier}, value => $data->{carrier} });
 		}
 
