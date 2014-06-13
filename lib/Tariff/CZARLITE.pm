@@ -23,6 +23,7 @@
 
 	use ARRS::COMMON;
 	use ARRS::IDBI;
+	use Data::Dumper;
 
 	sub new
 	{
@@ -103,6 +104,8 @@
 
 		my $CzarLiteData = $self->GetData($OriginZip,$DestZip,$Class);
 
+		warn "########## \$CzarLiteData: " .Dumper($CzarLiteData);
+		
 		if ( !defined($CzarLiteData) || $CzarLiteData eq '' )
 		{
 			return 0;
@@ -154,7 +157,7 @@
 		my $WeightClass = '';
 		my $NextWeightClass = '';
 		my $NextWtClassMinWt = 0;
-
+		
 		if ( $Weight >= 1 && $Weight <= 499 )
 		{
 			$WeightClass = 'l5c';
@@ -213,6 +216,8 @@
 
 		$WeightClassCost = ($CzarLiteData->{$WeightClass} * $Weight) / 100;
 
+		warn "########## \$WeightClassCost = (\$CzarLiteData->{$WeightClass} * $Weight) / 100";
+		
 		if ( defined($NextWeightClass) && $NextWeightClass ne '' )
 		{
 			$NextWeightClassCost = ($CzarLiteData->{$NextWeightClass} * $NextWtClassMinWt) / 100;
