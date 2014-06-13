@@ -41,7 +41,7 @@ sub GetZoneNumber
 		my $self = shift;
 		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity) = @_;
 
-		warn "########## GetZoneNumber: ".$DestAddressCode;
+		warn "########## GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity) ";
 		# Check if this zone is exluded from the customerservice/service
 		if
 		(
@@ -336,6 +336,7 @@ sub GetCost
 		my $self = shift;
 		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date, $DestAddressCode, $FromCity, $ToCity) = @_;
 
+		warn "########## CUSTOMERSERVICE::GetCost($Weight, $RateTypeID, $FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $Type, $Band, $ZoneNumber, $CWT, $DollarAmount, $Lookuptype, $Quantity, $Unittype, $Automated, $CustomerID, $date, $DestAddressCode, $FromCity, $ToCity)";
 
 		# Get Zone Number, if it's not passed in
 		#if ( !$ZoneNumber )
@@ -459,7 +460,7 @@ sub GetCost
 				stopdate DESC
 			LIMIT 1
 		";
-	#warn $SQLString;
+	warn "########## $SQLString";
 	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
@@ -586,6 +587,7 @@ sub GetCost
 
 sub GetShipmentCosts
 	{
+		warn "########## GetShipmentCosts";
 		my $self = shift;
 		my ($ShipmentRef) = @_;
 		#WarnHashRefValues($ShipmentRef);
@@ -1182,6 +1184,7 @@ sub GetAggregateWeight
 
 sub GetPackageCosts
 	{
+		warn "######### GetPackageCosts";
 		my $self = shift;
 
 		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName) = @_;
@@ -1296,6 +1299,7 @@ sub GetSuperCost
 		my ($Weight,$DimLength,$DimWidth,$DimHeight,$ShipmentRef,$CWT,$Quantity,$UnitType) = @_;
 		#warn "\nGetSuperCost() Weight: $Weight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		#WarnHashRefValues($ShipmentRef);
+		warn "########## GetSuperCost($Weight, $DimLength, $DimWidth, $DimHeight, $ShipmentRef, $CWT, $Quantity, $UnitType)";
 		my $Zone;
 		my $Cost = 0;
 		my $TransitDays = 0;
@@ -1370,11 +1374,11 @@ sub GetSuperCost
 			$RateHandlerName = $RateType->GetValueHashRef()->{'handler'};
 			$Lookuptype = $RateType->GetValueHashRef()->{'lookuptype'};
 		}
-		#warn "\nGetSuperCost handler/lookuptype: $RateHandlerName  $Lookuptype";
+		warn "\n########## GetSuperCost handler/lookuptype: $RateHandlerName  $Lookuptype";
 
 		if ( !defined($RateHandlerName) || $RateHandlerName eq '' )
 		{
-			#warn "\nno ratehandler: weight=$Weight";
+			warn "\n########## no ratehandler: weight=$Weight";
 			if ( !defined($Weight) || $Weight eq '' ) { return(undef,undef,$CostWeight); }
 
 			# Assume everything going through 'GetShipmentCosts' is coming through AOS.  Currently, this is true.

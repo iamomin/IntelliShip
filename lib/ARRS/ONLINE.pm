@@ -43,6 +43,7 @@
 
 	sub GetServicesDropdown
 	{
+		warn "GetServicesDropdown";
 		my $self = shift;
 		my ($CgiRef) = @_;
 #warn "clientid: $CgiRef->{'clientid'}";

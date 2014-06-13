@@ -92,6 +92,8 @@
 	{
 		my $self = shift;
 		my ($Weight,$DiscountPercent,$Class,$OriginZip,$DestZip) = @_;
+		
+		warn "########## CZARLITE::GetCost($Weight,$DiscountPercent,$Class,$OriginZip,$DestZip)";
 		my $Cost = -1;
 
 		# If we have 0 weight, don't return a cost...
@@ -108,6 +110,7 @@
 
 		my ($WeightClassCost,$NextWeightClassCost) = $self->GetWeightClassCosts($Weight,$CzarLiteData);
 
+		warn "########## GetWeightClassCosts($Weight,$CzarLiteData) returned: $WeightClassCost,$NextWeightClassCost";
 		# Compare actual weight class cost vs. next weight class cost.
 		# Take the *lower* of the two.
 		if
@@ -140,6 +143,7 @@
 		# Set cost to two decimal places
 		$Cost = sprintf("%02.2f", $Cost);
 
+		warn "########## CZARLITE::GetCost returning $Cost";
 		return $Cost;
 	}
 
