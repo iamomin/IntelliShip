@@ -299,7 +299,8 @@ sub process_request
 		if($ShipData{$key})
 			{
 			$ShipData{$key} =~ s/`/\\`/g;
-			$ShipData{$key} =~ s/"/%22/g;
+			#$ShipData{$key} =~ s/"/%22/g;
+			$ShipData{$key} =~ s/"//g;
 
 			$ShipmentString .= $key . ',"' . $ShipData{$key} . '"';
 			}
