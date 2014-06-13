@@ -66,7 +66,7 @@
 			<th>BATCH OPTIONS:</th>
 			<td><label><input type="radio" id="track"   name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
 			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
-			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
+			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID/CANCEL</label></span></label></td>
 			<td><input type="button" id="btn_submit" value="SUBMIT"></td>
 		</tr>
 	</table>
@@ -109,9 +109,9 @@
 				<td>[% item.mode %]</td>
 				<td class="center">
 					[% IF item.condition == 6 %]
-					<a href="javascript:void(0);" class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void">VOID</a>
+					<a href="javascript:void(0);" class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void">VOID/CANCEL</a>
 					[% ELSE %]
-					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:ReprintLabel('[% item.shipmentid %]');" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
+					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:ReprintLabel('[% item.shipmentid %]');" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID/CANCEL</a>
 					[% END %]
 				</td>
 			</tr>

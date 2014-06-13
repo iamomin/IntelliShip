@@ -30,7 +30,7 @@
 			<td><input type="button" class="blue"  value="Download/Save and Ship" id="download" onclick="DownloadLabelImage('[% coid %]','[% shipmentid %]');"/></td>
 			[% END %]
 			<td><input type="button" class="green" value="Print and Ship" id="print" onclick="PrintThermalLabel_[% shipmentid %]();"/></td>
-			<td><input type="button" class="red"   value="Cancel" onclick="CancelShipment('[% shipmentid %]');"/></td>
+			<td><input type="button" class="red"   value="Void/Cancel" onclick="CancelShipment('[% shipmentid %]');"/></td>
 			[% IF SEND_EMAIL %]
 			<td><input type="button" class="blue" value="Email" onclick="SendEmailNotification('[% coid %]','[% shipmentid %]');"/></td>
 			[% END %]
