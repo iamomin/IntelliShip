@@ -51,6 +51,7 @@ sub setup_supply_ordering :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+	my $Contact = $self->contact;
 
 	my $CustomerID = $self->customer->customerid;
 	my $SQL = "SELECT DISTINCT carrier FROM productsku WHERE carrier <> ''";
@@ -89,9 +90,12 @@ sub setup_supply_ordering :Private
 
 	$c->log->debug("... Total Productsku found: " . $sth->numrows);
 
+	my $ToAddress = $Contact->address;
+	$ToAddress = $self->customer->address if !$ToAddress && !$Contact->get_contact_data_value('myonly');
+
 	$c->stash(carrier_loop => $carrier_loop);
-	$c->stash(toAddress => $self->customer->address);
-	$c->stash(toemail => $self->contact->email);
+	$c->stash(toAddress => $ToAddress);
+	$c->stash(toemail => $Contact->email);
 	$c->stash(ordernumber => $self->get_auto_order_number);
 	$c->stash(datetoship => IntelliShip::DateUtils->current_date('/'));
 	$c->stash(countrylist_loop => $self->get_select_list('COUNTRY'));
