@@ -327,3 +327,36 @@ function validateDepartment(control_ID, customerid)
 			$("#"+control_ID).val("");
 			});
 	}
+
+/***************************************************************/
+function ShowPrivacy()
+	{
+	$("#dialog-message").dialog({
+		title: 'Privacy Policy',
+		width: '1000px',
+		show: { effect: "blind", duration: 1000 },
+		hide: { effect: "explode", duration: 1000 },
+		autoOpen: false,
+		modal: true
+		});
+
+	send_ajax_request('dialog-message', 'HTML', 'privacy', '', '', function() {
+			$("#dialog-message").dialog("open");
+			});
+	}
+function ShowLegal()
+	{
+	$("#dialog-message").dialog({
+		title: 'Software License Agreement/Terms of Use',
+		width: '1000px',
+		maxHeight: 600,
+		show: { effect: "blind", duration: 1000 },
+		hide: { effect: "explode", duration: 1000 },
+		autoOpen: false,
+		modal: true
+		});
+
+	send_ajax_request('dialog-message', 'HTML', 'legal', '', '', function() {
+			$("#dialog-message").dialog("open");
+			});
+	}

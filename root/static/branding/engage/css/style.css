@@ -17,7 +17,7 @@ body {
     color: #4B4B4B;
 }
 
-ol, ul {
+ul {
     list-style: none;
 }
 
@@ -332,6 +332,11 @@ img { border: none; vertical-align: middle }
     padding-left: 5px;
     cursor: pointer;
 }
+
+#legal, #privacy ul { margin: 20px; list-style: disc; list-style-type: disc }
+#legal, #privacy ol { margin: 20px; list-style: decimal; list-style-type: decimal }
+#legal, #privacy li { margin: 10px }
+#legal, #privacy p { margin: 10px }
 
 /* Dashboard */
 

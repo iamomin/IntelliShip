@@ -107,6 +107,20 @@ sub help :Local
 	return 1;
 	}
 
+sub legal :Local
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/legal.tt");
+	return 1;
+	}
+
+sub privacy :Local
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/privacy.tt");
+	return 1;
+	}
+
 sub printdemo :Local
 	{
 	my ( $self, $c ) = @_;
@@ -491,7 +505,7 @@ sub get_select_list
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
-					contactname  => $address_data->{'contactname'},
+					contactname  => "\Q$address_data->{contactname}\S",
 				});
 			}
 		}

@@ -175,9 +175,9 @@
 					<li><img src="/static/branding/engage/images/footer/logo.gif" class="logo"/></li>
 					<li>Copyright &copy; 2000-2014 Engage Technology, LLC.</li>
 					<li>|</li>
-					<li><a href="#">Privacy</a></li>
+					<li><a href="javascript:void(0);" onclick="ShowPrivacy();">Privacy</a></li>
 					<li>|</li>
-					<li><a href="#">Legal</a></li>
+					<li><a href="javascript:void(0);" onclick="ShowLegal();">Legal</a></li>
 				</ul>
 				<ul class="links">
 					<li><a href="/customer/help" id="help"><img src="/static/branding/engage/images/footer/help.png"/><span>HELP</span></a></li>
