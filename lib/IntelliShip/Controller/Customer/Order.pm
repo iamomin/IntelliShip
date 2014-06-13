@@ -1160,9 +1160,18 @@ sub populate_order :Private
 		$c->stash->{customerAddress} = $self->customer->address;
 
 		## Ship From Section
-		$c->stash->{fromcontact}= $CO->oacontactname;
+		if ($CO->isdropship)
+			{
+			$c->stash->{fromcontact}= $CO->dropcontact;
+			$c->stash->{fromphone}  = $CO->dropphone;
+			}
+		else
+			{
+			$c->stash->{fromcontact}= $CO->oacontactname;
+			$c->stash->{fromphone}  = $CO->oacontactphone;
+			}
+
 		$c->stash->{fromemail}  = $CO->deliverynotification;
-		$c->stash->{fromphone}  = $CO->oacontactphone;
 
 		if ($CO->isinbound)
 			{
@@ -2303,7 +2312,7 @@ sub SendShipNotification :Private
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 	$Email->from_name('IntelliShip2');
-	
+
 	$Email->add_to($Shipment->shipmentnotification) if $Shipment->shipmentnotification;
 	$Email->add_to($Shipment->deliverynotification) if $Shipment->deliverynotification;
 
@@ -2329,7 +2338,7 @@ sub SendShipNotification :Private
 		}
 	my $shipment_information_hash = $self->GetNotificationShipments($Shipment);
 	$c->stash->{notification_list} = $shipment_information_hash;
-	
+
 	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/shipment-notification.tt' ]));
 
 	$Email->subject("NOTICE: Shipment Prepared (".$shipment_information_hash->[0]{'addressname'}." of ".$shipment_information_hash->[0]{'city'}.",".$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
@@ -2456,7 +2465,7 @@ sub SendShipmentVoidEmail
 	my $self = shift;
 	my $Shipment = shift;
 	my $c = $self->context;
-	
+
 	my $Contact        = $self->contact;
 	my $Customer       = $self->customer;
 	my $OrderNumber    = $Shipment->CO->ordernumber;
@@ -2475,13 +2484,13 @@ sub SendShipmentVoidEmail
 	$Email->add_to($Customer->losspreventemail);
 
 	$self->set_header_section;
-	
+
 	$c->stash->{ShipmentID} = $Shipment->shipmentid;
 	$c->stash->{Carrier} = $Carrier;
 	$c->stash->{Service} = $Service;;
 	$c->stash->{Tracking1} = $TrackingNumber;
 	$c->stash->{OrderNumber} = $OrderNumber;
-	
+
 	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/void-notification.tt' ]));
 
 	if ($Email->send)
