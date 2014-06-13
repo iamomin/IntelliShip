@@ -96,8 +96,12 @@ sub GetCost
 	warn "... UPS2 GetTransit()";
 	warn "... CUSTOMERID: $CustomerID";
 
-	my $AcctNum = undef;
-	my $MeterNum = undef;
+	my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
+	$CS->{'object_issuper'} = 1;
+	$CS->Load($CSID);
+
+	my $AcctNum = $CS->GetCSValue('webaccount',undef,$CustomerID);
+	my $MeterNum = $CS->GetCSValue('meternumber',undef,$CustomerID);
 
 	eval {
 	($days,$Cost,$errorcode) = $self->GetTransit($SCAC,$OriginZip,$DestZip,$Weight,$Class,$DateShipped,$Required_Asses,$FileID,$ClientID,$CSID,$ServiceID,$ToCountry,$AcctNum,$MeterNum,$DimHeight,$DimWidth,$DimLength,$FromCountry,$FromCity,$FromState,$ToCity,$ToState);
@@ -188,7 +192,7 @@ sub GetTransit
 		<Shipper>
 			<Name>Tony Sharps</Name>
 			<PhoneNumber>1234567890</PhoneNumber>
-			<ShipperNumber>F5618Y</ShipperNumber>
+			<ShipperNumber>$acctnum</ShipperNumber>
 			<Address>
 				<AddressLine1>Ste 102-302</AddressLine1>
 				<City>Memphis</City>
