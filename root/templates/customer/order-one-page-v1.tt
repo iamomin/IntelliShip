@@ -38,6 +38,9 @@
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
+	[% IF ADDRESS_VALIDATE %]
+	<input type="hidden" id="addressvalidate" name="addressvalidate" value='[% ADDRESS_VALIDATE %]'/>
+	[% END %]
 	<input type="hidden" id="do" name="do" value="save"/>
 	[% IF AUTO_PROCESS %]
 	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
@@ -255,6 +258,18 @@
 		$("#ship_now").val("Please wait...");
 
 		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_order").serialize(), function () {
+
+			[% IF ADDRESS_VALIDATE %]
+			if(JSON_data.popup_type == "OkCancel")
+				{
+				showConfirmBox(JSON_data.error + '<br/><br/>Continue processing with this unvalidated address?', 'Address Validate Confirmation',function(){
+				$('#dialog-message').dialog( "close" );
+				$("#addressvalidate").val('0');
+				$("#ship_now").click();
+				return;
+				});
+				}
+			[% END %]
 
 			if ( JSON_data.SUCCESS == 0 ) {
 				$("#ship_now").val("SHIP");

@@ -147,6 +147,7 @@ sub setup_address :Private
 		$c->stash->{CONSOLIDATE_COMBINE} = $Customer->get_contact_data_value('consolidatecombine');
 		}
 
+	$c->stash->{ADDRESS_VALIDATE} = $Contact->get_contact_data_value('addressvalidation');
 	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY
@@ -4195,6 +4196,36 @@ sub send_pickup_request
 			});
 
 	$c->log->debug("....Response: " . $Response);
+	}
+
+sub validate_address
+	{
+	my $self = shift;
+	my $toAddressData = shift;
+
+	my $c = $self->context;
+	my $CO = $self->get_order;
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_ADDRESS_VALIDATE);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->carrier('UPS');
+	$Handler->destination_address($toAddressData);
+
+	my $Response = $Handler->process_request({
+			NO_TOKEN_OPTION => 1
+			});
+	
+	# Process errors
+	unless ($Response->is_success)
+		{
+		$c->log->debug("SHIPMENT TO CARRIER FAILED: " . $Response->message);
+		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
+		$self->add_error($Response->message);
+		return 0;
+		}
+
+	return $Response;
 	}
 
 sub create_return_shipment
