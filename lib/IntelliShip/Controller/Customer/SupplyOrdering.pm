@@ -136,21 +136,8 @@ sub send_email :Private
 	my $UserEmail = IntelliShip::Email->new();
 	my $CompanyEmail = IntelliShip::Email->new();
 
-	## Start Body
-	$UserEmail->add_line('<PRE>');
-	$CompanyEmail->add_line('<PRE>');
-
-	## Header
-	$UserEmail->add_line(qq~Your order for supplies has been send to $carrier on $params->{'datetoship'}.\nThank You\n\n~);
-	$CompanyEmail->add_line(qq~Below is an order for $carrier supplies, requested on $params->{'datetoship'}.\nThank You\n\n~);
-
-	$UserEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
-	$CompanyEmail->add_line(qq~SHIP TO:\t\t$params->{'toname'}\n\t\t\t$params->{'toaddress1'}, $params->{'toaddress2'}\n\t\t\t$params->{'tocity'}, $params->{'tostate'} $params->{'tozip'} $params->{'tocountry'}\n\t\t\t$params->{'tocontact'} $params->{'todepartment'}\n\t\t\t$params->{'tophone'}\n~);
-
-	$UserEmail->add_line(qq~\nQty\t\tPart\#\t\tDescription\n-------\t\t------------\t--------------------------------------~);
-	$CompanyEmail->add_line(qq~\nQty\t\tPart\#\t\tDescription\n-------\t\t------------\t--------------------------------------~);
-
 	## Loop to generate shipment details
+	my $productskudetail_loop = [];
 	foreach my $key (keys %$params)
 		{
 		next unless $key =~ /^quantity_(.+)/;
@@ -159,24 +146,15 @@ sub send_email :Private
 		my $ProductSku = $c->model('MyDBI::Productsku')->find({ productskuid => $1 });
 
 		next unless $ProductSku;
+		my $productskudetails = { Qty => $params->{$key}, Part => $ProductSku->customerskuid , Description => $ProductSku->description};
 
-		my $productskudetails = "\n" . $params->{$key} . "\t\t" . $ProductSku->customerskuid . "\t\t" . $ProductSku->description;
-
-		$UserEmail->add_line($productskudetails);
-		$CompanyEmail->add_line($productskudetails);
+		push(@$productskudetail_loop, $productskudetails);
 		}
 
+	$c->stash->{productskudetail_loop} = $productskudetail_loop;
 	my $sql = "SELECT DISTINCT(webaccount) FROM customerservice INNER JOIN service ON service.serviceid = customerservice.serviceid INNER JOIN carrier ON carrier.carrierid = service.carrierid WHERE lower(carrier.carriername) = lower('$carrier') AND customerid = '" . $Contact->customerid . "' AND webaccount <> ''";
 	my $sth = $c->model('MyArrs')->select($sql);
 	my $WebAccount = $sth->fetchrow(0)->{'webaccount'} if $sth->numrows;
-
-	## Footer
-	$UserEmail->add_line(qq~\n\n\n*****************************************************\n** This email is not authorized for redistribution **\n*****************************************************~);
-	$CompanyEmail->add_line(qq~\n\n\n**********************************************************\n** This email is not authorized for redistribution\t**\n** The confidential $params->{'toname'} $carrier \t\t**\n** Acct\# is $WebAccount and cannot be disclosed\t\t**\n** verbally or electronically\t\t\t\t**\n**********************************************************\n~);
-
-	## END Body
-	$UserEmail->add_line('</PRE>');
-	$CompanyEmail->add_line('</PRE>');
 
 	## From Name
 	$UserEmail->from_name('Intelliship');
@@ -184,6 +162,18 @@ sub send_email :Private
 
 	$CompanyEmail->from_name('Intelliship');
 	$CompanyEmail->from_address('supplies@motorolasolutions.com');
+
+	#Address detail
+	$c->stash->{toname}       = $params->{'toname'};
+	$c->stash->{toaddress1}   = $params->{'toaddress1'};
+	$c->stash->{toaddress2}   = $params->{'toaddress2'};
+	$c->stash->{tocity}       = $params->{'tocity'};
+	$c->stash->{tostate}      = $params->{'tostate'};
+	$c->stash->{tozip}        = $params->{'tozip'};
+	$c->stash->{tocountry}    = $params->{'tocountry'};
+	$c->stash->{tocontact}    = $params->{'tocontact'};
+	$c->stash->{todepartment} = $params->{'todepartment'};
+	$c->stash->{tophone}      = $params->{'tophone'};
 
 	## Send To
 	$UserEmail->add_to($Contact->email) if IntelliShip::Utils->is_valid_email($Contact->email);
@@ -196,12 +186,29 @@ sub send_email :Private
 	$UserEmail->subject("NOTICE: $carrier, Supply Order");
 	$CompanyEmail->subject("REQUEST: $carrier, Supply Order");
 
-	## Send email
-	$UserEmail->send;
-	$CompanyEmail->send;
+	$c->stash->{carrier}    = $carrier;
+	$c->stash->{datetoship} = $params->{'datetoship'};
+	$c->stash->{WebAccount}      = $WebAccount;
 
-	$c->log->debug("UserEmail: " . $UserEmail->to_string);
-	$c->log->debug("CompanyEmail: " . $CompanyEmail->to_string);
+	$c->stash->{UserEmail} = 1;
+	$c->stash->{CompanyEmail} = 0;
+	
+	$UserEmail->body($UserEmail->body . $c->forward($c->view('Email'), "render", [ 'templates/email/supply-order-notification.tt' ]));
+	if ($UserEmail->send)
+		{
+		$self->context->log->debug("Supply Ordering notification User email successfully sent");
+		}
+	
+	$c->stash->{CompanyEmail} = 1;
+	$c->stash->{UserEmail} = 0;
+	$CompanyEmail->body($CompanyEmail->body . $c->forward($c->view('Email'), "render", [ 'templates/email/supply-order-notification.tt' ]));
+	if ($CompanyEmail->send)
+		{
+		$self->context->log->debug("Supply Ordering notification CompanyEmail successfully sent");
+		}
+	
+	#$c->log->debug("UserEmail: " . $UserEmail->to_string);
+	#$c->log->debug("CompanyEmail: " . $CompanyEmail->to_string);
 
 	$self->setup_supply_ordering;
 	}
