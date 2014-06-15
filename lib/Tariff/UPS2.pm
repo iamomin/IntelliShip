@@ -139,9 +139,9 @@ sub GetTransit
 	$STH->execute($serviceid) or die "Could not execute asscode select sql statement";
 	my ($servicename, $servicecode) = $STH->fetchrow_array;
 	$STH->finish();
-	
+
 	warn "\nService: " . $servicename . "\nServiceCode:" . $servicecode . "\nAccountNumber: " . $acctnum;
-	
+
 	my $path = "$config->{BASE_PATH}/bin/run";
 	my $file = $fileid . ".info";
 	my $File = $path . "/" . $file;
@@ -220,7 +220,7 @@ sub GetTransit
 				<AddressLine1>Ste 102-302</AddressLine1>
 				<City>$fromcity</City>
 				<StateProvinceCode>$fromstate</StateProvinceCode>
-				<PostalCode>$oazip</PostalCode> 
+				<PostalCode>$oazip</PostalCode>
 				<CountryCode>$fromcountry</CountryCode>
 			</Address>
 		</ShipFrom>
@@ -249,7 +249,7 @@ sub GetTransit
 		</Package>
 		<ShipmentServiceOptions>
 			<OnCallAir>
-				<Schedule> 
+				<Schedule>
 					<PickupDay>02</PickupDay>
 					<Method>02</Method>
 				</Schedule>
@@ -290,7 +290,7 @@ sub ProcessLocalRequest
 	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
 
 	#Send HTTP Request
-	my $browser = LWP::UserAgent->new();   
+	my $browser = LWP::UserAgent->new();
 	my $req = HTTP::Request->new(POST => $url);
 	$req->content("$XML_request");
 
