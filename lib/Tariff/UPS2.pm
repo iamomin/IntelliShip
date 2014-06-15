@@ -140,7 +140,7 @@ sub GetTransit
 	my ($servicename, $servicecode) = $STH->fetchrow_array;
 	$STH->finish();
 	
-	warn "\nService: " . $servicename . "\nServiceCode:" . $servicecode;
+	warn "\nService: " . $servicename . "\nServiceCode:" . $servicecode . "\nAccountNumber: " . $acctnum;
 	
 	my $path = "$config->{BASE_PATH}/bin/run";
 	my $file = $fileid . ".info";
@@ -230,7 +230,7 @@ sub GetTransit
 		<PaymentInformation>
 			<Prepaid>
 				<BillShipper>
-					<AccountNumber>F5618Y</AccountNumber>
+					<AccountNumber>$acctnum</AccountNumber>
 				</BillShipper>
 			</Prepaid>
 		</PaymentInformation>
@@ -255,6 +255,9 @@ sub GetTransit
 				</Schedule>
 			</OnCallAir>
 		</ShipmentServiceOptions>
+		<RateInformation>
+			<NegotiatedRatesIndicator></NegotiatedRatesIndicator>
+		</RateInformation>
 	</Shipment>
 </RatingServiceSelectionRequest>";
 
