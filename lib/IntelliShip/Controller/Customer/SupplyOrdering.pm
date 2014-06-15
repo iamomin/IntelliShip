@@ -192,13 +192,13 @@ sub send_email :Private
 
 	$c->stash->{UserEmail} = 1;
 	$c->stash->{CompanyEmail} = 0;
-	
+
 	$UserEmail->body($UserEmail->body . $c->forward($c->view('Email'), "render", [ 'templates/email/supply-order-notification.tt' ]));
 	if ($UserEmail->send)
 		{
 		$self->context->log->debug("Supply Ordering notification User email successfully sent");
 		}
-	
+
 	$c->stash->{CompanyEmail} = 1;
 	$c->stash->{UserEmail} = 0;
 	$CompanyEmail->body($CompanyEmail->body . $c->forward($c->view('Email'), "render", [ 'templates/email/supply-order-notification.tt' ]));
@@ -206,7 +206,7 @@ sub send_email :Private
 		{
 		$self->context->log->debug("Supply Ordering notification CompanyEmail successfully sent");
 		}
-	
+
 	#$c->log->debug("UserEmail: " . $UserEmail->to_string);
 	#$c->log->debug("CompanyEmail: " . $CompanyEmail->to_string);
 

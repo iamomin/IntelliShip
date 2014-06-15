@@ -27,9 +27,11 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 		<tr>
 			<th>Address1</th><td>[% toaddress1 %]</td>
 		</tr>
+		[% IF toaddress2 %]
 		<tr>
 			<th>Address2</th><td>[% toaddress2 %]</td>
 		</tr>
+		[% END %]
 		<tr>
 			<th>City</th><td>[% tocity %]</td>
 		</tr>
@@ -63,16 +65,16 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 		</tr>
 		[% END %]
 	</table>
-	
+
 	[% END %]
 	[% IF UserEmail %]
 	<div class="notice">This email is not authorized for redistribution</div>
 	[% ELSIF CompanyEmail %]
-	<div class="notice">This email is not authorized for redistribution.<br> 
+	<div class="notice">This email is not authorized for redistribution.<br>
 				The confidential [% toname %] [% carrier %] Acct\# is <strong>[% WebAccount %] </strong><br>
 				and cannot be disclosed verbally or electronically.</div>
 	[% END %]
-	
+
 	<div id="logo">
 		<table width="100%">
 		<tr>
