@@ -901,6 +901,26 @@ sub ship_to_carrier
 	my $params = $c->req->params;
 
 	my @shipmentids;
+	$self->errors([]);
+	my $response = { SUCCESS => 0 };
+
+	if (defined $params->{'addressvalidate'} && $params->{'addressvalidate'} ne '0')
+		{
+		$c->log->debug("Validating Address: ");
+		$self->validate_address;
+		if ($self->has_errors)
+			{
+			if ($params->{'addressvalidate'} eq '1')
+				{
+				$response->{CONFIRM_ADDRESS} = 1;
+				$response->{message} = $self->errors->[0];
+				}
+			else{
+				$response->{error} = $self->errors->[0];
+				}
+			return $response;
+			}
+		}
 
 	$self->save_order;
 

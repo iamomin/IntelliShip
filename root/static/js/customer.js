@@ -145,6 +145,24 @@ function showError( dialogMessage, dialogTitle ) {
 	$( "#dialog-message" ).dialog("open");
 	}
 
+function showConfirmBox( dialogMessage, dialogTitle, ok_button_callback, cancel_button_callback ) {
+	if (dialogTitle == undefined) dialogTitle = "Message";
+	if (ok_button_callback == null) ok_button_callback = function() { $('#dialog-message').dialog( "close" ) };
+	if (cancel_button_callback == null) cancel_button_callback = function() { $('#dialog-message').dialog( "close" ) };
+
+	$('#dialog-message').dialog( {
+		title: dialogTitle,
+		width: '400px',
+		buttons: {
+			Ok: ok_button_callback,
+			Cancel: cancel_button_callback
+			}
+		});
+
+	$( "#dialog-message" ).html( "<div class='notice'>" + dialogMessage + "</div>");
+	$( "#dialog-message" ).dialog("open");
+	}
+
 function validateEmail( Email ) {
 	if (Email == undefined) return false;
 	var filter = /^[A-Z0-9._-]+@[A-Z0-9.-]+\.[A-Z]{2,3}$/i;

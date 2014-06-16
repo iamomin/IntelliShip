@@ -17,6 +17,7 @@ BEGIN {
 	has 'service' => ( is => 'rw' );
 	has 'request_data' => ( is => 'rw' );
 	has 'request_type' => ( is => 'rw' );
+	has 'destination_address' => ( is => 'rw' );
 	}
 
 my $carriers = {
@@ -152,7 +153,7 @@ sub process_request
 	$Driver->context($self->context);
 	$Driver->contact($self->contact);
 	$Driver->data($self->request_data);
-
+	$Driver->destination_address($self->destination_address);
 	###############################################
 	# GET POPULATED RESPONSE OBJECT
 	###############################################
