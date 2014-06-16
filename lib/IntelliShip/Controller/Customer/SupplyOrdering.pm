@@ -93,8 +93,13 @@ sub setup_supply_ordering :Private
 	my $ToAddress = $Contact->address;
 	$ToAddress = $self->customer->address if !$ToAddress && !$Contact->get_contact_data_value('myonly');
 
+	my $tocontact = ($self->lastname ? $Contact->firstname . ' ' .  $Contact->lastname : $Contact->firstname);
+
 	$c->stash(carrier_loop => $carrier_loop);
 	$c->stash(toAddress => $ToAddress);
+	$c->stash(tocontact => $tocontact);
+	$c->stash(tophone => $Contact->phonebusiness);
+	$c->stash(todepartment => $Contact->department);
 	$c->stash(toemail => $Contact->email);
 	$c->stash(ordernumber => $self->get_auto_order_number);
 	$c->stash(datetoship => IntelliShip::DateUtils->current_date('/'));
