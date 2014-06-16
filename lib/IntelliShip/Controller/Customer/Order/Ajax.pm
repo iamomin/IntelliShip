@@ -806,16 +806,20 @@ sub mark_shipment_as_printed
 
 	my $CO = $self->get_order;
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}, coid => $params->{coid} });
-	$Shipment->statusid('100'); ## Printed
-	$Shipment->update;
-
-	if ($Shipment->has_pickup_request)
+	my @shipmentids = split('_',$params->{shipmentid});
+	foreach my $shipmentid (@shipmentids)
 		{
-		$self->send_pickup_request($Shipment);
-		}
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid, coid => $params->{coid} });
+		$Shipment->statusid('100'); ## Printed
+		$Shipment->update;
 
-	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
+		if ($Shipment->has_pickup_request)
+			{
+			$self->send_pickup_request($Shipment);
+			}
+
+		$c->log->debug("... Marked shipment $shipmentid as 'Printed'");
+		}
 
 	#$self->SendShipNotification($Shipment);
 
