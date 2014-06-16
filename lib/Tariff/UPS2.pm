@@ -125,6 +125,11 @@ sub GetCost
 	return ($Cost,$days);
 }
 
+my $UPS_ACCT_DETAILS = {
+	F5618Y => { USERNAME => 'tsharp212', PASSWORD => 'Tony212!@' },
+	AW5282 => { USERNAME => 'SprintAW5282', PASSWORD => '2wsx!QAZ' },
+	};
+
 sub GetTransit
 {
 	my $self = shift;
@@ -167,11 +172,14 @@ sub GetTransit
 	$length = ceil($length);
 	$weight = ceil($weight);
 
+	my $UserId = $UPS_ACCT_DETAILS->{$acctnum}->{USERNAME};
+	my $Password = $UPS_ACCT_DETAILS->{$acctnum}->{PASSWORD};
+
 	my $XML = "<?xml version=\"1.0\"?>
 <AccessRequest xml:lang=\"en-US\">
 	<AccessLicenseNumber>7CD03B13C7D39706</AccessLicenseNumber>
-	<UserId>tsharp212</UserId>
-	<Password>Tony212!@</Password>
+	<UserId>$UserId</UserId>
+	<Password>$Password</Password>
 </AccessRequest>
 <?xml version=\"1.0\"?>
 <RatingServiceSelectionRequest xml:lang=\"en-US\">
@@ -285,7 +293,7 @@ sub ProcessLocalRequest
 	my $self = shift;
 	my $XML_request = shift;
 
-	#warn "\n XML_request: " . $XML_request;
+	warn "\n XML_request: " . $XML_request;
 
 	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
 
@@ -303,7 +311,9 @@ sub ProcessLocalRequest
 		}
 
 	my $parser = new XML::Simple;
-	my $responseDS= $parser->XMLin($response->content());
+	my $XML_response = $response->content;
+	warn "XML_response: " . $XML_response;
+	my $responseDS= $parser->XMLin($XML_response);
 
 	#warn "Response DS: " . Dumper $responseDS;
 	return $responseDS;
