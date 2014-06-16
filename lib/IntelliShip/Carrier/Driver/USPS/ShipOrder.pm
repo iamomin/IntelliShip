@@ -676,7 +676,7 @@ sub Call_API
 	my $shipmentData = $self->data;
 	my $API_REQUEST_TAG = $API_NAME . 'Request';
 
-	$self->log( "... USPS XML REQUEST: " . $XML);
+	#$self->log( "... USPS XML REQUEST: " . $XML);
 
 	my $shupment_request = {
 			httpurl => $URL,
@@ -698,7 +698,7 @@ sub Call_API
 		return;
 		}
 
-	$self->log( "... RESPONSE DETAILS: " . Dumper $response->content);
+	#$self->log( "... RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
 

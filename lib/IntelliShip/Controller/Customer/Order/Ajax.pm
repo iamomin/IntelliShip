@@ -938,6 +938,10 @@ sub ship_to_carrier
 			{
 			my ($COID,$PackProDataID,$Number) = split(/\-/,$key);
 
+			my $enteredweight = $consolidatedOrders->{$key}->{'enteredweight'};
+			my $dimweight = $consolidatedOrders->{$key}->{'dimweight'};
+			my $quantity = $consolidatedOrders->{$key}->{'quantity'};
+
 			my $DummyCO = $c->model('MyDBI::Co')->new($CO->{_column_data});
 			$DummyCO->coid($self->get_token_id);
 
@@ -946,7 +950,9 @@ sub ship_to_carrier
 			my $DummyPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
 			$DummyPackage->packprodataid($self->get_token_id);
 			$DummyPackage->ownerid($DummyCO->coid);
-			$DummyPackage->quantity(1);
+			$DummyPackage->weight($enteredweight);
+			$DummyPackage->dimweight($dimweight);
+			$DummyPackage->quantity($quantity);
 			$DummyPackage->insert;
 
 			my @products = $Package->products;
@@ -967,9 +973,9 @@ sub ship_to_carrier
 
 			$c->log->debug("... DummyCO, coid : " . $DummyCO->coid);
 
-			$params->{'enteredweight'} = $consolidatedOrders->{$key}->{'enteredweight'};
-			$params->{'dimweight'} = $consolidatedOrders->{$key}->{'dimweight'};
-			$params->{'quantity'} = $consolidatedOrders->{$key}->{'quantity'};
+			$params->{'enteredweight'} = $enteredweight;
+			$params->{'dimweight'} = $dimweight;
+			$params->{'quantity'} = $quantity;
 
 			$c->log->debug("... enteredweight: " . $params->{'enteredweight'});
 			$c->log->debug("... dimweight    : " . $params->{'dimweight'});
