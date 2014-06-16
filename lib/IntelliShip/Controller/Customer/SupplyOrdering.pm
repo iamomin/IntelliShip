@@ -93,7 +93,7 @@ sub setup_supply_ordering :Private
 	my $ToAddress = $Contact->address;
 	$ToAddress = $self->customer->address if !$ToAddress && !$Contact->get_contact_data_value('myonly');
 
-	my $tocontact = ($self->lastname ? $Contact->firstname . ' ' .  $Contact->lastname : $Contact->firstname);
+	my $tocontact = ($Contact->lastname ? $Contact->firstname . ' ' .  $Contact->lastname : $Contact->firstname);
 
 	$c->stash(carrier_loop => $carrier_loop);
 	$c->stash(toAddress => $ToAddress);
