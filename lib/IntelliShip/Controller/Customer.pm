@@ -1122,14 +1122,6 @@ sub get_select_list
 			{ name => 'Enchanced', value => '4' },
 			];
 		}
-	elsif ($list_name eq 'ADDRESS_VALIDATION_LIST')
-		{
-		$list = [
-			{ name => 'Select One', value => '0' },
-			{ name => 'Available', value => '1' },
-			{ name => 'Required', value => '2' }
-			];
-		}
 
 	return $list;
 	}

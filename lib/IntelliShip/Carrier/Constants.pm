@@ -16,7 +16,6 @@ our @EXPORT = qw(
 	REQUEST_TYPE_SHIP_ORDER
 	REQUEST_TYPE_VOID_SHIPMENT
 	REQUEST_TYPE_PICKUP_REQUEST
-	REQUEST_TYPE_ADDRESS_VALIDATE
 	);
 
 use constant CARRIER_UPS => "UPS";
@@ -29,7 +28,6 @@ use constant CARRIER_GENERIC => "Generic";
 use constant REQUEST_TYPE_SHIP_ORDER => "ShipOrder";
 use constant REQUEST_TYPE_VOID_SHIPMENT => "VoidShipment";
 use constant REQUEST_TYPE_PICKUP_REQUEST => "PickupRequest";
-use constant REQUEST_TYPE_ADDRESS_VALIDATE => "AddressValidate";
 
 __PACKAGE__->meta()->make_immutable();
 

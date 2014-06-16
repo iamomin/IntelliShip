@@ -679,18 +679,9 @@
 						</td>
 						[% END %]
 					</tr>
+
+					[% IF SHOW_CREATEDBY %]
 					<tr>
-						<td><label class="float-right" for="cust_validateaddress">Address Validation:</label></td>
-						<td>
-						<label>
-							<select name="cust_addressvalidation" id="cust_addressvalidation">
-							[% FOREACH item IN addressvalidation_loop %]
-								<option value="[% item.value %]" [% (item.value == cust_addressvalidation) ? 'SELECTED' : '' %]>[% item.name %]</option>
-							[% END %]
-							</select>
-						</label>
-						</td>
-						[% IF SHOW_CREATEDBY %]
 						<td><label class="float-right" for="createdby">Created By:</label></td>
 						<td>
 						<label>
@@ -701,12 +692,11 @@
 							</select>
 						</label>
 						</td>
-						[% ELSE %]
+						
 						<td></td>
 						<td></td>
-						[% END %]
 					</tr>
-					
+					[% END %]
 					[% IF SSO_CUSTOMER %]
 					<tr>
 						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>

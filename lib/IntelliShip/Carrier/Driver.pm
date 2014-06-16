@@ -11,19 +11,18 @@ BEGIN {
 
 	extends 'IntelliShip::Errors';
 
-	has 'API'                 => ( is => 'rw' );
-	has 'CO'                  => ( is => 'rw' );
-	has 'SHIPMENT'            => ( is => 'rw' );
-	has 'context'             => ( is => 'rw' );
-	has 'carrier'             => ( is => 'rw' );
-	has 'contact'             => ( is => 'rw' );
-	has 'MYDBI_ref'           => ( is => 'rw' );
-	has 'DB_ref'              => ( is => 'rw' );
-	has 'data'                => ( is => 'rw' );
-	has 'customerservice'     => ( is => 'rw' );
-	has 'service'             => ( is => 'rw' );
-	has 'response'            => ( is => 'rw' );
-	has 'destination_address' => ( is => 'rw' );
+	has 'API'             => ( is => 'rw' );
+	has 'CO'              => ( is => 'rw' );
+	has 'SHIPMENT'        => ( is => 'rw' );
+	has 'context'         => ( is => 'rw' );
+	has 'carrier'         => ( is => 'rw' );
+	has 'contact'         => ( is => 'rw' );
+	has 'MYDBI_ref'       => ( is => 'rw' );
+	has 'DB_ref'          => ( is => 'rw' );
+	has 'data'            => ( is => 'rw' );
+	has 'customerservice' => ( is => 'rw' );
+	has 'service'         => ( is => 'rw' );
+	has 'response'        => ( is => 'rw' );
 
 	$Data::Dumper::Sortkeys = 1;
 	}

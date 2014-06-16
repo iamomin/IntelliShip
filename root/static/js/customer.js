@@ -40,7 +40,7 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 				if (waiting_COUNT == 0) $('#preload').hide();
 				JSON_data = data;
 
-				if (JSON_data.error && !JSON_data.popup_type) showMessage("<div class='error'>" + JSON_data.error + "</div>", "Reseponse Error");
+				if (JSON_data.error) showMessage("<div class='error'>" + JSON_data.error + "</div>", "Reseponse Error");
 
 				afterSuccessCallBack(type_value, "", call_back_function);
 				},
@@ -135,31 +135,13 @@ function showError( dialogMessage, dialogTitle ) {
 		title: dialogTitle,
 		width: '400px',
 		buttons: {
-			Cancel: function() {
+			Ok: function() {
 				$( this ).dialog( "close" );
 				}
 			}
 		});
 
 	$( "#dialog-message" ).html( "<div class='error'><p>" + dialogMessage + "</p>" );
-	$( "#dialog-message" ).dialog("open");
-	}
-
-function showConfirmBox( dialogMessage, dialogTitle, ok_button_callback, cancel_button_callback ) {
-	if (dialogTitle == undefined) dialogTitle = "Message";
-	if (ok_button_callback == null) ok_button_callback = function() { $('#dialog-message').dialog( "close" ) };
-	if (cancel_button_callback == null) cancel_button_callback = function() { $('#dialog-message').dialog( "close" ) };
-
-	$('#dialog-message').dialog( {
-		title: dialogTitle,
-		width: '400px',
-		buttons: {
-			Ok: ok_button_callback,
-			Cancel: cancel_button_callback
-			}
-		});
-
-	$( "#dialog-message" ).html( dialogMessage );
 	$( "#dialog-message" ).dialog("open");
 	}
 

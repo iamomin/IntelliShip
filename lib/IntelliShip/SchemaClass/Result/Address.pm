@@ -102,11 +102,6 @@ __PACKAGE__->table("address");
   is_nullable: 1
   size: 2
 
-=head2 lastvalidatedon
-
-  data_type: 'timestamp with time zone'
-  is_nullable: 1
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -130,8 +125,6 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 35 },
   "country",
   { data_type => "char", is_nullable => 1, size => 2 },
-  "lastvalidatedon",
-  { data_type => "timestamp with time zone", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY

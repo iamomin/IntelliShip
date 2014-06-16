@@ -902,50 +902,6 @@ sub ship_to_carrier
 	my $params = $c->req->params;
 
 	my @shipmentids;
-	$self->errors([]);
-	my $response = { SUCCESS => 0 };
-
-	if (defined $params->{'addressvalidate'} && $params->{'addressvalidate'} ne '0')
-		{
-		my $toAddressData = {
-				addressname => $params->{'toname'},
-				address1    => $params->{'toaddress1'},
-				address2    => $params->{'toaddress2'},
-				city        => $params->{'tocity'},
-				state       => $params->{'tostate'},
-				zip         => $params->{'tozip'},
-				country     => $params->{'tocountry'},
-				};
-
-		IntelliShip::Utils->trim_hash_ref_values($toAddressData);
-
-		## Fetch origin address
-		my @addresses = $c->model('MyDBI::Address')->search($toAddressData);
-
-		if (@addresses)
-			{
-			my $Address = $addresses[0];
-			$c->log->debug("Existing Address Found, ID: " . $Address->addressid);
-			if (!$Address->lastvalidatedon)
-				{
-				$self->validate_address($toAddressData);
-				if ($self->has_errors)
-					{
-					if ($params->{'addressvalidate'} eq '1')
-						{
-						$response->{popup_type} = "OkCancel";
-						}
-					$response->{error} = $self->errors->[0];
-					return $response;
-					}
-				else
-					{
-					$Address->lastvalidatedon(IntelliShip::DateUtils->get_timestamp_with_time_zone);
-					$Address->update;
-					}
-				}
-			}
-		}
 
 	$self->save_order;
 
@@ -1033,6 +989,7 @@ sub ship_to_carrier
 		push @shipmentids, $self->SHIP_ORDER;
 		}
 
+	my $response = { SUCCESS => 0 };
 	$response->{shipmentid} = join('_',@shipmentids);
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 
