@@ -728,13 +728,12 @@ sub add_package_product_row :Private
 	return { rowHTML => $row_HTML };
 	}
 
-	
 sub populate_package_default_detials :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
-	
+
 	my $response_hash = {};
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
@@ -905,13 +904,15 @@ sub ship_to_carrier
 
 	$self->save_order;
 
-	if ($params->{'consolidate'} == 1 && !$params->{'combine'})
+	my $CO = $self->get_order;
+	if ($CO->total_quantity > 1)
 		{
-		$c->log->debug("... CONSOLIDATE");
+		my $laundryArr = [];
 		my $consolidatedOrders = {};
 
-		my $CO = $self->get_order;
 		my @packages = $CO->packages;
+
+		$c->log->debug("*** TOTAL " . @packages . " FOUND, CREATE SEPARATE SHIPMENT FOR EACH PACKAGE");
 
 		foreach my $Package (@packages)
 			{
@@ -955,6 +956,8 @@ sub ship_to_carrier
 			$DummyPackage->quantity($quantity);
 			$DummyPackage->insert;
 
+			$c->log->debug("... DummyPackage, packprodataid : " . $DummyPackage->packprodataid);
+
 			my @products = $Package->products;
 			foreach my $Product (@products)
 				{
@@ -982,6 +985,7 @@ sub ship_to_carrier
 			$c->log->debug("... quantity     : " . $params->{'quantity'});
 
 			$c->stash->{CO} = $DummyCO;
+			$c->stash->{override_coid} = $CO->coid;
 
 			## SHIP ORDER
 			push @shipmentids, $self->SHIP_ORDER;

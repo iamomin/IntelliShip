@@ -356,6 +356,7 @@ sub save_order :Private
 	my $self = shift;
 
 	return if $self->{SKIP_SAVE_ORDER};
+	return if $self->context->stash->{ORDER_SAVED};
 
 	## SAVE CO DETAILS
 	$self->save_CO_details;
@@ -368,6 +369,8 @@ sub save_order :Private
 
 	## SAVE SPECIAL SERVICES
 	$self->save_special_services;
+
+	$self->context->stash->{ORDER_SAVED} = 1;
 	}
 
 sub save_CO_details :Private
@@ -2912,6 +2915,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'addresscountryname'}   = $ToAddress->country_description;
 
 	$ShipmentData->{'coid'} = $CO->coid;
+	$ShipmentData->{'coid'} = $c->stash->{override_coid} if $c->stash->{override_coid};
 	$ShipmentData->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$ShipmentData->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 
@@ -3097,6 +3101,8 @@ sub BuildShipmentInfo
 			$ShipmentData->{$ass_charge_name} = $params->{$ass_charge_name} if $ass_charge_name;
 			}
 		}
+
+	#$c->log->debug("... ShipmentData: " . Dumper $ShipmentData);
 
 	return $ShipmentData;
 	}
