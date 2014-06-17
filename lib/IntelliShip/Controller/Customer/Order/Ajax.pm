@@ -260,7 +260,7 @@ sub get_carrier_service_list
 	my $ToAddress = $CO->destination_address;
 	my $addresscode = $ToAddress->addresscode;
 
-	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
+	my ($carrier_Details,$DefaultCSID,$DefaultTotalCost) = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
 	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
@@ -367,6 +367,8 @@ sub get_carrier_service_list
 		$detail_hash->{'shipment_charge'} = sprintf("%.2f",($detail_hash->{'freight_charge'} + $detail_hash->{'other_charge'}));
 		}
 
+	$c->stash->{DefaultCSID} = $DefaultCSID;
+	$c->stash->{DefaultTotalCost} = $DefaultTotalCost;
 	$c->stash->{CARRIER_SERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 

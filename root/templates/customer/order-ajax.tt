@@ -308,6 +308,9 @@
 
 	<input type="hidden" id="carrier" name="carrier"/>
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
+	[% IF DefaultCSID %]<input type="hidden" name="defaultcsid" value="[% DefaultCSID %]"/>[% END %]
+	[% IF DefaultTotalCost %]<input type="hidden" name="defaultcsidtotalcost" value="[% DefaultTotalCost %]"/>[% END %]
+
 	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
 			<li><a href="#carrier-service-list-1">RECOMMENDED</a></li>
