@@ -364,9 +364,14 @@ sub get_carrrier_service_rate_list
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
 
-	# my $DefaultCSID = $response->{'defaultcsid'};
-	# my $DefaultCost = $contact_login_level == 20 ? undef : $response->{'defaultcost'};
-	# my $DefaultTotalCost = $contact_login_level == 20 ? undef : $response->{'defaulttotalcost'};
+	my $DefaultCSID = $response->{'defaultcsid'};
+	my $DefaultCost = $contact_login_level == 20 ? undef : $response->{'defaultcost'};
+	my $DefaultTotalCost = $contact_login_level == 20 ? undef : $response->{'defaulttotalcost'};
+
+	$self->context->log->debug("defaultcsid         : $response->{'defaultcsid'} ");
+	$self->context->log->debug("defaultcsidtotalcost: $response->{'defaulttotalcost'}");
+	$self->context->log->debug("contact_login_level : $contact_login_level");
+
 	my $CostList = $contact_login_level == 20 ? undef : $response->{'costlist'};
 	my @costlist_arr = split(/,/,$CostList) if ($CostList);
 
@@ -381,7 +386,7 @@ sub get_carrrier_service_rate_list
 		$carrier_Details = $self->get_other_carrier_data($carrier_Details, $Customer, $request);
 		}
 
-	return $carrier_Details;
+	return ($carrier_Details,$DefaultCSID,$DefaultTotalCost);
 	}
 
 sub get_hashref

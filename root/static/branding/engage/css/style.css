@@ -333,6 +333,7 @@ img { border: none; vertical-align: middle }
     cursor: pointer;
 }
 
+#legal, #privacy { margin: 10px; padding: 10px }
 #legal, #privacy ul { margin: 20px; list-style: disc; list-style-type: disc }
 #legal, #privacy ol { margin: 20px; list-style: decimal; list-style-type: decimal }
 #legal, #privacy li { margin: 10px }

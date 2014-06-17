@@ -159,7 +159,7 @@ sub get_JSON_DATA :Private
 		}
 	elsif ($action eq 'generate_commercial_invoice')
 		{
-		$dataHash = $self->prepare_com_inv;
+		$dataHash = $self->prepare_commercial_invoice;
 		}
 	elsif ($action eq 'ship')
 		{
@@ -260,7 +260,7 @@ sub get_carrier_service_list
 	my $ToAddress = $CO->destination_address;
 	my $addresscode = $ToAddress->addresscode;
 
-	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
+	my ($carrier_Details,$DefaultCSID,$DefaultTotalCost) = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
 	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
@@ -367,6 +367,8 @@ sub get_carrier_service_list
 		$detail_hash->{'shipment_charge'} = sprintf("%.2f",($detail_hash->{'freight_charge'} + $detail_hash->{'other_charge'}));
 		}
 
+	$c->stash->{DefaultCSID} = $DefaultCSID;
+	$c->stash->{DefaultTotalCost} = $DefaultTotalCost;
 	$c->stash->{CARRIER_SERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
@@ -806,16 +808,20 @@ sub mark_shipment_as_printed
 
 	my $CO = $self->get_order;
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}, coid => $params->{coid} });
-	$Shipment->statusid('100'); ## Printed
-	$Shipment->update;
-
-	if ($Shipment->has_pickup_request)
+	my @shipmentids = split('_',$params->{'shipmentid'});
+	foreach my $shipmentid (@shipmentids)
 		{
-		$self->send_pickup_request($Shipment);
-		}
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid, coid => $params->{coid} });
+		$Shipment->statusid('100'); ## Printed
+		$Shipment->update;
 
-	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
+		if ($Shipment->has_pickup_request)
+			{
+			$self->send_pickup_request($Shipment);
+			}
+
+		$c->log->debug("... Marked shipment $shipmentid as 'Printed'");
+		}
 
 	#$self->SendShipNotification($Shipment);
 
@@ -886,7 +892,7 @@ sub prepare_BOL
 	return { BOL => $HTML };
 	}
 
-sub prepare_com_inv
+sub prepare_commercial_invoice
 	{
 	my $self = shift;
 	my $HTML = $self->generate_commercial_invoice;

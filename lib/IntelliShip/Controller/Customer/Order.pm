@@ -1491,52 +1491,62 @@ sub get_tooltips :Private
 sub SendChargeThresholdEmail :Private
 	{
 	my $self = shift;
-	#my ($ToEmail,$ShipmentRef) = @_;
-    #
-	#my $CustomerName = $self->{'customer'}->GetValueHashRef()->{'customername'};
-    #
-	#my $Addressid = $self->{'customer'}->GetValueHashRef()->{'addressid'};
-	#my $Address = new ADDRESS($self->{'dbref'}->{'aos'}, $self->{'customer'});
-	#$Address->Load($Addressid);
-	#my $AddressCity = $Address->GetValueHashRef()->{'city'};
-	#$CustomerName = $CustomerName . " - " . $AddressCity;
-    #
-	#my $OrderNumAlias = $ShipmentRef->{'ordernumberaka'};
-    #
-	#if ( !defined($OrderNumAlias) or $OrderNumAlias eq '' )
-	#	{
-	#	$OrderNumAlias = 'Order #';
-	#	}
-    #
-	#my $DateCreated = $self->{'dbref'}->{'aos'}->gettimestamp();
-	#$DateCreated =~ s/^(\d{4})-(\d{2})-(\d{2}).*/$2\/$3\/$1/;
-    #
-	#my ($OrigCarrier,$OrigService) = &GetCarrierServiceName($ShipmentRef->{'defaultcsid'});
-	#my ($Carrier,$Service) = &GetCarrierServiceName($ShipmentRef->{'customerserviceid'});
-    #
-	#my $DISPLAY = new DISPLAY($TEMPLATE_DIR);
-    #
-	#my $EmailInfo = {};
-	#$EmailInfo->{'fromemail'} = "intelliship\@intelliship.$config->{BASE_DOMAIN}";
-	#$EmailInfo->{'fromname'} = 'NOC';
-	#$EmailInfo->{'toemail'} = $ToEmail;
-	#$EmailInfo->{'toname'} = '';
-	#$EmailInfo->{'subject'} =  "ALERT: " . $CustomerName . ", Carrier Change Exceeds Threshold (" . $OrderNumAlias . " " . $ShipmentRef->{'ordernumber'} . ")";
-	##$EmailInfo->{'cc'} = 'noc@engagetechnology.com';
-    #
-	#my $BodyHash = {};
-	#$BodyHash->{'ordernumberaka'} = $OrderNumAlias;
-	#$BodyHash->{'ordernumber'} = $ShipmentRef->{'ordernumber'};
-	#$BodyHash->{'datecreated'} = $DateCreated;
-	#$BodyHash->{'username'} = $ShipmentRef->{'active_username'};
-	#$BodyHash->{'origcarrier'} = $OrigCarrier;
-	#$BodyHash->{'origservice'} = $OrigService;
-	#$BodyHash->{'carrier'} = $Carrier;
-	#$BodyHash->{'service'} = $Service;
-	#$BodyHash->{'totalshipmentcharges'} = sprintf("%.2f", $ShipmentRef->{'totalshipmentcharges'});
-	#$BodyHash->{'defaultcsidtotalcost'} = sprintf("%.2f", $ShipmentRef->{'defaultcsidtotalcost'});
-    #
-	#$DISPLAY->sendemail($EmailInfo,$BodyHash,"changed_shipment.email");
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$self->context->log->debug("_____IN SendChargeThresholdEmail____");
+
+	my $CustomerName = $self->customer->customername;
+	my $Addressid = $self->customer->addressid;
+
+	my $Address = $c->model('MyDBI::ADDRESS')->find({ addressid => $Addressid });
+
+	my $AddressCity = $Address->city;
+	$CustomerName = $CustomerName . " - " . $AddressCity;
+	$self->context->log->debug("CustomerName :" . $CustomerName);
+	my $OrderNumAlias = $params->{'ordernumberaka'};
+	if ( !defined($OrderNumAlias) or $OrderNumAlias eq '' )
+		{
+		$OrderNumAlias = 'Order #';
+		}
+
+	$self->context->log->debug("OrderNumAlias :" . $OrderNumAlias);
+
+	my $DateCreated = IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date);
+	$self->context->log->debug("DateCreated :" . $DateCreated);
+
+	my ($OrigCarrier,$OrigService) = $self->API->get_carrier_service_name($params->{'defaultcsid'});
+	my ($Carrier,$Service) = $self->API->get_carrier_service_name($params->{'customerserviceid'});
+	$self->context->log->debug("OrigCarrier :" . $OrigCarrier."OrigService :".$OrigService."Carrier : ".$Carrier."Service : ".$Service);
+
+	my $subject = "ALERT: " . $CustomerName . ", Carrier Change Exceeds Threshold (" . $OrderNumAlias . " " . $params->{'ordernumber'} . ")";
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
+	$Email->subject($subject);
+	$Email->add_to($self->customer->losspreventemail);
+	$Email->add_cc('noc@engagetechnology.com');
+
+
+	$c->stash->{ordernumberaka} = $OrderNumAlias;
+	$c->stash->{ordernumber} = $params->{'ordernumber'};
+	$c->stash->{datecreated} = $DateCreated;
+	$c->stash->{username} = $self->contact->full_name;
+	$c->stash->{origcarrier} = $OrigCarrier;
+	$c->stash->{origservice} = $OrigService;
+	$c->stash->{carrier} = $Carrier;
+	$c->stash->{service} = $Service;
+	$c->stash->{totalshipmentcharges} = sprintf("%.2f", $params->{'totalshipmentcharges'});
+	$c->stash->{defaultcsidtotalcost} = sprintf("%.2f", $params->{'defaultcsidtotalcost'});
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/chargethreshold-notification.tt' ]));
+
+	if ($Email->send)
+		{
+		$self->context->log->debug("Charge Threshold email successfully sent");
+		}
 	}
 
 sub CheckChargeThreshold :Private
@@ -1545,36 +1555,49 @@ sub CheckChargeThreshold :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->log->debug("____ IN CheckChargeThreshold ____");
 	my $Customer = $self->customer;
 
 	my $OverThreshold = 0;
 
-	# Check for flat threshold amount
-	#if ( my $Threshold = $Customer->chargediffflat') )
-	#	{
-	#	my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
+	my $shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
 
-	#	if ( $difference > $Threshold )
-	#		{
-	#		$OverThreshold = 1;
-	#		}
-	#	}
+	# Check for flat threshold amount
+	if ( my $Threshold = $Customer->get_contact_data_value('chargediffflat') )
+		{
+		my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
+
+		if ( $difference > $Threshold )
+			{
+			$OverThreshold = 1;
+			}
+
+		$c->log->debug("Threshold : " . $Threshold);
+		$c->log->debug("OverThreshold : " . $OverThreshold);
+		}
 
 	# Check for percentage threshold amount (but there's no point if we're already over from the flat)
-	#if (!$OverThreshold and (my $Threshold = $Customer->chargediffpct))
-	#	{
-	#	my $DollarAmt = $params->{'defaultcsidtotalcost'} * ($Threshold / 100);
-	#	my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
+	if (!$OverThreshold and (my $Threshold = $Customer->get_contact_data_value('chargediffpct')))
+		{
+		my $DollarAmt = $params->{'defaultcsidtotalcost'} * ($Threshold / 100);
+		my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
 
-	#	if ( $difference > $DollarAmt and $difference > $self->{'customer'}->GetCustomerValue('chargediffmin') )
-	#		{
-	#		$OverThreshold = 1;
-	#		}
-	#	}
+		$c->log->debug("Threshold : " . $Threshold);
+		$c->log->debug("DollarAmt : " . $DollarAmt);
+		$c->log->debug("difference : " . $difference);
+		$c->log->debug("chargediffmin : " . $Customer->get_contact_data_value('chargediffmin'));
+
+		if ( $difference > $DollarAmt and $difference > $Customer->get_contact_data_value('chargediffmin') )
+			{
+			$OverThreshold = 1;
+			}
+
+		$c->log->debug("OverThreshold : " . $OverThreshold);
+		}
 
 	if ($OverThreshold and $Customer->losspreventemail)
 		{
-		$self->SendChargeThresholdEmail($Customer->losspreventemail,$params);
+		$self->SendChargeThresholdEmail();
 		}
 	}
 
@@ -1621,8 +1644,9 @@ sub ProcessFCOverride :Private
 	elsif ($params->{'aggregateweight'} == 0)
 		{
 		my $TotalQuantity = 0;
-		foreach my $Quantity (@Quantities) { $TotalQuantity += $Quantity };
-		my $PackageRatio = 1/$TotalQuantity;
+		$TotalQuantity += $_ foreach @Quantities;
+
+		my $PackageRatio = 1 / $TotalQuantity if $TotalQuantity;
 
 		my $PackageCost = sprintf("%02.2f",($params->{'freightcharge'} * $PackageRatio));
 		my $PackageFSCCost = sprintf("%02.2f",($params->{'fuelsurcharge'} * $PackageRatio));
@@ -1700,11 +1724,6 @@ sub SHIP_ORDER :Private
 		}
 
 	my $Customer = $self->customer;
-
-	if ($params->{'defaultcsid'} and $params->{'defaultcsidtotalcost'} > 0 and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
-		{
-		$self->CheckChargeThreshold;
-		}
 
 	## Create or Update the thirdpartyacct table with address info if this is 3rd party
 	if ($CO->freightcharges == 2) # Third Party
@@ -1840,6 +1859,7 @@ sub SHIP_ORDER :Private
 
 					$ShipmentCharge->insert;
 					push(@$laundryArr, $ShipmentCharge);
+					$params->{'totalshipmentcharges'} += $chargeamount;
 					}
 				}
 
@@ -1855,6 +1875,11 @@ sub SHIP_ORDER :Private
 			$params->{'dimweight'} = $CO->total_dimweight;
 			$params->{'quantity'} = $CO->total_quantity;
 			}
+		}
+
+	if ($params->{'defaultcsid'} && $params->{'defaultcsidtotalcost'} > 0 && $params->{'defaultcsid'} ne $params->{'customerserviceid'})
+		{
+		$self->CheckChargeThreshold;
 		}
 
 	# Kludge to get dry ice weight list built up for propagation
@@ -4013,9 +4038,10 @@ sub generate_commercial_invoice
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("___ generate_bill_of_lading ___");
+	$c->log->debug("___ generate_commercial_invoice ___");
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my $shipmentid = (split('_',$params->{'shipmentid'}))[0];
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
 	my $CO       = $Shipment->CO;
 	my $Customer = $CO->customer;
 
