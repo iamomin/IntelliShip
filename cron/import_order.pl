@@ -42,7 +42,7 @@ EXAMPLE
 
 AUTHOR
        Imran Momin <imranm\@alohatechnology.com>
-       Send bug reports or comments to the above address or to David Dragon <tsharp\@engagetechnology.com>.
+       Send bug reports or comments to the above address or to Tony Sharp <tsharp\@engagetechnology.com>.
 
   --help               - This help page
 
