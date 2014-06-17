@@ -38,6 +38,7 @@
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
+	<input type="hidden" id="skipaddressvalidation" name="skipaddressvalidation" />
 	<input type="hidden" id="do" name="do" value="save"/>
 	[% IF AUTO_PROCESS %]
 	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
@@ -255,6 +256,16 @@
 		$("#ship_now").val("Please wait...");
 
 		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_order").serialize(), function () {
+
+			if(JSON_data.CONFIRM_ADDRESS)
+				{
+				showConfirmBox(JSON_data.message, 'Address Validate Confirmation', function(){
+					$('#dialog-message').dialog( "close" );
+					$("#skipaddressvalidation").val(1);
+					$("#ship_now").click();
+					return;
+					});
+				}
 
 			if ( JSON_data.SUCCESS == 0 ) {
 				$("#ship_now").val("SHIP");

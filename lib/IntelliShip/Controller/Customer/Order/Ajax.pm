@@ -906,9 +906,38 @@ sub ship_to_carrier
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my @shipmentids;
-
 	$self->save_order;
+
+	my @shipmentids;
+	my $response = { SUCCESS => 0 };
+
+	unless ($params->{'skipaddressvalidation'})
+		{
+		my $ADDRESS_VALIDATE = $self->contact->get_contact_data_value('addressvalidation');
+		if ($ADDRESS_VALIDATE)
+			{
+			$c->log->debug("... validating Address");
+
+			## Validate address through UPS API
+			$self->validate_address;
+
+			if ($self->has_errors)
+				{
+				if ($ADDRESS_VALIDATE == 1)
+					{
+					$response->{CONFIRM_ADDRESS} = 1;
+					$response->{message} = $self->errors->[0] . '<br/><br/>Continue processing with this unvalidated address?';
+					}
+				else{
+					$response->{error} = $self->errors->[0];
+					}
+
+				$self->clear_errors;
+
+				return $response;
+				}
+			}
+		}
 
 	my $CO = $self->get_order;
 	if ($CO->total_quantity > 1)
@@ -1005,7 +1034,6 @@ sub ship_to_carrier
 		push @shipmentids, $self->SHIP_ORDER;
 		}
 
-	my $response = { SUCCESS => 0 };
 	$response->{shipmentid} = join('_',@shipmentids);
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 
