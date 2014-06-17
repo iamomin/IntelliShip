@@ -1529,7 +1529,7 @@ sub SendChargeThresholdEmail :Private
 	$Email->add_to($self->customer->losspreventemail);
 	$Email->add_cc('noc@engagetechnology.com');
 
-
+	$self->set_header_section;
 	$c->stash->{ordernumberaka} = $OrderNumAlias;
 	$c->stash->{ordernumber} = $params->{'ordernumber'};
 	$c->stash->{datecreated} = $DateCreated;

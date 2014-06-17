@@ -79,7 +79,9 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 		<table width="100%">
 		<tr>
 		<td align="left"><img height="30px" width="150px"src="https://dintelliship2.engagetechnology.com/static/branding/engage/images/login/logo.png"/></td>
+		[% IF logo %]
 		<td align="right"><img height="30px" width="150px" src="https://dintelliship2.engagetechnology.com/static/branding/engage/images/header/[% logo %]"/></td>
+		[% END %]
 		</tr>
 		</table>
 	</div>

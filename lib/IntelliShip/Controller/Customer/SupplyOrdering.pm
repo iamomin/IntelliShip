@@ -184,7 +184,8 @@ sub send_email :Private
 	$c->stash->{tocontact}    = $params->{'tocontact'};
 	$c->stash->{todepartment} = $params->{'todepartment'};
 	$c->stash->{tophone}      = $params->{'tophone'};
-
+	
+	$self->set_header_section;
 	## Send To
 	$UserEmail->add_to($Contact->email) if IntelliShip::Utils->is_valid_email($Contact->email);
 	$UserEmail->add_to($params->{'toemail'}) if IntelliShip::Utils->is_valid_email($params->{'toemail'});
