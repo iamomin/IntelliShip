@@ -133,7 +133,8 @@ function ConfigureAddressSection(address, direction, type)
 			$('#' + targetCtrl).addClass(add_class);
 			$('#' + targetCtrl).prop("readonly", !editable);
 			}
-		$('#'+targetCtrl).prop('width', $('#'+targetCtrl).val().length);
+
+		if ($('#'+targetCtrl).val() != undefined ) $('#'+targetCtrl).prop('width', $('#'+targetCtrl).val().length);
 		});
 
 	RestoreAddress(address, direction, type);
