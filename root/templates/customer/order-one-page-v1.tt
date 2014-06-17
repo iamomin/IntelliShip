@@ -38,9 +38,7 @@
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
-	[% IF ADDRESS_VALIDATE %]
-	<input type="hidden" id="addressvalidate" name="addressvalidate" value='[% ADDRESS_VALIDATE %]'/>
-	[% END %]
+	<input type="hidden" id="addressvalidate" name="addressvalidate" value='VALIDATE'/>
 	<input type="hidden" id="do" name="do" value="save"/>
 	[% IF AUTO_PROCESS %]
 	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
@@ -261,9 +259,9 @@
 
 			if(JSON_data.CONFIRM_ADDRESS)
 				{
-				showConfirmBox(JSON_data.CONFIRM_ADDRESS + '<br/><br/>Continue processing with this unvalidated address?', 'Address Validate Confirmation',function(){
+				showConfirmBox(JSON_data.message + '<br/><br/>Continue processing with this unvalidated address?', 'Address Validate Confirmation',function(){
 				$('#dialog-message').dialog( "close" );
-				$("#addressvalidate").val('0');
+				$("#addressvalidate").val('SKIP');
 				$("#ship_now").click();
 				return;
 				});

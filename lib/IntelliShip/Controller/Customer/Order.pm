@@ -147,7 +147,6 @@ sub setup_address :Private
 		$c->stash->{CONSOLIDATE_COMBINE} = $Customer->get_contact_data_value('consolidatecombine');
 		}
 
-	$c->stash->{ADDRESS_VALIDATE} = $Contact->get_contact_data_value('addressvalidation');
 	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY

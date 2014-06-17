@@ -9,7 +9,12 @@ use IntelliShip::Utils;
 
 BEGIN { extends 'IntelliShip::Carrier::Driver'; }
 
+# PRODUCTION URL
+#my $URL = 'https://onlinetools.ups.com/ups.app/xml/XAV';
+
+# TEST URL
 my $URL = 'https://wwwcie.ups.com/ups.app/xml/XAV';
+
 my $AccessLicenseNumber = '7CD03B13C7D39706';
 my $UserId = 'tsharp212';
 my $Password = 'Tony212!@';
@@ -17,19 +22,15 @@ my $Password = 'Tony212!@';
 sub process_request
 	{
 	my $self = shift;
-	my $c = $self->context;
-	
-	if ($self->destination_address->lastvalidatedon)
+	my $lastvalidatedon = $self->destination_address->lastvalidatedon;
+
+	## Return if address is validated in past 6 months
+	if ($lastvalidatedon)
 		{
-		my $sql = "select date_part('day', age(now()::timestamp, '" . $self->destination_address->lastvalidatedon . "'::timestamp) ) date_diff";
-		$self->log("sql = " . $sql . "\n");
-		my $STH = $c->model('MyDBI')->select($sql);
-		my $days_old = $STH->fetchrow(0)->{'date_diff'} if $STH->numrows;
-		$self->log("days_old = " + $days_old . "\n");
-		return 1 if ($days_old <= 180);
+		my $days_since_last_validated = IntelliShip::DateUtils->get_delta_days($lastvalidatedon);
+		$self->log("days_since_last_validated = " . $days_since_last_validated . "\n");
+		return 1 if ($days_since_last_validated <= 180);
 		}
-	
-	#my ($ResponseCode,$Message);
 
 	my $XML = "<?xml version=\"1.0\"?>
 <AccessRequest xml:lang=\"en-US\">
@@ -58,12 +59,16 @@ sub process_request
 </AddressKeyFormat>
 </AddressValidationRequest>";
 
-	my $browser = LWP::UserAgent->new();   
+	my $UA = LWP::UserAgent->new();   
 	my $req = HTTP::Request->new(POST => $URL);
+
 	$self->log("\n\nXML = $XML \n\n");
+
 	$req->content("$XML");
-	my $resp = $browser->request($req);
+	my $resp = $UA->request($req);
+
 	$self->log($resp->content() . "\n");
+
 	my $parser = XML::LibXML::Simple->new();
 	my $xmlResp= $parser->XMLin($resp->content());
 
@@ -71,16 +76,11 @@ sub process_request
 		{
 		$self->destination_address->lastvalidatedon(IntelliShip::DateUtils->get_timestamp_with_time_zone);
 		$self->destination_address->update;
-		#$ResponseCode = $xmlResp->{Response}->{ResponseStatusCode};
-		#$Message = $xmlResp->{Response}->{ResponseStatusDescription};
 		return 1;
 		}
 	else
 		{
-		#$ResponseCode = $xmlResp->{Response}->{Error}->{ErrorDescription};
-		#$Message = "Invalid Address: " . $xmlResp->{Response}->{Error}->{ErrorDescription};
 		$self->add_error("Invalid Address: " . $xmlResp->{Response}->{Error}->{ErrorDescription});
-		#$self->log($Message);
 		return undef;
 		}
 	}

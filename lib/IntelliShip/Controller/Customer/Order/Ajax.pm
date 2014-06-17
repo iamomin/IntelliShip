@@ -900,29 +900,33 @@ sub ship_to_carrier
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$self->save_order;
+
 	my @shipmentids;
 	$self->errors([]);
 	my $response = { SUCCESS => 0 };
 
-	if (defined $params->{'addressvalidate'} && $params->{'addressvalidate'} ne '0')
+	if ($params->{'addressvalidate'} eq 'VALIDATE')
 		{
-		$c->log->debug("Validating Address: ");
-		$self->validate_address;
-		if ($self->has_errors)
+		my $ADDRESS_VALIDATE = $self->contact->get_contact_data_value('addressvalidation');
+		if ($ADDRESS_VALIDATE)
 			{
-			if ($params->{'addressvalidate'} eq '1')
+			$c->log->debug("Validating Address: ");
+			$self->validate_address;
+			if ($self->has_errors)
 				{
-				$response->{CONFIRM_ADDRESS} = 1;
-				$response->{message} = $self->errors->[0];
+				if ($ADDRESS_VALIDATE == 1)
+					{
+					$response->{CONFIRM_ADDRESS} = 1;
+					$response->{message} = $self->errors->[0];
+					}
+				else{
+					$response->{error} = $self->errors->[0];
+					}
+				return $response;
 				}
-			else{
-				$response->{error} = $self->errors->[0];
-				}
-			return $response;
 			}
 		}
-
-	$self->save_order;
 
 	my $CO = $self->get_order;
 	if ($CO->total_quantity > 1)
@@ -1019,7 +1023,6 @@ sub ship_to_carrier
 		push @shipmentids, $self->SHIP_ORDER;
 		}
 
-	my $response = { SUCCESS => 0 };
 	$response->{shipmentid} = join('_',@shipmentids);
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 
