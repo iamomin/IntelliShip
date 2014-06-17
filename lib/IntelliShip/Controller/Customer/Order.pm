@@ -1697,6 +1697,32 @@ sub BuildDryIceWt :Private
 	return ($DryIceWt,$DryIceWtList);
 	}
 
+sub NoteCSIDOverride
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my ($OrigCarrier,$OrigService) = $self->API->get_carrier_service_name($params->{'defaultcsid'});
+	my ($Carrier,$Service) = $self->API->get_carrier_service_name($params->{'customerserviceid'});
+
+	my $defaultcost = $params->{'defaultcsidtotalcost'};
+
+	my $noteData = {
+		ownerid => $Shipment->shipmentid,
+		note => 'Default Carrier/Service Changed From ' . $OrigCarrier . '/' . $OrigService . ' to ' . $Carrier . '/' . $Service . ' by ' . $self->contact->username . ':$' . $defaultcost,
+		contactid => $self->contact->contactid,
+		notestypeid => '1000',
+		datehappened => IntelliShip::DateUtils->get_timestamp_with_time_zone
+		};
+
+	my $Notes = $c->model('MyDBI::Note')->new($noteData);
+	$Notes->notesid($self->get_token_id);
+	$Notes->insert;
+	}
+
 sub SHIP_ORDER :Private
 	{
 	my $self = shift;
@@ -2023,19 +2049,19 @@ sub SHIP_ORDER :Private
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
-	# Process good shipment
+	## Process good shipment
 
-	# If the customer has an email address, check to see if the shipment address is different
-	# from the co address (and send an email, if it is)
+	## If the customer has an email address, check to see if the shipment address is different
+	## from the co address (and send an email, if it is)
 	if ($Customer->losspreventemail)
 		{
 		$self->CheckIfShipmentModified($ShipmentData);
 		}
 
-	# If the csid was changed from the defaultcsid log the activity in the notes table
-	if ($params->{'defaultcsid'} > 0 and $params->{'customerserviceid'} > 0 and $params->{'defaultcsid'} != $params->{'customerserviceid'})
+	## If the CSID was changed from the defaultcsid log the activity in the notes table
+	if ($params->{'defaultcsid'} && $params->{'defaultcsid'} ne $params->{'customerserviceid'})
 		{
-		$self->NoteCSIDOverride($params);
+		$self->NoteCSIDOverride($Shipment);
 		}
 
 	#Now that we have everything pushed into our params...
