@@ -43,7 +43,7 @@ sub get_carrier_service_name
 	my $http_request = {
 		action	=> 'GetCarrierServiceName',
 		csid	=> $CSID,
-		};
+	};
 
 	my $response = $self->APIRequest($http_request);
 
@@ -121,11 +121,11 @@ sub get_zone_number
 
 	my $http_request = {
 		action      => 'GetZone',
-		fromzip     => $FromZip, 
+		fromzip     => $FromZip,
 		tozip       => $ToZip,
-		fromstate   => $FromState, 
-		tostate     => $ToState, 
-		fromcountry => $FromCountry, 
+		fromstate   => $FromState,
+		tostate     => $ToState,
+		fromcountry => $FromCountry,
 		tocountry   => $ToCountry
 		};
 
@@ -181,62 +181,101 @@ sub add_services
 
 	my $http_request = {
 		action => 'AddServices',
-		carrierid => $serviceids,
+		serviceids => $serviceids,
 		customerid => $customerid
 	};
 
 	return $self->APIRequest($http_request);
 	}
-	
+
 sub get_service_tariff
 	{
-        warn "########## 3";
 	my $self = shift;
 	my ($csid) = @_;
 
 	my $http_request = {
 		action => 'GetServiceTariff',
-		csid => $csid		
+		csid => $csid
 		};
 
 	return $self->APIRequest($http_request);
 	}
-	
+
+sub save_tariff_rows
+	{
+	my $self = shift;
+	my ($rates) = @_;
+
+	my $http_request = {
+		action => 'SaveTariffRows',
+		rates => $rates
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub save_tariff
 	{
-		warn "########## save_tariff";
-		my $self = shift;
-		my ($tariff, $info) = @_;
-		
-		my $http_request = {
-			action => 'SaveTariff',
-			tariff => $tariff,
-			info=> $info
+	my $self = shift;
+	my ($tariff, $info) = @_;
+
+	my $http_request = {
+		action => 'SaveTariff',
+		tariff => $tariff,
+		info=> $info
 		};
 
-		return $self->APIRequest($http_request);
+	return $self->APIRequest($http_request);
 	}
 
-sub delete_all_tariff_rows
+sub delete_tariff_rows
 	{
-		warn "########## save_tariff";
-		my $self = shift;
-		my ($tariff, $info) = @_;
-		
-		my $http_request = {
-			action => 'DeleteAllTariffRows',
-			tariff => $tariff
+	my $self = shift;
+	my ($rateids) = @_;
+
+	my $http_request = {
+		action => 'DeleteTariffRows',
+		rateids => $rateids
 		};
 
-		return $self->APIRequest($http_request);
+	return $self->APIRequest($http_request);
 	}
-	
+
+sub delete_customer_service
+	{
+	my $self = shift;
+	my ($csid) = @_;
+
+	my $http_request = {
+		action => 'DeleteCustomerService',
+		csid => $csid
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
+sub import_tariff
+	{
+	my $self = shift;
+	my ($content, $ratetypeid, $tariffdbname) = @_;
+
+	my $http_request = {
+		action => 'ImportTariff',
+		content => $content,
+		ratetypeid => $ratetypeid,
+		tariffdbname => $tariffdbname
+		};
+
+	return $self->APIRequest($http_request);
+	}
+
 sub get_carrrier_service_rate_list
 	{
 	my $self             = shift;
 	my $CO               = shift;
 	my $Contact          = shift;
 	my $Customer         = shift;
+	my $destaddresscode  = shift;
 	my $skip_csid_search = shift || 1;
 
 	my $request = {};
@@ -251,11 +290,13 @@ sub get_carrrier_service_rate_list
 	$request->{'fromzip'} = $FromAddress->zip;
 	$request->{'fromstate'} = $FromAddress->state;
 	$request->{'fromcountry'} = $FromAddress->country;
+	$request->{'fromcity'} = $FromAddress->city;
 
 	my $ToAddress = $CO->destination_address;
 	$request->{'tozip'} = $ToAddress->zip;
 	$request->{'tostate'} = $ToAddress->state;
 	$request->{'tocountry'} = $ToAddress->country;
+	$request->{'tocity'} = $ToAddress->city;
 
 	$request->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$request->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
@@ -267,7 +308,7 @@ sub get_carrrier_service_rate_list
 		$self->context->log->debug("NO DATE NEEDED, FUTURE DATE SELECTED: ". $request->{'dateneeded'});
 		}
 
-	$request->{'hasrates'} = $Customer->hasrates;
+	$request->{'hasrates'} = $Contact->get_contact_data_value('hasrates');
 	$request->{'autocsselect'} = $Customer->autocsselect;
 	$request->{'allowraterecalc'} = 1;
 	$request->{'manroutingctrl'} = $Customer->get_contact_data_value('manroutingctrl');
@@ -311,6 +352,9 @@ sub get_carrrier_service_rate_list
 
 	$request->{'required_assessorials'} = $self->get_required_assessorials($CO);
 
+	if($destaddresscode && $destaddresscode ne ''){
+		$request->{'destaddresscode'} = $destaddresscode;
+	}
 	#$self->context->log->debug("GetCSList API REQUEST: ". Dumper($request));
 	############################################
 	my $response = $self->APIRequest($request);
@@ -475,6 +519,26 @@ sub get_assessorial_charge
 
 	return $self->APIRequest($http_request);
 	}
+
+sub get_address_code
+{
+	warn "########## get_address_code";
+	my $self = shift;
+	my ($addressname,$address1,$address2,$city, $state, $zip, $country) = @_;
+
+	my $http_request = {
+		action       => 'GetAddressCode',
+		addressname         => $addressname,
+		address1     => $address1,
+		address2       => $address2,
+		city     => $city,
+		state   => $state,
+		zip => $zip,
+		country => $country
+		};
+
+	return $self->APIRequest($http_request);
+}
 
 __PACKAGE__->meta()->make_immutable();
 

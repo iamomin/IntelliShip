@@ -58,7 +58,7 @@ __PACKAGE__->table("contact");
 
   data_type: 'varchar'
   is_nullable: 1
-  size: 20
+  size: 100
 
 =head2 password
 
@@ -149,7 +149,7 @@ __PACKAGE__->add_columns(
   "customerid",
   { data_type => "char", is_nullable => 1, size => 13 },
   "username",
-  { data_type => "varchar", is_nullable => 1, size => 20 },
+  { data_type => "varchar", is_nullable => 1, size => 100 },
   "password",
   { data_type => "varchar", is_nullable => 1, size => 20 },
   "firstname",
@@ -304,13 +304,13 @@ sub login_level
 sub is_superuser
 	{
 	my $self = shift;
-	return ($self->get_contact_data_value('superuser') or $self->customer->superuser);
+	return ($self->get_only_contact_data_value('superuser'));
 	}
 
 sub is_administrator
 	{
 	my $self = shift;
-	return ($self->get_contact_data_value('administrator') or $self->customer->administrator);
+	return ($self->get_only_contact_data_value('administrator'));
 	}
 
 sub default_package_type
@@ -345,10 +345,22 @@ sub default_packing_list
 	return $self->get_contact_data_value('defaultpackinglist');
 	}
 
+sub print_return_shipment
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('printreturnshipment');
+	}
+
 sub default_thermal_count
 	{
 	my $self = shift;
 	return $self->get_contact_data_value('defaultthermalcount') || 1;
+	}
+
+sub jpg_label_rotation
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('jpgrotation');
 	}
 
 sub get_label_type

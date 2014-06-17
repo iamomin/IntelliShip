@@ -1,5 +1,5 @@
 @charset "utf-8";
-
+@import url('/static/branding/engage/css/font.css');
 * {
     margin:0;
     padding:0;
@@ -17,7 +17,7 @@ body {
     color: #4B4B4B;
 }
 
-ol, ul {
+ul {
     list-style: none;
 }
 
@@ -34,9 +34,10 @@ button { cursor: pointer }
 
 a {
     /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
-    -webkit-transition: all 0.3s ease-in; 
+/*    -webkit-transition: all 0.3s ease-in;
     -moz-transition: all 0.3s ease-in;
-    -o-transition: all 0.3s ease-in; 
+    -o-transition: all 0.3s ease-in;
+*/
     text-decoration: none;
     color: #1875BA;
 }
@@ -90,7 +91,7 @@ img { border: none; vertical-align: middle }
 }
 
 /* Centered 1000 pixel content of all section body */
-#content {
+.content {
     width: 1000px;
     margin: 0 auto;
 }
@@ -108,7 +109,7 @@ img { border: none; vertical-align: middle }
 #header img {
     max-height: 50px;
     max-width: 450px;
-    vertical-align: middle; 
+    vertical-align: middle;
 }
 
 #header input[type=text] {
@@ -134,18 +135,9 @@ img { border: none; vertical-align: middle }
 
 
 #header nav {
-    margin: 15px 25px;
+    margin: auto;
     max-width: 500px;
     float: right;
-}
-
-#header nav ul ul {
-    display: none;
-    background-color: #FFF;
-}
-
-#header nav ul li:hover > ul {
-    display: block;
 }
 
 #header nav a {
@@ -157,7 +149,7 @@ img { border: none; vertical-align: middle }
 
 #header nav a span {
     font: bold 12px Arial;
-    padding: 0 10px; 
+    padding: 14px 23px;
     color: #FFF;
 }
 
@@ -182,10 +174,17 @@ img { border: none; vertical-align: middle }
     padding-bottom: 10px 30px 10px 10px;
 }
 
+#header nav ul li:hover > ul {
+    display: block;
+}
+
 #header nav ul ul {
-    border: 1px solid #1875BA;
+    display: none;
     position: absolute;
     top: 100%;
+    border: 1px solid #1875BA;
+    background-color: #FFF;
+    z-index: 1;
 }
 
 #header nav ul ul li {
@@ -334,6 +333,11 @@ img { border: none; vertical-align: middle }
     cursor: pointer;
 }
 
+#legal, #privacy ul { margin: 20px; list-style: disc; list-style-type: disc }
+#legal, #privacy ol { margin: 20px; list-style: decimal; list-style-type: decimal }
+#legal, #privacy li { margin: 10px }
+#legal, #privacy p { margin: 10px }
+
 /* Dashboard */
 
 #dashboard {
@@ -371,6 +375,9 @@ h3 {
 label {
     white-space: nowrap;
 }
+
+div.notice { position: relative; margin: 10px 0px; padding: 15px; border: 1px solid #97C1DA; color: #264C72; background-color: #D0E3EF; text-align: left }
+div.error   { position: relative; margin: 10px 0px; padding: 15px; border: 1px solid #811;    color: #911;    background-color: #efd0d0; text-align: left }
 
 table { margin: 0; padding: 0; border-spacing: 0px; }
 table th { color: #FFF; text-align: center; background: #9BA7AF; text-transform: uppercase; }
@@ -421,7 +428,7 @@ button.left-rounded-btn   { padding: 2px 3px; width: 100px; border: 1px solid #F
 button.right-rounded-btn { padding: 2px 3px; width: 100px; border: 1px solid #FFF; color: #A0A0A0; background: #EEE; -moz-border-radius: 0 10px 10px 0; border-radius: 0 10px 10px 0; font: bold 11px Arial; cursor: pointer }
 button.green { color: #FFF; background: #5DBD53 }
 
-.round-black-button { 
+.round-black-button {
     padding: 1px 4px;
     display: inline;
     width:10px;
@@ -503,6 +510,12 @@ table.order-nav td { width: 33%; margin: 0; padding: 10px 0px; }
 table.order-nav td.L { padding: 5px 10px 5px  0px; }
 table.order-nav td.C { padding: 5px 10px 5px 10px; }
 table.order-nav td.R { padding: 5px  0px 5px 10px; }
+
+table.order-nav tr td div img {
+    background-color: #1875BA;
+    border-radius: 50%;
+    margin: auto;
+}
 
 table.gray-app {
     margin: 10px 0;
@@ -643,26 +656,6 @@ table.center-app {
     background: #F5F5F5;
     text-align: left;
     border: solid 1px #CCC;
-}
-
-div.notice {
-    position: relative;
-    margin: 10px 0px;
-    padding: 15px;
-    border: 1px solid #97C1DA;
-    color: #264C72;
-    background-color: #D0E3EF;
-    text-align: left;
-}
-
-div.error {
-    position: relative;
-    margin: 10px 0px;
-    padding: 15px;
-    border: 1px solid #811;
-    color: #911;
-    background-color: #efd0d0;
-    text-align: left;
 }
 
 input.active {
@@ -1066,6 +1059,9 @@ input.orange  {
 .ui-corner-top { border-radius: 0 }
 
 #carrier-service-list table { text-align: center; }
+#carrier-service-list table tr:nth-child(odd) { color: #000; background: #F6F6F8 }
+#carrier-service-list table tr:nth-child(even) { color: #000; background: #E4E5E7 }
+
 #carrier-service-list ul li { width: 33%; margin-right: 1px; padding: 0; }
 #carrier-service-list ul li a { width: 92%; text-align: center; }
 #carrier-service-list li.ui-tabs-active a { background-color: #5DBD53; color: #FFF; }
@@ -1075,11 +1071,11 @@ input.orange  {
 #carrier-service-list.ui-widget-header { background-color: #FFF; border: none; }
 
 /* Company Management Setup - Branding Tab Styling */
-#branding .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 11em; height: 500px }
+#branding .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 11em; height: 692px }
 #branding .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0 }
 #branding .ui-tabs-nav li a { display: block }
 #branding .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-bottom-width: 1px; border-right-width: 1px }
-#branding .ui-tabs-panel { padding: 1em; float: left; width: 55em }
+#branding .ui-tabs-panel { padding: 1em; float: left; width: 56em }
 #branding .ui-widget-header { background:#bfbfbf !important }
 
 .float-right {float: right;}
@@ -1098,4 +1094,29 @@ input.orange  {
   */
  * html .ui-autocomplete {
     height: 300px;
+}
+
+table.dialog-header {
+    color: #FFF;
+    width:100%;
+    background: #18749A;
+}
+
+/* To show profile picture circular */
+.profile-image {
+    background:url("/static/branding/engage/images/profile/user-default.png") no-repeat;
+    background-size:48px 48px;
+    background-position:0px 0px;
+    height:48px;
+    width:48px;
+    border-radius:50%;
+    overflow:hidden;
+    margin:auto;
+}
+
+#carrier-service-list-1,
+#carrier-service-list-2,
+#carrier-service-list-3 {
+    max-height: 300px;
+    overflow-y: scroll;
 }

@@ -33,6 +33,39 @@ sub new
 	return $obref;
 	}
 
+sub get_branding_id
+	{
+	my $self = shift;
+
+	my $branding_id = 'engage';
+
+	my $http_host = $ENV{HTTP_HOST} || '';
+
+	#override brandingid based on url
+ 	if ( $http_host =~ /d?visionship\d?\.*\.*/ )
+		{
+		$branding_id = 'visionship';
+		}
+	elsif ( $http_host =~ /d?eraship\d?\.engage*\.*/ )
+		{
+		$branding_id = 'eraship';
+		}
+	elsif ( $http_host =~ /d?accellent\d?\.engage*\.*/ or  $http_host =~ /d?ais\d?\.engage*\.*/)
+		{
+		$branding_id = 'accellent';
+		}
+	elsif ( $http_host =~ /d?gintelliship\d?\.engage*\.*/ )
+		{
+		$branding_id = 'greating';
+		}
+	elsif ( $http_host =~ /d?mintelliship\d?\.engage*\.*/ or $http_host =~ /motorolasolutions/ )
+		{
+		$branding_id = 'motorola';
+		}
+
+	return $branding_id;
+	}
+
 sub get_freight_class_from_density
 	{
 	my $self = shift;
@@ -155,14 +188,14 @@ sub parse_XML
 		suppressempty => 1
 		);
 
-	my $xmlRequestDS = eval{ $xs->XMLin($XML) };
+	my $xmlDS = eval{ $xs->XMLin($XML) };
 
 	if ($@)
 		{
 		print STDERR "\nXML Parse Error: " . $@;
 		}
 
-	return $xmlRequestDS;
+	return $xmlDS;
 	}
 
 my $FILTER_CRITERIA_HASH = {
@@ -352,8 +385,7 @@ sub get_status_ui_info
 	}
 
 my $CUSTOMER_CONTACT_RULES = [
-	{ name => 'Super User',                                    value => 'superuser',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Administrator',                                 value => 'administrator',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
+	{ name => 'Administrator',                                 value => 'administrator',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']},
 	{ name => 'Third Party Billing',                           value => 'thirdpartybill',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Auto Print',                                    value => 'autoprint',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Has Rates',                                     value => 'hasrates',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
@@ -387,7 +419,6 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Require Customer Ref 3',                        value => 'reqcustref3',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Department',                            value => 'reqdepartment',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Ext ID',                                value => 'reqextid',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Manual Routing Control',                        value => 'manroutingctrl',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Has AltSOPs',                                   value => 'hasaltsops',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Custnum Address Lookup',                        value => 'custnumaddresslookup',				type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Saturday Shipping',                             value => 'satshipping',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
@@ -428,6 +459,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Charge Difference Threshold (%/min)',           value => 'chargediffpct',					type => 'INPUT',    datatypeid => 2, ownertype => ['CUSTOMER']},
 	{ name => '',                                              value => 'chargediffmin',					type => 'INPUT',    datatypeid => 2, ownertype => ['CUSTOMER']},
 	{ name => 'Return Capability',                             value => 'returncapability',					type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
+	{ name => 'Print Return Shipment',                         value => 'printreturnshipment',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Login Level',                                   value => 'loginlevel',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Dropship Capability',                           value => 'dropshipcapability',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	{ name => 'Display Quote Markup',                          value => 'quotemarkup',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
@@ -458,12 +490,18 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Auto Select-Multiply Qty X Weight',             value => 'auto_select_quantity_x_weight',	type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Only Show My Items',                            value => 'myonly',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Include All Email For All Notification ',       value => 'combineemail',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Ship A Package',                                value => 'shipapackage',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Route Button Name',                             value => 'routebuttonname',					type => 'INPUT',    datatypeid => 2, ownertype => ['CUSTOMER']},
+	{ name => 'Special Services Expanded',                     value => 'specialserviceexpanded',			type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'JPG Label Rotation',                            value => 'jpgrotation',						type => 'SELECT',   datatypeid => 2, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
+	{ name => 'Package Product Level',                         value => 'packageproductlevel',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
+	{ name => 'Order Supplies',                                value => 'ordersupplies',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	];
 
 my $CUSTOM_CSS_STYLES = [
 	{ name => 'Site Top Header',           bgcolor => 'header-bgcolor', font => 'header-font', size => 'header-size', section => ['#header', '#header nav a span'] },
-	{ name => 'Menu Buttons',              bgcolor => 'menu-bgcolor',   font => 'menu-font',   size => 'menu-size',   section => ['#menu', '#menu a'] },	
-	{ name => 'Primary Section Headers',   bgcolor => 'h1',             font => 'h1-font',     size => 'h1-size',     section => ['h1'] },
+	{ name => 'Menu Buttons',              bgcolor => 'menu-bgcolor',   font => 'menu-font',   size => 'menu-size',   section => ['#menu', '#menu a'] },
+	{ name => 'Primary Section Headers',   bgcolor => 'h1',             font => 'h1-font',     size => 'h1-size',     section => ['h1', 'input[type=button].active', 'table.order-nav tr td div img', '.solid-line'] },
 	{ name => 'Secondary Section Headers', bgcolor => 'h2',             font => 'h2-font',     size => 'h2-size',     section => ['h2'] },
 	{ name => 'Title Headers',             bgcolor => 'title-bgcolor',  font => 'title-font',  size => 'title-size',  section => ['table.summary-app caption', 'table.app caption'] },
 	];

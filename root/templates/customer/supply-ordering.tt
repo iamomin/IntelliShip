@@ -1,0 +1,269 @@
+
+<script src="/static/js/customer-order.js"></script>
+
+<h2>Order Supplies</h2>
+
+<form id="supplyOrder" action="/customer/supplyordering" method="post">
+	<input type="hidden" name="do" value="send"/>
+
+	<table>
+		<tr>
+			<td>Order Number:</td>
+			<td><input type="text" [% IF ordernumber %]class="labellike"[% END %] name="ordernumber" value="[% ordernumber %]"/></td>
+		</tr>
+	</table>
+
+	<div id="equal">
+		<div id="row">
+			<table class="single-row">
+			<tr>
+			<td class="twocolumns" style="padding-right: 10px">
+			<table class="app">
+				<caption>SHIP TO</caption>
+				<tr>
+					<td><label for="toname" class="float-right require">Company: </label></td><td><input type="text" class="broad-text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress1" class="float-right require">Address 1:</label></td><td><input type="text" class="broad-text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="toaddress2" class="float-right">Address 2:</label></td><td><input type="text" class="broad-text" name="toaddress2" id="toaddress2" value="[% toAddress.address2 %]"/></td>
+				</tr>
+				<tr>
+					<td>
+						<label class="float-right require"><label for="tocity">City,</label><label for="tostate">State,</label><label for="tozip">Zip</label>:</label>
+					</td>
+					<td>
+					<div id="toCityDiv" style="display: inline; padding: 0;">
+					<input type="text" name="tocity" id="tocity" style="width: 100px;" value="[% toAddress.city %]"/>
+					</div>
+					<div id="toStateDiv" style="display: inline; padding: 0;">
+					[% IF statelist_loop %]
+					<label>
+					<select name="tostate" id="tostate" style="width: 45px;">
+						[% FOREACH item IN statelist_loop %]
+							<option value="[% item.value %]" [% IF item.value == toAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
+						[% END %]
+					</select>
+					</label>
+					[% ELSE %]
+					<input type="text" name="tostate" id="tostate" value="[% toAddress.state %]" style="width: 35px;"/>
+					[% END %]
+					</div>
+					<input type="text" class="reset-cs-onchange" name="tozip" id="tozip" style="width: 55px;" value="[% toAddress.zip %]" onchange="setCityAndState('to');"/>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tocountry" class="float-right require reset-cs-onchange">Country:</label></td>
+					<td>
+					<div id="toCountryDiv" style="display: inline; padding: 0;">
+					<label>
+					<select name="tocountry" id="tocountry" style="width: 220px;" onchange="updateStateList('to');">
+						[% FOREACH item IN countrylist_loop %]
+							<option value="[% item.value %]" [% (toAddress.country and item.value == toAddress.country) or (tocountry and item.value == tocountry) ? 'SELECTED' : '' %]>[% item.name %]</option>
+						[% END %]
+					</select>
+					</label>
+					</div>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="tocontact" class="float-right require">Contact:</label></td><td><input type="text" class="broad-text" name="tocontact" id="tocontact" value="[% tocontact %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="tophone" class="float-right require">Phone:</label></td><td><input type="text" class="broad-text" name="tophone" id="tophone" value="[% tophone %]"></td>
+				</tr>
+				<tr>
+					<td><label for="todepartment" class="float-right require">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% todepartment %]"></td>
+				</tr>
+				<tr>
+					<td><label for="toemail" class="float-right require">Delivery Email:</label></td><td><input type="text" class="broad-text" name="toemail" id="toemail" value="[% toemail %]"/></td>
+				</tr>
+			</table>
+			</td>
+			<td class="twocolumns" style="padding-left: 10px">
+			<table class="app">
+				<caption>SHIPMENT INFORMATION</caption>
+				<tr>
+					<td><label for="datetoship" class="float-right bold-text">Ordered On:</label></td>
+					<td><input type="text" class="labellike" size="10" name="datetoship" id="datetoship" value="[% datetoship %]" readonly/></td>
+				</tr>
+				<tr>
+					<td><label for="dateneeded" class="float-right">Requested By:</label></td>
+					<td><input type="text" size="10" name="dateneeded" id="dateneeded" value="[% dateneeded %]" readonly/></td>
+				</tr>
+				<tr>
+					<td><label for="description" class="float-right">Comments:</label></td>
+					<td><input type="text" class="text" name="description" id="description" value="[% description %]"/></td>
+				</tr>
+				<tr>
+					<td><label for="carrier" class="float-right">Carrier:</label></td>
+					<td class="css3-radios">
+						<label>
+							<input type="radio" name="carrier" id="none" value="" checked="checked"/>
+							<span><label for="none">None</label></span>
+						</label>
+						[% FOREACH item IN carrier_loop %]
+						<label>
+							<input type="radio" name="carrier" id="[% item.value %]" value="[% item.value %]"/>
+							<span><label for="[% item.value %]">[% item.name %]</label></span>
+						</label>
+					[% END %]
+					</td>
+				</tr>
+			</table>
+		</td>
+		</tr>
+		</table>
+		</div>
+	</div>
+
+	<table class="shipment-summary">
+		<tr>
+			<th>Supply Details</th>
+			<td class="total" colspan="5">
+			<table class="float-right">
+				<tr>
+				<td><green><strong>Total Types of Supplies:</strong></green><strong>&nbsp;<input type="text" class="labellike" name="supplytypes" id="supplytypes" value="[% supplytypes ? supplytypes : 0.00 %]"/></strong></td>
+				<td style="width: 30px">&nbsp;</td>
+				<td><green><strong>Total Quantity of Supplies:</strong></green><strong>&nbsp;</strong><input type="text" class="labellike" name="supplyquantity" id="supplyquantity" value="[% supplyquantity ? supplyquantity : 0.00 %]"/></td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="6" class="details">
+			<div id="carrier-product-sku">
+			<table class="app">
+				<tr>
+					<th>&nbsp;</th><th>Description</th><th>Length</th><th>Width</th><th>Height</th><th>Quantity</th>
+				</tr>
+				[% FOREACH item IN productsku_loop %]
+				<tr>
+					<td>[% IF item.SRC %]<img src="[% item.SRC %]">[% ELSE %]No Image[% END %]</td>
+					<td>[% item.description _ '<br>Part# ' _ item.customerskuid %]</td>
+					<td>[% item.length %]</td>
+					<td>[% item.width %]</td>
+					<td>[% item.height %]</td>
+					<td>
+						<select name="quantity_[% item.productskuid %]" onchange="UpdateSupplyDetails();">
+						<option value="">Select One</option>
+						<option value="25">25</option>
+						<option value="50">50</option>
+						<option value="75">75</option>
+						<option value="100">100</option>
+						<option value="200">200</option>
+						</select>
+					</td>
+				</tr>
+				[% END %]
+			</table>
+			</div>
+			</td>
+		</tr>
+	</table>
+
+	[% IF carrier_loop %]<center><input type="button" class="green" value="SAVE" onclick="Validate();"/></center>[% END %]
+
+</form>
+
+<SCRIPT language=JavaScript>
+
+var availableCustomers = [[% FOREACH item IN customerlist_loop %]"[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]",[% END %]];
+var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]"[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]": "[% item.reference_id %]",[% END %]};
+
+BindCompanyAutoComplete('to',availableCustomers);
+
+$("#dateneeded").datepicker({ minDate: '-0d' });
+
+[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
+[% END %]
+
+$("input[name=carrier]").click(function () {
+
+	$('#supplytypes').val(0);
+	$('#supplyquantity').val(0);
+	if($(this).val() == 'none' )
+		{
+		$("#carrier-product-sku").html("");
+		}
+	else
+		{
+		$("#carrier-product-sku").fadeOut("slow", function () {
+			var params = 'carrier=' + $("input:radio[name=carrier]:checked").val();
+			send_ajax_request('carrier-product-sku', 'HTML', 'supplyordering', 'get_carrier_productsku', params, function() {
+				$("#carrier-product-sku").fadeIn("slow");
+				});
+			});
+		}
+	});
+
+function Validate()
+	{
+	if (validateForm(requiredFieldHash) == false) return;
+	if ($("input:radio[name=carrier]:checked").val().length == 0)
+		{
+		showError('Please select valid carrier');
+		return;
+		}
+	if ($("#supplyquantity").val() == 0)
+		{
+		showError('There is no supply selected to place your order');
+		return;
+		}
+	$("#supplyOrder").submit();
+	}
+
+function SetInternationalDisplay(IntlDirection)
+{
+	if ( IntlDirection == 'init' )
+	{
+	  IntlDirection = GetCCDirection();
+	}
+	var State;
+	if ( '<var name=pseudoscreen>' != 'view' && '<var name=loginlevel>' != '25' )
+	{
+		Country = document.getElementById(IntlDirection + "country1").options[document.getElementById(IntlDirection + "country1").selectedIndex].value;
+	  if ( Country == 'US' )
+	  {
+			State = document.getElementById(IntlDirection+ "state1").options[document.getElementById(IntlDirection+ "state1").selectedIndex].value;
+	  }
+	}
+	else
+	{
+	  if ( IntlDirection == 'to' )
+	  {
+		 Country = '<var name=addresscountry>';
+		 State = '<var name=addressstate>';
+	  }
+	  else
+	  {
+		 if ( '<var name=isdropship>' == '1' )
+		 {
+			Country = '<var name=dropaddresscountry>';
+			State = '<var name=dropaddressstate>';
+		 }
+		 else
+		 {
+			Country = '<var name=branchaddresscountry>';
+			State = '<var name=branchaddressstate>';
+		 }
+
+	  }
+	}
+}
+
+function UpdateSupplyDetails()
+	{
+	var supply_quantity = 0;
+	var supply_types = 0;
+	$('select[name^=quantity_]').each(function( index ) {
+		supply_quantity += +$(this).val();
+		if ($(this).val() > 0) supply_types++;
+		});
+
+	$('#supplyquantity').val(supply_quantity);
+	$('#supplytypes').val(supply_types);
+	}
+
+</SCRIPT>

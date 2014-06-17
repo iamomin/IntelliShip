@@ -1,0 +1,169 @@
+<html>
+	<head>
+		<title>Sprint list</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+		<script type="text/javascript" src="/static/jquery/jquery-1.10.2.min.js"></script>
+		<script type="text/javascript" src="/static/js/customer.js"></script>
+		<script type="text/javascript" src="/static/js/deployJava.js"></script>
+		<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
+		<script type="text/javascript" src="/static/js/html2canvas/html2canvas.js"></script>
+
+		<style type="text/css">
+		#packing-list {
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 10pt;
+
+			float: left;
+			position: absolute;
+			margin-top: 300px;
+
+			-moz-transform: rotate(270deg);  /* FF3.5+ */
+			-o-transform: rotate(270deg);  /* Opera 10.5 */
+			-webkit-transform: rotate(270deg);  /* Saf3.1+, Chrome */
+		}
+		#packing-list table {
+			filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
+			-ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+		}
+		#packing-list div{
+			position: absolute;
+			padding: 2px 0 2px 10px;
+		}
+		#packing-list div.addressfieldname{
+			border-top: 1px solid black;
+			border-right: 1px solid black;
+			border-left: 1px solid black;
+			background-color: lightgrey;
+			padding: 2px 0 2px 10px;
+			font: bold;
+		}
+		#packing-list div.addressfield{
+			border: 1px solid black;
+			padding: 5px 0 2px 10px;
+		}
+		#packing-list div.fieldname{
+			border-top: 1px solid black;
+			border-right: 1px solid black;
+			border-left: 1px solid black;
+			background-color: lightgrey;
+			padding: 2px 0px 2px 0px;
+			text-align: center;
+			font: bold;
+		}
+		#packing-list div.field{
+			border: 1px solid black;
+			text-align: center;
+		}
+		#packing-list table{
+			position: absolute;
+			padding: 0;
+			border-spacing:collapse;
+		}
+		#packing-list th{
+			background-color: lightgrey;
+			font: bold;
+			vertical-align: middle;
+			text-align: center;
+			font-size: 9pt;
+		}
+		#packing-list td{
+			vertical-align: middle;
+			font-size: 9pt;
+			padding: 0px 0px 0px 3px;
+			text-align: center;
+		}
+	</style>
+
+	<script>
+	$(document).ready(function() {
+
+		useDefaultPrinter(function() {
+
+			if (!isLoaded())
+				{
+				alert("Printer is not loaded, please try again.");
+				return;
+				}
+
+			window['qzDonePrinting'] = function() {
+				// After print functionality
+				if ($('input[name=action]').length > 0)
+					document.getElementById('frm_next').submit();
+				else
+					{
+					var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
+					send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
+						var href = '/customer/order/quickship';
+						if (JSON_data.RETURN_SHIPMENT == 1) href += '?coid=' + JSON_data.RET_COID;
+						window.location.href = href;
+						});
+					}
+
+				// Remove reference to this function
+				window['qzDonePrinting'] = null;
+				};
+			printHTML5Page();
+			});
+		});
+	</script>
+	</head>
+
+	<body >
+		[% IF LABEL_IMG_LOOP %]
+			[% FOREACH item IN LABEL_IMG_LOOP %]
+			<img src="[% item.src %]"/>
+			[% END %]
+		[% ELSE %]
+			[% FOREACH LABEL IN LABEL_LOOP %]
+				[% LABEL %]
+			[% END %]
+		[% END %]
+		<div id="packing-list">
+			<table>
+				<tr>
+					<td colspan="3">
+					<img id="barcode" src="[% barcode_image %]" alt="PLACE PRO LABEL HERE" width="200" height="30"/>
+					</br>
+					<font face="Arial, Helvetica, sans-serif" size="2">[% ordernumber %]</font>
+					</td>
+				</tr>
+				<tr>
+					<td>ORDER:</td><td>[% ordernumber %]</td><td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>WANT DATE:</td><td>[% dateshipped %]</td><td>&nbsp;</td>
+				</tr>
+				<tr style="height: .3125in;">
+					<th style="width: .25in;">QTY</th>
+					<th style="width: .6875in;">REFERED EQUIPMENT</th>
+					<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
+				</tr>
+				[% FOREACH item IN packinglist_loop %]
+				<tr style="height: .1875in;">
+					<td>[% item.shippedqty %]</td>
+					<td>[% item.partnumber %]</td>
+					<td>[% item.productdescription %]</td>
+				</tr>
+				[% END %]
+			</table>
+		</div>
+
+		<form id="frm_next" action="/customer/order/ajax">
+			<input type="hidden" name="ajax" value="1"/>
+			<input type="hidden" name="type" value="HTML"/>
+			[% IF billoflading %]
+			<input type="hidden" name="action" value="generate_bill_of_lading"/>
+			[% ELSE %]
+				[% IF printcominv %]
+			<input type="hidden" name="action" value="generate_commercial_invoice"/>
+				[% END %]
+			[% END %]
+
+			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
+		</form>
+
+		<canvas id="hidden_screenshot" style="display:none;"></canvas>
+	</body>
+</html>

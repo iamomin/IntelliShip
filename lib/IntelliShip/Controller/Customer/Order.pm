@@ -51,6 +51,10 @@ sub quickship :Local
 		$self->cancel_order;
 		$self->setup_one_page;
 		}
+	elsif ($do_value eq 'delete')
+		{
+		$self->delete_order;
+		}
 	else
 		{
 		$c->stash->{quickship} = 1;
@@ -58,39 +62,16 @@ sub quickship :Local
 		}
 	}
 
-sub _setup_one_page :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-
-	my $CO = $self->get_order;
-
-	if ($self->order_can_auto_process)
-		{
-		$c->log->debug("Auto Shipping Order, ID: " . $CO->coid);
-		$self->SHIP_ORDER;
-		return $self->display_error_details($self->errors->[0]) if $self->has_errors;
-		return $self->setup_label_to_print;
-		}
-
-	$c->stash->{one_page} = 1;
-
-	#DYNAMIC FIELD VALIDATIONS
-	$self->set_required_fields;
-
-	$self->setup_address;
-	$self->setup_shipment_information;
-	$self->setup_carrier_service;
-
-	$c->stash(template => "templates/customer/order-one-page.tt");
-	}
-
 sub setup_one_page :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
 
+	$c->log->debug("... SETUP_ONE_PAGE ...");
+
 	my $CO = $self->get_order;
+	my $Contact = $self->contact;
+	my $Customer = $self->customer;
 
 	if ($self->order_can_auto_process)
 		{
@@ -108,6 +89,9 @@ sub setup_one_page :Private
 	$self->setup_address;;
 	$self->setup_shipment_information;
 	$self->setup_carrier_service;
+
+	$c->stash->{SUPER_USER} = ($Contact->is_superuser or $Contact->is_administrator);
+	$c->stash->{ROUTE_CAPTION} = ($Customer->is_single_sign_on_customer and $Customer->get_contact_data_value('routebuttonname')) ? uc($Customer->get_contact_data_value('routebuttonname')) : 'ROUTE NOW';
 
 	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
@@ -135,35 +119,38 @@ sub setup_address :Private
 
 	my $CO = $self->get_order;
 
-	my $do = $c->req->param('do') || '';
+	my $do = $params->{'do'} || '';
 	if (!$do or $do eq 'address')
 		{
 		$c->stash->{populate} = 'address';
 		$self->populate_order;
 		}
 
+	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
+	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
+
 	$self->set_company_address;
 
-	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
-	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->coid) unless $c->stash->{ordernumber};
+	$c->stash->{ordernumber} = ($params->{'ordernumber'} ? $params->{'ordernumber'} : $CO->ordernumber) unless $c->stash->{ordernumber};
 	$c->stash->{customerlist_loop} = $self->get_select_list('ADDRESS_BOOK_CUSTOMERS');
 	$c->stash->{countrylist_loop} = $self->get_select_list('COUNTRY');
 
 	my $country = ($CO->to_address ? $CO->to_address->country : 'US');
-	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country });
+	$c->stash->{statelist_loop} = $self->get_select_list('STATE', { country => $country }) if $country eq 'US';
 
 	if ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
 		$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD') ;
 		$c->stash->{shipmenttype_loop} = $self->get_shipment_types;
+		$c->stash->{CONSOLIDATE_COMBINE} = $Customer->get_contact_data_value('consolidatecombine');
 		}
 
-	$c->stash->{tooltips} = $self->get_tooltips;
+	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	#DYNAMIC INPUT FIELDS VISIBILITY
-	unless ($Customer->login_level == 25)
+	unless ($Contact->login_level == 25)
 		{
 		$c->stash->{SHOW_PONUMBER} = $Customer->get_contact_data_value('reqponum');
 		$c->stash->{SHOW_EXTID}    = $Customer->get_contact_data_value('reqextid');
@@ -209,6 +196,8 @@ sub setup_shipment_information :Private
 		$self->populate_order;
 		}
 
+	$c->stash->{SPECIAL_SERVICE} = $self->get_special_services if $Contact->get_contact_data_value('specialserviceexpanded') and !$c->stash->{SPECIAL_SERVICE};
+
 	unless ($c->stash->{one_page})
 		{
 		$c->stash->{deliverymethod} = '0';
@@ -227,6 +216,7 @@ sub setup_shipment_information :Private
 		}
 
 	$c->stash->{default_packing_list} = $Contact->default_packing_list;
+	$c->stash->{print_return_shipment} = $Contact->print_return_shipment unless $CO->ordernumber =~ /\-RTN$/;
 
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
@@ -236,10 +226,15 @@ sub setup_shipment_information :Private
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
 
+	if ($c->stash->{default_package_type_text} eq 'ENVELOPE' and $c->stash->{default_packing_list} == 2)
+		{
+		$c->stash->{default_packing_list} = 1;
+		}
+
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
 
-	$c->stash->{tooltips} = $self->get_tooltips;
+	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	if ($c->action =~ /multipage/)
 		{
@@ -249,6 +244,7 @@ sub setup_shipment_information :Private
 		{
 		unless ($c->stash->{PACKAGE_DETAIL_SECTION})
 			{
+			$c->stash->{HIDE_PRODUCT} = 1 if $Contact->get_contact_data_value('packageproductlevel') == 2;
 			$c->log->debug("... setup new package shipment details");
 			$params->{'unittypeid'} = $c->stash->{default_package_type};
 			$params->{'detail_type'} = 'package';
@@ -268,6 +264,7 @@ sub setup_carrier_service :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
+	my $params = $c->req->params;
 
 	my $Customer = $self->customer;
 	my $Contact  = $self->contact;
@@ -276,22 +273,29 @@ sub setup_carrier_service :Private
 	$c->stash->{review_order} = 1;
 	$c->stash->{customer} = $Contact;
 
-	my $do = $c->req->param('do') || '';
+	my $do = $params->{'do'} || '';
 	if (!$do or $do =~ /(summary|review|step2)/)
 		{
 		$c->stash->{populate} = 'summary';
 		$self->populate_order;
 		}
 
-	#$c->stash->{deliverymethod} = '0';
-	#$c->stash->{deliverymethod_loop} = $self->get_select_list('DELIVERY_METHOD');
-
-	if ($Contact->is_administrator and $Customer->login_level != 10 and $Customer->login_level != 20 and $Customer->login_level != 15)
+	if ($Contact->is_administrator and $Contact->login_level != 10 and $Contact->login_level != 20 and $Contact->login_level != 15)
 		{
 		$c->stash->{SHOW_NEW_OTHER_CARRIER} = 1;
 		}
 
-	if ($CO->has_carrier_service_details or $do =~ /step2/)
+	my $populate_carrier_service = 0;
+	if ($do =~ /(step2|review)/)
+		{
+		$populate_carrier_service = 1 unless $params->{'skiproute'};
+		}
+	elsif ($CO->has_carrier_service_details)
+		{
+		$populate_carrier_service = 1;
+		}
+
+	if ($populate_carrier_service)
 		{
 		$c->log->debug("CO has carrier service details, populate details...");
 
@@ -307,7 +311,7 @@ sub setup_carrier_service :Private
 		#$c->log->debug("SERVICE_LEVEL_SUMMARY, HTML: " . $c->stash->{SERVICE_LEVEL_SUMMARY});
 		}
 
-	$c->stash->{tooltips} = $self->get_tooltips;
+	#$c->stash->{tooltips} = $self->get_tooltips;
 
 	if ($c->action =~ /multipage/)
 		{
@@ -332,8 +336,8 @@ sub get_shipment_types
 	my $CO = $self->get_order;
 	my $is_outbound = (!$CO->isinbound and !$CO->isdropship);
 
-	my $shipmenttype_loop = [{ name => 'Outbound', value => 'outbound', checked =>  $is_outbound }];
-	if ($returncapability == 1 || $returncapability == 3)
+	my $shipmenttype_loop = [];
+	if ($returncapability == 1 || $returncapability == 3 || $CO->ordernumber =~ /\-RTN$/)
 		{
 		push(@$shipmenttype_loop, { name => 'Inbound',  value => 'inbound', checked => $CO->isinbound });
 		}
@@ -342,7 +346,9 @@ sub get_shipment_types
 		push(@$shipmenttype_loop, { name => 'Dropship', value => 'dropship', checked => $CO->isdropship });
 		}
 
-	return (@$shipmenttype_loop > 1 ? $shipmenttype_loop : undef);
+	push @$shipmenttype_loop, { name => 'Outbound', value => 'outbound', checked =>  $is_outbound } if @$shipmenttype_loop;
+
+	return $shipmenttype_loop;
 	}
 
 sub save_order :Private
@@ -350,6 +356,7 @@ sub save_order :Private
 	my $self = shift;
 
 	return if $self->{SKIP_SAVE_ORDER};
+	return if $self->context->stash->{ORDER_SAVED};
 
 	## SAVE CO DETAILS
 	$self->save_CO_details;
@@ -362,6 +369,8 @@ sub save_order :Private
 
 	## SAVE SPECIAL SERVICES
 	$self->save_special_services;
+
+	$self->context->stash->{ORDER_SAVED} = 1;
 	}
 
 sub save_CO_details :Private
@@ -372,7 +381,7 @@ sub save_CO_details :Private
 
 	$c->log->debug("... SAVE CO DETAILS");
 
-	#IntelliShip::Utils->hash_decode($params);
+	IntelliShip::Utils->hash_decode($params);
 
 	my $CO = $self->get_order;
 
@@ -394,6 +403,7 @@ sub save_CO_details :Private
 			}
 		}
 
+	$coData->{'return'}  = $params->{'printreturnshipment'} || '';
 	$coData->{'isinbound'}  = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'inbound') || 0;
 	$coData->{'isdropship'} = ($params->{'shipmenttype'} && $params->{'shipmenttype'} eq 'dropship') || 0;
 	$coData->{'combine'} = $params->{'combine'} if $params->{'combine'};
@@ -428,7 +438,7 @@ sub save_CO_details :Private
 
 	$coData->{'cotypeid'} = ($params->{'action'} and $params->{'action'} eq 'clearquote') ? 10 : 1;
 
-	if ($self->customer->login_level =~ /(35|40)/ and $params->{'cotypeid'} and $params->{'cotypeid'} == 2)
+	if ($self->contact->login_level =~ /(35|40)/ and $params->{'cotypeid'} and $params->{'cotypeid'} == 2)
 		{
 		$coData->{'cotypeid'} = 2;
 		}
@@ -451,7 +461,29 @@ sub save_CO_details :Private
 		$coData->{'class'} = IntelliShip::Utils->get_freight_class_from_density($coData->{'estimatedweight'}, undef, undef, undef, $coData->{'density'});
 		}
 
-	$coData->{'consolidationtype'} = ($params->{'consolidationtype'} ? $params->{'consolidationtype'} : 0);
+	if ($params->{'consolidatedorder'})
+		{
+		$coData->{'consolidationtype'} = 2;
+
+		my $OriginalCO = $self->get_order;
+
+		my @coids = split(/,/,$params->{'coids'});
+		foreach my $coid (@coids)
+			{
+			next if $coid eq $params->{'coid'};
+
+			## Save consolidated orders in stash to use cancel_order routine
+			my $ConsolidatedCO = $c->model('MyDBI::Co')->find({ coid => $coid });
+			$c->stash->{CO} = $ConsolidatedCO;
+			$self->cancel_order;
+			}
+
+		$c->stash->{CO} = $OriginalCO;
+		}
+	else
+		{
+		$coData->{'consolidationtype'} = 0;
+		}
 
 	## If this order has non-voided shipments, keep it's status as 'shipped' (statusid = 5)
 	if ($CO->shipment_count > 0)
@@ -478,9 +510,9 @@ sub save_CO_details :Private
 			}
 		}
 
-	$coData->{'dimlength'} = $params->{'dimlength_1'} if $params->{'dimlength_1'};
-	$coData->{'dimwidth'} = $params->{'dimwidth_1'} if $params->{'dimwidth_1'};
-	$coData->{'dimheight'} = $params->{'dimheight_1'} if $params->{'dimheight_1'};
+	$coData->{'dimlength'} = ceil($params->{'dimlength_1'}) if $params->{'dimlength_1'};
+	$coData->{'dimwidth'} = ceil($params->{'dimwidth_1'}) if $params->{'dimwidth_1'};
+	$coData->{'dimheight'} = ceil($params->{'dimheight_1'}) if $params->{'dimheight_1'};
 	$coData->{'estimatedinsurance'} = $params->{'insurance'};
 
 	## International
@@ -507,6 +539,8 @@ sub save_address :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	IntelliShip::Utils->hash_decode($params);
 
 	$c->log->debug("... save address details");
 
@@ -727,23 +761,28 @@ sub save_package_product_details :Private
 	# Delete packages & products for combined coids
 	if ($params->{'consolidatedorder'})
 		{
-		for (my $i = 1; $i <= $params->{'productcount'}; $i++)
+		for (my $i = 1; $i <= $params->{'pkg_detail_row_count'}; $i++)
 			{
 			# Only packages are relevent for normal consolidates, skip products
-			if (!$params->{'cotypeid'} or $params->{'cotypeid'} != 2)
+			if ($params->{"datatypeid_" . $i} and (!$params->{'cotypeid'} or $params->{'cotypeid'} != 2))
 				{
 				next if $params->{"datatypeid_" . $i} == 2000;
 				}
 
-			my $ComboCO = $c->model('MyDBI::CO')->find({ coid => $params->{"consolidatedcoid_" . $i} });
+			my $ComboCO = $c->model('MyDBI::CO')->find({ coid => $params->{"originalcoid_" . $i} });
+
 			next unless $ComboCO;
+
+			$c->log->debug("\n___ ComboCO->coid: " . $ComboCO->coid . "params->{'coid'}" . $params->{'coid'});
 
 			$c->log->debug("___ consolidatedorder: Flush old PackProData for ComboCO: " . $ComboCO->coid);
 			$ComboCO->delete_all_package_details;
 
 			my $ConsolidationType = $ComboCO->consolidationtype || 0;
+			$c->log->debug("___ ConsolidationType: " . $ConsolidationType);
+			$c->log->debug("___ params->{'consolidationtype'}: " . $params->{'consolidationtype'});
 			my $Status = $ComboCO->statusid || 0;
-
+			$c->log->debug("___ Status: " . $Status);
 			if ($Status == 200)
 				{
 				$ComboCO->consolidationtype($ConsolidationType);
@@ -793,8 +832,10 @@ sub save_package_product_details :Private
 		my $decval          = ( $params->{'decval_' . $PackageIndex}  ? sprintf("%.2f",$params->{'decval_' . $PackageIndex}) :  undef);
 		my $frtins          = $params->{'frtins_'.$PackageIndex} || 0;
 		my $dryicewt        = ($params->{'dryicewt'} ? ceil($params->{'dryicewt'}) : 0);
+		my $unittypeid      = ($params->{'unittype_' . $PackageIndex } ? $params->{'unittype_' . $PackageIndex } : undef);
 		my $unitofmeasure   = $params->{'unitofmeasure_' . $PackageIndex} || 0;
 		my $quantityxweight = $params->{'quantityxweight_' . $PackageIndex} || 0;
+		my $originalcoid    = $params->{'originalcoid_' . $PackageIndex} || '';
 
 		my $PackProData = {
 				ownertypeid     => $ownertypeid,
@@ -803,7 +844,7 @@ sub save_package_product_details :Private
 				boxnum          => $quantity,
 				quantity        => $quantity,
 				unitofmeasure   => $unitofmeasure,
-				unittypeid      => $params->{'unittype_' . $PackageIndex },
+				unittypeid      => $unittypeid,
 				weight          => $weight,
 				dimweight       => $dimweight,
 				dimlength       => $dimlength,
@@ -814,7 +855,8 @@ sub save_package_product_details :Private
 				decval          => $decval,
 				frtins          => $frtins,
 				dryicewt        => int $dryicewt,
-				quantityxweight => $quantityxweight
+				quantityxweight => $quantityxweight,
+				originalcoid    => $originalcoid,
 			};
 
 		$PackProData->{partnumber}  = $params->{'sku_' . $PackageIndex} if $params->{'sku_' . $PackageIndex};
@@ -852,6 +894,8 @@ sub save_special_services :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+
+	return if $params->{'interview'} == 1 && $params->{'do'} eq 'ship';
 
 	$c->log->debug("... save special services");
 
@@ -925,6 +969,8 @@ sub cancel_order :Private
 	my $CO = $self->get_order;
 	$CO->update({ statusid => '200' });
 
+	return if $params->{'consolidatedorder'};
+
 	my $parent = $params->{'parent'} || '';
 	if (length $parent)
 		{
@@ -934,6 +980,42 @@ sub cancel_order :Private
 		{
 		$self->clear_CO_details;
 		$params->{do} = undef;
+		$c->detach($c->action);
+		}
+	}
+
+sub delete_order :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$c->log->debug("___ DELETE ORDER ___");
+
+	my $CO = $self->get_order;
+
+	if (my @assessorials = $CO->assessorials)
+		{
+		$c->log->debug("assessorials found, delete");
+		foreach my $AssData (@assessorials)
+			{
+			$AssData->delete;
+			}
+		}
+
+	$c->log->debug("delete all package product details");
+	$CO->delete_all_package_details;
+
+	$CO->delete;
+
+	my $parent = $params->{'parent'} || '';
+	if (length $parent)
+		{
+		$c->response->redirect($c->uri_for('/customer/' . $parent));
+		}
+	else
+		{
+		$self->clear_CO_details;
 		$c->detach($c->action);
 		}
 	}
@@ -1006,7 +1088,9 @@ sub get_order :Private
 			$c->log->debug("######## NO CO FOUND ########");
 			my $COID = $self->get_token_id;
 			my $OrderNumber = $self->get_auto_order_number($params->{'ordernumber'});
-			$OrderNumber = $COID unless $OrderNumber;
+			#$OrderNumber = $COID unless $OrderNumber;
+			$params->{'ordernumber'} = $OrderNumber;
+			$c->stash->{ordernumber} = $OrderNumber;
 
 			my $coData = {
 				ordernumber       => $OrderNumber,
@@ -1014,7 +1098,7 @@ sub get_order :Private
 				datecreated       => IntelliShip::DateUtils->get_timestamp_with_time_zone,
 				customerid        => $customerid,
 				contactid         => $self->contact->contactid,
-				addressid         => $self->customer->address->addressid,
+				addressid         => '',
 				cotypeid          => $cotypeid,
 				freightcharges    => 0,
 				statusid          => 1
@@ -1079,18 +1163,29 @@ sub populate_order :Private
 		$c->stash->{customerAddress} = $self->customer->address;
 
 		## Ship From Section
-		$c->stash->{fromcontact}= $CO->oacontactname;
-		$c->stash->{fromemail}  = $CO->deliverynotification;
-		$c->stash->{fromphone}  = $CO->oacontactphone;
+		if ($CO->isdropship)
+			{
+			$c->stash->{fromcontact}= $CO->dropcontact;
+			$c->stash->{fromphone}  = $CO->dropphone;
+			}
+		else
+			{
+			$c->stash->{fromcontact}= $CO->oacontactname;
+			$c->stash->{fromphone}  = $CO->oacontactphone;
+			}
 
-		if($CO->isinbound)
+		$c->stash->{fromemail}  = $CO->deliverynotification;
+
+		if ($CO->isinbound)
 			{
 			$c->stash->{fromcustomernumber} = $CO->custnum;
+			$c->stash->{fromcustomernumber} = $CO->extcustnum unless $c->stash->{fromcustomernumber};
 			$c->stash->{todepartment} = $CO->department;
 			}
 		else
 			{
 			$c->stash->{tocustomernumber} = $CO->custnum;
+			$c->stash->{tocustomernumber} = $CO->extcustnum unless $c->stash->{tocustomernumber};
 			$c->stash->{fromdepartment} = $CO->department;
 			}
 
@@ -1100,7 +1195,6 @@ sub populate_order :Private
 		$c->stash->{toemail} = $CO->shipmentnotification;
 		$c->stash->{ordernumber} = $CO->ordernumber;
 
-		$c->stash->{tocustomernumber} = $CO->custnum;
 		$c->stash->{description} = $CO->description;
 
 		$c->stash->{fromAddress} = $CO->origin_address;
@@ -1110,9 +1204,7 @@ sub populate_order :Private
 	## Package Details
 	if (!$populate or $populate eq 'shipment')
 		{
-		$c->stash->{'ROW_COUNT'} = 0;
-		$c->stash->{'totalweight'} = 0;
-		$c->stash->{'PACKAGE_INDEX'} = 0;
+		$c->stash->{ROW_COUNT} = 0;
 
 		my $packages = [];
 		if ($params->{'coids'})
@@ -1136,20 +1228,33 @@ sub populate_order :Private
 
 		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total number of packages " . @$packages);
+		$c->stash->{CONSOLIDATED_ORDER} = 1 if ($CO->consolidationtype == 2);
 
 		if ($c->stash->{one_page})
 			{
-			my ($insurance,$freightinsurance) = (0,0);
+			my ($totalweight,$insurance,$freightinsurance) = (0,0,0);
 			my $package_detail_section_html = '';
 			foreach my $Package (@$packages)
 				{
 				$package_detail_section_html .= $self->add_package_detail_row($Package);
 
 				$insurance += $Package->decval;
+				$totalweight += $Package->weight;
 				$freightinsurance += $Package->frtins;
 				}
 
+			if ($c->stash->{CONSOLIDATED_ORDER})
+				{
+				my $coids = '';
+				foreach my $Package (@$packages)
+					{
+					 $coids .= $Package->originalcoid unless ($coids =~ m/$Package->originalcoid/);
+					}
+				$c->stash->{coids} = $coids;
+				}
+
 			$c->stash->{insurance} = $insurance;
+			$c->stash->{totalweight} = $totalweight;
 			$c->stash->{freightinsurance} = $freightinsurance;
 
 			## Don't move this above foreach block
@@ -1162,6 +1267,12 @@ sub populate_order :Private
 			{
 			$c->stash($packages->[0]->{_column_data}) if @$packages;
 			$c->stash->{comments} = $CO->description; ##**
+			}
+
+		## SELECTED SPECIAL SERVICES
+		if ($CO->assessorials->count)
+			{
+			$c->stash->{SPECIAL_SERVICE} = $self->get_special_services;
 			}
 		}
 
@@ -1190,17 +1301,6 @@ sub populate_order :Private
 		#$c->stash->{international} = '';
 		}
 
-	# SELECTED SPECIAL SERVICES
-	if (!$populate or $populate eq 'shipment' or $populate eq 'summary')
-		{
-		my @special_services = $CO->assessorials;
-		my %serviceHash =  map { $_->assname => 1 } @special_services;
-		my $special_service_loop = $self->get_select_list('SPECIAL_SERVICE');
-		my @selected_special_service_loop = grep { $serviceHash{$_->{'value'}} } @$special_service_loop;
-		$c->stash->{selected_special_service_loop} = \@selected_special_service_loop if @selected_special_service_loop;
-		#$c->log->debug("selected_special_service_loop: " . Dumper @selected_special_service_loop);
-		}
-
 	$c->stash->{deliverymethod} = $CO->freightcharges || 0;
 	}
 
@@ -1209,19 +1309,26 @@ sub set_company_address
 	my $self = shift;
 	my $c = $self->context;
 	my $Contact = $self->contact;
-	my $customerAddress = $self->customer->address;
+	my $fromAddress = $c->stash->{fromAddress};
 
-	$c->stash->{customername}		= $customerAddress->addressname;
-	$c->stash->{customeraddress1}	= $customerAddress->address1;
-	$c->stash->{customeraddress2}	= $customerAddress->address2;
-	$c->stash->{customercity}		= $customerAddress->city;
-	$c->stash->{customercountry}	= $customerAddress->country;
-	$c->stash->{customerzip}		= $customerAddress->zip;
-	$c->stash->{customerstate}		= $customerAddress->state;
+	$c->stash->{customername}		= $fromAddress->addressname;
+	$c->stash->{customername}		= $Contact->customer->address->addressname unless $c->stash->{customername};
+	$c->stash->{customeraddress1}	= $fromAddress->address1;
+	$c->stash->{customeraddress2}	= $fromAddress->address2;
+	$c->stash->{customercity}		= $fromAddress->city;
+	$c->stash->{customercountry}	= $fromAddress->country;
+	$c->stash->{customerzip}		= $fromAddress->zip;
+	$c->stash->{customerstate}		= $fromAddress->state;
 	$c->stash->{customeremail}		= $Contact->email;
 	$c->stash->{customerdepartment} = $Contact->department ;
 	$c->stash->{customercontact}	= $Contact->full_name;
 	$c->stash->{customerphone}		= $Contact->phonebusiness;
+
+	unless ($fromAddress->addressname)
+		{
+		$fromAddress->addressname($c->stash->{customername});
+		$fromAddress->update;
+		}
 	}
 
 sub add_detail_row :Private
@@ -1289,7 +1396,7 @@ sub add_package_detail_row :Private
 	my $product_HTML = '';
 	foreach my $Product (@products)
 		{
-		$c->stash->{'ROW_COUNT'}++;
+		$c->stash->{ROW_COUNT}++;
 		$c->stash($Product->{_column_data});
 
 		$c->stash->{PRODUCT_DETAIL_ROW} = 1;
@@ -1311,19 +1418,34 @@ sub add_package_detail_row :Private
 	$c->stash($Package->{_column_data});
 	$c->stash->{'coid'} = $Package->ownerid;
 
-	if (my $UnitType = $Package->unittype)
+	if ($Package->unittypeid)
 		{
+		my $UnitType = $Package->unittype;
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		}
 
-	$c->stash->{'ROW_COUNT'}++;
-	$c->stash->{PACKAGE_PRODUCTS_ROW} = $product_HTML;
+	$c->stash->{ROW_COUNT}++;
+	$c->stash->{RODUCT_DETAILS} = $product_HTML;
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
 	$c->stash->{PACKAGE_DETAIL_ROW} = 0;
+	$c->stash->{RODUCT_DETAILS} = undef;
 
 	return $HTML;
+	}
+
+sub get_special_services :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+	$CA->context($c);
+	$CA->contact($self->contact);
+	$CA->customer($self->customer);
+	$CA->get_special_service_list;
+	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 	}
 
 sub get_tooltips :Private
@@ -1561,7 +1683,7 @@ sub SHIP_ORDER :Private
 
 	$c->log->debug("------- SHIP_ORDER -------");
 
-	$self->save_order unless $params->{'do'} eq 'load';
+	$self->save_order unless $params->{'do'} eq 'load' || $params->{'consolidate'};
 
 	my $CO = $self->get_order;
 
@@ -1647,6 +1769,12 @@ sub SHIP_ORDER :Private
 		my ($CustomerServiceID) = $params->{'customerserviceid'} =~ m/OTHER_(.*)/;
 		if ($CustomerServiceID eq 'NEW')
 			{
+			unless ($params->{'other'})
+				{
+				$self->add_error("Other carrier name not specified");
+				return;
+				}
+
 			my $Other = $c->model("MyDBI::Other")->new({});
 			$Other->insert({
 				'othername' => $params->{'other'},
@@ -1870,12 +1998,6 @@ sub SHIP_ORDER :Private
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
-	# Kludge to maintain 'pickuprequest' $params->{'storepickuprequest'} = $params->{'pickuprequest'};
-	#$params = {%$params, %{$Shipment->{'_column_data'}}};
-	#$c->log->debug("Shipment->{'_column_data'}: " . Dumper $Shipment->{'_column_data'});
-
-	$params->{'pickuprequest'} = $params->{'storepickuprequest'};
-
 	# Process good shipment
 
 	# If the customer has an email address, check to see if the shipment address is different
@@ -1902,7 +2024,7 @@ sub SHIP_ORDER :Private
 	# Change fullfillment status - PO or Pick & Pack Only
 	if ($params->{'cotypeid'} == 2 or $has_pick_and_pack)
 		{
-		if($CO->is_fullfilled($params->{'ordernumber'},$params->{'cotypeid'}))
+		if ($CO->is_fullfilled($params->{'ordernumber'},$params->{'cotypeid'}))
 			{
 			$CO->statusid(350); ## Set PO to 'Fullfilled'
 			}
@@ -1913,6 +2035,7 @@ sub SHIP_ORDER :Private
 		}
 
 	$c->log->debug("SHIPMENT ID: " . $Shipment->shipmentid);
+
 	# If we don't have a csid and service, and *do* have a freight charge (s/b through overrride),
 	# stuff a shipment charge entry in - this is an 'Other' shipment with an overriden freight charge
 	if (!$params->{'customerserviceid'} and !$params->{'service'} and $params->{'freightcharge'})
@@ -1935,24 +2058,10 @@ sub SHIP_ORDER :Private
 
 	## Set shipment and order statuses (ship complete and shipped, respectively)
 	$Shipment->statusid(4);
-	$CO->statusid(5);
-
-	# Extra, carrier specific bits
-	#if ($Shipment->{'screen'} eq 'displayawb_airborne_preprint')
-	#	{
-	#	my $trackinglast3 = $Shipment->tracking1 =~ /\d+(\d{3})$/;
-	#	if ($Shipment->partiestotransaction eq 'Y')
-	#		{
-	#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;X';
-	#		}
-	#	elsif ( $Shipment->partiestotransaction eq 'N' )
-	#		{
-	#		$Shipment->{'relateddisplay'} = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X';
-	#		}
-	#	}
-
-	$CO->update;
 	$Shipment->update;
+
+	$CO->statusid(5);
+	$CO->update;
 
 	$params->{'shipmentid'} = $Shipment->shipmentid;
 
@@ -2011,18 +2120,10 @@ sub generate_label :Private
 
 	if ($LabelType =~ /JPG/i)
 		{
-		## Generate JPEG label image ##
-		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s 270";
+		my $rotation = $self->contact->jpg_label_rotation;
+		my $cmdGenerageLabel = IntelliShip::MyConfig->script_directory . "/intelliship_generate_label.pl " . $Shipment->shipmentid ." jpg s " . $rotation;
 		$c->log->debug("cmdGenerageLabel: " . $cmdGenerageLabel);
 		system($cmdGenerageLabel);
-
-		#system("/opt/engage/EPL2JPG/generatelabel.pl ". $Shipment->shipmentid ." jpg s 270");
-		#my $out_file = $Shipment->shipmentid . '.jpg';
-		#my $copyImgCommand = 'cp '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file.' '.IntelliShip::MyConfig->label_file_directory.'/'.$out_file;
-		#$c->log->debug("copyImgCommand: " . $copyImgCommand);
-
-		## Copy to Apache context path ##
-		#system($copyImgCommand);
 		}
 	else
 		{
@@ -2038,11 +2139,34 @@ sub generate_label :Private
 sub setup_label_to_print
 	{
 	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my @shipmentids = split('_',$params->{'shipmentid'});
+
+	foreach my $shipmentid (@shipmentids)
+		{
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
+		unless ($Shipment)
+			{
+			$c->log->debug("shipment not found, shipmentid: " . $shipmentid);
+			next;
+			}
+		$self->setup_label($Shipment);
+		}
+
+	$c->stash(template => "templates/customer/order-label.tt");
+	}
+
+sub setup_label
+	{
+	my $self = shift;
+	my $Shipment = shift;
 
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	return unless $Shipment;
 
 	my $label_file = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	   $label_file = IntelliShip::MyConfig->label_file_directory  . '/' . $Shipment->shipmentid unless -e $label_file;
@@ -2080,7 +2204,8 @@ sub setup_label_to_print
 
 	if ($label_file =~ /JPG/i)
 		{
-		$c->stash->{LABEL_IMG} = '/print/label/' . $Shipment->shipmentid . '.jpg';
+		$c->stash->{LABEL_IMG_LOOP} = [] unless $c->stash->{LABEL_IMG_LOOP};
+		push(@{$c->stash->{LABEL_IMG_LOOP}}, { src => '/print/label/' . $Shipment->shipmentid . '.jpg', shipmentid => $Shipment->shipmentid });
 		}
 	else
 		{
@@ -2110,13 +2235,17 @@ sub setup_label_to_print
 
 		my $template = $params->{'carrier'} || $Shipment->carrier ;
 		   $template = 'default' unless $template;
-		$c->stash(LABEL => $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
+
+		$c->stash->{LABEL_LOOP} = [] unless $c->stash->{LABEL_LOOP};
+		push (@{$c->stash->{LABEL_LOOP}}, $c->forward($c->view('Label'), "render", [ "templates/label/" . lc($template) . ".tt" ]));
 		}
+
+	$c->stash->{shipmentids} = [] unless $c->stash->{shipmentids};
+
+	push(@{$c->stash->{shipmentids}},$Shipment->shipmentid);
 
 	$c->stash->{SEND_EMAIL} = IntelliShip::Utils->is_valid_email($Shipment->deliverynotification);
 	$c->stash->{AUTO_PRINT} = $self->contact->get_contact_data_value('autoprint');
-
-	$c->stash(template => "templates/customer/order-label.tt");
 	}
 
 sub GetNotificationShipments :Private
@@ -2132,6 +2261,9 @@ sub GetNotificationShipments :Private
 			s.shipmentid,
 			to_char(s.dateshipped,'MM/DD/YYYY') as dateshipped,
 			to_char(s.datecreated,'MM/DD/YYYY') as datecreated,
+			to_char(co.dateneeded,'MM/DD/YYYY') as dateneeded,
+			a.addressname,
+			a.city,
 			s.tracking1,
 			s.carrier,
 			s.service,
@@ -2177,39 +2309,46 @@ sub SendShipNotification :Private
 
 	my $c = $self->context;
 	my $Customer = $self->customer;
-
+	my $Contact=$self->contact;
 	my $Email = IntelliShip::Email->new;
 
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 	$Email->from_name('IntelliShip2');
-	$Email->subject("NOTICE: Shipment Prepared (" .$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
 
-	$Email->add_to($Shipment->shipmentnotification);
+	$Email->add_to($Shipment->shipmentnotification) if $Shipment->shipmentnotification;
+	$Email->add_to($Shipment->deliverynotification) if $Shipment->deliverynotification;
 
-	my $emails = $Shipment->shipmentnotification;
-	if ($Shipment->deliverynotification and $self->contact->get_contact_data_value('combineemail'))
-		{
-		$emails .= ', ' . $Shipment->deliverynotification;
-		$Email->add_to($Shipment->deliverynotification);
-		}
+	#if ($Shipment->deliverynotification and $self->contact->get_contact_data_value('combineemail'))
+	#	{
+	#	$Email->add_to($Shipment->deliverynotification);
+	#	}
 
-	$Email->add_line('<br>');
-	$Email->add_line('<p>Shipment notification</p>');
-	$Email->add_line('<br>');
+	#$Email->add_line('<br>');
+	#$Email->add_line('<p>Shipment notification</p>');
+	#$Email->add_line('<br>');
 
-	$c->stash->{notification_list} = $self->GetNotificationShipments($Shipment);
-	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/customer/shipment-notification.tt' ]));
+	$self->set_header_section;
 
+	$c->stash->{SHIPMENT_ID} = $Shipment->shipmentid;
+	$c->stash->{COID} = $Shipment->coid;
+	$c->stash->{packinglist} = $Contact->default_packing_list;
 	my $LabelImageFile = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	if (-e $LabelImageFile)
 		{
+		$c->stash->{LABEL_IMG} = 1;
 		$Email->attach($LabelImageFile);
 		}
+	my $shipment_information_hash = $self->GetNotificationShipments($Shipment);
+	$c->stash->{notification_list} = $shipment_information_hash;
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/shipment-notification.tt' ]));
+
+	$Email->subject("NOTICE: Shipment Prepared (".$shipment_information_hash->[0]{'addressname'}." of ".$shipment_information_hash->[0]{'city'}.",".$Shipment->carrier . $Shipment->service . "#" . $Shipment->tracking1 . ")");
 
 	if ($Email->send)
 		{
-		$c->log->debug("Email successfully sent to " . $emails);
+		$c->log->debug("Email successfully sent to " . join(',',@{$Email->to}));
 		}
 	}
 
@@ -2328,6 +2467,7 @@ sub SendShipmentVoidEmail
 	{
 	my $self = shift;
 	my $Shipment = shift;
+	my $c = $self->context;
 
 	my $Contact        = $self->contact;
 	my $Customer       = $self->customer;
@@ -2337,7 +2477,7 @@ sub SendShipmentVoidEmail
 
 	my ($Carrier,$Service) = $self->API->get_carrier_service_name($Shipment->customerserviceid);
 
-	my $subject = "WARNING: " . $Customer->customername . ", $Carrier $Service $TrackingNumber (Voided By " . $Contact->full_name  . "/$ipaddress )";
+	my $subject = "WARNING: Shipment Voided (" . $Customer->customername . ", $Carrier $Service $TrackingNumber By " . $Contact->full_name  . "/$ipaddress )";
 	my $Email = IntelliShip::Email->new;
 
 	$Email->content_type('text/html');
@@ -2346,15 +2486,15 @@ sub SendShipmentVoidEmail
 	$Email->subject($subject);
 	$Email->add_to($Customer->losspreventemail);
 
-	$Email->add_line('');
-	$Email->add_line('=' x 60);
-	$Email->add_line('ShipmentID  : ' . $Shipment->shipmentid);
-	$Email->add_line('Carrier     : ' . $Carrier);
-	$Email->add_line('Service     : ' . $Service);
-	$Email->add_line('Tracking1   : ' . $TrackingNumber);
-	$Email->add_line('OrderNumber : ' . $OrderNumber);
-	$Email->add_line('=' x 60);
-	$Email->add_line('');
+	$self->set_header_section;
+
+	$c->stash->{ShipmentID} = $Shipment->shipmentid;
+	$c->stash->{Carrier} = $Carrier;
+	$c->stash->{Service} = $Service;;
+	$c->stash->{Tracking1} = $TrackingNumber;
+	$c->stash->{OrderNumber} = $OrderNumber;
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/void-notification.tt' ]));
 
 	if ($Email->send)
 		{
@@ -2493,7 +2633,9 @@ sub SetupPrinterStream
 
 	close $FILE;
 
-	my $printerstring_loop = [];
+	$c->stash->{printerstring_loop} = [] unless $c->stash->{printerstring_loop};
+	my $printerstring_loop = $c->stash->{printerstring_loop};
+
 	foreach my $line (@PSLINES)
 		{
 		chomp $line;
@@ -2773,6 +2915,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'addresscountryname'}   = $ToAddress->country_description;
 
 	$ShipmentData->{'coid'} = $CO->coid;
+	$ShipmentData->{'coid'} = $c->stash->{override_coid} if $c->stash->{override_coid};
 	$ShipmentData->{'datetoship'} = IntelliShip::DateUtils->american_date($CO->datetoship);
 	$ShipmentData->{'dateneeded'} = IntelliShip::DateUtils->american_date($CO->dateneeded);
 
@@ -2817,7 +2960,8 @@ sub BuildShipmentInfo
 	$ShipmentData->{'usealtsop'} = $CO->usealtsop;
 	$ShipmentData->{'quantityxweight'} = $CO->quantityxweight;
 
-	$ShipmentData->{'dimweight'} = $params->{'dimweight'};
+	$ShipmentData->{'weight'} = $CO->total_weight;
+	$ShipmentData->{'dimweight'} = $CO->total_dimweight;
 	$ShipmentData->{'customsdescription'} = $params->{'customsdescription'};
 	$ShipmentData->{'dimunits'} = $params->{'dimunits'};
 	$ShipmentData->{'commodityweight'} = $params->{'commodityweight'};
@@ -2835,7 +2979,7 @@ sub BuildShipmentInfo
 	$ShipmentData->{'carrier'} = ($params->{'carrier'} ? $params->{'carrier'} : $CO->extcarrier);
 	$ShipmentData->{'service'} = ($params->{'service'} ? $params->{'service'} : $CO->extservice);
 
-	$ShipmentData->{'quantity'} = ($params->{'quantity'} ? $params->{'quantity'} : $CO->total_weight);
+	$ShipmentData->{'quantity'} = ($params->{'quantity'} ? $params->{'quantity'} : $CO->total_quantity);
 	$ShipmentData->{'totalquantity'} = $CO->total_quantity;
 	$ShipmentData->{'freightinsurance'} = $params->{'freightinsurance'};
 	$ShipmentData->{'weighttype'} = $params->{'weighttype'};
@@ -2851,8 +2995,8 @@ sub BuildShipmentInfo
 	$ShipmentData->{'branchcontact'}  = $CO->oacontactname;
 	$ShipmentData->{'branchphone'}    = $CO->oacontactphone;
 
-	$ShipmentData->{'oacontactname'}  = $params->{'fromcontact'};
-	$ShipmentData->{'oacontactphone'} = $params->{'fromphone'};
+	$ShipmentData->{'oacontactname'}  = $CO->oacontactname;
+	$ShipmentData->{'oacontactphone'} = $CO->oacontactphone;
 
 	$ShipmentData->{'cfcharge'} = $params->{'cfcharge'};
 	$ShipmentData->{'usingaltsop'} = $params->{'usingaltsop'};
@@ -2958,6 +3102,8 @@ sub BuildShipmentInfo
 			}
 		}
 
+	#$c->log->debug("... ShipmentData: " . Dumper $ShipmentData);
+
 	return $ShipmentData;
 	}
 
@@ -3044,6 +3190,7 @@ sub set_required_fields :Private
 	my $self = shift;
 	my $page = shift;
 	my $c = $self->context;
+	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
 	return if $c->stash->{requiredfield_list};
@@ -3067,7 +3214,7 @@ sub set_required_fields :Private
 			{ name => 'toemail',    details => "{ email: false }"},
 		];
 
-		unless ($Customer->login_level == 25)
+		unless ($Contact->login_level == 25)
 			{
 			if ($c->stash->{one_page})
 				{
@@ -3088,7 +3235,7 @@ sub set_required_fields :Private
 
 	if (!$page or $page eq 'shipment')
 		{
-		unless ($Customer->login_level == 25 or $c->stash->{one_page})
+		unless ($Contact->login_level == 25 or $c->stash->{one_page})
 			{
 			push(@$requiredList, { name => 'datetoship', details => "{ date: true }"}) if $customerRules{'reqdatetoship'} and $Customer->allowpostdating;
 			push(@$requiredList, { name => 'dateneeded', details => "{ date: true }"}) if $customerRules{'reqdateneeded'};
@@ -3141,7 +3288,7 @@ sub get_auto_order_number :Private
 	#$c->log->debug("SQL: " . $SQL);
 
 	my $STH = $MyDBI->select($SQL);
-	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count(*)'};
+	my $HasAutoOrderNumber = $STH->fetchrow(0)->{'count'};
 
 	# get order number if one is needed
 	if ($HasAutoOrderNumber and !$OrderNumber)
@@ -3164,157 +3311,176 @@ sub generate_packing_list
 
 	$c->log->debug("___ generate_packing_list ___");
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
-	my $CO       = $Shipment->CO;
-	my $Customer = $CO->customer;
+	my $PackListHTML = '';
+	my @shipmentids = split('_',$params->{'shipmentid'});
 
-	# Set global packing list values
-	$c->stash($Shipment->{_column_data});
-	$c->stash->{'contactname'}    = $CO->contactname;
-	$c->stash->{'ordernumber'}    = $CO->ordernumber;
-	$c->stash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
-	$c->stash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
-	$c->stash->{'totalpages'}     = 1;
-	$c->stash->{'currentpage'}    = 1;
-
-	# Origin Address
-	if (my $OAAddress = $Shipment->origin_address)
+	foreach my $shipmentid (@shipmentids)
 		{
-		my $shipper_address = $OAAddress->addressname;
-		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
-		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
-		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
-		$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
-		$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
-		$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
+		my $CO       = $Shipment->CO;
+		$CO          = $self->get_order unless $CO;
+		my $Customer = $CO->customer;
 
-		$shipper_address   .= "<br>" . $Shipment->oacontactphone       if $Shipment->oacontactphone;
-		$shipper_address   .= "<br>" . $Shipment->deliverynotification if $Shipment->deliverynotification;
+		# Set global packing list values
+		$c->stash($Shipment->{_column_data});
+		$c->stash->{'contactname'}    = $CO->contactname;
+		$c->stash->{'ordernumber'}    = $CO->ordernumber;
+		$c->stash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+		$c->stash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
+		$c->stash->{'totalpages'}     = 1;
+		$c->stash->{'currentpage'}    = 1;
 
-		$c->stash->{'shipperaddress'} = $shipper_address;
-		}
-
-	# Destination Address
-	if (my $DAAddress = $Shipment->destination_address)
-		{
-		my $consignee_address = $DAAddress->addressname;
-		$consignee_address   .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
-		$consignee_address   .= " " . $DAAddress->address2    if $DAAddress->address2;
-		$consignee_address   .= "<br>" . $DAAddress->city     if $DAAddress->city;
-		$consignee_address   .= ", " . $DAAddress->state      if $DAAddress->state;
-		$consignee_address   .= "  " . $DAAddress->zip        if $DAAddress->zip;
-		$consignee_address   .= "<br>" . $DAAddress->country  if $DAAddress->country;
-
-		$consignee_address   .= "<br>" . $Shipment->contactphone         if $Shipment->contactphone;
-		$consignee_address   .= "<br>" . $Shipment->shipmentnotification if $Shipment->shipmentnotification;
-
-		$c->stash->{'consigneeaddress'} = $consignee_address;
-		}
-
-	# # Billing Address
-	my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
-
-	my $webaccount;
-	if ( $CSValueRef->{'webaccount'} )
-		{
-		$webaccount = $CSValueRef->{'webaccount'};
-		}
-
-	my $BillingAddressInfo = $self->GetBillingAddressInfo(
-			$Shipment->customerserviceid,
-			$webaccount,
-			$Customer->customername,
-			$Customer->customerid,
-			$Shipment->billingaccount,
-			$Shipment->freightcharges,
-			$Shipment->addressiddestin,
-			undef,
-			$CSValueRef->{'baaddressid'}
-			);
-
-	if ( $BillingAddressInfo )
-		{
-		my $billingaddress = $BillingAddressInfo->{'addressname'};
-		$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
-		$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
-		$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
-		$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
-		$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
-		$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
-
-		$c->stash->{'billingaddress'} = $billingaddress;
-		$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
-		}
-
-	##########################
-	## Set line item values ##
-	##########################
-	my @packpros = $Shipment->packages;
-
-	my ($gross_weight,$quantity,$product_statusid) = (0,0,0);
-
-	my $packinglist_loop = [];
-	foreach my $PackProData (@packpros)
-		{
-		# Use shipment package data for # of packages, weights, and the like
-		my $weight = ($PackProData->dimweight > $PackProData->weight ? $PackProData->dimweight : $PackProData->weight);
-
-		$gross_weight += $weight;
-		$quantity     += $PackProData->quantity;
-
-		(my $shipment_section_ref,$product_statusid) = $self->GetLineItems($PackProData);
-
-		foreach my $key (sort { $a <=> $b } keys %$shipment_section_ref)
+		# Origin Address
+		if (my $OAAddress = $Shipment->origin_address)
 			{
-			push(@$packinglist_loop, $shipment_section_ref->{$key});
+			my $shipper_address = $OAAddress->addressname;
+			$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
+			$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
+			$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
+			$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
+			$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
+			$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
+
+			$shipper_address   .= "<br>" . $Shipment->oacontactphone       if $Shipment->oacontactphone;
+			$shipper_address   .= "<br>" . $Shipment->deliverynotification if $Shipment->deliverynotification;
+
+			$c->stash->{'shipperaddress'} = $shipper_address;
 			}
+
+		# Destination Address
+		if (my $DAAddress = $Shipment->destination_address)
+			{
+			my $consignee_address = $DAAddress->addressname;
+			$consignee_address   .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
+			$consignee_address   .= " " . $DAAddress->address2    if $DAAddress->address2;
+			$consignee_address   .= "<br>" . $DAAddress->city     if $DAAddress->city;
+			$consignee_address   .= ", " . $DAAddress->state      if $DAAddress->state;
+			$consignee_address   .= "  " . $DAAddress->zip        if $DAAddress->zip;
+			$consignee_address   .= "<br>" . $DAAddress->country  if $DAAddress->country;
+
+			$consignee_address   .= "<br>" . $Shipment->contactphone         if $Shipment->contactphone;
+			$consignee_address   .= "<br>" . $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+
+			$c->stash->{'consigneeaddress'} = $consignee_address;
+			}
+
+		# # Billing Address
+		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
+
+		my $webaccount;
+		if ( $CSValueRef->{'webaccount'} )
+			{
+			$webaccount = $CSValueRef->{'webaccount'};
+			}
+
+		my $BillingAddressInfo = $self->GetBillingAddressInfo(
+				$Shipment->customerserviceid,
+				$webaccount,
+				$Customer->customername,
+				$Customer->customerid,
+				$Shipment->billingaccount,
+				$Shipment->freightcharges,
+				$Shipment->addressiddestin,
+				undef,
+				$CSValueRef->{'baaddressid'}
+				);
+
+		if ( $BillingAddressInfo )
+			{
+			my $billingaddress = $BillingAddressInfo->{'addressname'};
+			$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
+			$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
+			$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
+			$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
+			$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
+			$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
+
+			$c->stash->{'billingaddress'} = $billingaddress;
+			$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
+			}
+
+		##########################
+		## Set line item values ##
+		##########################
+		my @packages = $Shipment->packages;
+
+		my ($gross_weight,$quantity,$product_statusid) = (0,0,0);
+
+		my $packinglist_loop = [];
+		foreach my $Package (@packages)
+			{
+			# Use shipment package data for # of packages, weights, and the like
+			my $weight = ($Package->dimweight > $Package->weight ? $Package->dimweight : $Package->weight);
+
+			$gross_weight += $weight;
+			$quantity     += $Package->quantity;
+
+			(my $shipment_section_ref,$product_statusid) = $self->GetLineItems($Package);
+
+			foreach my $key (sort { $a <=> $b } keys %$shipment_section_ref)
+				{
+				push(@$packinglist_loop, $shipment_section_ref->{$key});
+				}
+			}
+
+		my $items = (14 - @$packinglist_loop);
+		if ($items > 0)
+			{
+			push(@$packinglist_loop, {}) while $items--;
+			}
+
+		$c->stash->{packinglist_loop} = $packinglist_loop;
+		$c->stash->{grossweight}      = $gross_weight;
+		$c->stash->{quantity}         = $quantity;
+
+		if ( $product_statusid == 2 )
+			{
+			$c->stash->{datefullfilled} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+			}
+
+		## print commercial invoice only for international shipment
+		$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
+
+		my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+		my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
+
+		if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
+			{
+			$params->{'carrier'} = &CARRIER_EFREIGHT;
+			}
+		elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
+			{
+			$params->{'carrier'} = &CARRIER_GENERIC;
+			}
+
+		## print BOL only for Generic and eFreight
+		if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
+			{
+			$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
+			}
+
+		my $list_type = $self->contact->get_contact_data_value('packinglist');
+		$list_type = 'generic' unless $list_type =~ /sprint/i;
+
+		if ($list_type =~ /sprint/i)
+			{
+			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+			$c->stash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+			$self->setup_label_to_print ;
+			}
+
+		my $template = 'order-packing-list-' . $list_type . '.tt';
+
+		## Render Packing List HTML
+		$PackListHTML .= $c->forward($c->view('Ajax'), "render", [ "templates/customer/" . $template ]);
+
+		## Save packinglist invoice to File
+		my $PackListFileName = IntelliShip::MyConfig->packing_list_directory . '/' . $Shipment->shipmentid;
+
+		$self->SaveStringToFile($PackListFileName, $PackListHTML);
+
+		$c->stash(template => "templates/customer/" . $template);
 		}
-
-	my $items = (14 - @$packinglist_loop);
-	if ($items > 0)
-		{
-		push(@$packinglist_loop, {}) while $items--;
-		}
-
-	$c->stash->{packinglist_loop} = $packinglist_loop;
-	$c->stash->{grossweight}      = $gross_weight;
-	$c->stash->{quantity}         = $quantity;
-
-	if ( $product_statusid == 2 )
-		{
-		$c->stash->{datefullfilled} = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
-		}
-
-	## Render Packing List HTML
-	my $PackListHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-packing-list.tt" ]);
-
-	## Save packinglist invoice to File
-	my $PackListFileName = IntelliShip::MyConfig->packing_list_directory . '/' . $Shipment->shipmentid;
-
-	$self->SaveStringToFile($PackListFileName, $PackListHTML);
-
-	## print commercial invoice only for international shipment
-	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
-
-	my $CustomerService = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
-	my $Service = $self->API->get_hashref('SERVICE',$CustomerService->{'serviceid'});
-
-	if ($Service->{'webhandlername'} =~ /handler_web_efreight/)
-		{
-		$params->{'carrier'} = &CARRIER_EFREIGHT;
-		}
-	elsif ($Service->{'webhandlername'} =~ /handler_local_generic/ && $Shipment->carrier ne &CARRIER_USPS)
-		{
-		$params->{'carrier'} = &CARRIER_GENERIC;
-		}
-
-	## print BOL only for Generic and eFreight
-	if ($params->{'carrier'} eq &CARRIER_GENERIC || $params->{'carrier'} eq &CARRIER_EFREIGHT)
-		{
-		$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
-		}
-
-	$c->stash(template => "templates/customer/order-packing-list.tt");
 
 	return $PackListHTML;
 	}
@@ -3489,245 +3655,252 @@ sub generate_bill_of_lading
 
 	$c->log->debug("___ generate_bill_of_lading ___");
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
-	my $CO       = $Shipment->CO;
-	my $Customer = $CO->customer;
+	my $BOL_HTML = '';
+	my @shipmentids = split('_',$params->{'shipmentid'});
 
-	## Set global packing list values
-	my $dataHash = $Shipment->{_column_data};
-	$dataHash->{'contactname'}    = $CO->contactname;
-	$dataHash->{'ordernumber'}    = $CO->ordernumber;
-	$dataHash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
-	$dataHash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
-	$dataHash->{'totalpages'}     = 1;
-	$dataHash->{'currentpage'}    = 1;
-
-	## Destination Address
-	if (my $DestinationAddress = $Shipment->destination_address)
+	foreach my $shipmentid (@shipmentids)
 		{
-		$dataHash->{'addressname'}    = $DestinationAddress->addressname;
-		$dataHash->{'address1'}       = $DestinationAddress->address1;
-		$dataHash->{'address2'}       = $DestinationAddress->address2;
-		$dataHash->{'addresscity'}    = $DestinationAddress->city;
-		$dataHash->{'addressstate'}   = $DestinationAddress->state;
-		$dataHash->{'addresszip'}     = $DestinationAddress->zip;
-		$dataHash->{'addresscountry'} = $DestinationAddress->country;
-		}
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
+		my $CO       = $Shipment->CO;
+		$CO          = $self->get_order unless $CO;
+		my $Customer = $CO->customer;
 
-	## Origin Address
-	if (my $OriginatingAddress = $Shipment->origin_address)
-		{
-		$dataHash->{'branchaddress1'}       = $OriginatingAddress->address1;
-		$dataHash->{'branchaddress2'}       = $OriginatingAddress->address2;
-		$dataHash->{'branchaddresscity'}    = $OriginatingAddress->city;
-		$dataHash->{'branchaddressstate'}   = $OriginatingAddress->state;
-		$dataHash->{'branchaddresszip'}     = $OriginatingAddress->zip;
-		$dataHash->{'branchaddresscountry'} = $OriginatingAddress->country;
-		}
+		## Set global packing list values
+		my $dataHash = $Shipment->{_column_data};
+		$dataHash->{'contactname'}    = $CO->contactname;
+		$dataHash->{'ordernumber'}    = $CO->ordernumber;
+		$dataHash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+		$dataHash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
+		$dataHash->{'totalpages'}     = 1;
+		$dataHash->{'currentpage'}    = 1;
 
-	my $bol_type = $self->contact->get_contact_data_value('boltype');
-
-	## Billing Address
-	if ($bol_type =~ /bolvisionship/)
-		{
-		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->customerid);
-		my $BillingAddressInfo = $self->GetBillingAddressInfo(
-				$Shipment->customerserviceid,
-				undef,
-				undef,
-				$Customer->customerid,
-				$Shipment->billingaccount,
-				$Shipment->freightcharges,
-				$Shipment->addressiddestin,
-				undef,
-				$CSValueRef->{'baaddressid'}
-				);
-
-		if ($BillingAddressInfo)
+		## Destination Address
+		if (my $DestinationAddress = $Shipment->destination_address)
 			{
-			$dataHash->{'billingname'}     = uc $BillingAddressInfo->{'addressname'};
-			$dataHash->{'billingaddress1'} = uc $BillingAddressInfo->{'address1'};
-			$dataHash->{'billingaddress2'} = uc $BillingAddressInfo->{'address2'};
-			$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
-			$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
-			$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
+			$dataHash->{'addressname'}    = $DestinationAddress->addressname;
+			$dataHash->{'address1'}       = $DestinationAddress->address1;
+			$dataHash->{'address2'}       = $DestinationAddress->address2;
+			$dataHash->{'addresscity'}    = $DestinationAddress->city;
+			$dataHash->{'addressstate'}   = $DestinationAddress->state;
+			$dataHash->{'addresszip'}     = $DestinationAddress->zip;
+			$dataHash->{'addresscountry'} = $DestinationAddress->country;
 			}
 
-		my $CSRef = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
-		my $SRef  = $self->API->get_hashref('SERVICE',$CSRef->{'serviceid'});
-		my $CARef = $self->API->get_hashref('CARRIER',$SRef->{'carrierid'});
-
-		$dataHash->{'scac'} = $CARef->{'scac'};
-		}
-	elsif ($Shipment->freightcharges == 1 or $Shipment->freightcharges == 2)
-		{
-		my $BillingAddressInfo = $self->GetBillingAddressInfo(
-				$Shipment->customerserviceid,
-				undef,
-				undef,
-				$Customer->customerid,
-				$Shipment->billingaccount,
-				$Shipment->freightcharges,
-				$Shipment->addressiddestin
-				);
-
-		if ($BillingAddressInfo)
+		## Origin Address
+		if (my $OriginatingAddress = $Shipment->origin_address)
 			{
-			$dataHash->{'billingname'}     = $BillingAddressInfo->{'addressname'};
-			$dataHash->{'billingaddress1'} = $BillingAddressInfo->{'address1'};
-			$dataHash->{'billingaddress2'} = $BillingAddressInfo->{'address2'};
-			$dataHash->{'billingcity'}     = $BillingAddressInfo->{'city'};
-			$dataHash->{'billingstate'}    = $BillingAddressInfo->{'state'};
-			$dataHash->{'billingzip'}      = $BillingAddressInfo->{'zip'};
+			$dataHash->{'branchaddress1'}       = $OriginatingAddress->address1;
+			$dataHash->{'branchaddress2'}       = $OriginatingAddress->address2;
+			$dataHash->{'branchaddresscity'}    = $OriginatingAddress->city;
+			$dataHash->{'branchaddressstate'}   = $OriginatingAddress->state;
+			$dataHash->{'branchaddresszip'}     = $OriginatingAddress->zip;
+			$dataHash->{'branchaddresscountry'} = $OriginatingAddress->country;
 			}
 
-		if ($Shipment->billingaccount)
-			{
-			$dataHash->{'addressname'} .= " (" . $Shipment->billingaccount . ")";
-			}
-		}
-	elsif ($CO->usealtsop and $CO->usealtsop == 1)
-		{
-		my $BillingAddressInfo = $self->GetBillingAddressInfo(
-				$Shipment->customerserviceid,
-				undef,
-				undef,
-				undef,
-				undef,
-				undef,
-				undef,
-				$Shipment->custnum
-				);
+		my $bol_type = $self->contact->get_contact_data_value('boltype');
 
-		if ( $BillingAddressInfo )
+		## Billing Address
+		if ($bol_type =~ /bolvisionship/)
 			{
-			$dataHash->{'billingname'} = $BillingAddressInfo->{'addressname'};
+			my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->customerid);
+			my $BillingAddressInfo = $self->GetBillingAddressInfo(
+					$Shipment->customerserviceid,
+					undef,
+					undef,
+					$Customer->customerid,
+					$Shipment->billingaccount,
+					$Shipment->freightcharges,
+					$Shipment->addressiddestin,
+					undef,
+					$CSValueRef->{'baaddressid'}
+					);
 
-			if ($params->{'sibling'})
+			if ($BillingAddressInfo)
 				{
-				$dataHash->{'billingaddress1'} = 'c/o Engage Technology';
-				$dataHash->{'billingaddress2'} = '3400 Players Club Parkway, Suite 150';
-				$dataHash->{'billingcity'}     = 'Memphis';
-				$dataHash->{'billingstate'}    = 'TN';
-				$dataHash->{'billingzip'}      = '38125';
+				$dataHash->{'billingname'}     = uc $BillingAddressInfo->{'addressname'};
+				$dataHash->{'billingaddress1'} = uc $BillingAddressInfo->{'address1'};
+				$dataHash->{'billingaddress2'} = uc $BillingAddressInfo->{'address2'};
+				$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
+				$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
+				$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
 				}
-			else
+
+			my $CSRef = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
+			my $SRef  = $self->API->get_hashref('SERVICE',$CSRef->{'serviceid'});
+			my $CARef = $self->API->get_hashref('CARRIER',$SRef->{'carrierid'});
+
+			$dataHash->{'scac'} = $CARef->{'scac'};
+			}
+		elsif ($Shipment->freightcharges == 1 or $Shipment->freightcharges == 2)
+			{
+			my $BillingAddressInfo = $self->GetBillingAddressInfo(
+					$Shipment->customerserviceid,
+					undef,
+					undef,
+					$Customer->customerid,
+					$Shipment->billingaccount,
+					$Shipment->freightcharges,
+					$Shipment->addressiddestin
+					);
+
+			if ($BillingAddressInfo)
 				{
+				$dataHash->{'billingname'}     = $BillingAddressInfo->{'addressname'};
 				$dataHash->{'billingaddress1'} = $BillingAddressInfo->{'address1'};
 				$dataHash->{'billingaddress2'} = $BillingAddressInfo->{'address2'};
 				$dataHash->{'billingcity'}     = $BillingAddressInfo->{'city'};
 				$dataHash->{'billingstate'}    = $BillingAddressInfo->{'state'};
 				$dataHash->{'billingzip'}      = $BillingAddressInfo->{'zip'};
 				}
+
+			if ($Shipment->billingaccount)
+				{
+				$dataHash->{'addressname'} .= " (" . $Shipment->billingaccount . ")";
+				}
 			}
-		}
- 	else
-		{
-		my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
-
-		my $webaccount = $CSValueRef->{'webaccount'};
-
-		$dataHash->{'billingname'}     = IntelliShip::Utils->get_bill_to_name($webaccount, $self->customer->customername);
-		$dataHash->{'billingaddress1'} = 'c/o Engage Technology';
-		$dataHash->{'billingaddress2'} = '3400 Players Club Parkway, Suite 150';
-		$dataHash->{'billingcity'}     = 'Memphis';
-		$dataHash->{'billingstate'}    = 'TN';
-		$dataHash->{'billingzip'}      = '38125';
-		}
-
-	################################################
-	## Sort out kooky cs specific 'Bill To' names ##
-	################################################
-	if (my $hack_bill_to_name = IntelliShip::Utils->get_BOL_bill_to_name($Shipment->customerserviceid))
-		{
-		$dataHash->{'billtoname'} = $hack_bill_to_name;
-		}
-
-	## Global Order Info
-	$dataHash->{'branchphone'}   = $CO->dropphone ? $CO->dropphone : $Shipment->oacontactphone;
-	$dataHash->{'branchcontact'} = $CO->dropcontact ? $CO->dropcontact : $Shipment->oacontactname;
-	$dataHash->{'extcustnum'}    = $CO->extcustnum if $CO->extcustnum;
-
-	#$dataHash->{'dateshipped'} =~ s/(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}:\d{2}.*/$2\/$3\/$1/;
-	$dataHash->{'dateshipped'}   = IntelliShip::DateUtils->american_date($dataHash->{'dateshipped'});
-
-	####################################################
-	## Build up data for use in BOL assessorial display
-	####################################################
-	my ($selectedSpecialServices, $SpecialServiceList) = ({},[]);
-
-	my @assessorials = $Shipment->assessorials;
-	$selectedSpecialServices->{$_->assname} = 1 foreach @assessorials;
-
-	my $AssRef = $self->API->get_sop_asslisting($Customer->get_sop_id);
-	my @ass_names = split(/\t/,$AssRef->{'assessorial_names'});
-	my @ass_displays = split(/\t/,$AssRef->{'assessorial_display'});
-
-	for (my $row = 0; $row < scalar @ass_names; $row++)
-		{
-		my $ass_name = $ass_names[$row];
-		my $ass_data = { name => $ass_name, displayname => $ass_displays[$row] };
-		$ass_data->{checked} = 1 if $selectedSpecialServices->{$ass_name};
-
-		push @$SpecialServiceList, $ass_data;
-		}
-
-	$dataHash->{assessorial_loop} = $SpecialServiceList;
-
-	$dataHash->{bol_packagelist_loop} = $self->GetBOLorPOPPD($Shipment, $dataHash);
-
-	unless ($Shipment->tracking1)
-		{
-		$dataHash->{'tracking1'} = 'PLACE PRO LABEL HERE';
-		}
-	else
-		{
-		my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
-		$dataHash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
-		}
-
-	my @LTLAccessorials = qw( codfee collectfreightcharge podservice singleshipment );
-
-	foreach my $LTLAccessorial (@LTLAccessorials)
-		{
-		if ($dataHash->{$LTLAccessorial} && $dataHash->{$LTLAccessorial} =~ /,/)
+		elsif ($CO->usealtsop and $CO->usealtsop == 1)
 			{
-			undef $dataHash->{$LTLAccessorial};
+			my $BillingAddressInfo = $self->GetBillingAddressInfo(
+					$Shipment->customerserviceid,
+					undef,
+					undef,
+					undef,
+					undef,
+					undef,
+					undef,
+					$Shipment->custnum
+					);
+
+			if ( $BillingAddressInfo )
+				{
+				$dataHash->{'billingname'} = $BillingAddressInfo->{'addressname'};
+
+				if ($params->{'sibling'})
+					{
+					$dataHash->{'billingaddress1'} = 'c/o Engage Technology';
+					$dataHash->{'billingaddress2'} = '3400 Players Club Parkway, Suite 150';
+					$dataHash->{'billingcity'}     = 'Memphis';
+					$dataHash->{'billingstate'}    = 'TN';
+					$dataHash->{'billingzip'}      = '38125';
+					}
+				else
+					{
+					$dataHash->{'billingaddress1'} = $BillingAddressInfo->{'address1'};
+					$dataHash->{'billingaddress2'} = $BillingAddressInfo->{'address2'};
+					$dataHash->{'billingcity'}     = $BillingAddressInfo->{'city'};
+					$dataHash->{'billingstate'}    = $BillingAddressInfo->{'state'};
+					$dataHash->{'billingzip'}      = $BillingAddressInfo->{'zip'};
+					}
+				}
 			}
+		else
+			{
+			my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid, $CO->customerid);
+
+			my $webaccount = $CSValueRef->{'webaccount'};
+
+			$dataHash->{'billingname'}     = IntelliShip::Utils->get_bill_to_name($webaccount, $self->customer->customername);
+			$dataHash->{'billingaddress1'} = 'c/o Engage Technology';
+			$dataHash->{'billingaddress2'} = '3400 Players Club Parkway, Suite 150';
+			$dataHash->{'billingcity'}     = 'Memphis';
+			$dataHash->{'billingstate'}    = 'TN';
+			$dataHash->{'billingzip'}      = '38125';
+			}
+
+		################################################
+		## Sort out kooky cs specific 'Bill To' names ##
+		################################################
+		if (my $hack_bill_to_name = IntelliShip::Utils->get_BOL_bill_to_name($Shipment->customerserviceid))
+			{
+			$dataHash->{'billtoname'} = $hack_bill_to_name;
+			}
+
+		## Global Order Info
+		$dataHash->{'branchphone'}   = $CO->dropphone ? $CO->dropphone : $Shipment->oacontactphone;
+		$dataHash->{'branchcontact'} = $CO->dropcontact ? $CO->dropcontact : $Shipment->oacontactname;
+		$dataHash->{'extcustnum'}    = $CO->extcustnum if $CO->extcustnum;
+
+		#$dataHash->{'dateshipped'} =~ s/(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}:\d{2}.*/$2\/$3\/$1/;
+		$dataHash->{'dateshipped'}   = IntelliShip::DateUtils->american_date($dataHash->{'dateshipped'});
+
+		####################################################
+		## Build up data for use in BOL assessorial display
+		####################################################
+		my ($selectedSpecialServices, $SpecialServiceList) = ({},[]);
+
+		my @assessorials = $Shipment->assessorials;
+		$selectedSpecialServices->{$_->assname} = 1 foreach @assessorials;
+
+		my $AssRef = $self->API->get_sop_asslisting($Customer->get_sop_id);
+		my @ass_names = split(/\t/,$AssRef->{'assessorial_names'});
+		my @ass_displays = split(/\t/,$AssRef->{'assessorial_display'});
+
+		for (my $row = 0; $row < scalar @ass_names; $row++)
+			{
+			my $ass_name = $ass_names[$row];
+			my $ass_data = { name => $ass_name, displayname => $ass_displays[$row] };
+			$ass_data->{checked} = 1 if $selectedSpecialServices->{$ass_name};
+
+			push @$SpecialServiceList, $ass_data;
+			}
+
+		$dataHash->{assessorial_loop} = $SpecialServiceList;
+
+		$dataHash->{bol_packagelist_loop} = $self->GetBOLorPOPPD($Shipment, $dataHash);
+
+		unless ($Shipment->tracking1)
+			{
+			$dataHash->{'tracking1'} = 'PLACE PRO LABEL HERE';
+			}
+		else
+			{
+			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+			$dataHash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+			}
+
+		my @LTLAccessorials = qw( codfee collectfreightcharge podservice singleshipment );
+
+		foreach my $LTLAccessorial (@LTLAccessorials)
+			{
+			if ($dataHash->{$LTLAccessorial} && $dataHash->{$LTLAccessorial} =~ /,/)
+				{
+				undef $dataHash->{$LTLAccessorial};
+				}
+			}
+
+		## Customer specific bol settings
+		my $BASE_DOMAIN = IntelliShip::MyConfig->getBaseDomain;
+		my $customer_bol_logo   = '';#$self->customer->bol_logo;
+		my $customer_bol_width  = '';#$self->customer->bol_logo_width;
+		my $customer_bol_height = '';#$self->customer->bol_logo_height;
+
+		$dataHash->{'bol_image'}       = '/static/images/bol.jpg';
+		$dataHash->{'bol_logo'}        = $customer_bol_logo   ? $customer_bol_logo : 'intelliship_logo.png';
+		$dataHash->{'bol_logo_width'}  = $customer_bol_width  ? $customer_bol_width : '190';
+		$dataHash->{'bol_logo_height'} = $customer_bol_height ? $customer_bol_height : '31';
+		$dataHash->{'bol_url_phone'}   = $customer_bol_logo   ? '' : '<br><font color="#000000" size="1" face="Arial, Helvetica, sans-serif"><b>&nbsp;&nbsp;&nbsp;&nbsp;WWW.' . uc($BASE_DOMAIN) . '.COM&nbsp;&nbsp;901.620.6788</b></font></td>';
+
+		$c->stash($dataHash);
+		$self->get_branding_id;
+
+		## Render BOL HTML
+		$BOL_HTML .= $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-bol.tt" ]);
+
+		## Save BOL to File
+		my $BOLFileName = IntelliShip::MyConfig->BOL_file_directory . '/' . $Shipment->shipmentid;
+
+		$self->SaveStringToFile($BOLFileName, $BOL_HTML);
+
+		if ($params->{'fromscreen'} && $params->{'fromscreen'} eq 'web_api')
+			{
+			$dataHash->{'bolstring'} = $BOL_HTML;
+			}
+
+		## print commercial invoice only for international shipment
+		$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
+
+		$c->stash(template => "templates/customer/order-" . $bol_type . ".tt");
 		}
-
-	## Customer specific bol settings
-	my $BASE_DOMAIN = IntelliShip::MyConfig->getBaseDomain;
-	my $customer_bol_logo   = '';#$self->customer->bol_logo;
-	my $customer_bol_width  = '';#$self->customer->bol_logo_width;
-	my $customer_bol_height = '';#$self->customer->bol_logo_height;
-
-	$dataHash->{'bol_image'}       = '/static/images/bol.jpg';
-	$dataHash->{'bol_logo'}        = $customer_bol_logo   ? $customer_bol_logo : 'intelliship_logo.png';
-	$dataHash->{'bol_logo_width'}  = $customer_bol_width  ? $customer_bol_width : '190';
-	$dataHash->{'bol_logo_height'} = $customer_bol_height ? $customer_bol_height : '31';
-	$dataHash->{'bol_url_phone'}   = $customer_bol_logo   ? '' : '<br><font color="#000000" size="1" face="Arial, Helvetica, sans-serif"><b>&nbsp;&nbsp;&nbsp;&nbsp;WWW.' . uc($BASE_DOMAIN) . '.COM&nbsp;&nbsp;901.620.6788</b></font></td>';
-
-	$c->stash($dataHash);
-	$self->get_branding_id;
-
-	## Render BOL HTML
-	my $BOL_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-bol.tt" ]);
-
-	## Save BOL to File
-	my $BOLFileName = IntelliShip::MyConfig->BOL_file_directory . '/' . $Shipment->shipmentid;
-
-	$self->SaveStringToFile($BOLFileName, $BOL_HTML);
-
-	if ($params->{'fromscreen'} && $params->{'fromscreen'} eq 'web_api')
-		{
-		$dataHash->{'bolstring'} = $BOL_HTML;
-		}
-
-	## print commercial invoice only for international shipment
-	$c->stash->{printcominv} = $self->contact->get_contact_data_value('defaultcomminv') if $Shipment->is_international;
-
-	$c->stash(template => "templates/customer/order-" . $bol_type . ".tt");
 
 	return $BOL_HTML;
 	}
@@ -3817,7 +3990,8 @@ sub GetBOLorPOPPD
 				{
 				# Unit display
 				my $productData = $Product->{_column_data};
-				$productData->{'unittype'} = $Product->unittype->unittypename if $Package->unittypeid;
+				my $UnitType = $Product->unittype;
+				$productData->{'unittype'} = $UnitType->unittypename if $UnitType;
 				if ($Product->dimlength and $Product->dimwidth and $Product->dimheight)
 					{
 					$productData->{'dims'} = $Product->dimlength . 'x' . $Product->dimwidth . 'x' . $Product->dimheight;
@@ -4027,6 +4201,47 @@ sub send_pickup_request
 			});
 
 	$c->log->debug("....Response: " . $Response);
+	}
+
+sub create_return_shipment
+	{
+	my $self = shift;
+	my $CO = shift;
+
+	my $c = $self->context;
+	my $Contact = $self->contact;
+
+	my $RetCO = $c->model('MyDBI::CO')->new($CO->{_column_data});
+	$RetCO->coid($self->get_token_id);
+	$RetCO->ordernumber($RetCO->ordernumber . '-RTN');
+
+	$RetCO->reset;
+
+	$RetCO->dateneeded(undef);
+	$RetCO->isinbound(1);
+	$RetCO->insert;
+
+	$c->log->debug(".... return shipment created, coid: " . $RetCO->coid);
+
+	my @packages = $CO->packages;
+	foreach my $Package (@packages)
+		{
+		my $RetPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
+		$RetPackage->packprodataid($self->get_token_id);
+		$RetPackage->ownerid($RetCO->coid);
+		$RetPackage->insert;
+
+		my @products = $Package->products;
+		foreach my $Product (@products)
+			{
+			my $RetProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
+			$RetProduct->packprodataid($self->get_token_id);
+			$RetProduct->ownerid($RetPackage->packprodataid);
+			$RetProduct->insert;
+			}
+		}
+
+	return $RetCO;
 	}
 
 __PACKAGE__->meta->make_immutable;

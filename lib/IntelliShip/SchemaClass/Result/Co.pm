@@ -515,6 +515,12 @@ __PACKAGE__->table("co");
   is_nullable: 1
   size: 100
 
+=head2 return
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 25
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -688,6 +694,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 100 },
   "oacontactphone",
   { data_type => "varchar", is_nullable => 1, size => 100 },
+  "return",
+  { data_type => "varchar", is_nullable => 1, size => 25 },
 );
 
 =head1 PRIMARY KEY
@@ -887,6 +895,16 @@ sub co_products
 	return $self->packprodata($WHERE, { order_by => 'datecreated' });
 	}
 
+sub product_count
+	{
+	my $self = shift;
+	my $count=0;
+	my @packages = $self->packages;
+	$count += $_->products->count foreach @packages;
+	$count += $self->co_products;
+	return $count;
+	}
+
 sub package_details
 	{
 	my $self = shift;
@@ -917,15 +935,6 @@ sub package_details
 	return @packageArr;
 	}
 
-sub total_dimweight
-	{
-	my $self = shift;
-	my @packages = $self->packages;
-	my $total_dimweight = 0;
-	$total_dimweight += $_->dimweight foreach @packages;
-	return $total_dimweight;
-	}
-
 sub total_weight
 	{
 	my $self = shift;
@@ -937,6 +946,15 @@ sub total_weight
 		$total_weight += ($_->quantity > 1 ? $_->quantity * $weight : $weight);
 		}
 	return $total_weight;
+	}
+
+sub total_dimweight
+	{
+	my $self = shift;
+	my @packages = $self->packages;
+	my $total_dimweight = 0;
+	$total_dimweight += $_->dimweight foreach @packages;
+	return $total_dimweight;
 	}
 
 sub total_quantity
@@ -991,6 +1009,13 @@ sub is_fullfilled
 	return 1;
 	}
 
+sub archive_order
+	{
+	my $self = shift;
+	$self->statusid('200'); #Void
+	$self->update;
+	}
+
 sub delete_all_package_details
 	{
 	my $self = shift;
@@ -1017,11 +1042,11 @@ sub has_carrier_service_details
 sub reset
 	{
 	my $self = shift;
-	#$self->dateneeded('');
-	$self->extcarrier('');
-	$self->extservice('');
-	$self->density('0');
-	$self->class('');
+	#$self->dateneeded(undef);
+	$self->extcarrier(undef);
+	$self->extservice(undef);
+	$self->density(undef);
+	$self->class(undef);
 	}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

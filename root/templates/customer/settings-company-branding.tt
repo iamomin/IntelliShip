@@ -11,16 +11,16 @@
 <div id="branding" class="ui-helper-clearfix">
 	<ul>
 		<li><a href="#branding-logo">Branding Logo's</a></li>
-		<li><a href="#color-picker">Set Colors</a></li>
+		<li><a href="#color-picker" id="color-picker-tab">Set Colors</a></li>
 		<li><a href="#branding-css-content">Edit Branding CSS</a></li>
-		<li><a href="#branding-demo" id="branding-demo-link">View Demo</a></li>
 	</ul>
 
 	<div id="branding-logo">
+		<div class="notice" style="width:100%;">Use image type .JPG, .JPEG, .PNG or .GIF only</div>
 		<table class="center-app">
 			<tr>
 				<td>
-					<div id="show-light-logo"><img id="light-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-light-logo.png' height='50px' width='450px'/></div>
+					<div id="show-light-logo"><img id="light-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-light-logo.png' height='50px' width='435px'/></div>
 				</td>
 				<td>
 					<label class="float-left">Logo (Light Background): </label>
@@ -34,7 +34,7 @@
 			</tr>
 			<tr>
 				<td>
-					<div id="show-dark-logo"><img id="dark-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-dark-logo.png' height='50px' width='450px'/></div>
+					<div id="show-dark-logo"><img id="dark-logo" src='/static/branding/[%branding_id%]/images/header/[%username%]-dark-logo.png' height='50px' width='435px'/></div>
 				</td>
 				<td>
 					<label class="float-left">Logo (Dark Background): </label>
@@ -57,8 +57,8 @@
 			[% FOREACH item IN stylesetting_loop %]
 			<tr>
 				<td><label for="[% item.bgcolor %]" class="float-left">[% item.name %]: </label></td>
-				<td><input type="text" class="color-picker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"></input></td>
-				<td><input type="text" class="color-picker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"></input></td>
+				<td><input type="text" class="color-picker" id="[% item.bgcolor %]" name="[% item.bgcolor %]" value="[% item.values.bgcolor %]"  onChange="updateBranding();"></input></td>
+				<td><input type="text" class="color-picker" id="[% item.font %]" name="[% item.font %]" value="[% item.values.color %]"  onChange="updateBranding();"></input></td>
 				<td>
 				[% IF item.size %]
 				<label>
@@ -73,6 +73,9 @@
 			</tr>
 			[% END %]
 		</table>
+
+		<br/>
+		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="/customer/order/quickship">Please wait...</iframe>
 	</div>
 	<div id="branding-css-content">
 		<table class="center-app">
@@ -83,9 +86,6 @@
 				<td><textarea rows="25" id="custom-style-sheet" name="custom-style-sheet" cols="85" style="resize: none">[% BRANDING_CSS %]</textarea></td>
 			</tr>
 		</table>
-	</div>
-	<div id="branding-demo">
-		<iframe id="branding-demo-iframe" frameBorder="0" width="780" height="450" src="">Please wait...</iframe>
 	</div>
 </div>
 <br/>
@@ -109,12 +109,15 @@
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
 			'uploader' : '/customer/settings/company/upload',
 			'fileDesc': 'Image Files',
-			'fileExt': '*.jpg;*.jpeg;*.gif;*.png',
+			'fileTypeExts' : '*.gif; *.jpg; *.png',
 			'multi': false,
 			'auto': true,
 			'onUploadSuccess': function(file, data, response){
 				$('#light-logo').attr('src', $('#light-logo').attr('src') + '?' + Math.random());
 				},
+			'onError': function (event, ID, fileObj, errorObj) {
+				alert(errorObj.type + ' Error: ' + errorObj.info);
+				}
 			});
 
 		$('#logo-dark-background').uploadify({
@@ -125,9 +128,14 @@
 				},
 			'swf'      : '/static/jquery/uploadify/uploadify.swf',
 			'uploader' : '/customer/settings/company/upload',
+			'fileTypeExts' : '*.gif; *.jpg; *.png',
 			'onUploadSuccess': function(file, data, response){
 				$('#dark-logo').attr('src', $('#dark-logo').attr('src') + '?' + Math.random());
 				},
+			'onError': function (event, ID, fileObj, errorObj) {
+				alert(errorObj.type + ' Error: ' + errorObj.info);
+				}
+				
 			});
 
 		/* Set Initial colors */
@@ -147,12 +155,15 @@
 
 		});
 
-	$("#branding-demo-link").click(function() {
-		$('#branding-demo-iframe').attr('src','');
-		updateCompanyBranding(function() {
-			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
-			});
+		$("#color-picker-tab").click(function() {
+			updateBranding();
 		});
+
+		function updateBranding() {
+			var iframe = document.getElementById('branding-demo-iframe');
+			iframe.src = iframe.src;
+			updateCompanyBranding();
+			}
 
 	/**** DISABLE IFRAME CONTENTS ****/
 	$("#branding-demo-iframe").load(function() {
@@ -162,6 +173,10 @@
 			});
 
 		iFrame.contents().find('input').each(function() {
+			$(this).prop('disabled', 'disabled');
+			});
+
+		iFrame.contents().find('button').each(function() {
 			$(this).prop('disabled', 'disabled');
 			});
 		});

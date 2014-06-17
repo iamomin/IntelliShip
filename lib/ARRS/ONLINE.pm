@@ -17,12 +17,13 @@
 	use ARRS::CSOVERRIDE;
 	use ARRS::CUSTOMERSERVICE;
 	use ARRS::ZIPMILEAGE;
+	
 
 	use Array::Compare;
 	use Date::Calc qw(Delta_Days);
 	use Date::Manip qw(ParseDate UnixDate);
 	use IntelliShip::MyConfig;
-        use Data::Dumper;
+    use Data::Dumper;
 
 	my $Benchmark = 0;
 	my $config = IntelliShip::MyConfig->get_ARRS_configuration;
@@ -42,6 +43,7 @@
 
 	sub GetServicesDropdown
 	{
+		warn "GetServicesDropdown";
 		my $self = shift;
 		my ($CgiRef) = @_;
 #warn "clientid: $CgiRef->{'clientid'}";
@@ -163,7 +165,8 @@
 				next;
 			}
 
-			warn "ONLINE: $CSName " if $Debug;
+			warn "-" x 50;
+			warn "\nONLINE, CSID: $CSID, CustomerService Name: $CSName ";
 			#warn "ONLINE: $CSName " if $CSID eq 'TOTALTRANSPO1';
 
 			my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
@@ -229,7 +232,7 @@
 				$DefaultCSID = $CSID;
 			}
 
-warn "STILL HERE0" if $Debug;
+			warn "STILL HERE - GetShipmentCosts" if $Debug;
 			my ($Cost,$ZoneNumber,$PackageCosts,$CostWeight,$TransitDays);
 			if
 			(
@@ -242,7 +245,7 @@ warn "STILL HERE0" if $Debug;
 			{
 				my $S3 = &Benchmark() if $Benchmark;
 				($Cost,$ZoneNumber,$PackageCosts,$CostWeight,$TransitDays) = $CS->GetShipmentCosts($CgiRef);
-warn "STILL HERE Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
+				warn "Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 
 				$CostTotal += &Benchmark($S3,"Calculate Cost - $CSID, $CSName") if $Benchmark;
 
@@ -520,8 +523,8 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 #warn $CSNames;
 #		}
 
-		print STDERR "Total ETA Calculation: $ETATotal\n" if $Benchmark;
-		print STDERR "Total Cost Calculation: $CostTotal\n" if $Benchmark;
+		warn "Total ETA Calculation: $ETATotal\n" if $Benchmark;
+		warn "Total Cost Calculation: $CostTotal\n" if $Benchmark;
 
 		if ( ! $DefaultExists && ! $AutoDefaultExists ) { undef($DefaultCSID); }
 		$sth->finish();
@@ -548,6 +551,7 @@ warn "CSMeetsDueDate=$CSMeetsDueDate" if $Debug;
 		my $file = "$config->{BASE_PATH}/bin/run/$CgiRef->{'efreightid'}".".efreight";
 		#unlink("$config->{BASE_PATH}/bin/run/$CgiRef->{'efreightid'}.efreight");
 
+#WarnHashRefValues($ReturnRef);
 		return $ReturnRef;
 	}
 
@@ -1069,14 +1073,77 @@ warn "undef etadate";
             return $ReturnRef;
         }
 	
+	sub SaveTariffRows{
+		my $self = shift;
+		my ($rates) = @_;
+		#warn "########## Online::SaveTariffRows " . Dumper($rates);
+		warn "########## Online::SaveTariffRows ";
+		
+		my @arr = @$rates;
+		my $row_count = 0;
+		foreach my $rate (@arr)
+		{
+			warn "########## 1";
+			my $unitsstart = $rate->{'wtmin'};
+			my $unitsstop = $rate->{'wtmax'};
+			my $typeid = $rate->{'ratetypeid'};
+			my $arcostmin = $rate->{'mincost'};
+			
+			while(my($k, $v) = each %$rate) 
+			{
+				warn "########## 2";
+				if(exists $v->{'costfield'}){
+					warn "########## 3";
+					my $costfield = $v->{'costfield'};
+					my $actualcost = $v->{'actualcost'};
+					my $rateid = $self->{"dbref"}->gettokenid();
+					my $SQLString = "INSERT INTO rate(rateid, 
+													  typeid, 
+													  unitsstart, 
+													  unitsstop, 
+													  zonenumber, 
+													  arcostmin,
+													  $costfield) 
+											VALUES (
+													  '$rateid',
+													  '$typeid',
+													  $unitsstart,
+													  $unitsstop,
+													  $k,
+													  $arcostmin,
+													  $actualcost
+													)";
+													
+					warn "########## \$SQLString: $SQLString";
+					my $success = $self->{'dbref'}->do($SQLString)
+								or warn "Could not execute statement: ".$self->{'dbref'}->errstr;						
+					
+					if($success){
+						warn "########## 4";
+						$row_count++;
+						$self->{'dbref'}->commit;
+					}else{
+						warn "########## 5";
+						$self->{'dbref'}->rollback;
+					}
+				}
+			}			
+		}
+		
+		return {'status' => 'success', 'message' => "$row_count rows added to rate"};		
+	}
+	
 	sub AddServices
 		{
-			warn "########## Online::AddServices";
             my $self = shift;
             my ($serviceids, $customerid) = @_;
+			warn "########## Online::AddServices " . Dumper($serviceids);
 			
 			my @arr = @$serviceids;
 			
+			#warn "########## arr: " .Dumper(@arr);
+			
+			my $service_count = 0;
 			foreach my $serviceid (@arr)
 			{
 				my $SQLString = 	"select 
@@ -1124,6 +1191,7 @@ warn "undef etadate";
 										service 
 									where serviceid='$serviceid'";
 				warn "########## 5.3 : $SQLString";
+				
 				my $sth = $self->{'dbref'}->prepare($SQLString)
 						or die "Could not prepare SQL statement";
 
@@ -1206,8 +1274,6 @@ warn "undef etadate";
 										callforappointment, 
 										aggregateweightcost, 
 										discountpercent, 
-										extservicecode, 
-										serviceicon, 
 										weekendupcharge, 
 										amc, 
 										cutofftime, 
@@ -1215,71 +1281,69 @@ warn "undef etadate";
 										suntransit, 
 										maxtruckweight, 
 										alwaysshow, 
-										modetypeid, 
-										defaultzonetypeid, 
-										servicecode, 
+										modetypeid,
 										class
-									) values (
-										'$customerserviceid',
-										'$defaultzonetypeid',
-										'',
-										'$serviceid',
-										'$customerid',
-										'$fscrate', 
-										'$dimfactor', 
-										'$decvalinsrate', 
-										'$decvalinsmin', 
-										'$decvalinsmax', 
-										'$freightinsrate', 
-										'$decvalinsmincharge', 
-										'$freightinsincrement', 
-										'$decvalinsmaxperlb', 
-										'$carrieremail', 
-										'$pickuprequest', 
-										'$servicetypeid', 
-										'$allowcod', 
-										'$codfee', 
-										'$collectfreightcharge', 
-										'$guaranteeddelivery', 
-										'$saturdaysunday', 
-										'$liftgateservice', 
-										'$podservice', 
-										'$constructionsite', 
-										'$insidepickupdelivery', 
-										'$singleshipment', 
-										'$valuedependentrate', 
-										'$thirdpartyacct', 
-										'$callforappointment', 
-										'$aggregateweightcost', 
-										'$discountpercent', 
-										'$extservicecode', 
-										'$serviceicon', 
-										'$weekendupcharge', 
-										'$amc', 
-										'$cutofftime', 
-										'$sattransit', 
-										'$suntransit', 
-										'$maxtruckweight', 
-										'$alwaysshow', 
-										'$modetypeid', 
-										'$defaultzonetypeid', 
-										'$servicecode', 
-										'$class'
-									)";
-				warn "########## 5.3 : $SQLString";
-				my $sth2 = $self->{'dbref'}->prepare($SQLString)
-						or die "Could not prepare SQL statement";
+									) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					warn "##########  $SQLString";
+					my $sth2 = $self->{'dbref'}->prepare($SQLString)
+							or die "Could not prepare SQL statement";
 
-				$sth2->execute()
-						or die "Cannot execute carrier/service sql statement";
-				#$sth2->finish();
+					my $success = $sth2->execute($customerserviceid,
+							$defaultzonetypeid,
+							'',
+							$serviceid,
+							$customerid,
+							$fscrate, 
+							$dimfactor, 
+							$decvalinsrate, 
+							$decvalinsmin, 
+							$decvalinsmax, 
+							$freightinsrate, 
+							$decvalinsmincharge, 
+							$freightinsincrement, 
+							$decvalinsmaxperlb, 
+							$carrieremail, 
+							$pickuprequest, 
+							$servicetypeid, 
+							$allowcod, 
+							$codfee, 
+							$collectfreightcharge, 
+							$guaranteeddelivery, 
+							$saturdaysunday, 
+							$liftgateservice, 
+							$podservice, 
+							$constructionsite, 
+							$insidepickupdelivery, 
+							$singleshipment, 
+							$valuedependentrate, 
+							$thirdpartyacct, 
+							$callforappointment, 
+							$aggregateweightcost, 
+							$discountpercent,
+							$weekendupcharge, 
+							$amc, 
+							$cutofftime, 
+							$sattransit, 
+							$suntransit, 
+							$maxtruckweight, 
+							$alwaysshow, 
+							$modetypeid, 
+							$class) or die "Cannot execute carrier/service sql statement";
+							
+					if($success){
+						 $self->{'dbref'}->commit;
+					}else{
+						 $self->{'dbref'}->rollback;
+					}
+					warn "########## Inserted row in customerservice table for $serviceid";
+					$sth2->finish();
 				}
 				
-				
+				$service_count++;
 			}
 			
-            
-            
+			warn "########## Done adding services";
+            return {'status' => 'success', 'message' => "$service_count services added for the customer"};
 		}
 	
 	sub SaveTariff
@@ -1301,7 +1365,7 @@ warn "undef etadate";
 					warn "########## \$key = $key";					
 					if(ref($val) eq "HASH" && exists $val->{'costfield'})
 					{
-						my $sql = "update rate set " . $val->{'costfield'}. " = ". $val->{'actualcost'} ." where rateid = '".$val->{'rateid'}."'";
+						my $sql = "update rate set " . $val->{'costfield'}. " = ". $val->{'actualcost'} ." where rateid = '". $val->{'rateid'}."'";
 						warn "########## \$sql= $sql";
 						my $success = $self->{'dbref'}->do($sql)
 								or die "Could not execute statement: ".$self->{'dbref'}->errstr;						
@@ -1337,12 +1401,52 @@ warn "undef etadate";
 			return {'status' => 'success', 'message' => "$rate_count records updated for rate, $range_count records updated for range"};
 		}
     
-	sub DeleteAllTariffRows
+	sub DeleteTariffRows
 	{
 		warn "########## Online::DeleteAllTariffRows";
 		my $self = shift;
-		my ($tariff) = @_;
+		my ($rateids) = @_;
+		my @arr = @$rateids;
 		
+		my $row_count = 0;
+		foreach my $rateid (@arr){
+			my $sql = "delete from rate where rateid = '$rateid'";
+			warn "########## \$sql= $sql";
+			my $success = $self->{'dbref'}->do($sql)
+					or die "Could not execute statement: ".$self->{'dbref'}->errstr;
+			#my $success = 1;
+			if($success){
+				$self->{'dbref'}->commit;
+				$row_count++;
+			}else{
+				$self->{'dbref'}->rollback;
+			}
+		}
+		
+		if($row_count == scalar(@arr)){
+			return {'status' => 'success', 'message' => "$row_count rows deleted"};
+		}else{
+			return {'status' => 'failure', 'message' => "Could not delete " + (scalar(@arr) - $row_count) + " rows" };
+		}
+		
+	}
+	
+	sub DeleteCustomerService
+	{
+		warn "########## Online::DeleteCustomerService";
+		my $self = shift;
+		my ($csid) = @_;
+		my $sql = "delete from customerservice where customerserviceid = '$csid'";
+		warn "########## \$sql= $sql";
+		my $success = $self->{'dbref'}->do($sql)
+				or die "Could not execute statement: ".$self->{'dbref'}->errstr;
+		if($success){
+			$self->{'dbref'}->commit;
+			return {'status' => 'success', 'message' => "1 service deleted"};
+		}else{
+			$self->{'dbref'}->rollback;
+			return {'status' => 'failure', 'message' => "Could not delete service"};
+		}
 	}
     
 	sub OkToShipOnShipDate
@@ -2164,6 +2268,40 @@ warn "undef etadate";
 		}
 
 		return $total_ass_cost;
+	}
+	
+	sub GetAddressCode
+	{
+		warn "########## ONLINE::GetAddressCode";
+		my $self = shift;
+		my ($addressname,$address1,$address2,$city, $state, $zip, $country) = @_;
+		$address1 = '' unless $address1;
+		$address2 = '' unless $address2;
+		my $SQLString = "
+								SELECT
+									addresscode
+								FROM
+									address
+								WHERE
+									addressname = '$addressname' AND
+									address1 = '$address1' AND
+									address2 = '$address2' AND
+									city = '$city' AND 
+									state = '$state' AND
+									zip = '$zip' AND
+									country = '$country'
+						";
+		warn $SQLString;
+		my $sth = $self->{'dbref'}->prepare($SQLString)
+			or die "Could not prepare SQL statement";
+
+		$sth->execute()
+			or die "Cannot execute sql statement";
+
+		my ($addresscode) = $sth->fetchrow_array();
+		$sth->finish();
+		warn "########## ONLINE::GetAddressCode: ". $addresscode;
+		return $addresscode;
 	}
 }
 

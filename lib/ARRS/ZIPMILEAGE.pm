@@ -107,7 +107,9 @@
 		local $^W = 0;
 		#my $ReqURL = "http://www.randmcnally.com/rmc/directions/dirGetMileage.jsp?cmty=0&txtStartZip=$FromZip&txtDestZip=$ToZip";
 		#my $ReqURL = "http://www.melissadata.com/lookups/zipdistance.asp?zipcode1=$FromZip&zipcode2=$ToZip&submit1=Submit";
-		my $ReqURL = "https://maps.google.com/maps?f=d&hl=en&geocode=&saddr=$FromZip&daddr=$ToZip";
+		#my $ReqURL = "https://maps.google.com/maps?f=d&hl=en&geocode=&saddr=$FromZip&daddr=$ToZip";
+		my $ReqURL = "http://www.melissadata.com/lookups/zipdistance.asp?zip1=$FromZip&zip2=$ToZip";
+		
 
 		local $^W = 1;
 
@@ -125,14 +127,16 @@
 #		print $response_string;
 #		warn $response_string;
 
-		my ($GotResult) = $response_string =~ m/Suggestedroutes/i;
+		#my ($GotResult) = $response_string =~ m/Suggestedroutes/i;
+		my ($GotResult) = $response_string =~ m/Distancefrom\d+\(/i;
 
 		if (defined($GotResult))
 		{
 			#my ($Mileage) = $response_string =~ m/Driving Distance: (\d+)? miles/;
 			#my ($Mileage) = $response_string =~ m/is (\d+)? miles/;
 			#my ($Mileage) = $response_string =~ m/is\s(\d+)?\smiles\./;
-			my ($Mileage) = $response_string =~ m/Suggestedroutes(.*?)mi/;
+			#my ($Mileage) = $response_string =~ m/Suggestedroutes(.*?)mi/;
+			my ($Mileage) = $response_string =~ m/\)is(.*?)miles\./;
 #warn "MILEAGE: $Mileage";
 
 			$Mileage = ceil($Mileage);

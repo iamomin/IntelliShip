@@ -399,6 +399,12 @@ __PACKAGE__->table("customer");
   is_nullable: 1
   size: 13
 
+=head2 createdby
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 13
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -534,6 +540,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 100 },
   "auxformaddressid",
   { data_type => "char", is_nullable => 1, size => 13 },
+  "createdby",
+  { data_type => "varchar", is_nullable => 1, size => 13 },
 );
 
 =head1 PRIMARY KEY
@@ -608,19 +616,19 @@ __PACKAGE__->has_many(
 	);
 
 __PACKAGE__->has_many(
-	custcondata => 
+	custcondata =>
 		'IntelliShip::SchemaClass::Result::Custcondata',
 		'ownerid'
 	);
 
 __PACKAGE__->has_many(
-	droplist_data => 
+	droplist_data =>
 		'IntelliShip::SchemaClass::Result::Droplistdata',
 		{ "foreign.customerid" => "self.customerid" },
 	);
 
 __PACKAGE__->has_many(
-	thirdpartyaccts => 
+	thirdpartyaccts =>
 		'IntelliShip::SchemaClass::Result::Thirdpartyacct',
 		{ "foreign.customerid" => "self.customerid" },
 	);
@@ -634,7 +642,7 @@ __PACKAGE__->has_many(
 __PACKAGE__->has_many(
 	altsop =>
 		'IntelliShip::SchemaClass::Result::Altsop',
-		{ "foreign.companyid" => "self.customerid" },
+		{ "foreign.customerid" => "self.customerid" },
 	);
 
 sub settings
@@ -656,12 +664,6 @@ sub get_contact_data_value
 	return unless @custcondata_arr;
 
 	return $custcondata_arr[0]->value;
-	}
-
-sub login_level
-	{
-	my $self = shift;
-	return $self->get_contact_data_value('loginlevel') || 0;
 	}
 
 sub has_extid_data
@@ -706,6 +708,15 @@ sub get_sop_id
 		}
 
 	return $sop_id;
+	}
+
+sub is_single_sign_on_customer
+	{
+	my $self = shift;
+	if($self->customerid =~ /(8ETKCWZXZC0UY)/i) # Motorola Solutions, Inc.
+		{
+		return 1;
+		}
 	}
 
 sub third_party_account

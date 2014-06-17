@@ -100,18 +100,46 @@ sub default :Path
 	$c->response->redirect($c->uri_for('/customer/login'));
 	}
 
-sub help :Path
+sub help :Local
 	{
 	my ( $self, $c ) = @_;
 	$c->stash(template => "templates/customer/help.tt");
 	return 1;
 	}
 
-sub printdemo :Path
+sub legal :Local
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/legal.tt");
+	return 1;
+	}
+
+sub privacy :Local
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/privacy.tt");
+	return 1;
+	}
+
+sub printdemo :Local
 	{
 	my ( $self, $c ) = @_;
 	$c->stash(template => "templates/customer/applet-print-demo.html");
 	return 1;
+	}
+
+sub uspsrateapi :Local
+	{
+	my ( $self, $c ) = @_;
+	$c->stash(template => "templates/customer/usps-rate-api.html");
+	return 1;
+	}
+
+sub clear_stash :Private
+	{
+	my $self = shift;
+	my $stash = $self->context->stash;
+	delete $stash->{$_} foreach keys %$stash;
 	}
 
 sub flush_expired_tokens :Private
@@ -164,7 +192,7 @@ sub authenticate_token :Private
 	return ($NewTokenID, $CustomerID, $ContactID, $ActiveUser, $BrandingID);
 	}
 
-sub get_customer_contact
+sub get_customer_contact :Private
 	{
 	my $self = shift;
 	my $username = shift;
@@ -173,46 +201,81 @@ sub get_customer_contact
 	my $c = $self->context;
 
 	$username = $self->token->active_username if $self->token;
-	#$c->log->debug("Authenticate User: " . $username);
 
-	my ($customerUser, $contactUser) = split(/\//,$username);
-
-	$contactUser = $customerUser unless $contactUser;
-
-	#$c->log->debug("Customer user: " . $customerUser);
-	#$c->log->debug("Contact  user: " . $contactUser);
-
-	my @customerArr;
-	if ($self->token)
+	## Email based user authentication
+	if ($username =~ /@/)
 		{
-		push @customerArr, $self->token->customer;
-		}
-	else
-		{
-		@customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
-		}
+		$c->log->debug("... Email Based User Authentication");
 
-	return unless @customerArr;
+		my $Customer  = $self->token->customer if $self->token;
 
-	foreach my $Customer (@customerArr)
-		{
-		my $contact_search = {
-				username => $contactUser,
-				customerid => $Customer->customerid
-				};
-
+		my $contact_search = { username => $username };
 		$contact_search->{password} = $password unless $self->token;
+		$contact_search->{customerid} = $Customer->customerid if $Customer;
 
 		my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
 
-		next unless @contactArr;
+		return unless @contactArr;
 
-		my $Contact = $contactArr[0];
+		foreach my $Contact (@contactArr)
+			{
+			$Customer = $Contact->customer unless $Customer;
 
-		#$c->log->debug("Customer ID : " . $Customer->customerid);
-		#$c->log->debug("Contact ID  : " . $Contact->contactid);
+			next unless $Customer;
 
-		return ($Customer, $Contact);
+			my $Contact = $contactArr[0];
+
+			#$c->log->debug("Customer ID : " . $Customer->customerid);
+			#$c->log->debug("Contact ID  : " . $Contact->contactid);
+
+			if ($Customer->customerid eq $Contact->customerid)
+				{
+				return ($Customer, $Contact);
+				}
+			}
+		}
+	## Backward compatibility authentication
+	else
+		{
+		my ($customerUser, $contactUser) = split(/\//,$username);
+
+		$contactUser = $customerUser unless $contactUser;
+
+		#$c->log->debug("Customer user: " . $customerUser);
+		#$c->log->debug("Contact  user: " . $contactUser);
+
+		my @customerArr;
+		if ($self->token)
+			{
+			push @customerArr, $self->token->customer;
+			}
+		else
+			{
+			@customerArr = $c->model('MyDBI::Customer')->search({ username => $customerUser });
+			}
+
+		return unless @customerArr;
+
+		foreach my $Customer (@customerArr)
+			{
+			my $contact_search = {
+					username => $contactUser,
+					customerid => $Customer->customerid
+					};
+
+			$contact_search->{password} = $password unless $self->token;
+
+			my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
+
+			next unless @contactArr;
+
+			my $Contact = $contactArr[0];
+
+			#$c->log->debug("Customer ID : " . $Customer->customerid);
+			#$c->log->debug("Contact ID  : " . $Contact->contactid);
+
+			return ($Customer, $Contact);
+			}
 		}
 
 	$c->log->debug("No Matching Information Found");
@@ -277,35 +340,9 @@ sub get_branding_id
 
 	return $c->stash->{branding_id} if $c->stash->{branding_id};
 
-	my $branding_id = 'engage';
+	#$c->log->debug("**** HTTP_HOST: " . $ENV{HTTP_HOST});
 
-	my $http_host = $ENV{HTTP_HOST} || '';
-
-	#$c->log->debug("**** ENV: " . Dumper %ENV);
-	#$c->log->debug("**** HTTP_HOST: " . $http_host);
-
-	#override brandingid based on url
- 	if ( $http_host =~ /d?visionship\d?\.*\.*/ )
-		{
-		$branding_id = 'visionship';
-		}
-	elsif ( $http_host =~ /d?eraship\d?\.engage*\.*/ )
-		{
-		$branding_id = 'eraship';
-		}
-	elsif ( $http_host =~ /d?accellent\d?\.engage*\.*/ or  $http_host =~ /d?ais\d?\.engage*\.*/)
-		{
-		$branding_id = 'accellent';
-		}
-	elsif ( $http_host =~ /d?gintelliship\d?\.engage*\.*/ )
-		{
-		$branding_id = 'greating';
-		}
-	elsif ( $http_host =~ /d?mintelliship\d?\.engage*\.*/ or $http_host =~ /motorolasolutions/ )
-		{
-		$branding_id = 'motorola';
-		}
-
+	my $branding_id = IntelliShip::Utils->get_branding_id;
 	$c->stash->{branding_id} = $branding_id;
 
 	#$c->log->debug("**** BRANDING: " . $branding_id);
@@ -390,9 +427,10 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
-		my @customers = $c->model('MyDBI::Customer')->search( {},
+		my @customers = $c->model('MyDBI::Customer')->search( { customername => { '!=' => '' } },
 			{
 			select => [ 'customerid', 'customername' ],
+			order_by => 'customername',
 			}
 			);
 		foreach my $Customer (@customers)
@@ -457,16 +495,19 @@ sub get_select_list
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			my $sth1 = $self->myDBI->select("SELECT addressid FROM co WHERE coid = '$data->{'coid'}'");
+			my $sth1 = $self->myDBI->select("SELECT addressid, contactname FROM co WHERE coid = '$data->{'coid'}'");
 			my $address_data = $sth1->fetchrow(0);
 			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
+			my $address_name = $Address->addressname;
+			my $address1 = $Address->address1;
 			push(@$list, {
-					company_name => $Address->addressname,
+					company_name => "\Q$address_name\S",
 					reference_id => $data->{'coid'},
-					address1     => $Address->address1,
+					address1     => "\Q$address1\S",
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
+					contactname  => "\Q$address_data->{contactname}\S",
 				});
 			}
 		}
@@ -647,6 +688,7 @@ sub get_select_list
 
 		for (my $row = 0; $row < scalar @ass_names; $row++)
 			{
+			next if $ass_names[$row] =~ /dryice/i;
 			push(@$list, { name => $ass_displays[$row], value => $ass_names[$row] });
 			}
 		}
@@ -837,10 +879,14 @@ sub get_select_list
 	elsif ($list_name eq 'DELIVERY_METHOD')
 		{
 		$list = [
-			{ value => '0' , name => 'Bill To Shipper (Prepaid)' },
-			{ value => '1' , name => 'Bill To Recipient (Collect)' },
-			{ value => '2' , name => 'Bill To 3rd Party (3rd Party)' },
+			{ value => '0' , name => 'Bill To Shipper (Prepaid)' }
 			];
+
+		if ($self->contact->get_contact_data_value('thirdpartybill'))
+			{
+			push @$list, { value => '1' , name => 'Bill To Recipient (Collect)' };
+			push @$list, { value => '2' , name => 'Bill To 3rd Party (3rd Party)' };
+			}
 		}
 	elsif ($list_name eq 'RECORDS_PER_PAGE')
 		{
@@ -906,6 +952,15 @@ sub get_select_list
 			{ name => 'Show, checked FORCED', value => '3' },
 			];
 		}
+	elsif ($list_name eq 'PRINT_RETURN_SHIPMENT')
+		{
+		$list = [
+			{ name => 'Not Shown' , value => '0' },
+			{ name => 'Show, unchecked', value => '1' },
+			{ name => 'Show, checked', value => '2' },
+			{ name => 'Show, checked FORCED', value => '3' },
+			];
+		}
 	elsif ($list_name eq 'LIVE_PRODUCT_LIST')
 		{
 		$list = [
@@ -918,7 +973,8 @@ sub get_select_list
 	elsif ($list_name eq 'PACKING_LIST')
 		{
 		$list = [
-			{ name => 'Generic', value => 'packinglist' },
+			{ name => 'Generic', value => 'generic' },
+			{ name => 'Sprint',  value => 'sprint' },
 			];
 		}
 	elsif ($list_name eq 'MARKUP_TYPE')
@@ -986,7 +1042,7 @@ sub get_select_list
 	elsif ($list_name eq 'CLASS')
 		{
 		push @$list, { name => 'NA', value => ''};
-		my @classes = qw(50 55 60 65 70 75.5 85 92.5 100 110 125 150 175 200 250 300 400 500);
+		my @classes = qw(50 55 60 65 70 77.5 85 92.5 100 110 125 150 175 200 250 300 400 500);
 		push @$list, { name => $_, value => $_} foreach @classes;
 		}
 	elsif ($list_name eq 'LABEL_TYPE')
@@ -1013,9 +1069,16 @@ sub get_select_list
 			{ name => 'CIF/CIP',  value => '2' },
 			{ name => 'C&F/CPT',  value => '3' },
 			{ name => 'EXW',      value => '4' },
-			{ name => 'DDU',      value => '5' },
-			{ name => 'DDP',      value => '6' },
+			{ name => 'DDP',      value => '5' },
 			];
+		if ($self->customer->username =~ /qamf/)
+			{	
+				foreach my $Terms_Name(@$list)
+				{
+				 $Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
+				 $Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);	
+				}
+			}
 		}
 	elsif ($list_name eq 'DUTY_PAY_TYPE_LIST')
 		{
@@ -1038,6 +1101,25 @@ sub get_select_list
 			{ name => '16', value => '16' },
 			{ name => '18', value => '18' },
 			{ name => '20', value => '20' },
+			];
+		}
+	elsif ($list_name eq 'JPG_LABEL_ROTATION')
+		{
+		$list = [
+			{ name => 'None - no rotation' , value => '0' },
+			{ name =>  '90 Degree',  value => '90' },
+			{ name => '180 Degree',  value => '180' },
+			{ name => '270 Degree',  value => '270' },
+			];
+		}
+	elsif ($list_name eq 'PACKAGE_PRODUCT_LEVEL')
+		{
+		$list = [
+			{ name => '' ,         value => '0' },
+			{ name => 'Normal',    value => '1' },
+			{ name => 'Mini',      value => '2' },
+			{ name => 'Micro',     value => '3' },
+			{ name => 'Enchanced', value => '4' },
 			];
 		}
 
@@ -1117,6 +1199,10 @@ sub set_header_section
 	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $company_logo;
 	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
 	$c->stash->{logo} = $company_logo;
+
+	my $user_profile = $Customer->username . '-' . $Contact->username . '.png';
+	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/engage/images/profile/' . $user_profile;
+	$c->stash->{user_profile} = $user_profile if -e $fullpath;
 	}
 
 sub set_navigation_rules
@@ -1127,18 +1213,20 @@ sub set_navigation_rules
 	my $c = $self->context;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
-	my $login_level = $Customer->login_level;
+	my $login_level = $Contact->login_level;
+
+	return if $c->stash->{RULES_CACHED};
 
 	my $navRules = {};
 	if ($login_level != 25 and $login_level != 35 and $login_level != 40 and !$Contact->is_restricted)
 		{
 		$navRules->{DISPLAY_SHIPMENT_MAINTENANCE} = 1;
-		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->uploadorders;
+		$navRules->{DISPLAY_UPLOAD_FILE} = $Customer->get_contact_data_value('uploadorders') || 0;
 		$navRules->{DISPLAY_SHIP_PACKAGE} = !$Contact->get_contact_data_value('disallowshippackages') || 0;
 		}
 
+	$navRules->{DISPLAY_SHIP_A_PACKAGE} = $Contact->get_contact_data_value('shipapackage') || 0;
 	$navRules->{DISPLAY_DASHBOARD} = $Contact->get_contact_data_value('dashboard') || 0;
-	$navRules->{DISPLAY_SHIP_PACKAGE} = ($Customer->username eq 'sprint' and $Contact->username eq 'user');
 
 	unless ($Contact->is_restricted)
 		{
@@ -1149,9 +1237,19 @@ sub set_navigation_rules
 	$navRules->{DISPLAY_MYORDERS} = $navRules->{DISPLAY_MYSHIPMENT} = $Contact->get_contact_data_value('myorders');
 	$navRules->{DISPLAY_BATCH_SHIPPING} = $Customer->batchprocess unless $login_level == 25;
 
+	$navRules->{ORDER_SUPPLIES} = $Contact->get_contact_data_value('ordersupplies');
+
 	$c->stash->{$_} = $navRules->{$_} foreach keys %$navRules;
-	#$c->stash->{$_} = 1 foreach keys %$navRules;
-	#$c->log->debug("NAVIGATION RULES: " . Dumper $navRules);
+
+	my $landing_page;
+	$landing_page = '/customer/order/multipage' if !$landing_page and $c->stash->{DISPLAY_SHIP_A_PACKAGE};
+	$landing_page = '/customer/order/quickship' if !$landing_page and $c->stash->{DISPLAY_QUICKSHIP};
+	$landing_page = '/customer/myorders' if !$landing_page and $c->stash->{DISPLAY_MYORDERS};
+	$landing_page = '/customer/report' unless $landing_page;
+
+	$c->stash->{landing_page} = $landing_page;
+
+	$c->stash->{RULES_CACHED} = 1;
 	}
 
 sub process_pagination
@@ -1187,12 +1285,14 @@ sub SaveStringToFile
 	return unless $FileName;
 	return unless $FileString;
 
-	$self->context->log->debug("SaveStringToFile File: " . $FileName);
+	my $c = $self->context;
+
+	$c->log->debug("SaveStringToFile, file: " . $FileName);
 
 	my $FILE = new IO::File;
 	unless (open ($FILE,">$FileName"))
 		{
-		warn "\nLabel String Save Error: " . $!;
+		$c->log->debug("*** Label String Save Error: " . $!);
 		return;
 		}
 

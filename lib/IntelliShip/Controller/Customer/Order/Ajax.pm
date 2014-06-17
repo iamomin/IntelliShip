@@ -77,6 +77,10 @@ sub get_HTML :Private
 		{
 		$self->generate_commercial_invoice;
 		}
+	elsif ($action eq 'get_consolidate_orders_list')
+		{
+		$self->get_consolidate_orders_list;
+		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -165,6 +169,14 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->cancel_shipment;
 		}
+	elsif ($action eq 'consolidate_orders')
+		{
+		$dataHash = $self->consolidate_orders;
+		}
+	elsif ($action eq 'populate_package_default_detials')
+		{
+		$dataHash = $self->populate_package_default_detials;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -200,7 +212,7 @@ sub set_international_details
 	$c->stash->{partiestotransaction}  = $CO->partiestotransaction;
 
 	$c->stash->{commodityquantity}     = $CO->commodityquantity;
-	$c->stash->{commodityunits}        = $CO->commodityunits ? $CO->commodityunits : "PCS" ;
+	$c->stash->{commodityunits}        = $CO->commodityunits ? $CO->commodityunits : "PCS";
 	$c->stash->{commoditycustomsvalue} = $CO->commoditycustomsvalue ? $CO->commoditycustomsvalue :"0.00";
 	$c->stash->{commodityunitvalue}    = $CO->commodityunitvalue ? $CO->commodityunitvalue :"0.00";
 	$c->stash->{currencytype}          = $CO->currencytype ? $CO->currencytype : "USD";
@@ -245,7 +257,10 @@ sub get_carrier_service_list
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer);
+	my $ToAddress = $CO->destination_address;
+	my $addresscode = $ToAddress->addresscode;
+
+	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
 	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
@@ -299,7 +314,9 @@ sub get_carrier_service_list
 			$c->stash->{IS_PREPAID} = 1;
 			$detail_hash->{'delivery'} = $estimated_date;
 
-			$detail_hash->{'days'} = IntelliShip::DateUtils->get_delta_days(IntelliShip::DateUtils->current_date, $estimated_date);
+			my $date_to_ship = $CO->datetoship if IntelliShip::DateUtils->is_valid_date($CO->datetoship);
+			$date_to_ship = IntelliShip::DateUtils->get_formatted_timestamp unless $date_to_ship;
+			$detail_hash->{'days'} = IntelliShip::DateUtils->get_business_days_between_two_dates($date_to_ship,$estimated_date);
 
 			my ($freightcharges,$fuelcharges) = (0,0);
 			if ( defined $CSData->{'COST_DETAILS'} and $shipment_charge !~ /Quote/ )
@@ -329,33 +346,25 @@ sub get_carrier_service_list
 			#$detail_hash->{'shipment_charge'} =~ s/Quote//;
 
 			my $SHIPMENT_CHARGE_DETAILS = [];
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Charges' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
-			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Fuel Charges' , value => '$' . sprintf("%.2f",$fuelcharges) }) if $fuelcharges;
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight' , value => '$' . sprintf("%.2f",$freightcharges) }) if $freightcharges;
+			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Fuel' , value => '$' . sprintf("%.2f",$fuelcharges) }) if $fuelcharges;
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Declared Value Insurance' , value => '$' . sprintf("%.2f",$DVI_Charge) }) if $DVI_Charge;
 			push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Freight Insurance' , value => '$' . sprintf("%.2f",$FI_Charge) }) if $FI_Charge;
 			#push(@$SHIPMENT_CHARGE_DETAILS, { hr => 1 });
 
 			my $SC_charge = $self->populate_special_services_charge($SHIPMENT_CHARGE_DETAILS,$customerserviceid,$freightcharges);
 
-			$CS_charge_details->{$customerserviceid} = "Freight Charge:$freightcharges|Fuel Surcharge:$fuelcharges|Declared Value Insurance Charge:$DVI_Charge|Freight Insurance Charge:$FI_Charge";
+			$CS_charge_details->{$customerserviceid} = "Freight:$freightcharges|Fuel:$fuelcharges|Declared Value Insurance:$DVI_Charge|Freight Insurance:$FI_Charge";
 
 			$detail_hash->{'freight_charge'} = sprintf("%.2f",($freightcharges || '0'));
 			$detail_hash->{'other_charge'} = sprintf("%.2f",(($fuelcharges+$DVI_Charge+$FI_Charge+$SC_charge) || '0'));
-
-			#if ($detail_hash->{'shipment_charge'} =~ /Quote/)
-			#	{
-			#	push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>' . $detail_hash->{'shipment_charge'} . '</green>' });
-			#	}
-			#else
-			#	{
-			#	push(@$SHIPMENT_CHARGE_DETAILS, { text => 'Est Total Charge' , value => '<green>$' . sprintf("%.2f",$detail_hash->{'shipment_charge'}) . '</green>' });
-			#	}
 
 			$detail_hash->{'SHIPMENT_CHARGE_DETAILS'} = $SHIPMENT_CHARGE_DETAILS;
 			#$c->log->debug("SHIPMENT_CHARGE_DETAILS :". Dumper($SHIPMENT_CHARGE_DETAILS));
 			}
 
 		($detail_hash->{'shipment_charge'} =~ /\d+/ and $detail_hash->{'shipment_charge'} > 0) ? push(@$CS_list_1, $detail_hash) : push(@$CS_list_2, $detail_hash);
+		$detail_hash->{'shipment_charge'} = sprintf("%.2f",($detail_hash->{'freight_charge'} + $detail_hash->{'other_charge'}));
 		}
 
 	$c->stash->{CARRIER_SERVICE_LIST} = 1;
@@ -571,17 +580,18 @@ sub populate_special_services_charge
 	my $c = $self->context;
 	my $Customer = $self->customer;
 
-	my $CO = $self->get_order;
-
+	my $CO  = $self->get_order;
 	my @arr = $CO->assessorials;
-	$c->log->debug("Total special services selected ".@arr);
 
 	my $SC_charge = 0;
 	foreach my $AssData (@arr)
 		{
 		my $chargeDetails = $self->API->get_assessorial_charge($csid,$CO->total_weight,$CO->total_quantity,$AssData->assname,$Customer->customerid,$freightcharges);
+
 		$c->log->debug("CSID: $csid, Service: " . $AssData->assname . ", Charge: " . $chargeDetails->{'value'});
+
 		next unless $chargeDetails->{'value'};
+
 		push(@$SHIPMENT_CHARGE_DETAILS, { text => $AssData->assdisplay, value => '$' . sprintf("%.2f",$chargeDetails->{'value'}) });
 		$SC_charge += $chargeDetails->{'value'};
 		}
@@ -595,7 +605,7 @@ sub get_sku_detail :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $where = {customerskuid => $params->{'sku_id'}};
+	my $where = { customerid => $self->customer->customerid, customerskuid => $params->{'sku_id'} };
 
 	my @sku = $c->model("MyDBI::Productsku")->search($where);
 	my $SkuObj = $sku[0];
@@ -613,6 +623,7 @@ sub get_sku_detail :Private
 		$response_hash->{'class'} = $SkuObj->class;
 		$response_hash->{'unittypeid'} = $SkuObj->unittypeid;
 		$response_hash->{'unitofmeasure'} = $SkuObj->unitofmeasure;
+		$response_hash->{'value'} = $SkuObj->value;
 		}
 	else
 		{
@@ -697,6 +708,9 @@ sub add_package_product_row :Private
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
+		$c->stash->{dimlength} = $UnitType->dimlength;
+		$c->stash->{dimwidth}  = $UnitType->dimwidth;
+		$c->stash->{dimheight} = $UnitType->dimheight;
 		}
 
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
@@ -714,6 +728,28 @@ sub add_package_product_row :Private
 	return { rowHTML => $row_HTML };
 	}
 
+sub populate_package_default_detials :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $response_hash = {};
+	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
+		{
+		$response_hash->{'PACKAGE_TYPE'} = uc $UnitType->unittypename;
+		$response_hash->{'unittypeid'} = uc $UnitType->unittypeid;
+		$response_hash->{'dimlength'} = $UnitType->dimlength;
+		$response_hash->{'dimwidth'}  = $UnitType->dimwidth;
+		$response_hash->{'dimheight'} = $UnitType->dimheight;
+		}
+	else
+		{
+		$response_hash->{'error'} = "Package default details not found";
+		}
+
+	return $response_hash;
+	}
 sub set_third_party_delivery
 	{
 	my $self = shift;
@@ -770,20 +806,36 @@ sub mark_shipment_as_printed
 
 	my $CO = $self->get_order;
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}, coid => $params->{coid} });
-	$Shipment->statusid('100'); ## Printed
-	$Shipment->update;
-
-	if ($Shipment->has_pickup_request)
+	my @shipmentids = split('_',$params->{shipmentid});
+	foreach my $shipmentid (@shipmentids)
 		{
-		$self->send_pickup_request($Shipment);
-		}
+		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid, coid => $params->{coid} });
+		$Shipment->statusid('100'); ## Printed
+		$Shipment->update;
 
-	$c->log->debug("... Marked shipment $params->{shipmentid} as 'Printed'");
+		if ($Shipment->has_pickup_request)
+			{
+			$self->send_pickup_request($Shipment);
+			}
+
+		$c->log->debug("... Marked shipment $shipmentid as 'Printed'");
+		}
 
 	#$self->SendShipNotification($Shipment);
 
-	return { UPDATED => 1};
+	my $response = { UPDATED => 1};
+
+	my $return_capability = $CO->return;
+	$return_capability =~ s/\s+//;
+	if ($return_capability ne '')
+		{
+		$c->log->debug("... Return capability found");
+		$response->{RETURN_SHIPMENT} = 1;
+		my $RetCO = $self->create_return_shipment($CO);
+		$response->{RET_COID} = $RetCO->coid;
+		}
+
+	return $response;
 	}
 
 sub search_ordernumber :Private
@@ -793,7 +845,7 @@ sub search_ordernumber :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my @cos = $c->model('MyDBI::Co')->search({ ordernumber => $params->{'ordernumber'}, coid => { '!=' => $params->{'coid'} }});
+	my @cos = $c->model('MyDBI::Co')->search({ customerid => $self->customer->customerid, ordernumber => $params->{'ordernumber'}, coid => { '!=' => $params->{'coid'} }});
 	my $CO = $cos[0] if @cos;
 	my $resDS = { ORDER_FOUND => 0 };
 	if ($CO)
@@ -849,17 +901,328 @@ sub prepare_com_inv
 sub ship_to_carrier
 	{
 	my $self = shift;
-	my $shipmentid = $self->SHIP_ORDER;
-	my $response = { SUCCESS => $shipmentid ? 1 : 0 };
-	$response->{shipmentid} = $shipmentid;
-	$response->{error} = $self->errors->[0] if $self->has_errors;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my @shipmentids;
+
+	$self->save_order;
+
+	my $CO = $self->get_order;
+	if ($CO->total_quantity > 1)
+		{
+		my $laundryArr = [];
+		my $consolidatedOrders = {};
+
+		my @packages = $CO->packages;
+
+		$c->log->debug("*** TOTAL " . @packages . " FOUND, CREATE SEPARATE SHIPMENT FOR EACH PACKAGE");
+
+		foreach my $Package (@packages)
+			{
+			next unless $Package->quantity;
+
+			my $weight = ($Package->quantityxweight ? ($Package->weight/$Package->quantity) : $Package->weight);
+			my $dimweight = ($Package->quantityxweight ? ($Package->dimweight/$Package->quantity) : $Package->dimweight);
+
+			for (my $count=1; $count <= $Package->quantity; $count++)
+				{
+				my $key = $Package->originalcoid . '-' . $Package->packprodataid . '-' . $count;
+
+				$consolidatedOrders->{$key} = {} unless $consolidatedOrders->{$key};
+
+				$consolidatedOrders->{$key}->{'package'} = $Package;
+
+				$consolidatedOrders->{$key}->{'enteredweight'} = $weight;
+				$consolidatedOrders->{$key}->{'dimweight'} = $dimweight;
+				$consolidatedOrders->{$key}->{'quantity'} = 1;
+				}
+			}
+
+		foreach my $key (keys %$consolidatedOrders)
+			{
+			my ($COID,$PackProDataID,$Number) = split(/\-/,$key);
+
+			my $enteredweight = $consolidatedOrders->{$key}->{'enteredweight'};
+			my $dimweight = $consolidatedOrders->{$key}->{'dimweight'};
+			my $quantity = $consolidatedOrders->{$key}->{'quantity'};
+
+			my $DummyCO = $c->model('MyDBI::Co')->new($CO->{_column_data});
+			$DummyCO->coid($self->get_token_id);
+
+			my $Package = $consolidatedOrders->{$key}->{'package'};
+
+			my $DummyPackage = $c->model('MyDBI::Packprodata')->new($Package->{_column_data});
+			$DummyPackage->packprodataid($self->get_token_id);
+			$DummyPackage->ownerid($DummyCO->coid);
+			$DummyPackage->weight($enteredweight);
+			$DummyPackage->dimweight($dimweight);
+			$DummyPackage->quantity($quantity);
+			$DummyPackage->insert;
+
+			$c->log->debug("... DummyPackage, packprodataid : " . $DummyPackage->packprodataid);
+
+			my @products = $Package->products;
+			foreach my $Product (@products)
+				{
+				my $DummyProduct = $c->model('MyDBI::Packprodata')->new($Product->{_column_data});
+				$DummyProduct->packprodataid($self->get_token_id);
+				$DummyProduct->ownerid($Package->packprodataid);
+				$DummyProduct->insert;
+				}
+
+			if (!$DummyCO->ordernumber && $Package->originalcoid)
+				{
+				$DummyCO->ordernumber($Package->originalcoid);
+				}
+
+			$DummyCO->insert;
+
+			$c->log->debug("... DummyCO, coid : " . $DummyCO->coid);
+
+			$params->{'enteredweight'} = $enteredweight;
+			$params->{'dimweight'} = $dimweight;
+			$params->{'quantity'} = $quantity;
+
+			$c->log->debug("... enteredweight: " . $params->{'enteredweight'});
+			$c->log->debug("... dimweight    : " . $params->{'dimweight'});
+			$c->log->debug("... quantity     : " . $params->{'quantity'});
+
+			$c->stash->{CO} = $DummyCO;
+			$c->stash->{override_coid} = $CO->coid;
+
+			## SHIP ORDER
+			push @shipmentids, $self->SHIP_ORDER;
+
+			$DummyCO->archive_order;
+			}
+		}
+	else
+		{
+		## SHIP ORDER
+		push @shipmentids, $self->SHIP_ORDER;
+		}
+
+	my $response = { SUCCESS => 0 };
+	$response->{shipmentid} = join('_',@shipmentids);
+	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
+
+	if ($self->has_errors)
+		{
+		$response->{error} = $self->errors->[0];
+		}
+	else
+		{
+		$response->{SUCCESS} = 1;
+		}
+
 	return $response;
 	}
 
 sub cancel_shipment
 	{
 	my $self = shift;
-	return { voided => $self->VOID_SHIPMENT($self->context->req->params->{'shipmentid'}) };
+	my $shipment_id = $self->context->req->params->{'shipmentid'};
+	my @shipmentids = split('_',$shipment_id);
+	$self->VOID_SHIPMENT($_) foreach @shipmentids;
+	return { voided => 1 };
+	}
+
+sub get_consolidate_orders_list
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	IntelliShip::Utils->hash_decode($params);
+
+	my $CO = $self->get_order;
+	my $CustomerID = $self->customer->customerid;
+
+	$self->save_CO_details;
+
+	my $DestinationAddressID;
+	if ($params->{'toaddress1'})
+		{
+		## Save address details
+		$self->save_address;
+		my $ToAddress = $CO->to_address;
+		$DestinationAddressID = $ToAddress->addressid;
+		}
+	else
+		{
+		return $c->stash->{MESSAGE} = 'Please select destination address to consolidate matching orders';
+		}
+
+	my $OrderSQL = "SELECT
+				coid,
+				CASE
+				WHEN daterouted is not null THEN 1
+				WHEN datepacked is not null THEN 2
+				WHEN datereceived is not null THEN 3
+				WHEN daterouted is null and datepacked is null and datereceived is null THEN 4 END
+				as condition
+			FROM
+				co
+			WHERE
+				co.addressid = '$DestinationAddressID'
+				AND co.customerid = '$CustomerID'
+				AND (co.combine = 0 OR co.combine IS NULL)
+				AND statusid not in (5,6,7,200)
+		";
+
+	if ($self->customer->get_contact_data_value('dateconsolidation'))
+		{
+		$OrderSQL .= " AND (daterouted is not null OR datepacked is not null OR datereceived is not null) ";
+		}
+
+	if ( $self->contact->is_restricted)
+		{
+		my $RestrictedDataRow = $c->model('MyDBI')->select("
+			SELECT
+				fieldvalue
+			FROM
+				restrictcontact
+			WHERE
+				contactid = '" . $self->contact->contactid . "'
+				AND fieldname = 'extcustnum'
+		");
+
+		while ( my ($Value) = $RestrictedDataRow->fetchrow_array() )
+			{
+			$OrderSQL .= " AND upper(co.extcustnum) in " ."'" . uc($Value) . "',";
+			}
+		}
+
+	$OrderSQL .= " ORDER BY condition,ordernumber";
+
+	#$c->log->debug("OrderSQL: " . $OrderSQL);
+
+	my $STH = $c->model('MyDBI')->select($OrderSQL);
+
+	my $consolidate_order_list = [];
+	if ($STH->numrows)
+		{
+		my $arr = $STH->query_data;
+		#$c->log->debug("CO IDs: " . Dumper $arr);
+		my @COS = $c->model('MyDBI::CO')->search({ coid => $arr });
+
+		foreach my $CO (@COS)
+			{
+			if ($params->{coid} ne $CO->coid && $CO->packages->count == 0) ## Don't include any order which don't have package details
+				{
+				next;
+				}
+
+			push(@$consolidate_order_list, {
+				coid         => $CO->coid,
+				ordernumber  => $CO->ordernumber,
+				carrier      => $CO->extcarrier,
+				service      => $CO->extservice,
+				datetoship   => IntelliShip::DateUtils->american_date($CO->datetoship),
+				dateneeded   => IntelliShip::DateUtils->american_date($CO->dateneeded),
+				toAddress    => $CO->to_address,
+				packagecount => $CO->packages->count,
+				productcount => $CO->product_count,
+				});
+			}
+		}
+
+	$c->log->debug("Total Orders Found: " . @$consolidate_order_list);
+
+	if (@$consolidate_order_list <= 1)
+		{
+		$consolidate_order_list = undef;
+		$c->stash->{MESSAGE} = 'No matching orders found to consolidate';
+		}
+
+	$c->stash($params);
+	$c->stash->{consolidate_order_list} = $consolidate_order_list;
+	}
+
+sub consolidate_orders
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $CO = $self->get_order;
+
+	$c->stash->{ROW_COUNT} = 0;
+
+	my @arr = $CO->packages;
+	my $Package;
+	if (@arr)
+		{
+		$Package = $arr[0];
+		}
+	else
+		{
+		$Package = $c->model("MyDBI::Packprodata")->new({
+				packprodataid => $self->get_token_id,
+				ownerid       => $CO->coid,
+				ownertypeid   => 1000,
+				datatypeid    => 1000,
+				}) ;
+
+		$Package->insert;
+		}
+
+	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
+
+	$c->log->debug("...Total Coids: " . @$Coids);
+
+	my @packages;
+	if ($params->{'combine'} == 1)
+		{
+		$c->log->debug("..... COMBINE");
+
+		foreach my $coid (@$Coids)
+			{
+			my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+			my @arrs = $CoObj->packages;
+			foreach (@arrs)
+				{
+				foreach my $Product ($_->products)
+					{
+					$Product->ownerid($Package->packprodataid);
+					$Product->update;
+					}
+				}
+			}
+
+		push(@packages, { PACKAGE => $Package });
+		}
+	else
+		{
+		foreach my $coid (@$Coids)
+			{
+			my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+			my @arrs = $CoObj->packages;
+			push(@packages, { CO => $CoObj, PACKAGE => $_ } ) foreach @arrs;
+			}
+		}
+
+	$c->log->debug("Total No of Packages: " . @packages);
+
+	my $package_detail_section_HTML = '';
+
+	my $OriginalCO = $self->get_order;
+	foreach (@packages)
+		{
+		my ($cCO,$Package) = ($_->{CO},$_->{PACKAGE});
+
+		$c->stash->{SHIPPER_NUMBER} = $cCO->ordernumber if $cCO && $Package->datatypeid == 1000;
+		$package_detail_section_HTML .= $self->add_package_detail_row($Package);
+		}
+
+	$c->stash($params);
+	$c->stash->{CO} = $OriginalCO;
+	$c->stash->{coids} = join(',', @$Coids);
+	$c->stash->{CONSOLIDATED_PACKAGE} = $package_detail_section_HTML;
+
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	return { HTML => $HTML };
 	}
 
 =encoding utf8

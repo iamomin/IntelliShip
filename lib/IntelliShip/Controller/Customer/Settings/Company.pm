@@ -73,6 +73,8 @@ sub setup :Local
 	my $params = $c->req->params;
 
 	my $Customer = $self->get_customer;
+	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
+
 	if ($Customer)
 		{
 		$params->{'customerid'} = $Customer->customerid unless $params->{'customerid'};
@@ -81,7 +83,10 @@ sub setup :Local
 		$c->stash->{customerAddress} = $Customer->address;
 		$c->stash->{customerAuxFormAddress} = $Customer->auxilary_address;
 		$c->stash->{cust_defaulttoquickship} = 1 if ($Customer->quickship eq '2');
+		$c->stash->{SSO_CUSTOMER}            = 1 if $Customer->is_single_sign_on_customer;
 
+		$self->get_branding_settings;
+		$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);
 
 		my @shipmentmarkupdata =$c->model('MyArrs::RateData')->search({
 			-and => [
@@ -134,6 +139,14 @@ sub setup :Local
 				}
 			}
 		}
+	else
+		{
+		if (length $params->{'customername'})
+			{
+			$c->stash->{MESSAGE} = 'Invalid customer name';
+			$c->detach("index",$params);
+			}
+		}
 
 	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
 	$c->stash->{CONTACT_LIST}            = 0;
@@ -159,14 +172,14 @@ sub setup :Local
 	$c->stash->{quickshipdroplist_loop}  = $self->get_select_list('QUICKSHIP_DROPLIST');
 	$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 	$c->stash->{fceditability_loop}      = $self->get_select_list('FREIGHT_CHARGE_EDITABILITY_LIST');
+	$c->stash->{printreturnshipment_loop}= $self->get_select_list('PRINT_RETURN_SHIPMENT');
 	$c->stash->{labelstub_loop}          = $self->get_select_list('LABEL_STUB_LIST');
 	$c->stash->{markuptype_loop}         = $self->get_select_list('MARKUP_TYPE');
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
+	$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
+	$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 
-	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
-
-	$self->get_branding_settings;
-	$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);;
+	$c->stash->{CURRENT_COMPANY} = ($params->{'customerid'} eq $self->customer->customerid);
 
 	$c->stash->{SETUP_CUSTOMER} = 1;
 	$c->stash->{CUSTOMER_MANAGEMENT} = 1;
@@ -180,7 +193,12 @@ sub configure :Local
 	my $params = $c->req->params;
 
 	my $Customer = $self->get_customer;
-	$Customer = $c->model('MyDBI::Customer')->new({}) unless $Customer;
+	unless ($Customer)
+		{
+		$Customer = $c->model('MyDBI::Customer')->new({});
+		$Customer->createdby($self->customer->customerid);
+		$Customer->datecreated(IntelliShip::DateUtils->get_timestamp_with_time_zone);
+		}
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
@@ -208,6 +226,7 @@ sub configure :Local
 	$Customer->smartaddressbook($params->{'cust_smartaddressbook'}) if $params->{'cust_smartaddressbook'};
 	$Customer->apiaosaddress($params->{'cust_apiaosaddress'}) if $params->{'cust_apiaosaddress'};
 	$Customer->weighttype($params->{'weighttype'}) if $params->{'weighttype'};
+	$Customer->createdby($params->{'createdby'}) if $params->{'createdby'};
 
 	if ($params->{'cust_quickship'} && !$params->{'cust_defaulttoquickship'} )
 		{
@@ -249,16 +268,12 @@ sub configure :Local
 			country     => $params->{'country'},
 			};
 
-	my $Address;
-	if ($Customer->addressid)
-		{
-		$Address = $Customer->address;
-		}
-	else
+	my $Address = $Customer->address if $Customer->addressid;
+	unless ($Address)
 		{
 		my @address = $c->model('MyDBI::Address')->search($addressData);
 
-		$Address = (@address ? $address[0] : $c->model('MyDBI::Address')->new({}));
+		$Address = (@address ? $address[0] : $c->model('MyDBI::Address')->new($addressData));
 
 		unless ($Address->addressid)
 			{
@@ -283,12 +298,8 @@ sub configure :Local
 			country     => $params->{'auxcountry'},
 			};
 
-	my $AuxilaryAddress;
-	if ($Customer->auxformaddressid)
-		{
-		$AuxilaryAddress = $Customer->auxilary_address;
-		}
-	else
+	my $AuxilaryAddress = $Customer->auxilary_address if $Customer->auxformaddressid;
+	unless ($AuxilaryAddress)
 		{
 		my @auxaddress = $c->model('MyDBI::Address')->search($auxAddressData);
 
@@ -318,20 +329,6 @@ sub configure :Local
 	foreach my $ruleHash (@$CUSTOMER_RULES)
 		{
 		next unless $params->{'cust_'.$ruleHash->{value}};
-=as
-		#$c->log->debug("___ Inserting New custcondata $ruleHash->{value} for company: " . $Customer->customerid);
-		my $customerContactData = {
-			ownertypeid	 => 1,
-			ownerid		 => $Customer->customerid,
-			datatypeid	 => $ruleHash->{datatypeid},
-			datatypename => $ruleHash->{value},
-			value		 => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{'cust_'.$ruleHash->{value}},
-			};
-
-		my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
-		$NewCCData->custcondataid($self->get_token_id);
-		$NewCCData->insert;
-=cut
 		push (@$customerContactValues, "('".$self->get_token_id."', '1', '".$Customer->customerid."', '".$ruleHash->{datatypeid}."', '".$ruleHash->{value}."', '".($ruleHash->{type} eq 'CHECKBOX' ? 1 : $params->{'cust_'.$ruleHash->{value}})."')" );
 		}
 
@@ -429,6 +426,18 @@ sub configure :Local
 	$c->detach("index",$params);
 	}
 
+sub delete :Local
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $Customer = $self->get_customer;
+
+	$Customer->delete;
+	$c->stash->{MESSAGE} = "Customer deleted successfully";
+	$c->detach("index",$params);
+	}
+
 sub ajax :Local
 	{
 	my $self = shift;
@@ -496,7 +505,13 @@ sub get_JSON_DATA :Private
 		}
 	elsif ($action eq 'search_customer')
 		{
-		my $sql = "SELECT customername FROM customer WHERE customername LIKE '%" . $params->{'term'} . "%' ORDER BY 1";
+		my $WHERE = "WHERE customername LIKE '%" . $params->{'term'} . "%' ";
+
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE .= "AND (createdby = '" . $self->customer->customerid ."' OR customerid = '".$self->customer->customerid."') ";
+			}
+		my $sql = "SELECT customername FROM customer $WHERE ORDER BY 1";
 		my $sth = $c->model('MyDBI')->select($sql);
 		my $arr = [];
 		push(@$arr, $_->[0]) foreach @{$sth->query_data};
@@ -505,6 +520,10 @@ sub get_JSON_DATA :Private
 	elsif ($action eq 'update_branding_settings')
 		{
 		$dataHash = $self->update_branding_settings;
+		}
+	elsif ($action eq 'check_customer_contacts')
+		{
+		$dataHash = $self->check_customer_contacts;
 		}
 
 		#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
@@ -521,7 +540,6 @@ sub validate_contact_username :Private
 
 	my $WHERE = {
 		contactid => { '!=' => $params->{'contactid'}},
-		customerid => $params->{'customerid'},
 		username => $params->{'username'}
 		};
 
@@ -579,7 +597,7 @@ sub get_branding_settings :Private
 	my $custom_css_end_line = "/*custom_css_end*/";
 
 	$custom_styles = $custom_css_start_line . $custom_styles . $custom_css_end_line;
-	$c->log->debug("old_styles: " . $custom_styles);
+
 	$BRANDING_CSS =~ s/\Q$custom_styles\E//g;
 
 	$c->stash->{BRANDING_CSS} = $BRANDING_CSS;
@@ -626,7 +644,9 @@ sub get_style_setting_list
 			$style->{values} = $values;
 			}
 		}
-	$c->log->debug("CUSTOM_CSS_STYLES: " . Dumper @$CUSTOM_CSS_RULES);
+
+	#$c->log->debug("CUSTOM_CSS_STYLES: " . Dumper @$CUSTOM_CSS_RULES);
+
 	return $CUSTOM_CSS_RULES;
 	}
 
@@ -660,6 +680,10 @@ sub update_branding_settings :Private
 			$css_contents .= "$_\n" . "\tbackground: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
 			$css_contents .= "$_\n" . "\tcolor: " . $params->{"$style_list->{font}"} . ";" if $params->{"$style_list->{font}"};
 			$css_contents .= "$_\n" . "\tfont-size: " . $params->{"$style_list->{size}"} . "px;" if $params->{"$style_list->{size}"};
+			if($style eq 'input[type=button].active')
+				{
+				$css_contents .= "$_\n" . "\tborder-color: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
+				}
 
 			unless ($css_contents eq $style . "{")
 				{
@@ -676,12 +700,34 @@ sub update_branding_settings :Private
 	return { SUCCESS => 1, MESSAGE => "Updated successfully..." };
 	}
 
+sub check_customer_contacts
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $Customer = $self->get_customer;
+
+	my $sql = "SELECT contactid FROM contact WHERE customerid = '" . $Customer->customerid ."' ORDER BY username";
+	my $sth = $c->model('MyDBI')->select($sql);
+	if($sth->numrows)
+		{
+		$c->log->debug("___ CONTACTS FOUND: ");
+		return { CONTACTS => $sth->numrows, MESSAGE => "Please delete all contacts and try agian" };
+		}
+	else
+		{
+		#$c->log->debug("___ Flush old custcondata for company: " . $Customer->customerid);
+		#$Customer->settings->delete;
+		return { CONTACTS => 0};
+		}
+	}
+	
 sub brandingdemo :Local
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->stash->{NO_CACHE} = 1;
 	$c->stash->{BRANDING_DEMO_CSS} = $params->{'id'};
 
 	my $CO = IntelliShip::Controller::Customer::Order->new;
@@ -740,6 +786,20 @@ sub get_customer
 	elsif ($params->{'customername'})
 		{
 		$WHERE->{customername} = $params->{'customername'};
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE->{-and} = [{createdby => $self->customer->customerid}, {-or => {[customerid => $self->customer->customerid]}}];
+			my @customer =  $c->model('MyDBI::Customer')->search(
+				-and => [
+				-or => [
+					createdby => $self->customer->customerid,
+					customerid => $self->customer->customerid,
+					],
+				customername => $params->{'customername'},
+				]);
+
+			return (@customer ? $customer[0] : undef);
+			}
 		}
 
 	return undef unless scalar keys %$WHERE;
@@ -752,12 +812,18 @@ sub get_company_setting_list :Private
 	my $Customer = shift;
 	my $c = $self->context;
 
-	return unless $Customer;
-
 	my $CUSTOMER_RULES = IntelliShip::Utils->get_rules('CUSTOMER');
+
+	$CUSTOMER_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CUSTOMER_RULES];
+
 	$c->log->debug("___ CUSTOMER_RULES record count " . @$CUSTOMER_RULES);
 
-	my @Settings = $Customer->settings;
+	my @Settings;
+	if ($Customer)
+		{
+		@Settings = $Customer->settings ;
+		$c->stash->{SHOW_CREATEDBY} = ($self->contact->is_superuser && $Customer->customerid != $self->customer->customerid);
+		}
 	my %customerRules = map { $_->datatypename => $_->value } @Settings;
 
 	my $list = [];

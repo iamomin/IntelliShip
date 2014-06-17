@@ -16,6 +16,7 @@ use IntelliShip::DateUtils;
 
 extends 'IntelliShip::Errors';
 
+has 'import_type'  => ( is => 'rw' );
 has 'import_file'  => ( is => 'rw' );
 has 'customer'     => ( is => 'rw' );
 has 'contact'      => ( is => 'rw' );
@@ -41,26 +42,6 @@ sub myDBI
 	$self->myDBI_obj($self->context->model('MyDBI'));
 	return $self->myDBI_obj;
 	}
-
-=as
-sub parse_csv_row
-	{
-	my $self = shift;
-	my $row_data = shift;
-
-	my $CSV = Text::CSV->new();
-
-	unless ($CSV->parse($row_data))
-		{
-		print "\n$row_data\n";
-		print $CSV->error_input . "\n";
-		return;
-		}
-
-	return $CSV->fields();
-
-	}
-=cut
 
 sub import
 	{
@@ -95,16 +76,25 @@ sub import
 
 		$c->log->debug("... Start Import Process For " . $file);
 
-		my ($order_file, $product_file) = $self->format_file($import_file);
-
-		if (!$order_file and !$product_file)
+		my ($order_file, $product_file);
+		if ($self->import_type)
 			{
-			$self->add_error("File formatting error");
-			next;
+			$order_file = $self->import_file if $self->import_type eq 'order';
+			$product_file = $self->import_file if $self->import_type eq 'product';
+			}
+		else
+			{
+			($order_file, $product_file) = $self->format_file($import_file);
+
+			if (!$order_file and !$product_file)
+				{
+				$self->add_error("File formatting error");
+				next;
+				}
 			}
 
-		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file);
-		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file);
+		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
+		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
 
 		#my $import_base_file = fileparse($file);
 
@@ -169,13 +159,10 @@ sub ImportOrders
 
 	$c->log->debug("... Total file lines: " . @FileLines);
 
-	my $LineCount = 0;
 	my $ImportFailureRef = {};
 
 	foreach my $Line (@FileLines)
 		{
-		$LineCount++;
-
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
@@ -733,7 +720,7 @@ sub ImportOrders
 			#########################################################
 			$c->log->debug("... checking for Drop address availability");
 
-			my $returnAddressData = {
+			my $dropAddressData = {
 				addressname => $CustRef->{'dropname'},
 				address1    => $CustRef->{'dropaddress1'},
 				address2    => $CustRef->{'dropaddress2'},
@@ -743,26 +730,27 @@ sub ImportOrders
 				country     => $CustRef->{'dropcountry'},
 				};
 
-			IntelliShip::Utils->trim_hash_ref_values($returnAddressData);
+			IntelliShip::Utils->trim_hash_ref_values($dropAddressData);
 
 			## Fetch return address
-			@addresses = $c->model('MyDBI::Address')->search($returnAddressData);
+			@addresses = $c->model('MyDBI::Address')->search($dropAddressData) if length $dropAddressData->{'address1'};
 
-			my $ReturnAddress;
+			my $DropAddress;
 			if (@addresses)
 				{
-				$ReturnAddress = $addresses[0];
-				$c->log->debug("... Existing Address Found, ID: " . $ReturnAddress->addressid);
+				$DropAddress = $addresses[0];
+				$c->log->debug("... Existing Drop Address Found, ID: " . $DropAddress->addressid);
 				}
-			else
+			elsif (length $dropAddressData->{'address1'})
 				{
-				$ReturnAddress = $c->model("MyDBI::Address")->new($returnAddressData);
-				$ReturnAddress->addressid($self->myDBI->get_token_id);
-				$ReturnAddress->insert;
-				$c->log->debug("... New Address Inserted, ID: " . $ReturnAddress->addressid);
+				$DropAddress = $c->model("MyDBI::Address")->new($dropAddressData);
+				$DropAddress->addressid($self->myDBI->get_token_id);
+				$DropAddress->insert;
+				$c->log->debug("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
 				}
 
-			$CO->{'rtaddressid'} = $ReturnAddress->id;
+			$CO->{'dropaddressid'} = $DropAddress->id if $DropAddress;
+			$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
 			###########################
 
 			$CO->{'ordernumber'}           = $CustRef->{'ordernumber'};
@@ -974,14 +962,12 @@ sub ImportProducts
 
 	$c->log->debug("... Total file lines: " . @FileLines);
 
-	my $LineCount = 0;
+	my $CO;
+	my $LastCOID = '';
 	my $ImportFailureRef = {};
 
-	my $LastCOID = '';
 	foreach my $Line (@FileLines)
 		{
-		$LineCount++;
-
 		my $CustRef = {};
 
 		## Trim spaces from front and back
@@ -1113,9 +1099,6 @@ sub ImportProducts
 				}
 			}
 
-		## use this to issue delete of products for an order only once.
-		$LastCOID = $CustRef->{'coid'};
-
 		if ($CustRef->{'productquantity'})
 			{
 			$CustRef->{'productquantity'} =~ s/[^\d\.]//g;
@@ -1172,7 +1155,6 @@ sub ImportProducts
 
 		$c->log->debug("... unittypeid:  " . $CustRef->{'unittypeid'});
 
-		my $CO;
 		if ( $export_flag == 0 )
 			{
 			## if missing info, see if the customer has sku data in our db
@@ -1190,40 +1172,44 @@ sub ImportProducts
 					my $FILTER  = "upper(customerskuid) = upper('$CustRef->{partnumber}') AND unittypeid = '$CustRef->{unittypeid}' AND customerid = '$CustomerID'";
 					if ( $CustRef->{'unittypeid'} == 3 )
 						{
-						$sql = "SELECT weight wt, length ln, width wd, height ht FROM productsku WHERE $FILTER LIMIT 1";
+						$sql = "SELECT weight wt, length ln, width wd, height ht, value FROM productsku WHERE $FILTER LIMIT 1";
 						}
 					elsif ( $CustRef->{'unittypeid'} == 2 )
 						{
-						$sql = "SELECT weight wt, caselength ln, casewidth wd, caseheight ht FROM productsku WHERE $FILTER LIMIT 1";
+						$sql = "SELECT weight wt, caselength ln, casewidth wd, caseheight ht, value FROM productsku WHERE $FILTER LIMIT 1";
 						}
 					elsif ( $CustRef->{'unittypeid'} == 1 )
 						{
-						$sql = "SELECT palletweight wt, palletlength ln, palletwidth wd, palletheight ht FROM productsku WHERE FILTER LIMIT 1";
+						$sql = "SELECT palletweight wt, palletlength ln, palletwidth wd, palletheight ht, value FROM productsku WHERE FILTER LIMIT 1";
 						}
 
 					my $STH = $self->myDBI->select($sql);
 
-					my ($weight, $length, $width, $height) = (0, 0, 0, 0);
+					my ($weight, $length, $width, $height, $value) = (0, 0, 0, 0, 0);
 					if ($STH->numrows)
 						{
 						$c->log->debug("... SKU found, get weight, length, width and height");
 						my $d = $STH->fetchrow(0);
-						($weight, $length, $width, $height) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht});
+						($weight, $length, $width, $height, $value) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht}, $d->{value});
 						}
 					$CustRef->{'productweight'} = $weight * $CustRef->{'productquantity'} if $weight;
 					$CustRef->{'dimlength'} = $length if $length;
 					$CustRef->{'dimwidth'} = $width if $width;
 					$CustRef->{'dimheight'} = $height if $height;
+					$CustRef->{'productprice'} = $value if $value;
 					}
 				}
 
 			## if it's the 1st hit on a particular order then delete any existing product records
-			if ( $LineCount== 1 || ($LastCOID ne $CustRef->{'coid'}) )
+			if ($LastCOID ne $CustRef->{'coid'})
 				{
-				$CO=$c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
+				$CO = $c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
 
 				#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
 				}
+
+			## use this to issue delete of products for an order only once.
+			$LastCOID = $CustRef->{'coid'};
 
 			my $productData = { datatypeid => '2000' };
 

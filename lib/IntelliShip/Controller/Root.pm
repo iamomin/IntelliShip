@@ -2,6 +2,7 @@ package IntelliShip::Controller::Root;
 use Moose;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::DateUtils;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -129,12 +130,15 @@ sub end : Private {
 
 	$self->set_selected_menu($c);
 	$self->check_css_overrides($c);
-	$c->stash->{landing_page} = '/customer/order/multipage';
+
+	$c->stash->{timestamp} = IntelliShip::DateUtils->timestamp;
 
 	my $Controller = $c->controller;
 	my $Token = $Controller->token;
 	my $ajax = $c->req->param('ajax') || 0;
 	my $print_label = $c->stash->{print_label} || 0;
+
+	$c->stash->{contactObj} = $Controller->contact;
 
 	if ($Token and $ajax)
 		{
@@ -148,7 +152,10 @@ sub end : Private {
 		{
 		$Controller->set_header_section;
 		$Controller->set_navigation_rules;
-		$c->stash->{contactObj} = $Controller->contact;
+
+		$c->response->redirect($c->uri_for($c->stash->{landing_page})) if $c->request->action =~ /login$/;
+
+		$c->stash->{NO_CACHE} = 1 if $c->req->param('cache') == 0;
 		$c->forward($c->view('CustomerMaster'));
 		}
 	else

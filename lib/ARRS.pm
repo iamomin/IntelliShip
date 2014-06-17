@@ -13,6 +13,7 @@ use ARRS::MODETYPE;
 use ARRS::CSOVERRIDE;
 use ARRS::ASSDATA;
 use ARRS::INVOICEDATA;
+use ARRS::TARIFFIMPORTER;
 use IntelliShip::MyConfig;
 
 =b
@@ -471,6 +472,16 @@ sub GetServiceTariff {
     return $Online->GetServiceTariff( $Ref->{'csid'});
 }
 
+sub SaveTariffRows{
+	warn "########## SaveTariffRows";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->SaveTariffRows( $Ref->{'rates'});
+}
+
 sub AddServices {
 	warn "########## AddServices";
     my $self = shift;
@@ -491,14 +502,33 @@ sub SaveTariff {
     return $Online->SaveTariff( $Ref->{'tariff'}, $Ref->{'info'});
 }
 
-sub DeleteAllTariffRows {
-	warn "########## DeleteAllTariffRows";
+sub DeleteTariffRows {
+	warn "########## DeleteTariffRows";
     my $self = shift;
     my ($Ref) = @_;
 
     my $Online =
       new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
-    return $Online->DeleteAllTariffRows( $Ref->{'tariff'});
+    return $Online->DeleteTariffRows( $Ref->{'rateids'});
+}
+
+sub DeleteCustomerService{
+	warn "########## DeleteCustomerService";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $Online =
+      new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+    return $Online->DeleteCustomerService( $Ref->{'csid'});
+}
+
+sub ImportTariff{
+	warn "########## ImportTariff";
+    my $self = shift;
+    my ($Ref) = @_;
+
+    my $importer = new ARRS::TARIFFIMPORTER($Ref->{'tariffdbname'}, $self->{'dbref'});
+    return $importer->ImportTariff($Ref->{'content'}, $Ref->{'ratetypeid'});
 }
 
 sub GetShipmentCosts {
@@ -813,6 +843,22 @@ sub GetAssCode {
 	$CS->Load( $Ref->{'csid'} );
 
 	my $Code = $CS->GetAssCode( $Ref->{'csid'}, $Ref->{'ass_name'}, );
+
+	return $Code;
+}
+
+sub GetAddressCode{
+	warn "########## GetAddressCode";
+	my $self = shift;
+	my ($Ref) = @_;
+
+	my $ONLINE =
+	  new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
+
+	my $Code = $ONLINE->GetAddressCode($Ref->{'addressname'}, $Ref->{'address1'}, 
+										$Ref->{'address2'}, $Ref->{'city'}, 
+										$Ref->{'state'}, $Ref->{'zip'}, 
+										$Ref->{'country'});
 
 	return $Code;
 }

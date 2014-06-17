@@ -1,0 +1,94 @@
+<h2>SHIP A PACKAGE</h2>
+
+<script src="/static/js/customer-order.js"></script>
+
+<div id="interview-screen">[% CONTENT %]</div>
+
+<script>
+	var carrierServieDetails = {};
+	function interviewAddress()
+		{
+		$("#do").val('address');
+		var params = $("#frm_shipment").serialize() + '&skiproute=' + Object.keys(carrierServieDetails).length;
+		send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', params, checkAfterCallback);
+		}
+	function interviewShipment()
+		{
+		$("#do").val('shipment');
+		var params = $("#frm_shipment").serialize() + '&skiproute=' + Object.keys(carrierServieDetails).length;
+		send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', params, checkAfterCallback);
+		}
+	function interviewSummary()
+		{
+		$("#do").val('review');
+		var params = $("#frm_shipment").serialize() + '&skiproute=' + Object.keys(carrierServieDetails).length;
+		send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', params, checkAfterCallback);
+		}
+	function interviewCancel()
+		{
+		$("#do").val('cancel');
+		$("#frm_shipment").submit();
+		}
+	function interviewNext()
+		{
+		if (validateForm(requiredFieldHash) == false) return;
+		var params = $("#frm_shipment").serialize() + '&skiproute=' + Object.keys(carrierServieDetails).length;
+		send_ajax_request('interview-screen', 'HTML', 'order/multipage', '', params, checkAfterCallback);
+		}
+	function interviewShip()
+		{
+		if (validateForm(requiredFieldHash) == false) return;
+		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_shipment").serialize(), function() {
+
+			if ( JSON_data.SUCCESS == 0 ) return;
+
+			$("#cancel").attr("disabled", true);
+			$("#ship_now").attr("disabled", true);
+
+			$("#shipmentid").val(JSON_data.shipmentid);
+			$("#do").val("print");
+			$("#frm_shipment").submit();
+			});
+		}
+	function checkAfterCallback()
+		{
+		if ($("#do").val() == 'step1')
+			{
+			BindCompanyAutoComplete('to',availableCustomers);
+			}
+		if ($("#do").val() == 'step2')
+			{
+			$("#datetoship").datepicker({ minDate: '-0d' });
+			if ($("#datetoship").val() == '') $("#datetoship").datepicker('setDate', '+0d');
+			$("#dateneeded").datepicker({ minDate: '-0d' });
+			}
+		if ($("#do").val() == 'ship')
+			{
+			if (Object.keys(carrierServieDetails).length > 0)
+				{
+				$("#carrier-service-list").html(carrierServieDetails['CS-LIST']);
+				}
+			else
+				{
+				carrierServieDetails['CS-LIST'] = $("#carrier-service-list").html();
+				}
+
+			if ($("#carrier-service-list").html().length > 0)
+				{
+				$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+						var panelID = $(ui.newPanel).prop('id');
+						var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
+						$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
+							if ($(this).val() == customerserviceid) $(this).prop('checked', true) ;
+							});
+						}
+					});
+				}
+			}
+		}
+
+	resetCSList = function () { carrierServieDetails = {}; }
+
+	$(document).on('change', '.reset-cs-onchange', resetCSList);
+
+</script>

@@ -149,17 +149,19 @@
 	<form id="frm_setup_customer" method="post" action="/customer/settings/company/configure">
 		<input type="hidden" id="customerid" name="customerid" value="[% customerid %]"/>
 		<input type="hidden" id="do" name="do" value="configure"/>
-
+		[% IF customerid %]
+		<script src="/static/jquery/confirm-dialog/confirm-dialog.min.js"></script>
+		[% END %]
 		<div id="company-settings">
 			<ul>
 				<li><a id="company-profile-tab"  href="#company-profile">Profile</a></li>
 				<li><a id="company-rules-tab"    href="#company-rules">Rules</a></li>
-				<li><a id="company-settings-tab" href="#company-settings">Default Settings</a></li>
-				<li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
+				<li><a id="company-settings-tab" href="#company-default-settings">Default Settings</a></li>
 				[% IF customerid %]
+				<li><a id="company-contacts-tab" href="#company-contacts">Contacts</a></li>
 				<li><a id="company-branding-tab" href="#company-branding">Branding</a></li>
-				[% END %]
 				<li><a id="tariff-pricing-tab"   href="#tariff-pricing">Tariff Pricing</a></li>
+				[% END %]
 			</ul>
 			<div id="company-profile">
 				<table class="center-app">
@@ -180,11 +182,7 @@
 					<tr>
 						<td><label class="float-right" for="username">User Name:</label></td>
 						<td>
-							[% IF SUPER_USER %]
-								<input type="text" name="username" id="username" value="[% username %]" class="broad-text" onchange="validateCustomerUsername();">
-							[% ELSE %]
-								[% username %]
-							[% END %]
+							<input type="text" name="username" id="username" value="[% username %]" class="broad-text" onchange="validateCustomerUsername();">
 						</td>
 						<td><label class="float-right" for="fax">Fax:</label></td>
 						<td><input type="text" class="broad-text" name="fax" id="fax" value="[% fax %]"/></td>
@@ -192,11 +190,7 @@
 					<tr>
 						<td><label class="float-right" for="password">Password:</label></td>
 						<td>
-							[%IF SUPER_USER %]
-								<input type="text" class="broad-text" name="password" id="password" value="[% password %]"/>
-							[%ELSE%]
-								[%password%]
-							[%END%]
+							<input type="text" class="broad-text" name="password" id="password" value="[% password %]"/>
 						</td>
 						<td><label class="float-right" for="ssnein">EIN:</label></td>
 						<td><input type="text" class="broad-text" name="ssnein" id="ssnein" value="[% ssnein %]"/></td>
@@ -288,6 +282,10 @@
 				<center>
 					<input type="submit" class="green" value="[% IF customerid %]Update[% ELSE %]Add[% END %] Company" />
 					&nbsp;&nbsp;
+					[% IF SUPER_USER AND customerid %]
+					<input type="button" id="delete_customer" class="red" value="Delete"/>
+					&nbsp;&nbsp;
+					[% END %]
 					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
 				</center>
 			</div>
@@ -319,7 +317,7 @@
 					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
 				</center>
 			</div>
-			<div id="company-settings">
+			<div id="company-default-settings">
 				<table class="center-app">
 					<tr>
 						<td><label class="float-right" for="cust_sopid">SOP:</label></td>
@@ -572,12 +570,12 @@
 						</label>
 						</td>
 
-						<td><label class="float-right" for="cust_liveproduct">Live Product TAB:</label></td>
+						<td><label class="float-right" for="cust_printreturnshipment">Print Return Shipment:</label></td>
 						<td>
 						<label>
-							<select name="cust_liveproduct" id="cust_liveproduct">
-							[% FOREACH item IN liveproduct_loop %]
-								<option value="[% item.value %]" [% (item.value == cust_liveproduct) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							<select name="cust_printreturnshipment" id="cust_printreturnshipment">
+							[% FOREACH item IN printreturnshipment_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_printreturnshipment) ? 'SELECTED' : '' %]>[% item.name %]</option>
 							[% END %]
 							</select>
 						</label>
@@ -595,6 +593,21 @@
 						</label>
 						</td>
 
+						<td><label class="float-right" for="cust_liveproduct">Live Product TAB:</label></td>
+						<td>
+						<label>
+							<select name="cust_liveproduct" id="cust_liveproduct">
+							[% FOREACH item IN liveproduct_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_liveproduct) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+					</tr>
+					<tr>
+						<td><label class="float-right" for="cust_chargediffflat">Charge Difference<br/>Threshold (flat):</label></td>
+						<td><input type="text" class="broad-text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
+
 						<td><label class="float-right" for="shipmentmarkup">Shipment Markup:</label></td>
 						<td><input type="text" class="broad-text" style="width:50%" name="shipmentmarkup" id="shipmentmarkup" value="[% shipmentmarkup %]">
 							<select name="shipmentmarkuptype" id="shipmentmarkuptype">
@@ -606,8 +619,9 @@
 						</td>
 					</tr>
 					<tr>
-						<td><label class="float-right" for="cust_chargediffflat">Charge Difference<br/>Threshold (flat):</label></td>
-						<td><input type="text" class="broad-text" name="cust_chargediffflat" id="cust_chargediffflat" value="[% cust_chargediffflat %]"></td>
+						<td><label class="float-right" for="cust_chargediffpct">Charge Difference<br/>Threshold (%/min):</label></td>
+						<td><input type="text" class="broad-text" style="width:43%" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]">&nbsp;&nbsp;
+							<input type="text" class="broad-text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
 
 						<td><label class="float-right" for="assmarkup">Assessorial Markup:</label></td>
 						<td><input type="text" class="broad-text" style="width:50%" name="assmarkup" id="assmarkup" value="[% assmarkup %]">
@@ -617,21 +631,6 @@
 							[% END %]
 							</select>
 						</label>
-						</td>
-					</tr>
-					<tr>
-						<td><label class="float-right" for="cust_chargediffpct">Charge Difference<br/>Threshold (%/min):</label></td>
-						<td><input type="text" class="broad-text" style="width:43%" name="cust_chargediffpct" id="cust_chargediffpct" value="[% cust_chargediffpct %]">&nbsp;&nbsp;
-							<input type="text" class="broad-text" style="width:14%" name="cust_chargediffmin" id="cust_chargediffmin" value="[% cust_chargediffmin %]"></td>
-
-						<td><label class="float-right" for="cust_labeltype">Label Type:</label></td>
-						<td class="css3-radios">
-							[% FOREACH item IN labeltype_loop %]
-								<label>
-								<input type="radio" name="cust_labeltype" id="[% item.value %]" value="[% item.value %]" [% item.value == cust_labeltype ? 'CHECKED' : ''%]/>
-								<span><label for="[% item.value %]">[% item.name %]</label></span>
-								</label>
-							[% END %]
 						</td>
 					</tr>
 					<tr>
@@ -646,9 +645,68 @@
 						</label>
 						</td>
 
+						<td><label class="float-right" for="cust_labeltype">Label Type:</label></td>
+						<td class="css3-radios">
+							[% FOREACH item IN labeltype_loop %]
+								<label>
+								<input type="radio" name="cust_labeltype" id="[% item.value %]" value="[% item.value %]" [% item.value == cust_labeltype ? 'CHECKED' : ''%]/>
+								<span><label for="[% item.value %]">[% item.name %]</label></span>
+								</label>
+							[% END %]
+						</td>
+					</tr>
+					<tr>
+						<td><label class="float-right" for="cust_jpgrotation">JPG Label Rotation:</label></td>
+						<td>
+						<label>
+							<select name="cust_jpgrotation" id="cust_jpgrotation">
+							[% FOREACH item IN jpgrotation_loop %]
+							<option value="[% item.value %]" [% (item.value == cust_jpgrotation) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+						[%UNLESS SSO_CUSTOMER%]
+						<td><label class="float-right" for="cust_packageproductlevel">Package Product Level:</label></td>
+						<td>
+						<label>
+							<select name="cust_packageproductlevel" id="cust_packageproductlevel">
+							[% FOREACH item IN packageproductlevel_loop %]
+							<option value="[% item.value %]" [% (item.value == cust_packageproductlevel) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+						[% END %]
+					</tr>
+
+					[% IF SHOW_CREATEDBY %]
+					<tr>
+						<td><label class="float-right" for="createdby">Created By:</label></td>
+						<td>
+						<label>
+							<select name="createdby" id="createdby" style="width:217px;">
+								[% FOREACH item IN customerlist_loop %]
+									<option value="[% item.value %]" [% (item.value == createdby) ? 'SELECTED' : '' %]>[% item.name %]</option>
+								[% END %]
+							</select>
+						</label>
+						</td>
+						
 						<td></td>
 						<td></td>
 					</tr>
+					[% END %]
+					[% IF SSO_CUSTOMER %]
+					<tr>
+						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>
+						<td><input type="text" class="broad-text" name="cust_routebuttonname" id="cust_routebuttonname" value="[% cust_routebuttonname %]">
+						</td>
+
+						<td><label class="float-right" for=""></label></td>
+						<td class="css3-radios"></td>
+					</tr>
+					[% END %]
 				</table>
 
 				<center>
@@ -657,8 +715,10 @@
 					<input type="button" class="button" value="Cancel" onclick="javascript:history.back();"/>
 				</center>
 			</div>
+			[% IF customerid %]
 			<div id="company-contacts"></div>
 			<div id="company-branding">[% COMPANY_BRANDING_HTML %]</div>
+			[% END %]
 			<div id="tariff-pricing"></div>
 		</div>
 	</form>
@@ -718,6 +778,7 @@
 		$("#phone").mask("999-999-9999");
 		$("#fax").mask("999-999-9999");
 
+		[% IF customerid %]
 		$("#company-contacts-tab").click(function() {
 			if($("#company-contacts").html().length == 0) {
 				$("#company-contacts").prepend($('<div class="notice"> Please Wait... </div>'));
@@ -737,17 +798,47 @@
 			send_ajax_request('company-branding', 'HTML', 'settings/company', 'get_branding_settings', params);
 			}
 
-		function updateCompanyBranding(call_back_fn){
-			var params = 'customerid='+$("#customerid").val() + '&custom-style-sheet=' + $("#custom-style-sheet").val() + '&' + $("#color-picker :input").serialize();
-			send_ajax_request('company-branding', 'JSON', 'settings/company', 'update_branding_settings', params, call_back_fn);
+		function updateCompanyBranding(){
+			var params = 'customerid='+$("#customerid").val() + '&' + $("#custom-style-sheet").serialize() + '&' + $("#color-picker :input").serialize();
+			send_ajax_request('company-branding', 'JSON', 'settings/company', 'update_branding_settings', params, function() {
+			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
+			[% IF CURRENT_COMPANY %]
+			$('#branding-demo-iframe').attr('href','/static/branding/[% branding_id %]/css/[% customerid %].css?v='+jQuery.now());
+			[% END %]
+			});
 			}
 
-		$("#tariff-pricing-tab").click(function() {
+		[% IF SUPER_USER %]
+		$("#delete_customer").easyconfirm({locale: {
+			title: 'Delete Confirmation',
+			text: 'Are you sure that you want to delete this customer?',
+			button: ['No','Yes'],
+			}
+		});
+
+		$("#delete_customer").click(function() {
+			var params = 'customerid='+$("#customerid").val();
+			send_ajax_request('', 'JSON', 'settings/company', 'check_customer_contacts', params, function() {
+				if (JSON_data.CONTACTS > 0) {
+					showError(JSON_data.MESSAGE);
+					return;
+					}
+				else{
+					$("#do").val("delete");
+					$('#frm_setup_customer').attr('action', '/customer/settings/company/delete');
+					$('#frm_setup_customer').submit();
+					}
+			});
+		});
+		[% END %]
+		[% END %]
+
+		$("#tariff-pricing-tab").click(function(event) {						
 			if($("#tariff-pricing").html().length == 0) {
 				$("#tariff-pricing").prepend($('<div class="notice"> Please Wait... </div>'));
 				var params = 'customerid='+$("#customerid").val();
-				send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);
-				}
+				send_ajax_request('tariff-pricing', 'HTML', 'settings/tariff', 'get_template', params);				
+				}				
 			});
 
 	</script>
@@ -783,6 +874,7 @@
 				[% END %]
 				</select>
 			</td>
+			[% IF contact_batches %]
 			<td>
 				<select name="contact_page" id="contact_page" onchange="contactPage();">
 				[% FOREACH ids IN contact_batches %]
@@ -790,11 +882,12 @@
 				[% END %]
 				</select>
 			</td>
+			[% END %]
 
 		</tr></table>
 		[% END %]
 
-	[% IF contact_batches %]<div id="myShipments">[% END %]
+	[% IF contactlist %]<div id="myShipments">[% END %]
 	<div style="clear: both;">&nbsp;</div>
 	<div class="float-right"><b>Contact Count: [% contact_count %]</b></div>
 	<table>
@@ -820,7 +913,7 @@
 			<tr><td colspan="6">No contacts found</td></tr>
 		[% END %]
 	</table>
-	[% IF contact_batches %]</div>[% END %]
+	[% IF contactlist %]</div>[% END %]
 
 	[% IF SHOW_PAGINATION %]
 

@@ -236,26 +236,18 @@
 	</select>
 	</label>
 	[% ELSE %]
-	<input type="text" name="[% control_name %]" id="[% control_name %]" style="width: 30px;"/>
+	<input type="text" name="[% control_name %]" id="[% control_name %]" style="width: 35px;"/>
 	[% END %]
 [% END %]
 
 [% IF SPECIAL_SERVICE %]
-
-	<form id="frm_SC">
-	<!--
-	<div class="notice">When you click on "Save", this window will close automatically after storing special service successfully</div>
-	-->
-	<div id="sc_error"></div>
 	<table class="app css3-checkboxes">
 		[% sscount=0 %]
 		<tr>
 		[% FOREACH item IN specialservice_loop %]
 			[% sscount=sscount+1 %]
 			<td id="td_[% item.value %]">
-			[% UNLESS item.checked %]
-				<label><input type="checkbox" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]"/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
-			[% END %]
+				<label><input type="checkbox" class="reset-cs-onchange" name="[% item.value %]" id="[% item.value %]" value="[% item.value %]" [% item.checked ? 'CHECKED' : '' %]/><span><label for="[% item.value %]">[% item.name %]</label></span></label>
 			</td>
 			[% IF sscount == 4 %]
 			</tr><tr>
@@ -264,13 +256,11 @@
 		[% END %]
 		</tr>
 	</table>
-	</form>
-
 [% END %]
 
 [% IF CARRIER_SERVICE_LIST %]
 
-  [% IF ONLY_TABLE %]
+	[% IF ONLY_TABLE %]
 	<table class="app css3-radios">
 		<tr>
 			<th>&nbsp;</th>
@@ -278,10 +268,10 @@
 			<th>SERVICE LEVEL</th>
 			[% IF IS_PREPAID %]
 			<th>TRANSIT DAYS</th>
-			<th>EST. DELIVERY</th>
-			<th>EST. FREIGHT CHARGE</th>
-			<th>EST. OTHER CHARGES</th>
-			<th style="width:161px;">EST. TOTAL CHARGE</th>
+			<th>DELIVERY</th>
+			<th>FREIGHT CHARGE</th>
+			<th>OTHER CHARGES</th>
+			<th style="width:161px;">TOTAL CHARGE</th>
 			<th style="width:10px;"></th>
 			[% END %]
 		</tr>
@@ -300,9 +290,9 @@
 			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.other_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 10px;"><green>[% item.shipment_charge %]&nbsp;&nbsp;</green>
 				<div class="charge-details" style="display: none;" id="SC-[% item.customerserviceid %]">
-					<table style="font-size: 11px;float:right;">
+					<table style="font-size: 11px; float:right;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
-						<tr>[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><b><i>[% scd.text %]</i></b></td><td style="text-align: right;"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
+						<tr style="background: transparent;">[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><i>[% scd.text %]</i></td><td style="text-align: right"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
 					[% END %]
 					</table>
 				</div>
@@ -320,14 +310,14 @@
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
 	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
-			<li><a href="#freight-charges-list-1">RECOMMENDED</a></li>
-			<li><a href="#freight-charges-list-2">TRANSIT DAYS</a></li>
-			<li><a href="#freight-charges-list-3">VIEW ALL</a></li>
+			<li><a href="#carrier-service-list-1">RECOMMENDED</a></li>
+			<li><a href="#carrier-service-list-2">TRANSIT DAYS</a></li>
+			<li><a href="#carrier-service-list-3">VIEW ALL</a></li>
 		</ul>
 
-		<div id="freight-charges-list-1">[% recommendedcarrierlist %]</div>
-		<div id="freight-charges-list-2">[% transitdayscarrierlist %]</div>
-		<div id="freight-charges-list-3">[% viewallcarrierlist %]</div>
+		<div id="carrier-service-list-1">[% recommendedcarrierlist %]</div>
+		<div id="carrier-service-list-2">[% transitdayscarrierlist %]</div>
+		<div id="carrier-service-list-3">[% viewallcarrierlist %]</div>
 	</div>
 
 	<div id="SC-DLG"></div>
@@ -377,4 +367,82 @@
 
 	</script>
   [% END %]
+[% END %]
+
+[% IF consolidate_order_list %]
+	<form id="frm_consolidate" name="frm_consolidate" method="post" action="/customer/order/consolidate_orders">
+	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+	<div>
+	<table class="css3-checkboxes dialog-header">
+		<tr>
+			<td width="180px">Total <strong><span id="select-count">1</span></strong> orders selected</td>
+			<td><label><input type="checkbox" name="combine" value="1"/><span><label for="combine">Combine</label></span></label></td>
+		</tr>
+	</table>
+	</div>
+	<div id="myShipments" style="height: 400px; overflow-y: scroll;">
+	<table class="css3-checkboxes">
+		<tr>
+			<th><label><input type="checkbox" id="checkAll" onclick="CheckUncheckAll();"/><span></span></label></th>
+			<th>Order Number</th>
+			<th>Consignee</th>
+			<th>Address</th>
+			<th>City</th>
+			<th>State</th>
+			<th>Zip</th>
+			<th>Country</th>
+			<th>Packages</th>
+			<th>Products</th>
+		</tr>
+		[% FOREACH item IN consolidate_order_list %]
+		<tr>
+			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]" [% IF item.coid == coid %]CHECKED onclick="return false;"[% ELSE %]class="orders"[% END %]/><span></span></label></td>
+			<td>[% item.ordernumber %]</td>
+			<td>[% item.toAddress.addressname %]</td>
+			<td>[% item.toAddress.address1 _ toAddress.address2%]</td>
+			<td>[% item.toAddress.city %]</td>
+			<td>[% item.toAddress.state %]</td>
+			<td>[% item.toAddress.zip %]</td>
+			<td>[% item.toAddress.country %]</td>
+			<td>[% item.packagecount %]</td>
+			<td>[% item.productcount %]</td>
+		</tr>
+		[% END %]
+	</table>
+	</div>
+	</form>
+
+	<script>
+		$('.orders').change(function(){
+			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
+			if ($("#checkAll").is(':checked'))
+				$("#checkAll").prop( "checked", false )
+			});
+
+		function CheckUncheckAll() {
+			if($("#checkAll").is(':checked'))
+				{
+				$("input:checkbox[name=coids]").each(function() {
+					$(this).prop( "checked", true );
+					});
+				}
+			else
+				{
+				$("input:checkbox[name=coids]").each(function() {
+					$(this).prop( "checked", false );
+					});
+				}
+			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
+			}
+	</script>
+[% ELSE %]
+	[% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
+[% END %]
+
+[% IF CONSOLIDATED_PACKAGE %]
+	<input type="hidden" id="coids" name="coids" value="[% coids %]"/>
+	<input type="hidden" id="consolidate" name="consolidate" value="1"/>
+	[% IF combine %]<input type="hidden" id="combine" name="combine" value="[% combine %]"/>[% END %]
+	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
+	[% CONSOLIDATED_PACKAGE %]
 [% END %]

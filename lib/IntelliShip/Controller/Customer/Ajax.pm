@@ -156,7 +156,7 @@ sub get_city_state :Private
 			}
 		}
 
-	#$c->log->debug("address1: $address1, address2: $address2, city: $city, state: $state, zip: $zip, country: $country");
+	$c->log->debug("address1: $address1, address2: $address2, city: $city, state: $state, zip: $zip, country: $country");
 
 	return { city => $city, state => $state, zip => $zip, country => $country };
 	}

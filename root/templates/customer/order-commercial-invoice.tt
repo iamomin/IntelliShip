@@ -12,7 +12,6 @@
 	<script type="text/javascript" src="/static/js/deployJava.js"></script>
 	<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 	<script type="text/javascript" src="/static/js/html2canvas/html2canvas.js"></script>
-	<script type="text/javascript" src="/static/js/html2canvas/jquery.plugin.html2canvas.js"></script>
 
 	<link rel=File-List href="commercial_invoice_files/filelist.xml">
 	<link rel=Edit-Time-Data href="commercial_invoice_files/editdata.mso">
@@ -191,7 +190,7 @@
 
 		<table cellpadding=0 cellspacing=0>
 			<tr>
-				<td width=102 height=54 bgcolor=white style='border:.75pt solid black; vertical-align:top;background:white'>
+				<td width=102 height=54 bgcolor=white style='vertical-align:top;background:white'>
 					<![endif]><![if !mso]>
 					<span style='position:absolute;mso-ignore:vglayout;z-index:1'>
 						<table cellpadding=0 cellspacing=0 width="100%">
@@ -676,7 +675,9 @@
 			window['qzDonePrinting'] = function() {
 				var query_param = 'coid=[% coid %]&shipmentid=[% shipmentid %]';
 				send_ajax_request('', 'JSON', 'order', 'mark_shipment_as_printed', query_param, function() {
-					window.location.href = '/customer/order/quickship';
+					var href = '/customer/order/quickship';
+					if (JSON_data.RETURN_SHIPMENT == 1) href += '?coid=' + JSON_data.RET_COID;
+					window.location.href = href;
 					});
 
 				// Remove reference to this function

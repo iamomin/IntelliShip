@@ -3,8 +3,12 @@ package IntelliShip::Carrier::Driver::FedEx::PickupRequest;
 use Moose;
 use Data::Dumper;
 use LWP::UserAgent;
+use IntelliShip::Utils;
 
 BEGIN { extends 'IntelliShip::Carrier::Driver'; }
+
+#my $URL = 'https://wsbeta.fedex.com/web-services';
+my $URL = 'https://ws.fedex.com:443/web-services';
 
 sub process_request
 	{
@@ -19,7 +23,6 @@ sub process_request
 	my $Service = $self->service;
 
 	$self->log("Process PickupRequest");
-
 
 	my $PickupRequest = {
 		CustomerTransactionId => $Shipment->coid . '-' . $Shipment->shipmentid . '-' . $Shipment->customerserviceid,
@@ -38,55 +41,217 @@ sub process_request
 	$PickupRequest->{PostalCode} = $FromAddress->zip;
 	$PickupRequest->{CountryCode} = $FromAddress->country;
 
-	$PickupRequest->{ReadyTimestamp} = $Shipment->datepacked;
 	$PickupRequest->{PackageLocation} = 'FRONT';
 	$PickupRequest->{CompanyCloseTime} = '20:00:00';
 	$PickupRequest->{PackageCount} = $Shipment->total_quantity;
 	$PickupRequest->{TotalWeightUnits} = 'LB';
 	$PickupRequest->{TotalWeightValue} = $Shipment->total_weight;
 
-	$PickupRequest->{webaccount} = $CustomerService->{'webaccount'};
-	$PickupRequest->{meternumber} = $CustomerService->{'meternumber'};
+	$PickupRequest->{webaccount}   = $CustomerService->{'webaccount'};
+	$PickupRequest->{meternumber}  = $CustomerService->{'meternumber'};
+	$PickupRequest->{DispatchDate} = $Shipment->datepacked;
 
-	my $CarrierCodes = {
-		'XXX' => 'FDXC',
-		'FES' => 'FDXE',
-		'FGD' => 'FDXG',
-		'YYY' => 'FXCC',
-		'ZZZ' => 'FXFR',
-		'FES' => 'FXSP',
-		};
+	#my $CarrierCodes = {
+	#	'XXX' => 'FDXC',
+	#	'FES' => 'FDXE',
+	#	'FGD' => 'FDXG',
+	#	'YYY' => 'FXCC',
+	#	'ZZZ' => 'FXFR',
+	#	'FES' => 'FXSP',
+	#	};
 
-	$PickupRequest->{CarrierCode} = 'FDXE';
+	my ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber,$next_day_pickup_reqeust);
 
-	$self->log("....PickupRequest : " . Dumper $PickupRequest);
+	if ($Shipment->service =~ /Ground/i)
+		{
+		$PickupRequest->{CarrierCode} = 'FDXE';
+		$next_day_pickup_reqeust = 1;
+		}
+	else
+		{
+		my $sth = $self->myDBI->select("SELECT datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
+		my ($dispatchdate,$timepacked) = split(/\ /,$sth->fetchrow(0)->{'datepacked'}) if $sth->numrows;
+		$PickupRequest->{DispatchDate} = $dispatchdate;
 
-	my $XMLString = $self->get_XML_v6($PickupRequest);
+		$PickupRequest->{CarrierCode} = 'FDXG';
+		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber) = $self->send_same_day_pickup_request($PickupRequest);
+		$next_day_pickup_reqeust = 1 unless $ResponseCode =~ /0000/;
+		}
 
-	## Send request to FedEx
-	##my $URL = 'https://fedex.com/ws/pickup/v6/';
-	#my $URL = 'https://wsbeta.fedex.com/web-services';
-	my $URL = 'https://ws.fedex.com:443/web-services';
-	my $UA = LWP::UserAgent->new();
-	#warn "\nURL: " . $URL;
-	my $Response = $UA->post($URL, Content_Type => 'text/xml', Content => $XMLString);
+	if ($next_day_pickup_reqeust)
+		{
+		my $sth = $self->myDBI->select("SELECT datepacked + interval '1 day' as datepacked FROM shipment WHERE shipmentid='" . $Shipment->shipmentid . "'");
+		my ($datepacked,$timepacked) = split(/\ /,$sth->fetchrow(0)->{'datepacked'}) if $sth->numrows;
+
+		## Send pickup request time to the next day 9AM morning
+		$datepacked .= 'T09:00:00.1234'; ## 2014-05-15T09:00:00.1234
+
+		$PickupRequest->{ReadyTimestamp} = $datepacked;
+
+		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber) = $self->send_pickup_dispatch_reqeust($PickupRequest);
+		}
+
+	$CustomerTransactionId = $PickupRequest->{CustomerTransactionId} unless $CustomerTransactionId;
+
+	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
+
+	$self->SendPickUpEmail($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
+	}
+
+sub send_same_day_pickup_request
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $PASSWORD = 'yZatPfw3ZNBe7ucOGjKqIzevt';
+	my $XML_request = <<END;
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://fedex.com/ws/pickup/v6">
+  <SOAP-ENV:Body>
+    <q0:PickupAvailabilityRequest>
+        <q0:WebAuthenticationDetail>
+            <q0:UserCredential>
+                <q0:Key>I4nV8IlyPI3TkOA8</q0:Key>
+                <q0:Password>yZatPfw3ZNBe7ucOGjKqIzevt</q0:Password>
+            </q0:UserCredential>
+        </q0:WebAuthenticationDetail>
+        <q0:ClientDetail>
+            <q0:AccountNumber>$DATA->{'webaccount'}</q0:AccountNumber>
+            <q0:MeterNumber>$DATA->{'meternumber'}</q0:MeterNumber>
+        </q0:ClientDetail>
+        <q0:Version>
+            <q0:ServiceId>disp</q0:ServiceId>
+                <q0:Major>6</q0:Major>
+                <q0:Intermediate>0</q0:Intermediate>
+                <q0:Minor>0</q0:Minor>
+        </q0:Version>
+        <q0:AccountNumber>
+            <q0:Type>FEDEX_EXPRESS</q0:Type>
+        </q0:AccountNumber>
+        <q0:PickupAddress>
+            <q0:StreetLines>$DATA->{'StreetLines'}</q0:StreetLines>
+            <q0:City>$DATA->{'City'}</q0:City>
+            <q0:StateOrProvinceCode>$DATA->{'StateOrProvinceCode'}</q0:StateOrProvinceCode>
+            <q0:PostalCode>$DATA->{'PostalCode'}</q0:PostalCode>
+            <q0:CountryCode>$DATA->{'CountryCode'}</q0:CountryCode>
+        <q0:Residential>false</q0:Residential>
+        </q0:PickupAddress>
+        <q0:PickupRequestType>SAME_DAY</q0:PickupRequestType>
+        <q0:DispatchDate>$DATA->{'DispatchDate'}</q0:DispatchDate>
+        <q0:NumberOfBusinessDays>1</q0:NumberOfBusinessDays>
+        <q0:PackageReadyTime>08:00:00</q0:PackageReadyTime>
+        <q0:CustomerCloseTime>18:00:00</q0:CustomerCloseTime>
+        <q0:Carriers>FDXE</q0:Carriers>
+    </q0:PickupAvailabilityRequest>
+ </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+END
+
+	$XML_request =~ s/\n+//g;
+	$XML_request =~ s/\s{2}//g;
+
+	$self->log("... SAME DAY Pickup REQUEST: " . $XML_request);
+
+	my $UA = LWP::UserAgent->new;
+	my $Response = $UA->post($URL, Content_Type => 'text/xml', Content => $XML_request);
 
 	unless ($Response)
 		{
-		$self->add_error("FedEx CreatePickupRequest: Unable to access FedEx site");
-		return 0;
+		$self->add_error("FedEx PickupAvailabilityReply: Unable to access FedEx site");
+		return undef;
 		}
 
-	#warn "\nResponse->is_success: " . $Response->is_success;
+	#$self->log("Response->is_success: " . $Response->is_success);
 	unless ($Response->is_success)
 		{
-		$self->add_error("FedEx.CreatePickupRequest. Error: " . $Response->status_line);
-		return 0;
+		$self->add_error("FedEx.PickupAvailabilityReply. Error: " . $Response->status_line);
+		return undef;
 		}
 
-	$self->log("FedEx CreatePickup ResponseString: " . $Response->content);
+	$self->log("FedEx SAME_DAY PickupAvailabilityReply: " . $Response->content);
 
-	return 1;
+	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
+
+	my $NotificationRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:PickupAvailabilityReply'}{'v6:Notifications'};
+
+	my ($Message,$ResponseCode) = ("","");
+
+	if (ref $NotificationRef eq 'ARRAY')
+		{
+		foreach my $msg (@$NotificationRef)
+			{
+			$Message      = $Message . "<br>" . $msg->{'v6:Message'};
+			$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
+			}
+
+		$Message      = $Message . "<br>";
+		$ResponseCode = $ResponseCode  . "<br>";
+		}
+	else
+		{
+		$Message      = $NotificationRef->{'v6:Message'};
+		$ResponseCode = $NotificationRef->{'v6:Code'};
+		}
+
+	return ($ResponseCode,$Message);
+	}
+
+sub send_pickup_dispatch_reqeust
+	{
+	my $self = shift;
+	my $DATA = shift;
+
+	my $XML_request = $self->get_XML_v6($DATA);
+
+	$XML_request =~ s/\n+//g;
+	$XML_request =~ s/\s{2}//g;
+
+	$self->log("... Pickup REQUEST: " . $XML_request);
+
+	my $UA = LWP::UserAgent->new;
+	my $Response = $UA->post($URL, Content_Type => 'text/xml', Content => $XML_request);
+
+	unless ($Response)
+		{
+		$self->add_error("FedEx CreatePickupReply: Unable to access FedEx site");
+		return undef;
+		}
+
+	#$self->log("Response->is_success: " . $Response->is_success);
+	unless ($Response->is_success)
+		{
+		$self->add_error("FedEx.CreatePickupReply. Error: " . $Response->status_line);
+		return undef;
+		}
+
+	$self->log("FedEx CreatePickupReply: " . $Response->content);
+
+	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
+
+	my $NotificationRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Notifications'};
+
+	my ($Message,$ResponseCode) = ("","");
+
+	if (ref $NotificationRef eq 'ARRAY')
+		{
+		foreach my $msg (@$NotificationRef)
+			{
+			$Message      = $Message . "<br>" . $msg->{'v6:Message'};
+			$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
+			}
+
+		$Message      = $Message . "<br>";
+		$ResponseCode = $ResponseCode  . "<br>";
+		}
+	else
+		{
+		$Message      = $NotificationRef->{'v6:Message'};
+		$ResponseCode = $NotificationRef->{'v6:Code'};
+		}
+
+	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'}. "<br>";
+
+	return ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber);
 	}
 
 sub get_XML_v6
@@ -162,7 +327,7 @@ END
 	$XML_request =~ s/\n+//g;
 	$XML_request =~ s/\s{2}//g;
 
-	#warn "\n... Pickup REQUEST: " . $XML_request;
+	$self->log("... Pickup REQUEST: " . $XML_request);
 
 	return $XML_request;
 	}

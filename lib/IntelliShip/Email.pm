@@ -3,7 +3,6 @@ package IntelliShip::Email;
 use Moose;
 use IO qw(File);
 use Email::Stuff;
-use IntelliShip::MyConfig;
 
 has 'to'			=> ( is => 'rw', isa => 'ArrayRef' );
 has 'cc'			=> ( is => 'rw', isa => 'ArrayRef' );
@@ -24,6 +23,7 @@ sub BUILD
 	$self->to([]);
 	$self->cc([]);
 	$self->bcc([]);
+	$self->content_type('text/html');
 	$self->sendmail_path(IntelliShip::MyConfig->getSendmailPath);
 	}
 
@@ -70,7 +70,7 @@ sub add_line
 		{
 		my $line = shift;
 		my $body = $self->body;
-		$body .= $line . "\n";
+		$body .= $line . ($self->content_type =~ /HTML/i ? "<br>" : "\n");
 		$self->body($body);
 		}
 	}
@@ -128,7 +128,10 @@ sub send
 			{
 			#return 1;
 			}
-		#$to_list  = 'iamomin@gmail.com';
+
+		$to_list  = 'aloha.sourceconsulting@gmail.com';
+		$cc_list  = 'noc@engagetechnology.com';
+		$bcc_list = 'imranm@alohatechnology.com';
 		}
 
 	if ($self->attach)
@@ -180,6 +183,19 @@ sub send
 		}
 
 	return 1;
+	}
+
+sub to_string
+	{
+	my $self = shift;
+	my $EmailString = "";
+	$EmailString .= "\n From   : " . $self->from_name;
+	$EmailString .= "\n To     : " . join(',',@{$self->to}) if @{$self->to};
+	$EmailString .= "\n CC     : " . join(',',@{$self->cc}) if @{$self->cc};
+	$EmailString .= "\n BCC    : " . join(',',@{$self->bcc}) if @{$self->bcc};
+	$EmailString .= "\n Subject: " . $self->subject;
+	$EmailString .= "\n Body   : \n" . $self->body;
+	return $EmailString;
 	}
 
 __PACKAGE__->meta()->make_immutable();

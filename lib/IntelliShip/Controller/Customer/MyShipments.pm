@@ -32,8 +32,11 @@ sub index :Path :Args(0) {
 	$self->populate_my_shipment_list;
 
 	$c->stash->{date_list} = [
-			{ name => 'Today', value => 'today' },
-			{ name => 'This Week', value => 'this_week' },
+			{ name => 'Today',      value => 'today' },
+			{ name => 'Yesterday',  value => 'yesterday' },
+			{ name => 'This Week',  value => 'this_week' },
+			{ name => 'Last Week',  value => 'last_week' },
+			{ name => 'Last Month', value => 'last_month' },
 			{ name => 'This Month', value => 'this_month' },
 			];
 
@@ -124,16 +127,20 @@ sub reprint_label :Private
 	my $ShipmentIds = (ref $params->{'shipmentid'} eq 'ARRAY' ? $params->{'shipmentid'} : [$params->{'shipmentid'}]);
 	$ShipmentIds    = [split /\,/, $params->{'shipmentid'}] if $params->{'shipmentid'} =~ /\,/;
 
-	$c->stash->{REPRINT_LABEL} = 1;
-
 	my $LABEL_ARR = [];
 	foreach my $shipmentid (@$ShipmentIds)
 		{
+		$self->clear_stash;
+		$c->stash->{REPRINT_LABEL} = 1;
+
 		$c->log->debug("... generate label for shipment ID: " . $shipmentid);
 		$params->{'shipmentid'} = $shipmentid;
 		$self->setup_label_to_print;
 		push(@$LABEL_ARR, $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-label.tt" ]));
 		}
+
+	$c->stash->{REPRINT_LABEL} = 1;
+	$c->stash->{template} = undef;
 
 	#$c->log->debug("LABEL_LIST: " . Dumper $LABEL_ARR);
 	$c->stash->{LABEL_LIST} = $LABEL_ARR;
@@ -348,6 +355,8 @@ sub show_shipment_summary: Private
 
 	if (my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid}}))
 		{
+		my @packages = $Shipment->packages;
+
 		my $shipmentSummary = {
 			customerAddress => $Shipment->origin_address,
 			toAddress       => $Shipment->destination_address,
@@ -356,7 +365,7 @@ sub show_shipment_summary: Private
 			shipdate        => IntelliShip::DateUtils->american_date($Shipment->dateshipped),
 			duedate         => IntelliShip::DateUtils->american_date($Shipment->datedue),
 			carrier         => $Shipment->carrier,
-			packagedetails  => $Shipment->package_details,
+			packagedetails  => \@packages,
 			};
 
 		$c->stash($shipmentSummary);

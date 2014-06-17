@@ -1,5 +1,7 @@
 package IntelliShip::Controller::Customer::Login;
 use Moose;
+use MIME::Base64;
+use REST::Client;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
@@ -27,16 +29,76 @@ sub index :Path :Args(0)
 
 	#$c->response->body('Matched IntelliShip::Controller::Customer::Login in Customer::Login.');
 
+	my $params = $c->request->parameters;
+
 	$self->flush_expired_tokens;
+
+	$c->stash(template => "templates/customer/login.tt");
 
 	if (my $Token = $self->get_token)
 		{
 		$c->log->debug('--------- TOKEN FOUND ---------');
 		$self->token($Token);
+		$c->log->debug('--------- AUTHORIZE USER ---------');
+		$self->authorize_user;
+		return;
+		}
 
-		$c->log->debug('redirect to customer dashboard');
-		#return $c->response->redirect($c->uri_for('/customer/dashboard'));
-		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
+	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
+		{
+		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
+		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password'), };
+
+		# set up a REST session
+		my $rest = REST::Client->new( { host => "http://$ssohost", } );
+
+		if ($ENV{QUERY_STRING} !~ /^ID=/)
+			{
+			# initialize SSO
+			# redirect to sso server which will send a request to motorola
+			$params->{'mymotossourl'} = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com';
+			$c->log->debug("Status: 302 Moved");
+			$c->log->debug("Location: $params->{'mymotossourl'}");
+			}
+
+		if ($ENV{QUERY_STRING} =~ /^ID=/)
+			{
+			# get the username
+			$params->{'myssoid'} = $ENV{QUERY_STRING};
+			$params->{'myssoid'} =~ s/ID=//i;
+
+			$rest->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'myssoid'}, $headers );
+
+			my $SSORespCode = $rest->responseCode();
+			my $SSOResponse = $rest->responseContent();
+
+			if ($SSORespCode eq '200')
+				{
+				$params->{'ssoauth'} = $params->{'myssoid'};
+				my @ssodata = split(/\n/, $SSOResponse);
+				foreach my $ssodata ( @ssodata )
+					{
+					$ssodata =~ s/\r//;
+					$ssodata =~ s/\n//;
+
+					if ( $ssodata =~ /UserName/i )
+						{
+						$params->{'ssousername'} = $ssodata;
+						$params->{'ssousername'} =~ s/#UserName=//i;
+						$c->log->debug("TOKEN UserName=$params->{'ssousername'}");
+						}
+					}
+
+				$params->{'username'} = 'motorola';
+				$params->{'password'} = 'ssologin';
+				}
+			else
+				{
+				$c->stash(error => 'Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
+				$c->log->debug('Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
+				return;
+				}
+			}
 		}
 
 	#$c->log->debug("********* LOG IN CUSTOMER USER *********");
@@ -45,7 +107,6 @@ sub index :Path :Args(0)
 
 	$c->stash->{branding_id} = $self->get_branding_id;
 
-	my $params = $c->request->parameters;
 	if (defined $params->{'username'} and defined $params->{'password'})
 		{
 		my $TokenID = $self->authenticate_user($params->{'username'}, $params->{'password'});
@@ -60,12 +121,7 @@ sub index :Path :Args(0)
 
 		$c->res->cookies->{'TokenID'} = { value => $TokenID, expires => '+3600' };
 
-		#return $c->response->redirect($c->uri_for('/customer/dashboard'));
-		return $c->response->redirect($c->uri_for('/customer/order/multipage'));
-		}
-	else
-		{
-		$c->stash(template => "templates/customer/login.tt"); ## SHOW LOGIN PAGE FIRST
+		$c->stash(NO_CACHE => 1);
 		}
 
 	return 1;

@@ -40,11 +40,11 @@ sub index :Path :Args(0) {
 	push (@$settings, { name => 'Change Password', url => '/customer/settings/changepassword' }) if $Customer->customerid ne '8ETKCWZXZC0UY';
 	#push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
 	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'});
-	push (@$settings, { name => 'Company Management', url => '/customer/settings/company'}) if $Contact->is_superuser;
-	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Customer->login_level != 25 and $Contact->get_contact_data_value('skumanager');
+	push (@$settings, { name => 'Company Management', url => '/customer/settings/company'}) if $Contact->is_administrator || $Contact->is_superuser;
+	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Contact->login_level != 25 and $Contact->get_contact_data_value('skumanager');
 	push (@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
 
-	if ($Customer->login_level != 25 and ($Customer->login_level == 35 or $Customer->login_level == 40))
+	if ($Contact->login_level != 25 and ($Contact->login_level == 35 or $Contact->login_level == 40))
 		{
 		push (@$settings, { name => 'My POs View', url => '#'});
 		}
@@ -164,6 +164,8 @@ sub skumanagement :Local
 	$c->stash->{PRODUCT_SKU_LIST} = 1;
 	$c->stash->{SKU_MANAGEMENT} = 1;
 
+	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
+
 	$c->stash(template => "templates/customer/settings.tt");
 	}
 
@@ -279,12 +281,14 @@ sub productskusetup :Local
 		$c->stash->{weighttype_list} = $self->get_select_list('WEIGHT_TYPE');
 		$c->stash->{class_list} = $self->get_select_list('CLASS');
 		$c->stash->{unitofmeasure_list} = $self->get_select_list('UNIT_OF_MEASURE');
+		$c->stash->{carrier_list} = $self->get_select_list('CARRIER');
 
 		#my $unit_type_description = {};
 		#$unit_type_description->{$_->unittypeid} = $_->unittypename foreach $self->context->model('MyDBI::Unittype')->all;
 		#$c->stash->{unit_type_description} = $unit_type_description;
 
 		$c->stash->{SETUP_PRODUCT_SKU} = 1;
+		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 		}
 	elsif ($params->{'do'} eq 'configure')
 		{
@@ -301,6 +305,7 @@ sub productskusetup :Local
 		$ProductSku->unitofmeasure($params->{unitofmeasure});
 		$ProductSku->balanceonhand($params->{balanceonhand} ? $params->{balanceonhand} : undef);
 		$ProductSku->unittypeid($params->{unittypeid} ? $params->{unittypeid} : undef);
+		$ProductSku->carrier($params->{carriername});
 		## SKU
 		$ProductSku->weight($params->{weight} ? $params->{weight} : undef);
 		$ProductSku->weighttype($params->{weighttype});
@@ -468,6 +473,8 @@ sub process_pagination
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	return undef if defined $params->{'records_per_page'} && $params->{'records_per_page'} == 0;
+
 	#$c->log->debug("PROCESS PAGINATION");
 
 	my $batch_size = (defined $params->{records_per_page} ? int $params->{records_per_page} : 100);
@@ -484,7 +491,12 @@ sub process_pagination
 		}
 	elsif ($type eq 'customermanagement')
 		{
-		$sql = "SELECT customerid FROM customer ORDER BY customername";
+		my $WHERE = '';
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE .= "WHERE createdby = '" . $self->customer->customerid . "' OR customerid = '".$self->customer->customerid."' ";
+			}
+		$sql = "SELECT customerid FROM customer $WHERE ORDER BY customername";
 		}
 	elsif ($type eq 'contactmanagement')
 		{
@@ -514,7 +526,13 @@ sub contactinformation :Local
 
 	IntelliShip::Utils->trim_hash_ref_values($params);
 
-	if ($params->{'do'} eq 'configure')
+	if ($params->{'do'} eq 'delete')
+		{
+		my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+		$Contact->delete;
+		$self->get_customer_contacts($Contact->customerid);
+		}
+	elsif ($params->{'do'} eq 'configure')
 		{
 		IntelliShip::Utils->hash_decode($params);
 
@@ -531,6 +549,7 @@ sub contactinformation :Local
 			}
 
 		my $addressData = {
+			addressname => $Contact->customer->address->addressname,
 			address1	=> $params->{'contact_address1'},
 			address2	=> $params->{'contact_address2'},
 			city		=> $params->{'contact_city'},
@@ -539,16 +558,13 @@ sub contactinformation :Local
 			country		=> $params->{'contact_country'},
 			};
 
-		my $Address;
-		if ($Contact->addressid)
+		my $Address = $Contact->address if $Contact->addressid;
+		unless ($Address)
 			{
-			$Address = $Contact->address;
-			}
-		else
-			{
+			$c->log->debug("Address Not Found: ");
 			my @addresses = $c->model('MyDBI::Address')->search($addressData);
 
-			$Address = (@addresses ? $addresses[0] : $c->model('MyDBI::Address')->new({}));
+			$Address = (@addresses ? $addresses[0] : $c->model('MyDBI::Address')->new($addressData));
 
 			unless ($Address->addressid)
 				{
@@ -556,7 +572,6 @@ sub contactinformation :Local
 				$Address->insert;
 				$c->log->debug("New Address Inserted: " . $Address->addressid);
 				}
-
 			$Contact->addressid($Address->addressid);
 			}
 
@@ -565,8 +580,8 @@ sub contactinformation :Local
 		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
 		$Contact->password($params->{'contact_password'}) if $params->{'contact_password'};
 
-		$Contact->firstname($params->{'firstname'});
-		$Contact->lastname($params->{'lastname'});
+		$Contact->firstname($params->{'firstname'}) if $params->{'firstname'};
+		$Contact->lastname($params->{'lastname'}) if $params->{'lastname'};
 		$Contact->email($params->{'contact_email'});
 		$Contact->fax($params->{'contact_fax'});
 		$Contact->department($params->{'department'});
@@ -574,35 +589,45 @@ sub contactinformation :Local
 		$Contact->phonebusiness($params->{'phonebusiness'});
 		$Contact->phonehome($params->{'phonehome'});
 
-	# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
-	$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
-	$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
-
-	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
-
-	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
-
-	#INSERT NEW CONTACT SETTING RECORDS
-	foreach my $ruleHash (@$CONTACT_RULES)
-		{
-		#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
-		if ($params->{$ruleHash->{value}})
+		if ($params->{'ajax'} == 1)
 			{
-			my $customerContactData = {
-				ownertypeid	=> 2,
-				ownerid		=> $Contact->contactid,
-				datatypeid	=> $ruleHash->{datatypeid},
-				datatypename=> $ruleHash->{value},
-				value       => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
-				};
+			my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+			push(@$CONTACT_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1}) if $self->contact->is_superuser;
 
-			my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
-			$NewCCData->custcondataid($self->get_token_id);
-			$NewCCData->insert;
+			$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
+			
+			# INITIALLY FLUSH CONTACT SETTINGS IF ANY.
+			$Contact->customer_contact_data({ ownertypeid => '2' })->delete;
+			$c->log->debug("___ Flush old custcondata for Contact: " . $Contact->contactid);
+
+			#INSERT NEW CONTACT SETTING RECORDS
+			foreach my $ruleHash (@$CONTACT_RULES)
+				{
+				#$c->log->debug("FIELD : $ruleHash->{value} = " . $params->{$ruleHash->{value}});
+				if (defined $params->{$ruleHash->{value}})
+					{
+					my $customerContactData = {
+						ownertypeid  => 2,
+						ownerid      => $Contact->contactid,
+						datatypeid   => $ruleHash->{datatypeid},
+						datatypename => $ruleHash->{value},
+						value        => ($ruleHash->{type} eq 'CHECKBOX') ? 1 : $params->{$ruleHash->{value}},
+						};
+
+					my $NewCCData = $c->model("MyDBI::Custcondata")->new($customerContactData);
+					$NewCCData->custcondataid($self->get_token_id);
+					$NewCCData->insert;
+					}
+				}
 			}
-		}
 
 		$Contact->update;
+
+		if ($Contact->contactid eq $self->contact->contactid && $Contact->username ne $self->token->active_username)
+			{
+			$self->token->active_username($Contact->username);
+			$self->token->update;
+			}
 
 		$c->stash->{MESSAGE} = 'Contact information updated successfully';
 
@@ -639,6 +664,7 @@ sub contactinformation :Local
 			$c->stash->{origdate}			= $Contact->get_contact_data_value('origdate');
 			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
+			$c->stash->{SSO_CUSTOMER}		= 1 if $Contact->customer->is_single_sign_on_customer;
 			}
 
 		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
@@ -657,14 +683,49 @@ sub contactinformation :Local
 		$c->stash->{indicatortype_loop}      = $self->get_select_list('INDICATOR_TYPE');
 		$c->stash->{packinglist_loop}        = $self->get_select_list('PACKING_LIST');
 		$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
+		$c->stash->{printreturnshipment_loop}= $self->get_select_list('PRINT_RETURN_SHIPMENT');
+		$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
+		$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
-
+		$c->log->debug("SUPER_USER" . $c->stash->{SUPER_USER});
 		$self->set_required_fields;
-
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
+		}
+	}
+
+sub uploadprofile :Local
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Contact =  $c->model('MyDBI::Contact')->find({contactid => $params->{'contactid'}});
+	unless ($Contact)
+		{
+		$c->log->debug("Contact not found");
+		return;
+		}
+
+	my $FILE_name = $Contact->customer->username  . '-' . $Contact->username . '.png';
+
+	my $Upload = $c->request->upload('Filedata');
+
+	unless ($Upload)
+		{
+		$c->log->debug("File to be uploaded is not provided");
+		return;
+		}
+
+	my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $FILE_name;
+	$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
+
+	if ($Upload->copy_to($FullPath))
+		{
+		$c->log->debug("File Upload Path, " . $FullPath);
 		}
 	}
 
@@ -692,9 +753,12 @@ sub set_required_fields :Private
 			{ name => 'contact_country',  details => "{ minlength: 1 }"},
 			];
 		}
-
-	push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"});
-	push(@$requiredList, { name => 'contact_password', details => "{ minlength: 6 }"});
+		
+	unless ($c->stash->{SSO_CUSTOMER})
+		{
+		push(@$requiredList, { name => 'contact_username', details => "{ minlength: 1 }"}) ;
+		push(@$requiredList, { name => 'contact_password', details => "{ minlength: 6 }"});
+		}
 	push(@$requiredList, { name => 'phonehome',        details => "{ phone: false }"});
 	push(@$requiredList, { name => 'contact_email',    details => "{ email: false }"});
 	push(@$requiredList, { name => 'contact_fax',      details => "{ phone: false }"});
@@ -725,6 +789,7 @@ sub get_customer_contacts :Private
 		$contact_batches = $self->process_pagination('contactmanagement');
 		$WHERE->{contactid} = $contact_batches->[0] if $contact_batches;
 		}
+
 	$c->stash->{SHOW_PAGINATION} = 1 unless $params->{'contact_ids'};
 
 	#$c->log->debug("WHERE: " . Dumper $WHERE);
@@ -762,7 +827,9 @@ sub get_contact_setting_list :Private
 	my $c = $self->context;
 
 	my $CONTACT_RULES = IntelliShip::Utils->get_rules('CONTACT');
+	push(@$CONTACT_RULES, { name => 'Super User', value => 'superuser', type => 'CHECKBOX', datatypeid => 1}) if $self->contact->is_superuser;
 
+	$CONTACT_RULES = [sort { uc($a->{'name'}) cmp uc($b->{'name'}) } @$CONTACT_RULES];
 	$c->log->debug("___ CONTACT_RULES record count " . @$CONTACT_RULES);
 
 	#my $list = [];
@@ -793,7 +860,7 @@ sub get_contact_setting_list :Private
 			}
 		else
 			{
-			$ruleHash->{text } = $value;
+			$ruleHash->{text} = $value;
 			}
 		}
 

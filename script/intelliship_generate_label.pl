@@ -87,6 +87,7 @@ if ("0" eq "$angleFlag")
 
 warn "Final input to converter type=$opType format=$opFormat angle=$opAngle epl=$list[0]";
 #####################################################################################################
+my $labelSize = "0";
 
 ######### Generating output for each input file #####################################################
 foreach my $FileName (@list)
@@ -175,7 +176,6 @@ sub createImage()
 		my $searchString = qq~$fileData~;
 		$searchString =~ s/\n+|\r+|\s+|\t+//ig;
 		my @lines = split(/\+\|\|\-\|\|\+/,"$searchString");
-		my $labelSize = "0";
 		foreach my $line (@lines){
 					if ($line =~ /^A/){
 								$line =~ s/"//g;
@@ -505,10 +505,8 @@ sub createImage()
 		close FH;
 
 		########################################
-		## ADD BORDER OF 2px to the image
+		## ADD BORDER TO THE LABLE IMAGE
 		########################################
-		#system("/usr/bin/convert $outdir/$file.jpg -bordercolor opaque -border 2 $outdir/$file.jpg");
-
 		#system("/usr/bin/convert -border 1x1 -bordercolor black /opt/engage/intelliship/html/$file.jpg /opt/engage/intelliship/html/$file.jpg");
 
 		if($sizeGot < 2)
@@ -577,9 +575,23 @@ sub mergeImage()
 		my $size = @filename;
 		my $imagesize = "";
 		if($size eq 3){
-					$imagesize = "1215x680";
-		}elsif($size eq 2){
-					$imagesize = "810x680";
+							if("1" eq "$labelSize")
+							{
+								$imagesize = "1215x680";
+							}
+							else
+							{
+                                         $imagesize = "1215x605";
+							}
+				  }elsif($size eq 2){
+							if("1" eq "$labelSize")
+                     {
+                        $imagesize = "810x680";
+                     }
+                     else
+                     {
+                                         $imagesize = "810x605";
+							}
 		}else{
 		}
 		warn "mergeImage =$mainFileName,@filename";

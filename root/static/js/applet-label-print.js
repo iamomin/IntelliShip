@@ -156,7 +156,9 @@ function fixHTML(html) {
 *    qz.appendImage($("canvas")[0].toDataURL('image/png'));
 ***************************************************************************/
 function printHTML5Page() {
-	$("body").html2canvas({
+	html2canvas(document.body, {
+		width: 800,
+		height: 1200,
 		canvas: hidden_screenshot,
 		onrendered: function() {
 			if (notReady()) { return; }
@@ -164,7 +166,9 @@ function printHTML5Page() {
 			// setPaperSize() must be called before setAutoSize(), setOrientation(), etc.
 			qz.setPaperSize("8.5in", "11.0in");  // US Letter
 			qz.setAutoSize(true);
-			qz.appendImage($("canvas")[0].toDataURL('image/png'));
+			var dataUrl = $("canvas")[0].toDataURL('image/png');
+			qz.appendImage(dataUrl);
+			//window.open(dataUrl, "toDataURL() image", "width=600, height=200");
 			// Automatically gets called when "qz.appendFile()" is finished.
 			window['qzDoneAppending'] = function() {
 				// Tell the applet to print.
@@ -172,7 +176,7 @@ function printHTML5Page() {
 
 				// Remove reference to this function
 				window['qzDoneAppending'] = null;
-			};
-		}
-	});
-}
+				};
+			}
+		});
+	}

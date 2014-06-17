@@ -39,8 +39,9 @@ sub new
 sub GetZoneNumber
 	{
 		my $self = shift;
-		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry) = @_;
+		my ($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity) = @_;
 
+		warn "########## GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity) ";
 		# Check if this zone is exluded from the customerservice/service
 		if
 		(
@@ -67,6 +68,8 @@ sub GetZoneNumber
 			$ZoneType->Load($zonetypeid);
 			my $lookuptype = $ZoneType->GetValueHashRef()->{'lookuptype'};
 
+			warn "########## \$lookuptype: ". $lookuptype;
+
 			# Make sure we have all the right data for the zone lookup - if not, return undef
 			# Zip Lookup
 			if
@@ -78,12 +81,12 @@ sub GetZoneNumber
 					!defined($ToZip) || $ToZip eq ''
 				)
 			)
-			{
+			{	warn "CUSTOMERSERVICE:: 1";
 				return undef;
 			}
 			# State Lookup
 			elsif
-			(
+			(	
 				defined($lookuptype) && $lookuptype eq '2'
 				&&
 				(
@@ -91,7 +94,7 @@ sub GetZoneNumber
 					!defined($ToState) || $ToState eq ''
 				)
 			)
-			{
+			{	warn "CUSTOMERSERVICE:: 2";
 				return undef;
 			}
 			# Country Lookup
@@ -104,9 +107,11 @@ sub GetZoneNumber
 					!defined($ToCountry) || $ToCountry eq ''
 				)
 			)
-			{
+			{	warn "CUSTOMERSERVICE:: 3";
 				return undef;
 			}
+
+			warn "CUSTOMERSERVICE:: Starting to prepare query";
 
 			# 'Normal' zones
 			if ( defined($lookuptype) && $lookuptype < '1000' )
@@ -212,6 +217,60 @@ sub GetZoneNumber
 							)
 					";
 				}
+				#Zip to AddressCode. VERY SPECIFIC.
+				elsif ( defined($lookuptype) && $lookuptype eq '8' )
+				{
+					$SQLString = "
+							SELECT
+								zonenumber
+							FROM
+								zone
+							WHERE
+								typeid = '$zonetypeid' AND
+								originbegin <= '$FromZip' AND
+								originend >= '$FromZip' AND
+								destaddresscode = '$DestAddressCode'
+					";
+				}
+				#City to International City/Country
+				elsif ( defined($lookuptype) && $lookuptype eq '9' )
+				{
+					warn "########## In lookuptype 9: $FromCity, $ToCity";					
+					my $destcitycode = &StripNaked($ToCity);
+					
+					warn "########## From To: $FromState, $destcitycode-$ToCountry";
+					$SQLString = "
+							SELECT
+								zonenumber
+							FROM
+								zone
+							WHERE
+								typeid = '$zonetypeid' AND
+								originstate = '$FromState' AND
+								destcity = '$destcitycode' AND
+								destcountry = '$ToCountry'
+					";
+				}
+				#International City/Country to City
+				elsif ( defined($lookuptype) && $lookuptype eq '10' )
+				{
+					warn "########## In lookuptype 10";
+					my $origincitycode = &StripNaked($FromCity);
+					my $destcitycode = &StripNaked($ToCity);
+					
+					warn "########## From To: $origincitycode-$FromCountry, $ToState";
+					$SQLString = "
+							SELECT
+								zonenumber
+							FROM
+								zone
+							WHERE
+								typeid = '$zonetypeid' AND
+								origincity = '$origincitycode' AND
+								deststate = '$ToState' AND
+								origincountry = '$FromCountry'
+					";
+				}
 				# Postalcode based zones
 				else
 				{
@@ -222,11 +281,14 @@ sub GetZoneNumber
 						z.destend >= '$ToZip'
 					";
 				}
-	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
-	#warn $SQLString;
+			#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
+
 				my $sth = $self->{'object_dbref'}->prepare($SQLString)
 					or die "Could not prepare SQL statement";
-
+				$SQLString =~ s/\s+/ /;
+				$SQLString =~ s/\t+/ /;
+				$SQLString =~ s/\n+/ /;
+				#warn "########## ZoneLookup SQL: " . $SQLString;
 				$sth->execute()
 					or die "Cannot execute sql statement";
 
@@ -266,21 +328,23 @@ sub GetZoneNumber
 			undef($ZoneNumber);
 		}
 	#warn $ZoneNumber if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
-	#warn "\nzonenumber=$ZoneNumber";
+	warn "\nzonenumber=$ZoneNumber";
 		return ($ZoneNumber,$TransitTime);
 	}
 
 sub GetCost
 	{
 		my $self = shift;
-		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date) = @_;
+		my ($Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band,$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date, $DestAddressCode, $FromCity, $ToCity) = @_;
 
+		warn "########## CUSTOMERSERVICE::GetCost($Weight, $RateTypeID, $FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $Type, $Band, $ZoneNumber, $CWT, $DollarAmount, $Lookuptype, $Quantity, $Unittype, $Automated, $CustomerID, $date, $DestAddressCode, $FromCity, $ToCity)";
 
 		# Get Zone Number, if it's not passed in
-		if ( !$ZoneNumber )
-		{
-			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry);
-		}
+		#if ( !$ZoneNumber )
+		#{
+			warn "######## Calling GetZoneNumber 1: $ToCity";
+			($ZoneNumber) = $self->GetZoneNumber($FromZip, $ToZip, $FromState, $ToState, $FromCountry, $ToCountry, $DestAddressCode, $FromCity, $ToCity);
+		#}
 	#warn "\nGetCost: $Weight,$RateTypeID,$FromZip,$ToZip,$FromState,$ToState,$FromCountry,$ToCountry,$Type,$Band, zone=$ZoneNumber,$CWT,$DollarAmount,$Lookuptype,$Quantity,$Unittype,$Automated,$CustomerID,$date";
 
 		if (!defined($ZoneNumber))
@@ -397,7 +461,7 @@ sub GetCost
 				stopdate DESC
 			LIMIT 1
 		";
-	#warn $SQLString;
+	warn "########## $SQLString";
 	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
@@ -524,11 +588,16 @@ sub GetCost
 
 sub GetShipmentCosts
 	{
+		warn "########## GetShipmentCosts";
 		my $self = shift;
 		my ($ShipmentRef) = @_;
 		#WarnHashRefValues($ShipmentRef);
 		# Check if this CS/Service is inactive...if it is, return *immediately*
-		return(undef,undef,undef) if $self->GetCSValue('inactive');
+		if ($self->GetCSValue('inactive'))
+			{
+			warn "\n... Service or CustomerService is inactive";
+			return(undef,undef,undef);
+			}
 		#warn "\nGetShipmentCosts";
 		my $AggregateWeight = 0;
 		my $Cost;
@@ -729,7 +798,7 @@ sub GetShipmentCosts
 			$Cost = sprintf("%02.2f",($Cost + ($Cost * $FSCRate)));
 		}
 
-		#warn "\nCS GetShipmentCosts returning: |$Cost|zone=$Zone|days=$TransitDays|";
+		#warn "\nCS GetShipmentCosts returning: |cost=$Cost|zone=$Zone|packagecost=$PackageCosts|costweight=$CostWeight|days=$TransitDays|";
 
 		return ($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays);
 	}
@@ -1116,6 +1185,7 @@ sub GetAggregateWeight
 
 sub GetPackageCosts
 	{
+		warn "######### GetPackageCosts";
 		my $self = shift;
 
 		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName) = @_;
@@ -1230,6 +1300,7 @@ sub GetSuperCost
 		my ($Weight,$DimLength,$DimWidth,$DimHeight,$ShipmentRef,$CWT,$Quantity,$UnitType) = @_;
 		#warn "\nGetSuperCost() Weight: $Weight" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		#WarnHashRefValues($ShipmentRef);
+		warn "########## GetSuperCost($Weight, $DimLength, $DimWidth, $DimHeight, $ShipmentRef, $CWT, $Quantity, $UnitType)";
 		my $Zone;
 		my $Cost = 0;
 		my $TransitDays = 0;
@@ -1304,11 +1375,11 @@ sub GetSuperCost
 			$RateHandlerName = $RateType->GetValueHashRef()->{'handler'};
 			$Lookuptype = $RateType->GetValueHashRef()->{'lookuptype'};
 		}
-		#warn "\nGetSuperCost handler/lookuptype: $RateHandlerName  $Lookuptype";
+		warn "\n########## GetSuperCost handler/lookuptype: $RateHandlerName  $Lookuptype";
 
 		if ( !defined($RateHandlerName) || $RateHandlerName eq '' )
 		{
-			#warn "\nno ratehandler: weight=$Weight";
+			warn "\n########## no ratehandler: weight=$Weight";
 			if ( !defined($Weight) || $Weight eq '' ) { return(undef,undef,$CostWeight); }
 
 			# Assume everything going through 'GetShipmentCosts' is coming through AOS.  Currently, this is true.
@@ -1316,6 +1387,7 @@ sub GetSuperCost
 			my $automated = 1;
 			#warn "\nGO IN HERE: $Cost";
 
+			warn "########## Destination Address code: ".$ShipmentRef->{'destaddresscode'};
 			($Cost) = $self->GetCost(
 				$CostWeight,
 				$RateTypeID,
@@ -1336,6 +1408,9 @@ sub GetSuperCost
 				$automated,
 				$ShipmentRef->{'customerid'},
 				$ShipmentRef->{'dateshipped'},
+				$ShipmentRef->{'destaddresscode'},
+				$ShipmentRef->{'fromcity'},
+				$ShipmentRef->{'tocity'}
 			);
 
 		#warn "\nGO OUT OF HERE: $Cost";
@@ -1377,8 +1452,19 @@ sub GetSuperCost
 
 			# Must have a class to rate the tariff based carriers
 			my $Class = 0;
-			if ( $ShipmentRef->{'class'} )
+			my $Mode = $self->GetCSValue('servicetypeid');
+
+			warn "RATETYPEID=$RateTypeID";
+
+			if ( $Mode == '1000' || $RateTypeID eq 'FDXSHPSERVAPI' || $RateTypeID eq 'USPSRATINGAPI' || $RateTypeID eq 'UPS2RATINGAPI')
 			{
+				# small package/parcel doesn't need a class
+				warn "Override Class requirement for Parcel" if 1 || $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+			}
+			elsif ( $ShipmentRef->{'class'} )
+			{
+				warn "Has Class class=$ShipmentRef->{'class'}" if 1 || $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
+
 				unless ( $Class = $self->GetClassValue('fak',$ShipmentRef->{'class'},$ShipmentRef->{'class'}) )
 				{
 					$Class = $ShipmentRef->{'class'}
@@ -1386,6 +1472,7 @@ sub GetSuperCost
 			}
 			else
 			{
+				warn "NO Class return" if 1 || $self->GetValueHashRef()->{'customerserviceid'} eq 'SPRINTFED0002';
 				return(undef,undef,$CostWeight);
 			}
 
@@ -1396,13 +1483,17 @@ sub GetSuperCost
 				$self->GetValueHashRef()->{'zonetypeid'}
 			)
 			{
+				warn "######## Calling GetZoneNumber 2: ". $ShipmentRef->{'tocity'};
 				($Zone) = $self->GetZoneNumber(
 					$ShipmentRef->{'fromzip'},
 					$ShipmentRef->{'tozip'},
 					$ShipmentRef->{'fromstate'},
 					$ShipmentRef->{'tostate'},
 					$ShipmentRef->{'fromcountry'},
-					$ShipmentRef->{'tocountry'}
+					$ShipmentRef->{'tocountry'},
+					$ShipmentRef->{'destaddresscode'}, 
+					$ShipmentRef->{'fromcity'},
+					$ShipmentRef->{'tocity'}
 				);
 				#warn "\n$Zone|" . $self->GetValueHashRef()->{'customerserviceid'};
 				if ( !$Zone )
@@ -1410,6 +1501,7 @@ sub GetSuperCost
 				#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
 					return(undef,undef,$CostWeight);
 				}
+			$ShipmentRef->{'zonenumber'} = $Zone;
 			}
 			#warn $Zone if $self->GetValueHashRef()->{'customerserviceid'} eq 'MAERSKRDWY001';
 
@@ -1417,27 +1509,39 @@ sub GetSuperCost
 			my $RateHandler = eval 'new Tariff::' . $RateHandlerName . '($ShipmentRef->{"dbref_' . lc($RateHandlerName) . '"},$RateTypeID)';
 			#WarnHashRefValues($ShipmentRef);
 
+			warn "\n RateHandlerName: " . $RateHandlerName;
+
 			my ($MarkupAmt,$MarkupPercent) = $self->GetCustomerMarkup($ShipmentRef);
 			my $DiscountPercent = $self->GetDiscountPercent($ShipmentRef);
 			my $ScacCode = $self->GetCarrierScac();
 			#warn "\nRateHandlerName=$RateHandlerName";
 			#warn "\nCarrier Scac=$ScacCode";
 			($Cost,$TransitDays) = $RateHandler->GetCost(
-				$CostWeight,
-				$DiscountPercent,
-				$Class,
-				$ShipmentRef->{'fromzip'},
-				$ShipmentRef->{'tozip'},
-				$ScacCode,
-				$ShipmentRef->{'norm_datetoship'},
-				$ShipmentRef->{'required_assessorials'},
-				$ShipmentRef->{'efreightid'},
-				$ShipmentRef->{'clientid'},
-				$self->{'field_customerserviceid'},
-				$self->{'field_serviceid'}
-			);
+					$CostWeight,
+					$DiscountPercent,
+					$Class,
+					$ShipmentRef->{'fromzip'},
+					$ShipmentRef->{'tozip'},
+					$ScacCode,
+					$ShipmentRef->{'norm_datetoship'},
+					$ShipmentRef->{'required_assessorials'},
+					$ShipmentRef->{'efreightid'},
+					$ShipmentRef->{'clientid'},
+					$self->{'field_customerserviceid'},
+					$self->{'field_serviceid'},
+					$ShipmentRef->{'tocountry'},
+					$ShipmentRef->{'customerid'},
+					$DimHeight,
+					$DimWidth,
+					$DimLength,
+					$ShipmentRef->{'fromcountry'},
+					$ShipmentRef->{'fromcity'},
+					$ShipmentRef->{'fromstate'},
+					$ShipmentRef->{'tocity'},
+					$ShipmentRef->{'tostate'},
+				);
 
-			unless ( defined($Cost) && $Cost ne '' && $Cost >= 0 )
+		unless ( defined($Cost) && $Cost ne '' && $Cost >= 0 )
 			{
 				return(undef,undef,$CostWeight);
 			}
@@ -1519,6 +1623,8 @@ sub GetClassValue
 	my $self = shift;
 		my ($CDColumn,$ClassLow,$ClassHigh) = @_;
 
+		return unless $ClassLow or $ClassHigh;
+
 		my $CSID = $self->GetValueHashRef()->{'customerserviceid'};
 		my $ServiceID = $self->GetValueHashRef()->{'serviceid'};
 
@@ -1537,7 +1643,7 @@ sub GetClassValue
 					)
 				)
 		";
-	#warn $SQL;
+	#warn "\n$SQL";
 
 		my $STH = $self->{'object_dbref'}->prepare($SQL)
 			or die "Could not prepare SQL statement";
@@ -1550,6 +1656,29 @@ sub GetClassValue
 		$STH->finish();
 
 	return $ClassValue;
+	}
+
+sub GetZoneDiscount
+	{
+	my $self = shift;
+	my ($ZoneNumber) = @_;
+
+	return unless $ZoneNumber;
+
+	my $customerserviceid = $self->GetValueHashRef()->{'customerserviceid'};
+
+	# Take cs, if available, then take service
+	my $SQL = "SELECT ardiscount from ratedata where ownertypeid=4 and ownerid='$customerserviceid' and zone='$ZoneNumber' and ardiscount is not null";
+	warn "GetZoneDiscount: " . $SQL;
+	my $STH = $self->{'object_dbref'}->prepare($SQL) or die "Could not prepare SQL statement";
+
+	$STH->execute() or die "Cannot execute sql statement";
+
+	my ($Percent) = $STH->fetchrow_array();
+
+	$STH->finish();
+	warn "\nDISCOUNT: $Percent";
+	return $Percent;
 	}
 
 sub GetCustomerDiscount
@@ -1657,6 +1786,10 @@ sub GetDiscountPercent
 		elsif ( $DiscountPercent = $self->GetClassValue('discountpercent',$ShipmentRef->{'class'},$ShipmentRef->{'class'}) )
 		{
 			# Class based discount percent
+		}
+		elsif ( $DiscountPercent = $self->GetZoneDiscount($ShipmentRef->{'zonenumber'}) )
+		{
+			# Zone based discount percent
 		}
 		elsif ( $DiscountPercent = $self->GetCustomerDiscount($ShipmentRef->{'customerid'}) )
 		{

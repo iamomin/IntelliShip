@@ -332,6 +332,7 @@ sub generate_shipment_report
 	my $commodity_sum = 0;
 	my $distinctCarriers = {};
 	my $ship_count = $report_sth->numrows;
+	my $SSO_CUSTOMER = 1 if $Customer->is_single_sign_on_customer;
 
 	for (my $row=0; $row < $report_sth->numrows; $row++)
 		{
@@ -366,7 +367,11 @@ sub generate_shipment_report
 		my $report_output_column_loop = [];
 		if ($params->{'format'} eq 'CSV')
 			{
-			if ( $row_data->{'customerserviceid'} )
+			if ($SSO_CUSTOMER)
+				{
+				$row_data->{'webaccount'} = 'PRIVATE';
+				}
+			elsif ( $row_data->{'customerserviceid'} )
 				{
 				my $CSRef = $self->API->get_CS_shipping_values($row_data->{'customerserviceid'},$row_data->{'customerid'});
 				$row_data->{'webaccount'} = $CSRef->{'webaccount'};

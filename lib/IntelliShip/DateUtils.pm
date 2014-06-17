@@ -114,7 +114,14 @@ sub current_date
 	$tm[4] = "0" . $tm[4] if ($tm[4] < 10);
 
 	$tm[5] = $tm[5] + 1900;
-	$date = $tm[5] . $separator . $tm[4] . $separator . $tm[3];
+	if ($separator =~ /\//)
+		{
+		$date = $tm[4] . $separator . $tm[3] . $separator . $tm[5];
+		}
+	else
+		{
+		$date = $tm[5] . $separator . $tm[4] . $separator . $tm[3];
+		}
 
 	return ($date);
 	}
@@ -583,7 +590,7 @@ sub is_valid_date
 
 	my ($dyy, $dmm, $ddd);
 	($dyy, $dmm, $ddd) = split(/-/, $dateIs) if $dateIs =~ /-/;
-	($dmm, $ddd, $dyy) = split(/-/, $dateIs) if $dateIs =~ /\//;
+	($dmm, $ddd, $dyy) = split(/\//, $dateIs) if $dateIs =~ /\//;
 
 	return check_date($dyy, $dmm, $ddd);
 	}
@@ -713,10 +720,35 @@ sub Holiday
 
 	foreach $holiday (@holidays)
 		{
+		#print STDERR "\nstart: $start, holiday: $holiday, end: $end";
 		$numHolidays++ if ($start le $holiday and $end ge $holiday);
 		}
 
 	return $numHolidays;
+	}
+
+sub get_business_days_between_two_dates
+	{
+	my $self = shift;
+	my ($date1,$date2) = @_;
+
+	my $d1 = $self->format_to_yyyymmdd($date1);
+	my $d2 = $self->format_to_yyyymmdd($date2);
+
+	#print STDERR "\n d1: " . $d1;
+	#print STDERR "\n d2: " . $d2;
+
+	my $day1 = new Date::Business( DATE => $d1 );
+	my $day2 = new Date::Business( DATE => $d2 );
+
+	my $days_diff = $day1->diffb($day2);
+	$days_diff = $days_diff * -1 if $days_diff < 0;
+
+	my $holidays = $self->Holiday($d1,$d2);
+	#print STDERR "\n days_diff: " . $days_diff;
+	#print STDERR "\n holidays : " . $holidays;
+	my $transit_days = ($days_diff-$holidays);
+	return $transit_days;
 	}
 
 sub parse_date

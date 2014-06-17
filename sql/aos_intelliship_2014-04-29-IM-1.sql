@@ -1,0 +1,1 @@
+ALTER TABLE co ADD COLUMN return character(13) NOT NULL DEFAULT '';

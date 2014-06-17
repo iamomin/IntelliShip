@@ -20,7 +20,7 @@ sub process_request
 
 	$self->log("Process USPS Ship Order");
 
-	#$self->log("Shipment Data" .Dumper($shipmentData));
+	$self->log("Shipment Data" .Dumper($shipmentData));
 
 	my ($API_name,$XML_request) = ('','');
 
@@ -34,22 +34,22 @@ sub process_request
 		$XML_request = $self->get_StandardPost_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPRIORITY')
+	elsif ($shipmentData->{'servicecode'} =~ /(UPRIORITY|USPSPMFRE|USPSPMPFRE|USPSPMSFRB|USPSPMMFRB|USPSPMLFRB)/)
 		{
 		$XML_request = $self->get_PriorityMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-		elsif ($shipmentData->{'servicecode'} eq 'USPSMM')
+	elsif ($shipmentData->{'servicecode'} eq 'USPSMM')
 		{
 		$XML_request = $self->get_MediaMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-		elsif ($shipmentData->{'servicecode'} eq 'USPSLM')
+	elsif ($shipmentData->{'servicecode'} eq 'USPSLM')
 		{
 		$XML_request = $self->get_LibraryMail_xml_request;
 		$API_name = 'DeliveryConfirmationV4';
 		}
-	elsif ($shipmentData->{'servicecode'} eq 'UPME')
+	elsif ($shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/)
 		{
 		$XML_request = $self->get_PriorityMailExpress_xml_request;
 		$API_name = 'ExpressMailLabel';
@@ -58,57 +58,29 @@ sub process_request
 	my $url = 'https://secure.shippingapis.com/' . (IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'ShippingAPI.dll' : 'ShippingAPITest.dll');
 	$self->log("Sending request to URL: " . $url);
 
-	my $shupment_request = {
-			httpurl => $url,
-			API => $API_name,
-			XML => $XML_request
-		};
-
-	my $UserAgent = LWP::UserAgent->new();
-	my $response = $UserAgent->request(
-			POST $shupment_request->{'httpurl'},
-			Content_Type  => 'text/html',
-			Content       => [%$shupment_request]
-			);
-
-	unless ($response)
+	unless ($XML_request)
 		{
-		$self->log("USPS: Unable to access USPS site");
-		$self->add_error("No response received from USPS");
-		return $shipmentData;
+		$self->add_error("This service is under construction. Please try another service.");
+		return;
 		}
 
-	#$self->log( "### RESPONSE IS SUCCESS: " . $response->is_success);
-	#$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
+	my $responseDS = $self->Call_API($url, $XML_request, $API_name);
 
-	my $xml = new XML::Simple;
+	return unless $responseDS;
 
-	my $XMLResponse = $xml->XMLin($response->content);
-
-	if( $XMLResponse->{Number} and $XMLResponse->{Description})
-		{
-		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
-		$self->log($msg);
-		$self->add_error($msg);
-		return $shipmentData;
-		}
-
-	## Check Priority Express Mail Commitment Days
-	if ($shipmentData->{'servicecode'} eq 'UPME')
-		{
-		$self->CheckExpressMailCommitment;
-		}
+	## Check Commitment Days from USPS
+	$self->Check_USPS_Commitment;
 
 	my $TrackingNumber;
 
-	if ($shipmentData->{'servicecode'} eq 'UPME')
+	if ($shipmentData->{'servicecode'} eq 'UPME' or $shipmentData->{'servicecode'} eq 'USPSPMEFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEPFRE' or $shipmentData->{'servicecode'} eq 'USPSPMEFRB')
 		{
-		$TrackingNumber =$XMLResponse->{EMConfirmationNumber};
+		$TrackingNumber =$responseDS->{EMConfirmationNumber};
 		$self->log("EMConfirmationNumber: ".$TrackingNumber);
 		}
 	else
 		{
-		$TrackingNumber =$XMLResponse->{DeliveryConfirmationNumber};
+		$TrackingNumber =$responseDS->{DeliveryConfirmationNumber};
 		$self->log("DeliveryConfirmationNumber: ".$TrackingNumber);
 		}
 
@@ -124,11 +96,15 @@ sub process_request
 	$shipmentData->{'tracking1'}    = $TrackingNumber;
 	$shipmentData->{'ElectronicRateApproved'}    = $Electronic;
 	$shipmentData->{'weight'}       = $shipmentData->{'enteredweight'};
-	$shipmentData->{'RDC'}          = $XMLResponse->{RDC};
-	$shipmentData->{'CarrierRoute'} = $XMLResponse->{CarrierRoute};
-	$shipmentData->{'expectedDelivery'} = $XMLResponse->{Commitment}->{ScheduledDeliveryDate} if  $XMLResponse->{Commitment}->{ScheduledDeliveryDate};
-	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->american_date($shipmentData->{'expectedDelivery'}) if $shipmentData->{'expectedDelivery'};
-	$shipmentData->{'commintmentName'} = uc($XMLResponse->{Commitment}->{CommitmentName}) if  $XMLResponse->{Commitment}->{CommitmentName};
+	$shipmentData->{'RDC'}          = $responseDS->{RDC};
+	$shipmentData->{'CarrierRoute'} = $responseDS->{CarrierRoute};
+	unless ($shipmentData->{'expectedDelivery'})
+		{
+		$shipmentData->{'expectedDelivery'} = $responseDS->{Commitment}->{ScheduledDeliveryDate} if  $responseDS->{Commitment}->{ScheduledDeliveryDate};
+		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->american_date($shipmentData->{'expectedDelivery'}) if $shipmentData->{'expectedDelivery'};
+		}
+
+	$shipmentData->{'commintmentName'} = uc($responseDS->{Commitment}->{CommitmentName}) if  $responseDS->{Commitment}->{CommitmentName};
 
 	my $raw_string = $self->get_EPL($shipmentData);
 	my $PrinterString = $raw_string;
@@ -162,7 +138,7 @@ sub get_FirstClass_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -234,7 +210,7 @@ sub get_StandardPost_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -284,6 +260,18 @@ END
 	return $XML_request;
 	}
 
+my $containerTypeHash = {
+	USPSPMFRE  => 'FLAT RATE ENVELOPE',
+	USPSPMPFRE => 'PADDED FLAT RATE ENVELOPE',
+	USPSPMSFRB => 'SM FLAT RATE BOX',
+	USPSPMMFRB => 'MD FLAT RATE BOX',
+	USPSPMLFRB => 'LG FLAT RATE BOX',
+
+	USPSPMEFRE  => 'FLAT RATE ENVELOPE',
+	USPSPMEPFRE => 'PADDED FLAT RATE ENVELOPE',
+	USPSPMEFRB  => 'FLAT RATE BOX',
+	};
+
 sub get_PriorityMail_xml_request
 	{
 	my $self = shift;
@@ -307,7 +295,11 @@ sub get_PriorityMail_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'servicecode'} eq 'USPSPMLFRB')
+		{
+		$shipmentData->{'packagesize'} = 'REGULAR';
+		}
+	elsif ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} > 12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -315,6 +307,18 @@ sub get_PriorityMail_xml_request
 		{
 		$shipmentData->{'packagesize'} = 'REGULAR';
 		}
+
+	if ($shipmentData->{'packagesize'} eq 'LARGE')
+		{
+		$shipmentData->{'containerType'} = 'RECTANGULAR';
+		}
+	else
+		{
+		$shipmentData->{'containerType'} = 'VARIABLE';
+		}
+
+	my $containter_type = $containerTypeHash->{$shipmentData->{'servicecode'}};
+	$shipmentData->{'containerType'} = $containter_type if $containter_type;
 
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -343,6 +347,7 @@ sub get_PriorityMail_xml_request
 <ImageType>TIF</ImageType>
 <AddressServiceRequested>False</AddressServiceRequested>
 <HoldForManifest>N</HoldForManifest>
+<Container>$shipmentData->{'containerType'}</Container>
 <Size>$shipmentData->{'packagesize'}</Size>
 <Width>$shipmentData->{'dimheight'}</Width>
 <Length>$shipmentData->{'dimwidth'}</Length>
@@ -351,7 +356,7 @@ sub get_PriorityMail_xml_request
 </DeliveryConfirmationV4.0Request>
 END
 
-	#$self->log("... XML Request Data:  " . $XML_request);
+	$self->log("... XML Request Data:  " . $XML_request);
 
 	return $XML_request;
 	}
@@ -379,7 +384,7 @@ sub get_MediaMail_xml_request
 
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -448,10 +453,10 @@ sub get_LibraryMail_xml_request
 	#$shipmentData->{'dimheight'} = $shipmentData->{'dimheight'} ? $shipmentData->{'dimheight'} : 10;
 	#$shipmentData->{'dimwidth'} = $shipmentData->{'dimwidth'} ? $shipmentData->{'dimwidth'} : 10;
 	#$shipmentData->{'dimlength'} = $shipmentData->{'dimlength'} ? $shipmentData->{'dimlength'} : 10;
-   
+
 	#$self->log("Senders Name ". $shipmentData->{FromName});
 
-	if($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
+	if ($shipmentData->{'dimheight'} > 12 or $shipmentData->{'dimwidth'} > 12 or $shipmentData->{'dimlength'} >12)
 		{
 		$shipmentData->{'packagesize'} = 'LARGE';
 		}
@@ -543,6 +548,9 @@ sub get_PriorityMailExpress_xml_request
 		$shipmentData->{'containerType'} = 'VARIABLE';
 		}
 
+	my $containter_type = $containerTypeHash->{$shipmentData->{'servicecode'}};
+	$shipmentData->{'containerType'} = $containter_type if $containter_type;
+
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
 <ExpressMailLabelRequest USERID="667ENGAG1719">
@@ -593,33 +601,87 @@ sub get_PriorityMailExpress_xml_request
 <Width>$shipmentData->{'dimheight'}</Width>
 <Length>$shipmentData->{'dimwidth'}</Length>
 <Height>$shipmentData->{'dimlength'}</Height>
+<ReturnCommitments>true</ReturnCommitments>
 </ExpressMailLabelRequest>
 END
 
-	#$self->log("... XML Request Data:  " . $XML_request);
+	$self->log("... XML Request Data:  " . $XML_request);
 
 	return $XML_request;
 	}
 
-sub CheckExpressMailCommitment
+sub Check_USPS_Commitment
 	{
 	my $self = shift;
-
 	my $shipmentData = $self->data;
+	my $url = 'http://production.shippingapis.com/ShippingAPITest.dll';
+
+	if ($shipmentData->{'servicecode'} =~ /(UPME|USPSPMEFRE|USPSPMEPFRE|USPSPMEFRB)/)
+		{
+		my $XML_request = $self->get_Commitment_XML('ExpressMailCommitment');
+		my $responseDS = $self->Call_API($url, $XML_request, 'ExpressMailCommitment');
+
+		return unless $responseDS;
+
+		my $Commitement = (ref $responseDS->{Commitment} eq 'ARRAY' ? $responseDS->{Commitment} : [$responseDS->{Commitment}]);
+
+		#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
+
+		$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
+		$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
+
+		#$self->log("Date1 " .$shipmentData->{'datetoship'});
+		my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
+		#$self->log("Day " .$Days);
+		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
+		#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
+		}
+	elsif ($shipmentData->{'servicecode'} =~ /(UPRIORITY|USPSPMFRE|USPSPMPFRE|USPSPMSFRB|USPSPMMFRB|USPSPMLFRB)/)
+		{
+		my $XML_request = $self->get_Commitment_XML('PriorityMail');
+		my $responseDS = $self->Call_API($url, $XML_request, 'PriorityMail');
+
+		return unless $responseDS;
+
+		my $Days = $responseDS->{Days};
+		$self->log("Day " .$Days);
+		$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
+		$self->log("expectedDelivery " .$shipmentData->{'expectedDelivery'} );
+		}
+	}
+
+sub get_Commitment_XML
+	{
+	my $self = shift;
+	my $API_NAME = shift;
+	my $shipmentData = $self->data;
+	my $API_REQUEST_TAG = $API_NAME . 'Request';
 
 	my $XML_request = <<END;
 <?xml version="1.0" encoding="UTF-8" ?>
-<ExpressMailCommitmentRequest USERID="667ENGAG1719">
+<$API_REQUEST_TAG USERID="667ENGAG1719">
 <OriginZIP>$shipmentData->{'branchaddresszip'}</OriginZIP>
 <DestinationZIP>$shipmentData->{'addresszip'}</DestinationZIP>
 <Date>$shipmentData->{'datetoship'}</Date>
-</ExpressMailCommitmentRequest>
+</$API_REQUEST_TAG>
 END
+	}
+
+sub Call_API
+	{
+	my $self = shift;
+	my $URL = shift;
+	my $XML = shift;
+	my $API_NAME = shift;
+	my $shipmentData = $self->data;
+	my $API_REQUEST_TAG = $API_NAME . 'Request';
+
+	#$self->log( "... USPS XML REQUEST: " . $XML);
 
 	my $shupment_request = {
-			httpurl => 'http://production.shippingapis.com/ShippingAPITest.dll',
-			API => 'ExpressMailCommitment',
-			XML => $XML_request
+			httpurl => $URL,
+			API => $API_NAME,
+			XML => $XML
 			};
 
 	my $UserAgent = LWP::UserAgent->new();
@@ -633,35 +695,32 @@ END
 		{
 		$self->log("USPS: Unable to access USPS site");
 		$self->add_error("No response received from USPS");
-		return $shipmentData;
+		return;
 		}
-	#$self->log( "### RESPONSE DETAILS: " . Dumper $response->content);
+
+	#$self->log( "... RESPONSE DETAILS: " . Dumper $response->content);
 
 	my $xml = new XML::Simple;
 
-	my $XMLResponse = $xml->XMLin($response->content);
+	my $responseDS = $xml->XMLin($response->content);
 
-	if( $XMLResponse->{Number} and $XMLResponse->{Description})
+	if ( $responseDS->{Number} and $responseDS->{Description})
 		{
-		my $msg = "Carrier Response Error: ".$XMLResponse->{Number}. " : ". $XMLResponse->{Description};
-		$self->log($msg);
+		my $msg = "Carrier Response Error: ".$responseDS->{Number}. " : ". $responseDS->{Description};
 		$self->add_error($msg);
-		return $shipmentData;
+		$self->log($msg);
+		return;
 		}
 
-	my $Commitement = (ref $XMLResponse->{Commitment} eq 'ARRAY' ? $XMLResponse->{Commitment} : [$XMLResponse->{Commitment}]);
+	if ($responseDS->{Number} and $responseDS->{Description})
+		{
+		my $msg = "Carrier Response Error: ".$responseDS->{Number}. " : ". $responseDS->{Description};
+		$self->add_error($msg);
+		$self->log($msg);
+		return;
+		}
 
-	#$self->log("commintmentName " .$Commitement->[0]->{CommitmentName});
-
-	$shipmentData->{'commintmentName'} = uc($Commitement->[0]->{CommitmentName}) if  $Commitement->[0]->{CommitmentName};
-	$shipmentData->{'CommitmentTime'} = $Commitement->[0]->{CommitmentTime} if  $Commitement->[0]->{CommitmentTime};
-
-	#$self->log("Date1 " .$shipmentData->{'datetoship'});
-
-	my $Days = substr ($shipmentData->{'commintmentName'}, 0,1);
-	#$self->log("Day " .$Days);
-	$shipmentData->{'expectedDelivery'} = IntelliShip::DateUtils->get_future_business_date($shipmentData->{'dateshipped'},$Days,0,0);
-	#$self->log("Date1 " .$shipmentData->{'expectedDelivery'} );
+	return $responseDS;
 	}
 
 __PACKAGE__->meta()->make_immutable();

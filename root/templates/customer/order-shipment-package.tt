@@ -4,9 +4,15 @@
 [% IF PACKAGE_DETAIL_ROW %]
 <table class="package" id="package-[% ROW_COUNT %]">
 	<tr>
-		<td style="text-align: right;">[% IF PACKAGE_INDEX > 1 %]<a href="javascript:void(0);" onclick="removePackageDetails('[% ROW_COUNT %]');" class="round-black-button">X</a>&nbsp;[% END %][% PACKAGE_TYPE %] QUANTITY:</td>
+		<td id="package_type_[% ROW_COUNT %]" style="text-align: right;">[% IF PACKAGE_INDEX > 1 %]<a href="javascript:void(0);" onclick="removePackageDetails('[% ROW_COUNT %]');" class="round-black-button">X</a>&nbsp;[% END %][% PACKAGE_TYPE %] QUANTITY:</td>
 		<td><input type="text" class="small-text shipment-details" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
-		<th colspan="10"><div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div></th>
+		<th colspan="10">
+			[% IF SHIPPER_NUMBER %]
+				<input type="hidden" id="originalcoid_[% ROW_COUNT%]" name="originalcoid_[% ROW_COUNT%]" value="[% SHIPPER_NUMBER %]"/>
+				<div class="float-left" style="color:#1875BA">Original Shipper # : [% SHIPPER_NUMBER %]</div>
+			[% END %]
+			<div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div>
+		</th>
 	</tr>
 	<tr>
 		<td colspan="2">
@@ -43,7 +49,7 @@
 		<td><select class="small-text" name="unitofmeasure_[% ROW_COUNT %]" id="unitofmeasure_[% ROW_COUNT %]">[% FOREACH item IN measureunit_loop %]<option [% item.value == unitofmeasure ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 		<td class="spacer"><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 		<td><select class="small-text shipment-details" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
-		<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
+		<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value='[% description %]'/></td>
 		<td><input type="text" class="small-text shipment-details" name="decval_[% ROW_COUNT %]" id="decval_[% ROW_COUNT %]" value="[% decval ? decval : '0.00' %]"/></td>
 	</tr>
 	<tr>
@@ -54,26 +60,28 @@
 				<tr>
 					<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
 				</tr>
-				[% IF PACKAGE_PRODUCTS_ROW %]
-					[% PACKAGE_PRODUCTS_ROW %]
+				[% IF RODUCT_DETAILS %]
+					[% RODUCT_DETAILS %]
 				[% ELSE %]
-				<tr id="product-[% ROW_COUNT+1 %]">
-					<td>
-						<input type="hidden" name="type_[% ROW_COUNT+1 %]" id="type_[% ROW_COUNT+1 %]" value="product"/>
-						<input type="hidden" id="rownum_id_[% ROW_COUNT+1 %]" name="rownum_id_[% ROW_COUNT+1 %]" value="[% ROW_COUNT+1 %]"/>
-						<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
-					</td>
-					<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT+1 %]" id="quantity_[% ROW_COUNT+1 %]" value="1"/></td>
-					<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT+1 %]" id="sku_[% ROW_COUNT+1 %]"/></td>
-					<td><input type="text" class="broad-text" name="description_[% ROW_COUNT+1 %]" id="description_[% ROW_COUNT+1 %]"/></td>
-					<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT+1 %]" id="nmfc_[% ROW_COUNT+1 %]"/></td>
-					<td><select class="small-text" name="class_[% ROW_COUNT+1 %]" id="class_[% ROW_COUNT+1 %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
-					<td><input type="text" class="small-text shipment-details" name="weight_[% ROW_COUNT+1 %]" id="weight_[% ROW_COUNT+1 %]" value="0.00"/></td>
-					<td><input type="text" class="small-text shipment-details" name="decval_[% ROW_COUNT+1 %]" id="decval_[% ROW_COUNT+1 %]" value="0.00"/></td>
-				</tr>
+					[% UNLESS HIDE_PRODUCT %]
+					<tr id="product-[% ROW_COUNT+1 %]">
+						<td>
+							<input type="hidden" name="type_[% ROW_COUNT+1 %]" id="type_[% ROW_COUNT+1 %]" value="product"/>
+							<input type="hidden" id="rownum_id_[% ROW_COUNT+1 %]" name="rownum_id_[% ROW_COUNT+1 %]" value="[% ROW_COUNT+1 %]"/>
+							<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
+						</td>
+						<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT+1 %]" id="quantity_[% ROW_COUNT+1 %]" value="1"/></td>
+						<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT+1 %]" id="sku_[% ROW_COUNT+1 %]"/></td>
+						<td><input type="text" class="broad-text" name="description_[% ROW_COUNT+1 %]" id="description_[% ROW_COUNT+1 %]"/></td>
+						<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT+1 %]" id="nmfc_[% ROW_COUNT+1 %]"/></td>
+						<td><select class="small-text" name="class_[% ROW_COUNT+1 %]" id="class_[% ROW_COUNT+1 %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
+						<td><input type="text" class="small-text shipment-details" name="weight_[% ROW_COUNT+1 %]" id="weight_[% ROW_COUNT+1 %]" value="0.00"/></td>
+						<td><input type="text" class="small-text shipment-details" name="decval_[% ROW_COUNT+1 %]" id="decval_[% ROW_COUNT+1 %]" value="0.00"/></td>
+					</tr>
+					[% END %]
 				[% END %]
 			</table>
-			</div>
+		</div>
 		</td>
 	</tr>
 </table>
@@ -94,11 +102,11 @@
 	<td>
 		<input type="hidden" name="type_[% ROW_COUNT %]" id="type_[% ROW_COUNT %]" value="product"/>
 		<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
-		<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();" class="round-black-button">X</a>
+		<a href="javascript:void(0);" onclick="$(this).parent().parent().remove();distributeInsuranceAmongProducts();" class="round-black-button">X</a>
 	</td>
 	<td><input type="text" class="small-text" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
 	<td><input type="text" class="small-text sku_id" name="sku_[% ROW_COUNT %]" id="sku_[% ROW_COUNT %]" value="[% partnumber %]"/></td>
-	<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value="[% description %]"/></td>
+	<td><input type="text" class="broad-text" name="description_[% ROW_COUNT %]" id="description_[% ROW_COUNT %]" value='[% description %]'/></td>
 	<td><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 	<td><select class="small-text" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option [% item.value == class ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 	<td><input type="text" class="small-text shipment-details" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight %]"/></td>

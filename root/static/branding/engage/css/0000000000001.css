@@ -1,0 +1,347 @@
+:-moz-ui-invalid:not(output) {
+    border-color: #777777;
+    box-shadow: none;
+}
+/*$('<link rel="stylesheet" type="text/css" href="https://www.sourceconsulting.com/20-20/intelliship.css"/>').appendTo('body')*/
+* {
+    margin: 0;
+}
+html, body {
+    height: 100%;
+}
+#page {
+    height: 100%;
+    padding-bottom: 118px;
+}
+#wrapper {
+    height: auto !important;
+    margin: 0 auto -101px;
+    min-height: 100%;
+    position: relative;
+}
+#footer {
+    bottom: 0;
+    clear: both;
+    float: left;
+    height: 101px;
+    position: absolute;
+    border-width: 1px 0 0 0;
+    padding-left:0;
+    padding-right:0;
+    width: 100%;
+}
+body{
+    font-family:"ProximaNova-Regular";
+}
+#header{
+    height:46px;
+    padding:5px 50px;
+}
+#header img {
+    max-height: 41px;
+    padding-top: 2px;
+}
+#header nav {
+    float: right;
+    max-width: 500px;
+    text-align: right;
+}
+#header nav a{
+    text-align: left;
+}
+#header nav a span {
+    position: relative;
+    top: 2px;
+}
+#menu .content {
+    display:table;
+}
+#post{
+    width:1000px;
+}
+#menu ul{
+    display:table-row;
+}
+#menu li {
+    display: table-cell;
+}
+#menu a {
+    width: 100%;
+    padding-right:0;
+}
+#menu ul li:nth-child(1) a {
+    border-left: 1px solid #DDDDDD;
+}
+.twocolumns table tbody tr:nth-child(1) td {
+    padding-top: 13px;
+}
+.twocolumns table tbody tr td {
+    font-size: 14px;
+    line-height: 29px;
+    padding: 2px 5px;
+}
+table.app caption{
+    padding:11px 0 7px 15px;
+    font-size:15px;
+}
+#toStateDiv select {
+    min-width:55px;
+    margin: 0 7px 0 8px;
+}
+#tocity{
+    min-width:110px;
+}
+.twocolumns table tbody tr td input[type="text"],
+table.app input{
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    font-size: 12px;
+    height: 25px;
+    padding: 4px 7px;
+    width: 245px;
+    display: block;
+    float: left;
+    clear: none;
+}
+.twocolumns table tbody tr td select, table.app select {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    clear: none;
+    display: inline-block;
+    float: left;
+    font-size: 13px;
+    height: 25px;
+    padding: 3px 3px 3px 5px;
+}
+#interview-screen #toCountryDiv #tocountry {
+    max-width: 245px;
+    min-width: 245px;
+}
+table.app{
+    padding-bottom:15px;
+}
+#tozip {
+    min-width: 65px;
+}
+.green-forward, 
+.gray-backward,
+input.orange[type=button]{
+    margin-top:16px;
+}
+.green-forward:hover, 
+.gray-backward:hover,
+input.orange[type=button]:hover{
+    cursor: pointer;
+    opacity: 0.9;
+}
+input.gray, button.quick-ship {
+    margin-top: 18px;
+    margin-left:25px;
+}
+/*SHIPMENT DETAILS PAGE*/
+#frm_shipment label {
+  padding-left: 4px;
+  width: auto;
+}
+label.bold-text[for=datetoship] {
+  font-weight: normal;
+}
+#frm_shipment .app tbody tr:nth-child(1) td {
+    padding-top: 18px;
+}
+#interview-screen #frm_shipment .app tbody tr:nth-child(1) td {
+    padding-top: 18px;
+}
+.ui-tooltip{
+    display:none;
+    visibility:hidden;
+    opacity:0;
+}
+/*#frm_shipment input[type=text], #frm_shipment select{
+    min-width:100%;
+}*/
+#special-requirements{
+    overflow:hidden;
+}
+#frm_shipment td {
+    padding: 0 6px;
+}
+#frm_shipment #datetoship, #frm_shipment #dateneeded, #frm_shipment #description{
+    max-width:115px;
+}
+#frm_shipment td.css3-radios {
+    padding-left: 18px;
+}
+#frm_shipment label[for=deliverymethod]{
+    padding-left:18px;
+}
+#page .content table.app tbody tr td:nth-child(1) {
+    padding-left: 15px;
+}
+#list {
+    font-size: 16px;
+}
+#test table tr input[type="button"] {
+  background: none repeat scroll 0 0 #3485E6;
+  border: medium none;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  -o-border-radius: 3px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  height: 27px;
+  margin: 0 auto 3px;
+  width: 90%;
+  padding-bottom:3px;
+}
+#test table tr input[type="button"]:hover{
+    background:#519bf5;
+}
+.charge-details table {
+    width: 140px;
+}
+#frm_label img {
+  clear: both;
+  display: block;
+  float: none;
+  margin: 125px 0;
+  transform: rotate(90deg);
+}
+#equal .twocolumns{
+    padding:0
+}
+#frm_shipment .single-row table.app input[type="text"], 
+#frm_shipment .single-row table.app select {
+    width: 100%;
+    max-width:245px;
+}
+#frm_shipment .single-row > tbody > tr > td {
+    padding: 0;
+    width: 50%;
+    max-width: 50%;
+}
+.single-row table.app {
+  min-height: 180px;
+  max-width: 500px;
+}
+#frm_shipment .single-row .app tbody tr td {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+table.summary-app td {
+  color: #666;
+  padding: 2px;
+  line-height: 20px;
+  font-size: 13px;
+}
+#frm_shipment .summary-app tr:nth-child(1) td {
+    padding-top: 18px;
+}
+#freight-charges-list-1 table tbody tr td,
+#freight-charges-list-2 table tbody tr td,
+#freight-charges-list-3 table tbody tr td
+{
+    padding-top: 18px;
+}
+
+#frm_order h1 {
+    position:relative;
+}
+#frm_order h1 table {
+  position: absolute;
+  right: 10px;
+  top: 6px;
+}
+
+.threecolumns .app tbody tr:nth-child(1) td {
+    padding-top: 18px;
+}
+.threecolumns .app tbody tr td:nth-child(1) {
+    padding-right: 16px;
+    width: 36%;
+}
+.threecolumns .app input[type="text"] {
+    max-width: 178px;
+}
+.threecolumns:nth-child(2) .app input[type="text"] {
+    max-width: 196px;
+}
+.threecolumns .app tbody {
+    line-height: 30px;
+}
+.product .app input[type="text"] {
+    width: 133px;
+}
+#frm_order #tocity {
+    margin-bottom: 5px;
+    min-width: 195px;
+}
+#frm_order #tostate {
+    margin:0 6px 4px 0;
+    min-width:124px;
+}
+#frm_order #tocountry {
+    max-width: 195px;
+}
+#frm_order label[for="tocity"] {
+  clear: both;
+  display: inline-block;
+  float: right;
+  height: 11px;
+  margin-right: 0;
+  text-align: right;
+  width: 70px;
+  color:#A22827;
+}
+#frm_order label[for="tostate"], #frm_order label[for="tozip"] {
+  clear: none;
+  float: left;
+  width: 50%;
+  text-align: right;
+  color:#A22827;
+}
+td.threecolumns{
+    height:400px;
+}
+#unittype {
+  font-size: 15px;
+  height: 22px;
+  left: 8px;
+  padding: 1px;
+  position: relative;
+  top: 0;
+  width: 180px;
+}
+#frm_order h1 div {
+  clear: none;
+  float: right;
+  position: absolute;
+  right: 5px;
+  top: 9px;
+}
+#frm_order h1 div label {
+  font-size: 13px;
+}
+#frm_order form > .float-right:last-child {
+    width: 100%;
+}
+#frm_order #save, #frm_order #ship_now  ,#frm_order input.red {
+    float: right;
+    margin-top: 18px;
+    margin-left:25px;
+}
+#frm_order #cancel {
+    float: left;
+}
+table.package{
+    margin-bottom:40px;
+}
+#frm_order h1 table #ordernumber {
+    height: 21px;
+    position: relative;
+    top: -2px;
+}

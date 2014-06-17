@@ -4,9 +4,9 @@ use Moose;
 use ARRS::IDBI;
 use Data::Dumper;
 use IntelliShip::Utils;
+use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
 use IntelliShip::Carrier::EPLTemplates;
-
 BEGIN {
 
 	extends 'IntelliShip::Errors';
@@ -81,7 +81,7 @@ sub void_shipment
 	## Delete any associated orders
 	$Shipment->shipmentcoassocs->delete;
 
-	$CO->delete_all_package_details;
+	#$CO->delete_all_package_details;
 
 	## Set CO to 'unshipped' status
 	## Flush carrier and service details
@@ -91,12 +91,20 @@ sub void_shipment
 	}
 
 my $EPL_TEMPLATES = {
-	USPSF     => 'get_USPS_EPL_1',
-	USTPO     => 'get_USPS_EPL_2',
-	UPRIORITY => 'get_USPS_EPL_3',
-	USPSMM    => 'get_USPS_EPL_4',
-	USPSLM    => 'get_USPS_EPL_5',
-	UPME      => 'get_USPS_EPL_6',
+	USPSF		=> 'get_USPS_EPL_1',
+	USTPO		=> 'get_USPS_EPL_2',
+	UPRIORITY	=> 'get_USPS_EPL_3',
+	USPSMM		=> 'get_USPS_EPL_4',
+	USPSLM		=> 'get_USPS_EPL_5',
+	UPME		=> 'get_USPS_EPL_6',
+	USPSPMFRE	=> 'get_USPS_EPL_3',
+	USPSPMPFRE	=> 'get_USPS_EPL_3',
+	USPSPMSFRB	=> 'get_USPS_EPL_3',
+	USPSPMMFRB	=> 'get_USPS_EPL_3',
+	USPSPMLFRB	=> 'get_USPS_EPL_3',
+	USPSPMEFRE	=> 'get_USPS_EPL_6',
+	USPSPMEPFRE	=> 'get_USPS_EPL_6',
+	USPSPMEFRB	=> 'get_USPS_EPL_6',
 	};
 
 sub get_EPL
@@ -172,6 +180,7 @@ sub TagPrinterString
 		if ($CO->extcarrier =~ /FedEx/i and $line eq 'ZB' )
 			{
 			$line .= "\nLO0,3,800,2\nLO0,3,2,1150\nLO800,3,2,1150\nLO0,1150,800,2\n" if $CO->extservice =~ /Ground/i;
+			$line .= "\nLO0,3,810,2\nLO0,3,2,1200\nLO810,3,2,1200\nLO0,1200,810,2\n" if $CO->extservice =~ /(Express|Day|Overnight)/i;
 			}
 
 		$tagged_string .= "$line\n";
@@ -193,6 +202,7 @@ sub insert_shipment
 	#$self->log("... shipmentData: " . Dumper $shipmentData);
 
 	my $date_shipped = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetoship'});
+	my $date_packed = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datepacked'});
 
 	my $shipmentObj = {
 			'shipmentid' => $shipmentData->{'new_shipmentid'},
@@ -257,7 +267,7 @@ sub insert_shipment
 			'freightcharges' => $shipmentData->{'freightcharges'},
 			'termsofsale' => $shipmentData->{'termsofsale'},
 			'commoditycustomsvalue' => $shipmentData->{'commoditycustomsvalue'},
-			'datepacked' => $shipmentData->{'datepacked'},
+			'datepacked' => $date_packed,
 			'unitquantity' => $shipmentData->{'unitquantity'},
 			'ipaddress' => $shipmentData->{'ipaddress'},
 			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'},
@@ -302,6 +312,59 @@ sub insert_shipment
 	$self->response->shipment($Shipment);
 
 	return $Shipment;
+	}
+
+sub SendPickUpEmail
+	{
+	my $self = shift;
+	my $ResponseCode = shift;
+	my $Message = shift;
+	my $CustomerTransactionId = shift;
+	my $ConfirmationNumber = shift;
+	my $c = $self->context;
+	
+	my $Shipment = $self->SHIPMENT;
+
+	my $subject;
+	if($ResponseCode eq '0000')
+		{
+		$subject = "NOTICE: Driver pickup scheduled on " . IntelliShip::DateUtils->american_date($Shipment->datepacked);
+		}
+	else
+		{
+		$subject = "ALERT: Error scheduling driver pickup on ". IntelliShip::DateUtils->american_date($Shipment->datepacked);
+		}
+
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
+	$Email->subject($subject);
+	$Email->add_to('noc@engagetechnology.com');
+	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
+
+	my $CO = $self->CO;
+	my $Customer = $CO->customer;
+	
+	my $company_logo = $Customer->username . '-light-logo.png';
+	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . IntelliShip::Utils->get_branding_id . '/images/header/' . $company_logo;
+	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
+	$c->stash->{logo} = $company_logo;
+
+	$c->stash->{Shipment_list} = $Shipment;
+
+	$c->stash->{Message} = $Message;
+	$c->stash->{ResponseCode} = $ResponseCode;
+	$c->stash->{CustomerTransactionId} = $CustomerTransactionId if $CustomerTransactionId;
+	$c->stash->{ConfirmationNumber} = $ConfirmationNumber if $ConfirmationNumber;
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/pickup-notification.tt' ]));
+
+	if ($Email->send)
+		{
+		$self->context->log->debug("Shipment Pick-Up notification email successfully sent to " . join(',',@{$Email->to}));
+		}
 	}
 
 sub log

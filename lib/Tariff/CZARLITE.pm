@@ -23,6 +23,7 @@
 
 	use ARRS::COMMON;
 	use ARRS::IDBI;
+	use Data::Dumper;
 
 	sub new
 	{
@@ -71,9 +72,10 @@
 				AND originend >= '$OriginZip'
 				AND destbegin <= '$DestZip'
 				AND destend >= '$DestZip'
-				AND class = '$Class'
+				AND class = '$Class' order by originbegin desc, destbegin desc
 		";
 
+		warn "########## $STH_SQL";
 		my $STH = $self->{'dbref'}->prepare($STH_SQL)
 			or die "Could not prepare Czar Lite select sql statement";
 
@@ -91,6 +93,8 @@
 	{
 		my $self = shift;
 		my ($Weight,$DiscountPercent,$Class,$OriginZip,$DestZip) = @_;
+		
+		warn "########## CZARLITE::GetCost($Weight,$DiscountPercent,$Class,$OriginZip,$DestZip)";
 		my $Cost = -1;
 
 		# If we have 0 weight, don't return a cost...
@@ -100,6 +104,8 @@
 
 		my $CzarLiteData = $self->GetData($OriginZip,$DestZip,$Class);
 
+		warn "########## \$CzarLiteData: " .Dumper($CzarLiteData);
+		
 		if ( !defined($CzarLiteData) || $CzarLiteData eq '' )
 		{
 			return 0;
@@ -107,6 +113,7 @@
 
 		my ($WeightClassCost,$NextWeightClassCost) = $self->GetWeightClassCosts($Weight,$CzarLiteData);
 
+		warn "########## GetWeightClassCosts($Weight,$CzarLiteData) returned: $WeightClassCost,$NextWeightClassCost";
 		# Compare actual weight class cost vs. next weight class cost.
 		# Take the *lower* of the two.
 		if
@@ -139,6 +146,7 @@
 		# Set cost to two decimal places
 		$Cost = sprintf("%02.2f", $Cost);
 
+		warn "########## CZARLITE::GetCost returning $Cost";
 		return $Cost;
 	}
 
@@ -149,7 +157,7 @@
 		my $WeightClass = '';
 		my $NextWeightClass = '';
 		my $NextWtClassMinWt = 0;
-
+		
 		if ( $Weight >= 1 && $Weight <= 499 )
 		{
 			$WeightClass = 'l5c';
@@ -208,6 +216,8 @@
 
 		$WeightClassCost = ($CzarLiteData->{$WeightClass} * $Weight) / 100;
 
+		warn "########## \$WeightClassCost = (\$CzarLiteData->{$WeightClass} * $Weight) / 100";
+		
 		if ( defined($NextWeightClass) && $NextWeightClass ne '' )
 		{
 			$NextWeightClassCost = ($CzarLiteData->{$NextWeightClass} * $NextWtClassMinWt) / 100;

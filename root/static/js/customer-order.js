@@ -1,5 +1,22 @@
 var requiredFieldHash = {};
 
+function BindCompanyAutoComplete(direction,availableCustomers)
+	{
+	$("#"+direction+"name").autocomplete({
+		source: availableCustomers,
+		select: function( event, ui ) {
+			var SelectedCompany = ui.item.value
+			var AddrParts = SelectedCompany.split(" | ");
+			var Company = AddrParts[0];
+			var Key = AddrParts[0] + '-' + AddrParts[1] + '-' + AddrParts[2] + '-' + AddrParts[3] + '-' + AddrParts[4];
+			var RefID = hashCompanyRef[Key];
+			if (RefID == undefined) return;
+			ui.item.value = Company;
+			populateShipAddress(direction,RefID);
+			}
+		});
+	}
+
 /*
 ########################################################################################
 ## Inbound / Outbound / Dropship stuffs
@@ -14,7 +31,7 @@ function GetAddress(direction)
 	var city			= direction ? $('#' + direction + 'city').val() : '';
 	var state			= direction ? $('#' + direction + 'state').val() : '';
 	var zip				= direction ? $('#' + direction + 'zip').val() : '';
-	var country			= direction ? $('#' + direction + 'country').val() : '';
+	var country			= direction ? $('#' + direction + 'country').val() : 'US';
 	var contact			= direction ? $('#' + direction + 'contact').val() : '';
 	var phone			= direction ? $('#' + direction + 'phone').val() : '';
 	var department		= direction ? $('#' + direction + 'department').val() : '';
@@ -61,11 +78,15 @@ function RestoreAddress(address, direction, type)
 	}
 
 var from_to_Hash = {};
+var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+
 function ConfigureAddressSection(address, direction, type)
 	{
 	var editable     = (type == 'EDITABLE' ? true : false);
 	var add_class    = (editable ? 'broad-text' : 'labellike');
 	var remove_class = (editable ? 'labellike' : 'broad-text');
+
+	//alert("ConfigureAddressSection, direction: " + direction + ", add_class: " + add_class + ", remove_class: " + remove_class);
 
 	jQuery.each( fieldArray, function( i, val ) {
 		if (val == 'department' || val == 'customernumber' || val == 'email') return;
@@ -114,30 +135,38 @@ function ConfigureAddressSection(address, direction, type)
 			}
 		$('#'+targetCtrl).prop('width', $('#'+targetCtrl).val().length);
 		});
-		RestoreAddress(address, direction, type);
+
+	RestoreAddress(address, direction, type);
 	}
 
-var addressArray  = {};
 var previousCheck;
-var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+var addressArray = {};
+
 function ConfigureInboundOutboundDropship()
 	{
 	var selectedType = $('input:radio[name=shipmenttype]:checked').val();
 
-	if (previousCheck == 'outbound')
+	/* set default shipment type outbound if no return capability */
+	if (selectedType == undefined) selectedType = 'outbound';
+	if (previousCheck == undefined) previousCheck = 'outbound';
+
+	if (selectedType != previousCheck)
 		{
-		addressArray['COMPANY_ADDRESS'] = GetAddress('from');
-		addressArray['ADDRESS_1'] = GetAddress('to');
-		}
-	else if (previousCheck == 'inbound')
-		{
-		addressArray['ADDRESS_1'] = GetAddress('from');
-		addressArray['COMPANY_ADDRESS'] = GetAddress('to');
-		}
-	else
-		{
-		addressArray['ADDRESS_1'] = GetAddress('from');
-		addressArray['ADDRESS_2'] = GetAddress('to');
+		if (previousCheck == 'outbound')
+			{
+			addressArray['COMPANY_ADDRESS'] = GetAddress('from');
+			addressArray['ADDRESS_DESTIN'] = GetAddress('to');
+			}
+		if (previousCheck == 'inbound')
+			{
+			addressArray['ADDRESS_DESTIN'] = GetAddress('from');
+			addressArray['COMPANY_ADDRESS'] = GetAddress('to');
+			}
+		if (previousCheck == 'dropship')
+			{
+			addressArray['ADDRESS_ORIGIN'] = GetAddress('from');
+			addressArray['ADDRESS_DESTIN'] = GetAddress('to');
+			}
 		}
 
 	if (selectedType == 'inbound')
@@ -147,36 +176,25 @@ function ConfigureInboundOutboundDropship()
 		$('#fromcustomernumber_tr').show();
 		$('#tocustomernumber_tr').hide();
 		ConfigureAddressSection('COMPANY_ADDRESS', 'to', 'READONLY');
-		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
-
-		//RestoreAddress('COMPANY_ADDRESS', 'to');
-		//RestoreAddress('ADDRESS_1','from');
+		ConfigureAddressSection('ADDRESS_DESTIN', 'from', 'EDITABLE');
 		}
-	else if(selectedType == 'outbound')
+	if (selectedType == 'outbound')
 		{
-
 		$('#fromdepartment_tr').show();
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
-		ConfigureAddressSection('ADDRESS_1', 'to', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_DESTIN', 'to', 'EDITABLE');
 		ConfigureAddressSection('COMPANY_ADDRESS', 'from', 'READONLY');
-
-		//RestoreAddress('COMPANY_ADDRESS', 'from');
-		//RestoreAddress('ADDRESS_1','to');
 		}
-	else if(selectedType == 'dropship')
+	if (selectedType == 'dropship')
 		{
 		$('#fromdepartment_tr').show();
 		$('#todepartment_tr').hide();
 		$('#fromcustomernumber_tr').hide();
 		$('#tocustomernumber_tr').show();
-
-		ConfigureAddressSection('ADDRESS_1', 'from', 'EDITABLE');
-		ConfigureAddressSection('ADDRESS_2', 'to', 'EDITABLE');
-
-		//RestoreAddress('ADDRESS_1', 'from');
-		//RestoreAddress('ADDRESS_2','to');
+		ConfigureAddressSection('ADDRESS_ORIGIN', 'from', 'EDITABLE');
+		ConfigureAddressSection('ADDRESS_DESTIN', 'to', 'EDITABLE');
 		}
 
 	previousCheck = selectedType;
@@ -190,16 +208,12 @@ function setCityAndState(type)
 	var tozip = $("#"+type+"zip").val();
 	if (tozip.length < 5) return;
 
-	//$("#tocity").val('');
-	//$("#tostate").val('');
-	//$("#tocountry").val('');
-
 	var query_param = "&zipcode=" + tozip + '&city=' + $("#"+type+"city").val() + '&state=' + $("#"+type+"state").val() + '&country=' + $("#"+type+"country").val();
 	if($("#"+type+"zip").val() != "") {
 		send_ajax_request('', 'JSON', 'order', 'get_city_state', query_param, function () {
-			$("#"+type+"city").val(JSON_data.city);
-			$("#"+type+"state").val(JSON_data.state);
-			$("#"+type+"country").val(JSON_data.country);
+			if (JSON_data.city.length > 0) $("#"+type+"city").val(JSON_data.city);
+			if (JSON_data.state.length > 0) $("#"+type+"state").val(JSON_data.state);
+			if (JSON_data.country.length > 0) $("#"+type+"country").val(JSON_data.country);
 			if ($("#fromstatespan").length && type == 'from') $("#fromstatespan").text(JSON_data.state);
 			});
 		}
@@ -273,9 +287,8 @@ function validatePackageDetails()
 	var controls = ['quantity', 'description', 'weight'];
 
 	var requiredPkgProduct = {};
-	$('#package-detail-list li').each(function() {
 
-		if (!this.id.match(/^new_/)) return;
+	$('input[id^=rownum_id_]').each(function( index ) {
 
 		var row_ID = this.id.split('_')[2];
 
@@ -285,8 +298,15 @@ function validatePackageDetails()
 			var element = controls[i];
 			if (element == 'quantity') requiredPkgProduct[element+'_'+row_ID] = { nonzero: true };
 			if (element == 'description' && $('#ppd_'+row_ID).val() == 'product') requiredPkgProduct[element+'_'+row_ID] = { minlength: 2 };
-			if (element == 'weight') requiredPkgProduct[element+'_'+row_ID] = { nonzero: true };
+			if (element == 'weight')
+			{
+				var unittypeid = $('#unittype').val();
+				if (unittypeid == 18)
+				      requiredPkgProduct[element+'_'+row_ID] = { numeric: false };
+				else
+				      requiredPkgProduct[element+'_'+row_ID] = { nonzero: true };
 			}
+		}
 		});
 
 	return !validateForm(requiredPkgProduct);
@@ -333,6 +353,7 @@ function setSkuDetails(row_ID, sku_id)
 				$("#dimheight_"+row_ID).val(JSON_data.height);
 				$("#nmfc_"+row_ID).val(JSON_data.nmfc);
 				$("#class_"+row_ID).val(JSON_data.class);
+				$("#decval_"+row_ID).val(JSON_data.value);
 				if (JSON_data.unittypeid != "") $("#unittype_"+row_ID+" option:selected").val(JSON_data.unittypeid);
 				configureShipmentDetails();
 				}
@@ -375,18 +396,16 @@ function clearProductDetails(row_ID)
 
 function setCustomsCommodityValue()
 	{
-	if ($("#insurance").length == 0 && $("#freightinsurance").length == 0) return;
-
+	if ($("#insurance").length == 0) return;
 	var insurance = parseFloat($("#insurance").val());
-	var freightinsurance = parseFloat($("#freightinsurance").val());
-	var commoditycustomsvalue = (insurance > freightinsurance ? insurance : freightinsurance);
-	$("#commoditycustomsvalue").val(commoditycustomsvalue.toFixed(2));
+	$("#commoditycustomsvalue").val(insurance.toFixed(2));
 	}
 
 function checkInternationalSection()
 	{
 
 	if ($('#intlCommoditySec').length == 0) return;
+	if ($("#tocountry").val() == '' || $("#fromcountry").val() == '') return;
 
 	if ($("#tocountry").val() != $("#fromcountry").val()) {
 
@@ -486,7 +505,7 @@ function getCarrierServiceList(form_name)
 
 			has_FC=true;
 
-			$("#carrier-service-list").tabs({ beforeActivate: function( event, ui ) {
+			$("#carrier-service-list-tabs").tabs({ beforeActivate: function( event, ui ) {
 					var panelID = $(ui.newPanel).prop('id');
 					var customerserviceid = $( "input:radio[name=customerserviceid]:checked" ).val();
 					$("#"+panelID+" input:radio[name=customerserviceid]").each(function() {
@@ -548,9 +567,34 @@ function addNewPackageProduct(package_id,type)
 			if (type == 'package') $('#add-package-btn').before(JSON_data.rowHTML);
 			if (type == 'product') $('#'+product_table_id+' > tbody:last').append(JSON_data.rowHTML);
 
-			configureShipmentDetails();
+			configureShipmentDetails(type);
 			updatePackageProductSequence();
 			});
+	}
+	
+function populatePackageDefaultDetials()
+	{
+	var pkg_detail_row_count = [];
+	$('td[id^="package_type_"]').each(function() {
+		var arr = this.id.split('_');
+		pkg_detail_row_count.push(+arr[2]);
+		});
+
+	var first_row_count = Math.min.apply(Math,pkg_detail_row_count);
+	var query_param = '&unittypeid=' + $("#unittype").val();
+
+	send_ajax_request('', 'JSON', 'order', 'populate_package_default_detials', query_param, function (){
+		if (JSON_data.error) {
+		//clearProductDetails(row_ID);
+		} else {
+		$("#package_type_"+first_row_count).html(JSON_data.PACKAGE_TYPE);
+		$("#unittype_"+first_row_count).val(JSON_data.unittypeid);
+		$("#dimlength_"+first_row_count).val(JSON_data.dimlength);
+		$("#dimwidth_"+first_row_count).val(JSON_data.dimwidth);
+		$("#dimheight_"+first_row_count).val(JSON_data.dimheight);
+		if (JSON_data.unittypeid != "") $("#unittype_"+first_row_count+" option:selected").val(JSON_data.unittypeid);
+		}
+		});
 	}
 
 function calculateTotalWeight(event_row_ID)
@@ -593,7 +637,7 @@ function calculateTotalWeight(event_row_ID)
 		var OldPackageWeight = +$("#weight_"+ParentPackageID).val();
 
 		if (packageWeights[ParentPackageID] == undefined) packageWeights[ParentPackageID] = 0;
-		packageWeights[ParentPackageID] = (OldPackageWeight > TotalProductWeight ? OldPackageWeight.toFixed(2) : TotalProductWeight.toFixed(2));
+		packageWeights[ParentPackageID] =  TotalProductWeight.toFixed(2);
 		}
 
 	//alert("packageWeights : " + JSON.stringify(packageWeights));
@@ -606,10 +650,10 @@ function calculateTotalWeight(event_row_ID)
 
 		if (type != 'package') return;
 
-		var PackageWeight = parseInt(packageWeights[row_ID]);
+		var PackageWeight = isNaN(packageWeights[row_ID]) ? 0 : parseInt(packageWeights[row_ID]);
 		if (isNaN(event_row_ID)) $("#weight_"+row_ID).val(PackageWeight.toFixed(2));
 
-		if (isNaN(PackageWeight)) PackageWeight=0;
+		//if (isNaN(PackageWeight)) PackageWeight=0;
 
 		//alert("PackageWeight: " + PackageWeight + ", quantity_: " + $("#quantity_"+row_ID).val());
 
@@ -764,13 +808,17 @@ function removePackageDetails(row_ID)
 	{
 	$("#package-"+row_ID).remove();
 	$("#ss-row-"+row_ID).remove();
+	distributeInsuranceAmongProducts();
 	}
 
-function configureShipmentDetails()
+function configureShipmentDetails(type)
 	{
 	resetCSList();
 	calculateTotalWeight();
-	distributeInsuranceAmongProducts();
+	if(type == undefined)
+		{
+		distributeInsuranceAmongProducts();
+		}
 	calculateTotalDeclaredValueInsurance();
 	setCustomsCommodityValue();
 	updateShipmentSummary();

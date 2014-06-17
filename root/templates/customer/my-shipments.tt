@@ -1,5 +1,7 @@
 [% IF MY_SHIPMENTS %]
 	[% UNLESS ajax %]
+	<script type="text/javascript" src="/static/js/deployJava.js"></script>
+	<script type="text/javascript" src="/static/js/applet-label-print.js"></script>
 
 	<form id="frm_my_shipments" method="post" action="/customer/myshipments">
 	<input type="hidden" name="do" id="do" value="do"/>
@@ -36,57 +38,42 @@
 					</tr>
 				</table>
 			</td>
-			<td style="width: 20%;">&nbsp;</td>
-			<td>
-				<button type="button" id="quick_ship" class="quick-ship"><label></label><span>QUICK SHIP</span></button>
-			</td>
+				[% IF 0 && DISPLAY_QUICKSHIP %]
+					<td style="width: 20%;">&nbsp;</td>
+					<td>
+						<button type="button" id="quick_ship" class="quick-ship"><label></label><span>QUICK SHIP</span></button>
+				   </td>
+				[% END %]
 		</tr>
 		</table>
 	</h2>
 
-	<table class="shipment-filter">
-		<tr>
-			<td style="width: 05%">Show Filters</td>
-			<td style="width: 02%">
-				&nbsp;<a id="instant-filter-columns" style="font-size:14px;" href="javascript:void(0);">+</a>&nbsp;
-			</td>
-			<td style="width: 75%">
-				<div id="filter-checkbox" style="display: none;">
-					<table class="css3-checkboxes">
-						<tr>
-							<td><label><input type="checkbox" name="filter_tracking" value="1" checked/><span></span>TRACKING</label></td>
-							<td><label><input type="checkbox" name="filter_ordernumber" value="1" checked/><span></span>ORDER</label></td>
-							<td><label><input type="checkbox" name="filter_customername" value="1" checked/><span></span>CUSTOMER</label></td>
-							<td><label><input type="checkbox" name="filter_origin" value="1" checked/><span></span>ORIGIN</label></td>
-							<td><label><input type="checkbox" name="filter_destination" value="1" checked/><span></span>DESTINATION</label></td>
-						</tr>
-						<tr>
-							<td><label><input type="checkbox" name="filter_shipdate" value="1" checked/><span></span>DATE</label></td>
-							<td><label><input type="checkbox" name="filter_duedate" value="1" checked/><span></span>DUE DATE</label></td>
-							<td><label><input type="checkbox" name="filter_carrier" value="1" checked/><span></span>CARRIER</label></td>
-							<td><label><input type="checkbox" name="filter_mode" value="1" checked/><span></span>MODE</label></td>
-							<td>&nbsp;</td>
-						</tr>
-					</table>
-				</div>
-			</td>
-			<td style="width: 05%"><label for="filter">Instant Filter</label>:&nbsp;</td>
-			<td style="width: 13%"><input type="text"  title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Search shipment..." id="filter" name="filter"/></td>
-		</tr>
-	</table>
-
-	<b><table><tr><td><span id="count">0</span></td><td>Shipments Selected</td></tr></table></b>
+	<input type="hidden" name="filter_tracking" value="1"/>    
+	<input type="hidden" name="filter_ordernumber" value="1"/> 
+	<input type="hidden" name="filter_customername" value="1"/>
+	<input type="hidden" name="filter_origin" value="1"/>
+	<input type="hidden" name="filter_destination" value="1"/> 
+	<input type="hidden" name="filter_shipdate" value="1"/>    
+	<input type="hidden" name="filter_duedate" value="1"/>     
+	<input type="hidden" name="filter_carrier" value="1"/>     
+	<input type="hidden" name="filter_mode" value="1"/>        
 
 	<table class="batch-option css3-radios">
 		<tr>
+			<th><label for="filter">Instant Filter</label>:&nbsp;</th>
+			<td><input type="text" style="width: 300px;" title="Enter ShipmentId or TrackingId or Order Number for quick search" placeholder="Filter Results....." id="filter" name="filter"/></td>
+			<td style="width: 20px; background-color: #FFF;">&nbsp;</td>
 			<th>BATCH OPTIONS:</th>
 			<td><label><input type="radio" id="track"   name="batch_action" value="track" checked><span><label for="track" class="track">TRACK</label></span></label></td>
 			<td><label><input type="radio" id="reprint" name="batch_action" value="reprint"><span><label for="reprint" class="reprint">REPRINT</label></span></label></td>
-			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID</label></span></label></td>
+			<td><label><input type="radio" id="void"    name="batch_action" value="void"><span><label for="void" class="void">VOID/CANCEL</label></span></label></td>
 			<td><input type="button" id="btn_submit" value="SUBMIT"></td>
-			<td width="510px"> Batch tracking limited to 25 shipments</td>
 		</tr>
 	</table>
+
+	<div class="float-right"><strong>Batch tracking limited to 25 shipments</strong></div>
+
+	<b><table><tr><td><span id="count">0</span></td><td>Shipments Selected</td></tr></table></b>
 
 	</form>
 
@@ -98,7 +85,7 @@
 				<th>STATUS</th>
 				<th>TRACKING#</th>
 				<th>ORDER#</th>
-				<th>CUSTOMER</th>
+				<th>Ship To</th>
 				<th style="padding-left: 20px; padding-right: 20px;">ORIGIN</th>
 				<th>DESTINATION</th>
 				<th>DATE</th>
@@ -113,7 +100,7 @@
 				<td><a class="[% item.a_class %]" href="javascript:showShipmentDetails('[% item.shipmentid %]');"></a></td>
 				<td>[% item.tracking %]</td>
 				<td>[% item.ordernumber %]</td>
-				<td>[% item.customername %]</td>
+				<td>[% item.shiptoname %]</td>
 				<td>[% item.origin %]</td>
 				<td>[% item.destin %]</td>
 				<td>[% item.dateshipped %]</td>
@@ -122,9 +109,9 @@
 				<td>[% item.mode %]</td>
 				<td class="center">
 					[% IF item.condition == 6 %]
-					<a href="javascript:void(0);" class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void">VOID</a>
+					<a href="javascript:void(0);" class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void">VOID/CANCEL</a>
 					[% ELSE %]
-					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:ReprintLabel('[% item.shipmentid %]');" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID</a>
+					<a [% IF item.tracking_url %] href="javascript:void(0);" onclick="window.open('[% item.tracking_url %]&ref=' + jQuery.now());" [% ELSE %]href="javascript:void(0);"[% END %] class="track">TRACK</a>&nbsp;&nbsp;<a href="javascript:ReprintLabel('[% item.shipmentid %]');" class="reprint">REPRINT</a>&nbsp;&nbsp;<a href="javascript:void(0);" class="void" [% UNLESS item.a_class == 'black' %]onclick="voidShipment('[% item.shipmentid %]');"[% END %]>VOID/CANCEL</a>
 					[% END %]
 				</td>
 			</tr>
@@ -171,7 +158,7 @@
 			});
 
 		$("#datefrom").datepicker({ maxDate: '0d' });
-		$("#dateto").datepicker({ maxDate: '2w' });
+		$("#dateto").datepicker({ maxDate: '1m' });
 		
 		function check_uncheck_all() {
 			if($("#checkAll").is(':checked'))
@@ -300,28 +287,40 @@
 
 		function BatchVoidShipment(ShipmentIds)
 			{
-			if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
-			var query_param = "shipmentids=" + ShipmentIds;
+			$("#dialog-message").dialog( {
+			title: "Void Shipment",
+			width: '400px',
+			buttons: {
+				Ok: function() {
+					if (ShipmentIds == undefined || ShipmentIds.length == 0) return;
+					var query_param = "shipmentids=" + ShipmentIds;
 
-			send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
-				if ( JSON_data.is_success ) {
-					showMessage("<div class='notice'>Shipment voided successfully...</div>", "Void Shipment");
-					var vDate = $("#view_date").val();
-					var query_param = "view_date=" + vDate;
-					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-					$("#count").html('0');
-					}
-				else if( JSON_data.voided.length > 0 ) {
-					showMessage("Shipments partially voided...", "Void Shipment");
-					var vDate = $("#view_date").val();
-					var query_param = "&view_date=" + vDate;
-					send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
-					$("#count").html('0');
-					}
-				else {
-					showMessage("Shipment void operation failed...", "Void Shipment");
-					}
-				});
+					send_ajax_request('', 'JSON', 'myshipments', 'void_shipment', query_param, function () {
+						if ( JSON_data.is_success ) {
+							showMessage("<div class='notice'>Shipment voided successfully...</div>", "Void Shipment");
+							var vDate = $("#view_date").val();
+							var query_param = "view_date=" + vDate;
+							send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+							$("#count").html('0');
+							}
+						else if( JSON_data.voided.length > 0 ) {
+							showMessage("Shipments partially voided...", "Void Shipment");
+							var vDate = $("#view_date").val();
+							var query_param = "&view_date=" + vDate;
+							send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
+							$("#count").html('0');
+							}
+						else {
+							showMessage("Shipment void operation failed...", "Void Shipment");
+							}
+						});
+					},
+				Cancel: function() { $( this ).dialog( "close" ); }
+				}
+			});
+
+			$("#dialog-message").html("<div class='notice'>Are you sure you want to void shipment?</div>");
+			$("#dialog-message").dialog("open");
 			}
 
 		var clickCount = 0;
@@ -338,19 +337,54 @@
 					$("#datefrom").datepicker('setDate', '+0d');
 					$("#dateto").datepicker('setDate', '+0d');
 					}
+				if (vDate == 'yesterday') {
+					$("#datefrom").datepicker('setDate', '-1d');
+					$("#dateto").datepicker('setDate', '-1d');
+					}
 				if (vDate == 'this_week') {
-					$("#datefrom").datepicker('setDate', '-1w');
-					$("#dateto").datepicker('setDate', '+0d');
+					
+					$("#datefrom").datepicker('setDate', getLastSunday());
+					$("#dateto").datepicker('setDate', getNextSaturday());
+					}
+				if (vDate == 'last_week') {
+					var date = new Date();
+					date.setDate(date.getDate() - date.getDay() - 7); 
+					$("#datefrom").datepicker('setDate',date);
+					date.setDate(date.getDate() - date.getDay() + 6);
+					$("#dateto").datepicker('setDate',date);
+					}
+				if(vDate == 'last_month') {
+					var date = new Date();
+					var firstDayOfMonth = new Date(date.getFullYear(), date.getMonth()-1, 1);
+					$("#datefrom").datepicker('setDate',firstDayOfMonth);
+					var lastDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 0);
+					$("#dateto").datepicker('setDate', lastDayOfMonth);
 					}
 				if(vDate == 'this_month') {
-					$("#datefrom").datepicker('setDate', '-1m');
-					$("#dateto").datepicker('setDate', '+0d');
+					var date = new Date();
+					var firstDayOfCurMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+					$("#datefrom").datepicker('setDate', firstDayOfCurMonth);
+					var lastDayOfCurMonth = new Date(date.getFullYear(), date.getMonth()+1, 0);
+					$("#dateto").datepicker('setDate', lastDayOfCurMonth);
 					}
 				var query_param = "&view_date=" + vDate + "&datefrom=" + $("#datefrom").val() + "&dateto=" + $("#dateto").val();
 				send_ajax_request('myShipments', 'HTML', 'myshipments', 'refresh', query_param);
 				$("#count").html("0");
 				clickCount = -1;
 				});
+
+		function getNextSaturday() {
+			var today = new Date();
+			var offset = (today.getDay() < 6) ? 0 : 7;
+			var daysUntilSaturday = 6 + offset - today.getDay();
+			return '+'+daysUntilSaturday;
+			}
+		
+		function getLastSunday() {
+			var sday = new Date();
+			sday.setDate(sday.getDate() - sday.getDay());
+			return sday;
+			}
 
 		$("#btn_submit").click(function() {
 			var action = $("input:radio[name=batch_action]:checked").val();
