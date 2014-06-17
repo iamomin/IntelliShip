@@ -52,12 +52,12 @@ sub setup_supply_ordering :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 	my $Contact = $self->contact;
+	my $Customer = $self->customer;
 
-	my $CustomerID = $self->customer->customerid;
 	my $SQL = "SELECT DISTINCT carrier FROM productsku WHERE carrier <> ''";
 	my $sth = $self->myDBI->select($SQL);
 
-	my $customerCarrierDetails = $self->API->get_carrier_list($self->customer->get_sop_id,$CustomerID);
+	my $customerCarrierDetails = $self->API->get_carrier_list($Customer->get_sop_id,$Customer->customerid);
 
 	my %customerCarriers = map { $_ => 1 } split(/\t/,$customerCarrierDetails->{'cnames'});
 
@@ -90,15 +90,20 @@ sub setup_supply_ordering :Private
 
 	$c->log->debug("... Total Productsku found: " . $sth->numrows);
 
+	my $my_only = $Contact->get_contact_data_value('myonly');
 	my $ToAddress = $Contact->address;
-	$ToAddress = $self->customer->address if !$ToAddress && !$Contact->get_contact_data_value('myonly');
+	$ToAddress = $Customer->address if !$ToAddress && !$my_only;
 
 	my $tocontact = ($Contact->lastname ? $Contact->firstname . ' ' .  $Contact->lastname : $Contact->firstname);
+	$tocontact = $Customer->contact if !$tocontact && !$my_only;
+
+	my $tophone = $Contact->phonebusiness;
+	$tophone = $Customer->phone if !$tophone && !$my_only;
 
 	$c->stash(carrier_loop => $carrier_loop);
 	$c->stash(toAddress => $ToAddress);
 	$c->stash(tocontact => $tocontact);
-	$c->stash(tophone => $Contact->phonebusiness);
+	$c->stash(tophone => $tophone);
 	$c->stash(todepartment => $Contact->department);
 	$c->stash(toemail => $Contact->email);
 	$c->stash(ordernumber => $self->get_auto_order_number);
