@@ -35,12 +35,45 @@ sub BUILD
 	$config = IntelliShip::MyConfig->get_ARRS_configuration;
 	}
 
+sub model
+	{
+	my $self = shift;
+	my $model = shift;
+
+	return unless $model;
+
+	if ($self->context)
+		{
+		return $self->context->model('MyDBI::' . $model);
+		}
+	elsif ($self->myDBI_obj)
+		{
+		return $self->myDBI_obj->resultset($model);
+		}
+	}
+
 sub myDBI
 	{
 	my $self = shift;
 	return $self->myDBI_obj if $self->myDBI_obj;
-	$self->myDBI_obj($self->context->model('MyDBI'));
+	$self->myDBI_obj(shift) if @_;
+	$self->myDBI_obj($self->context->model('MyDBI')) if $self->context;
 	return $self->myDBI_obj;
+	}
+
+sub log
+	{
+	my $self = shift;
+	my $msg = shift;
+
+	if ($self->context)
+		{
+		$self->context->log->debug($msg);
+		}
+	else
+		{
+		print STDERR "\n".$msg;
+		}
 	}
 
 sub import
@@ -61,11 +94,11 @@ sub import
 	else
 		{
 		my $import_path = $self->get_directory;
-		$c->log->debug("... import_path: " . $import_path);
+		$self->log("... import_path: " . $import_path);
 		push(@files, <$import_path/*>);
 		}
 
-	$c->log->debug("... Total Files: " . @files);
+	$self->log("... Total Files: " . @files);
 
 	#################################
 	### Check for Files to Import
@@ -74,7 +107,7 @@ sub import
 		{
 		next if (! -f $file or ! -r $file );
 
-		$c->log->debug("... Start Import Process For " . $file);
+		$self->log("... Start Import Process For " . $file);
 
 		my ($order_file, $product_file);
 		if ($self->import_type)
@@ -139,12 +172,12 @@ sub ImportOrders
 
 	my $FILE = new IO::File;
 
-	$c->log->debug("\n");
-	$c->log->debug("##### ImportOrders Read File: " . $import_file);
+	$self->log("\n");
+	$self->log("##### ImportOrders Read File: " . $import_file);
 
 	unless (open($FILE, $import_file))
 		{
-		$c->log->debug("*** Error: " . $!);
+		$self->log("*** Error: " . $!);
 		return;
 		}
 
@@ -157,7 +190,7 @@ sub ImportOrders
 
 	close ($FILE);
 
-	$c->log->debug("... Total file lines: " . @FileLines);
+	$self->log("... Total file lines: " . @FileLines);
 
 	my $ImportFailureRef = {};
 
@@ -170,8 +203,8 @@ sub ImportOrders
 		## skip blank lines
 		next unless $Line;
 
-		$c->log->debug("");
-		#$c->log->debug("... Import Line: " . $Line);
+		$self->log("");
+		#$self->log("... Import Line: " . $Line);
 
 		my $CustRef = {};
 		## split the tab delimited line into field names
@@ -243,20 +276,20 @@ sub ImportOrders
 			$CustRef->{'cotype'}
 		) = split(/\t/, $Line);
 
-		#$c->log->debug("... SPLIT DATA: " . Dumper $CustRef);
+		#$self->log("... SPLIT DATA: " . Dumper $CustRef);
 
 		my $export_flag = 0;
 
-		#$c->log->debug("... CO information gathered");
+		#$self->log("... CO information gathered");
 
 		IntelliShip::Utils->trim_hash_ref_values($CustRef);
 
 		##########################################################
 		##  FLUSH OLD DETAILS IF ANY FOR MATCHING ORDERNUMBER   ##
 		##########################################################
-		if (my @DuplicateCOs = $c->model('MyDBI::CO')->search({ ordernumber => $CustRef->{'ordernumber'} }))
+		if (my @DuplicateCOs = $self->model('Co')->search({ ordernumber => $CustRef->{'ordernumber'} }))
 			{
-			$c->log->debug("*** ".@DuplicateCOs." DUPLICATE order found for order number '$CustRef->{'ordernumber'}', delete old details...");
+			$self->log("*** ".@DuplicateCOs." DUPLICATE order found for order number '$CustRef->{'ordernumber'}', delete old details...");
 			foreach my $DuplicateCO (@DuplicateCOs)
 				{
 				$DuplicateCO->delete_all_package_details;
@@ -353,16 +386,16 @@ sub ImportOrders
 
 		unless ($CustRef->{'extloginid'})
 			{
-			$c->log->debug("--- no extloginid found");
+			$self->log("--- no extloginid found");
 			$export_flag = -9;
 			}
 
 		## Figure out who this is
 		my ($ContactID,$CustomerID) = $self->AuthenticateContact($CustRef->{'extloginid'});
-		$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
+		$self->log("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
 
-		my $Contact = $c->model('MyDBI::Contact')->find({ contactid => $ContactID }) if $ContactID;
-		my $Customer = $c->model('MyDBI::Customer')->find({ customerid => $CustomerID }) if $CustomerID;
+		my $Contact = $self->model('Contact')->find({ contactid => $ContactID }) if $ContactID;
+		my $Customer = $self->model('Customer')->find({ customerid => $CustomerID }) if $CustomerID;
 
 		## If we don't have an incoming class, check if we have a default class...and stuff it in if we do
 		unless ($Contact and $Customer)
@@ -378,7 +411,7 @@ sub ImportOrders
 
 		unless ($CustomerID)
 			{
-			$c->log->debug("--- no CustomerID found");
+			$self->log("--- no CustomerID found");
 			$export_flag = -9;
 			}
 
@@ -421,7 +454,7 @@ sub ImportOrders
 
 			unless ($customerserviceid)
 				{
-				$c->log->debug("--- customerserviceid not found");
+				$self->log("--- customerserviceid not found");
 				$export_flag = -10;
 				}
 			}
@@ -429,14 +462,14 @@ sub ImportOrders
 		## Must have an order number
 		unless ($CustRef->{'ordernumber'})
 			{
-			$c->log->debug("--- ordernumber not found");
+			$self->log("--- ordernumber not found");
 			$export_flag = -1;
 			}
 
 		## Order needs an addr1 and an addr2
 		if (!$CustRef->{'address1'} and !$CustRef->{'address2'})
 			{
-			$c->log->debug("--- address 1 and 2 not found");
+			$self->log("--- address 1 and 2 not found");
 			$export_flag = -2;
 			}
 
@@ -451,7 +484,7 @@ sub ImportOrders
 				}
 			else
 				{
-				$c->log->debug("--- address country not found");
+				$self->log("--- address country not found");
 				$export_flag = -13;
 				}
 			}
@@ -466,7 +499,7 @@ sub ImportOrders
 				}
 			else
 				{
-				$c->log->debug("--- drop country not found");
+				$self->log("--- drop country not found");
 				$export_flag = -20;
 				}
 			}
@@ -477,7 +510,7 @@ sub ImportOrders
 			## Order needs a city, state, and zip
 			if (!$CustRef->{'addresscity'} or !$CustRef->{'addressstate'} or !$CustRef->{'addresszip'})
 				{
-				$c->log->debug("--- address city/state/zip not found");
+				$self->log("--- address city/state/zip not found");
 				$export_flag = -3;
 				}
 
@@ -490,14 +523,14 @@ sub ImportOrders
 			## Zip needs to be 5 or 5+4
 			if ( $CustRef->{'addresszip'} and $CustRef->{'addresszip'} !~ /\d{5}(\-\d{4})?/ )
 				{
-				$c->log->debug("--- address city/state/zip not found");
+				$self->log("--- address city/state/zip not found");
 				$export_flag = -4;
 				}
 			}
 
 		if (!defined($CustRef->{'addressname'}) or $CustRef->{'addressname'} eq '')
 			{
-			$c->log->debug("--- address name not found");
+			$self->log("--- address name not found");
 			$export_flag = -6;
 			}
 
@@ -529,14 +562,14 @@ sub ImportOrders
 					}
 				else
 					{
-					$c->log->debug("--- drop country not found");
+					$self->log("--- drop country not found");
 					$export_flag = -20;
 					}
 				}
 			## Needs an addr1 and an addr2
 			if (!$CustRef->{'dropaddress1'} eq '' and !$CustRef->{'dropaddress2'})
 				{
-				$c->log->debug("--- drop address 1 and 2 not found");
+				$self->log("--- drop address 1 and 2 not found");
 				$export_flag = -16;
 				}
 
@@ -545,7 +578,7 @@ sub ImportOrders
 				## Needs a city, state, and zip
 				if (!$CustRef->{'dropcity'} or !$CustRef->{'dropstate'} or !$CustRef->{'dropzip'})
 					{
-					$c->log->debug("--- drop city/state/zip not found");
+					$self->log("--- drop city/state/zip not found");
 					$export_flag = -17;
 					}
 
@@ -557,14 +590,14 @@ sub ImportOrders
 				## Zip needs to be 5 or 5+4
 				if ( defined($CustRef->{'dropzip'}) and $CustRef->{'dropzip'} !~ /\d{5}(\-\d{4})?/ )
 					{
-					$c->log->debug("--- drop zip not found");
+					$self->log("--- drop zip not found");
 					$export_flag = -18;
 					}
 				}
 
 			if (!$CustRef->{'dropname'})
 				{
-				$c->log->debug("--- drop name not found");
+				$self->log("--- drop name not found");
 				$export_flag = -19;
 				}
 
@@ -576,7 +609,7 @@ sub ImportOrders
 			$CustRef->{'datetoship'} = $self->VerifyDate($CustRef->{'datetoship'});
 			if ( $CustRef->{'datetoship'} eq '0')
 				{
-				$c->log->debug("--- datetoship not found");
+				$self->log("--- datetoship not found");
 				$export_flag = -7;
 				}
 			elsif ( $CustRef->{'datetoship'} ne '0' and defined($CustRef->{'errorshipdate'}) and $CustRef->{'errorshipdate'} == 1 )
@@ -595,7 +628,7 @@ sub ImportOrders
 
 				if ( Delta_Days(@TodayDate, @ShipDate) < 0 )
 					{
-					$c->log->debug("--- ship date less than today's date");
+					$self->log("--- ship date less than today's date");
 					$export_flag = -12;
 					}
 				}
@@ -606,7 +639,7 @@ sub ImportOrders
 			$CustRef->{'dateneeded'} = $self->VerifyDate($CustRef->{'dateneeded'});
 			if ( $CustRef->{'dateneeded'} eq '0')
 				{
-				$c->log->debug("--- dateneeded not found");
+				$self->log("--- dateneeded not found");
 				$export_flag = -8;
 				}
 			elsif ( $CustRef->{'dateneeded'} ne '0' and defined($CustRef->{'errorduedate'}) and $CustRef->{'errorduedate'} == 1 )
@@ -627,7 +660,7 @@ sub ImportOrders
 				#if ( Delta_Days(@TodayDate, @DueDate) <= 0 ) #Same day or in the past
 				if ( Delta_Days(@TodayDate, @DueDate) < 0 )
 					{
-					$c->log->debug("--- due date less than today's date");
+					$self->log("--- due date less than today's date");
 					$export_flag = -11;
 					}
 				}
@@ -638,7 +671,7 @@ sub ImportOrders
 			{
 			unless (IntelliShip::Utils->is_valid_email($CustRef->{'shipmentnotification'}))
 				{
-				$c->log->debug("--- shipmentnotification email not valid");
+				$self->log("--- shipmentnotification email not valid");
 				$export_flag = -14;
 				}
 			}
@@ -647,7 +680,7 @@ sub ImportOrders
 			{
 			unless (IntelliShip::Utils->is_valid_email($CustRef->{'deliverynotification'}))
 				{
-				$c->log->debug("--- deliverynotification email not valid");
+				$self->log("--- deliverynotification email not valid");
 				$export_flag = -15;
 				}
 			}
@@ -694,23 +727,23 @@ sub ImportOrders
 
 			IntelliShip::Utils->trim_hash_ref_values($toAddressData);
 
-			$c->log->debug("... checking for dropship address availability");
+			$self->log("... checking for dropship address availability");
 
 			## Fetch ship from address
-			my @addresses = $c->model('MyDBI::Address')->search($toAddressData);
+			my @addresses = $self->model('Address')->search($toAddressData);
 
 			my $ToAddress;
 			if (@addresses)
 				{
 				$ToAddress = $addresses[0];
-				$c->log->debug("... Existing Address Found, ID: " . $ToAddress->addressid);
+				$self->log("... Existing Address Found, ID: " . $ToAddress->addressid);
 				}
 			else
 				{
 				$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
 				$ToAddress->addressid($self->myDBI->get_token_id);
 				$ToAddress->insert;
-				$c->log->debug("... New Address Inserted, ID: " . $ToAddress->addressid);
+				$self->log("... New Address Inserted, ID: " . $ToAddress->addressid);
 				}
 
 			$CO->{'addressid'} = $ToAddress->id;
@@ -718,7 +751,7 @@ sub ImportOrders
 			#########################################################
 			## Store Drop Address
 			#########################################################
-			$c->log->debug("... checking for Drop address availability");
+			$self->log("... checking for Drop address availability");
 
 			my $dropAddressData = {
 				addressname => $CustRef->{'dropname'},
@@ -733,20 +766,20 @@ sub ImportOrders
 			IntelliShip::Utils->trim_hash_ref_values($dropAddressData);
 
 			## Fetch return address
-			@addresses = $c->model('MyDBI::Address')->search($dropAddressData) if length $dropAddressData->{'address1'};
+			@addresses = $self->model('Address')->search($dropAddressData) if length $dropAddressData->{'address1'};
 
 			my $DropAddress;
 			if (@addresses)
 				{
 				$DropAddress = $addresses[0];
-				$c->log->debug("... Existing Drop Address Found, ID: " . $DropAddress->addressid);
+				$self->log("... Existing Drop Address Found, ID: " . $DropAddress->addressid);
 				}
 			elsif (length $dropAddressData->{'address1'})
 				{
 				$DropAddress = $c->model("MyDBI::Address")->new($dropAddressData);
 				$DropAddress->addressid($self->myDBI->get_token_id);
 				$DropAddress->insert;
-				$c->log->debug("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
+				$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
 				}
 
 			$CO->{'dropaddressid'} = $DropAddress->id if $DropAddress;
@@ -841,15 +874,15 @@ sub ImportOrders
 						}
 					}
 
-			#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
+			#$self->log("... CO DATA DETAILS:  " . Dumper $CO);
 
-			my $CO_Obj = $c->model('MyDBI::CO')->new($CO);
+			my $CO_Obj = $self->model('Co')->new($CO);
 			$CO_Obj->coid($self->myDBI->get_token_id);
 			$CO_Obj->insert;
 
 			my $COID = $CO_Obj->coid;
 
-			$c->log->debug("... NEW CO INSERTED, COID:  " . $COID);
+			$self->log("... NEW CO INSERTED, COID:  " . $COID);
 
 			## Create package data
 			my $packageData = {
@@ -865,11 +898,11 @@ sub ImportOrders
 			$packageData->{'weight'}      = $CO->{'estimatedweight'};
 			$packageData->{'decval'}      = $CO->{'estimatedinsurance'};
 
-			my $PackProData = $c->model('MyDBI::Packprodata')->new($packageData);
+			my $PackProData = $self->model('Packprodata')->new($packageData);
 			$PackProData->packprodataid($self->myDBI->get_token_id);
 			$PackProData->insert;
 
-			$c->log->debug("... NEW Package INSERTED, packprodataid:  " . $PackProData->packprodataid);
+			$self->log("... NEW Package INSERTED, packprodataid:  " . $PackProData->packprodataid);
 
 			## set assessorials
 			if ( $CustRef->{'saturdayflag'} and $CustRef->{'saturdayflag'} == 1 )
@@ -909,7 +942,7 @@ sub ImportOrders
 					$Error_File = "unknowncustomer_".$Error_File;
 					#open(OUT, ">" . $config->{BASE_PATH} . "/var/processing/$Error_File") or warn "unable to open error file";
 					}
-				$c->log->debug("___ Unknown line: $Line");
+				$self->log("___ Unknown line: $Line");
 				#print OUT "$Line\n\n";
 				#close (OUT);
 				}
@@ -918,7 +951,7 @@ sub ImportOrders
 
 	if ( $UnknownCustCount > 0 )
 		{
-		$c->log->debug("*** UnknownCustCount ".$UnknownCustCount);
+		$self->log("*** UnknownCustCount ".$UnknownCustCount);
 		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
 		#or &TraceBack("Could not move $Error_File: $!");
 		}
@@ -942,8 +975,8 @@ sub ImportProducts
 
 	my $FILE = new IO::File;
 
-	$c->log->debug("\n");
-	$c->log->debug("##### ImportProducts Read File: " . $import_file);
+	$self->log("\n");
+	$self->log("##### ImportProducts Read File: " . $import_file);
 
 	unless (open($FILE, $import_file))
 		{
@@ -960,7 +993,7 @@ sub ImportProducts
 
 	close ($FILE);
 
-	$c->log->debug("... Total file lines: " . @FileLines);
+	$self->log("... Total file lines: " . @FileLines);
 
 	my $CO;
 	my $LastCOID = '';
@@ -998,7 +1031,7 @@ sub ImportProducts
 
 		IntelliShip::Utils->trim_hash_ref_values($CustRef);
 
-		#$c->log->debug("...CustRef:  " . Dumper $CustRef);
+		#$self->log("...CustRef:  " . Dumper $CustRef);
 
 		## set cotypeid
 		if ( defined($CustRef->{'cotype'}) && $CustRef->{'cotype'} =~ /PO/i )
@@ -1039,13 +1072,13 @@ sub ImportProducts
 		## Check for valid extloginid
 
 		my ($ContactID,$CustomerID) = $self->AuthenticateContact($CustRef->{'extloginid'});
-		#$c->log->debug("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
+		#$self->log("... Authenticated Customer: " . $CustomerID . ", Contact: " . $ContactID);
 
-		my $Contact = $c->model('MyDBI::Contact')->find({ contactid => $ContactID }) if $ContactID;
-		my $Customer = $c->model('MyDBI::Customer')->find({ customerid => $CustomerID }) if $CustomerID;
+		my $Contact = $self->model('Contact')->find({ contactid => $ContactID }) if $ContactID;
+		my $Customer = $self->model('Customer')->find({ customerid => $CustomerID }) if $CustomerID;
 
-		#$c->log->debug("... Contact DATA DETAILS:  " . Dumper $Contact);
-		#$c->log->debug("... Customer DATA DETAILS:  " . Dumper $Customer);
+		#$self->log("... Contact DATA DETAILS:  " . Dumper $Contact);
+		#$self->log("... Customer DATA DETAILS:  " . Dumper $Customer);
 
 		my $ProductStatus = 200;
 
@@ -1073,7 +1106,7 @@ sub ImportProducts
 
 		if (defined($CustRef->{'ordernumber'}) && $CustRef->{'ordernumber'} ne '' && $export_flag ne '-1')
 			{
-			$c->log->debug("... search for CO by ordernumber:  " . $CustRef->{'ordernumber'});
+			$self->log("... search for CO by ordernumber:  " . $CustRef->{'ordernumber'});
 			 my $sth = $self->myDBI->select("
 				SELECT
 					coid
@@ -1091,7 +1124,7 @@ sub ImportProducts
 			my $coid = $sth->fetchrow(0)->{'coid'} if $sth->numrows;
 			$CustRef->{'coid'} = $coid;
 
-			$c->log->debug("... CO found, ID:  " . $coid);
+			$self->log("... CO found, ID:  " . $coid);
 
 			if (!defined($CustRef->{'coid'}) || $CustRef->{'coid'} eq '')
 				{
@@ -1153,7 +1186,7 @@ sub ImportProducts
 			$CustRef->{'weighttypeid'} = 1;
 			}
 
-		$c->log->debug("... unittypeid:  " . $CustRef->{'unittypeid'});
+		$self->log("... unittypeid:  " . $CustRef->{'unittypeid'});
 
 		if ( $export_flag == 0 )
 			{
@@ -1161,12 +1194,12 @@ sub ImportProducts
 			if ($CustRef->{'unittypeid'} && (!$CustRef->{'productweight'} || !$CustRef->{'dimlength'} || !$CustRef->{'dimwidth'} || !$CustRef->{'dimheight'}))
 				{
 				my $SQL = "SELECT 1 FROM productsku WHERE customerid = '$CustomerID' AND unittypeid = '" . $CustRef->{'unittypeid'} . "'";
-				#$c->log->debug("... SQL : " . $SQL);
+				#$self->log("... SQL : " . $SQL);
 
 				my $sth = $self->myDBI->select($SQL);
 				if ($sth->numrows)
 					{
-					$c->log->debug("... LOOKUP SKU DATA based on Unit Type: '$CustRef->{unittypeid}', Part: '$CustRef->{partnumber}', CustomerID: '$CustomerID'");
+					$self->log("... LOOKUP SKU DATA based on Unit Type: '$CustRef->{unittypeid}', Part: '$CustRef->{partnumber}', CustomerID: '$CustomerID'");
 
 					my $sql;
 					my $FILTER  = "upper(customerskuid) = upper('$CustRef->{partnumber}') AND unittypeid = '$CustRef->{unittypeid}' AND customerid = '$CustomerID'";
@@ -1188,7 +1221,7 @@ sub ImportProducts
 					my ($weight, $length, $width, $height, $value) = (0, 0, 0, 0, 0);
 					if ($STH->numrows)
 						{
-						$c->log->debug("... SKU found, get weight, length, width and height");
+						$self->log("... SKU found, get weight, length, width and height");
 						my $d = $STH->fetchrow(0);
 						($weight, $length, $width, $height, $value) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht}, $d->{value});
 						}
@@ -1203,9 +1236,9 @@ sub ImportProducts
 			## if it's the 1st hit on a particular order then delete any existing product records
 			if ($LastCOID ne $CustRef->{'coid'})
 				{
-				$CO = $c->model('MyDBI::Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
+				$CO = $self->model('Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
 
-				#$c->log->debug("... CO DATA DETAILS:  " . Dumper $CO);
+				#$self->log("... CO DATA DETAILS:  " . Dumper $CO);
 				}
 
 			## use this to issue delete of products for an order only once.
@@ -1227,13 +1260,13 @@ sub ImportProducts
 			my @packages = $CO->packages if $CO;
 			if (@packages)
 				{
-				$c->log->debug("... package '" . $packages[0]->packprodataid . "'found for order, insert product into package");
+				$self->log("... package '" . $packages[0]->packprodataid . "'found for order, insert product into package");
 				$productData->{'ownerid'}     = $packages[0]->packprodataid;
 				$productData->{'ownertypeid'} = '3000';
 				}
 			else
 				{
-				$c->log->debug("... package not found");
+				$self->log("... package not found");
 				$productData->{'ownerid'}     = $CustRef->{'coid'};
 				$productData->{'ownertypeid'} = '1000';
 				}
@@ -1263,13 +1296,13 @@ sub ImportProducts
 				$productData->{'hazardous'} = ($CustRef->{'hazardous'} =~ /Y/i ? 1 : 0);
 				}
 
-			#$c->log->debug("....productdata  : ".Dumper $productData );
+			#$self->log("....productdata  : ".Dumper $productData );
 
-			my $Product = $c->model('MyDBI::Packprodata')->new($productData);
+			my $Product = $self->model('Packprodata')->new($productData);
 			$Product->packprodataid($self->myDBI->get_token_id);
 			$Product->insert;
 
-			$c->log->debug("... NEW Product INSERTED, packprodataid:  " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
+			$self->log("... NEW Product INSERTED, packprodataid:  " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
 			}
 		elsif ( $export_flag < 0 )
 			{
@@ -1391,7 +1424,7 @@ sub AuthenticateContact
 
 	my ($ContactID, $CustomerID);
 
-	$c->log->debug("... Authenticate Contact, USERNAME: " . $Username);
+	$self->log("... Authenticate Contact, USERNAME: " . $Username);
 
 	if ($self->AuthContacts and $self->AuthContacts->{$Username})
 		{
@@ -1491,7 +1524,7 @@ sub format_file
 
 	my $c = $self->context;
 
-	$c->log->debug("... format file, Name: " . $file);
+	$self->log("... format file, Name: " . $file);
 
 	my $inputfilename = basename( $file );
 	$inputfilename =~ s/.csv//;
@@ -1507,19 +1540,19 @@ sub format_file
 
 	unless (open $FH, '<:encoding(utf8)', $file)
 		{
-		$c->log->debug("*** Could not open '$file' $!");
+		$self->log("*** Could not open '$file' $!");
 		$self->add_error($!);
 		return;
 		}
 	unless (open $PRODFILE, "+>$product_out_file")
 		{
-		$c->log->debug("*** Error: " . $!);
+		$self->log("*** Error: " . $!);
 		$self->add_error($!);
 		return;
 		}
 	unless (open $ORDRFILE, "+>$order_out_file")
 		{
-		$c->log->debug("*** Error: " . $!);
+		$self->log("*** Error: " . $!);
 		$self->add_error($!);
 		return;
 		}
@@ -1533,11 +1566,11 @@ sub format_file
 		next if $i++ == 0;
 		#$_ =~ s/^\s+//;
 		#$_ =~ s/\s+$//;
-		#$c->log->debug("File Line: " . $_) if $_;
+		#$self->log("File Line: " . $_) if $_;
 
 		#unless ($CSV->parse($_))
 		#	{
-		#	$c->log->debug("CSV Parse Error: " . $CSV->error_input);
+		#	$self->log("CSV Parse Error: " . $CSV->error_input);
 		#	next;
 		#	}
 
@@ -1546,7 +1579,7 @@ sub format_file
 
 		#next unless @$fields;
 
-		#$c->log->debug(".... Fields: " . Dumper $fields);
+		#$self->log(".... Fields: " . Dumper $fields);
 
 		if ($fields->[10] eq '')
 			{
@@ -1565,8 +1598,8 @@ sub format_file
 	close $PRODFILE;
 	close $ORDRFILE;
 
-	$c->log->debug("... Generated OrderImport file $order_out_file for $file");
-	$c->log->debug("... Generated ProductImport file $product_out_file for $file");
+	$self->log("... Generated OrderImport file $order_out_file for $file");
+	$self->log("... Generated ProductImport file $product_out_file for $file");
 
 	return ($order_out_file,$product_out_file);
 	}
