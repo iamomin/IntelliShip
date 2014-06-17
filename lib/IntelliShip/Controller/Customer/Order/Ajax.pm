@@ -932,7 +932,7 @@ sub ship_to_carrier
 					$response->{error} = $self->errors->[0];
 					}
 
-				$self->clear_errors;
+				$self->errors([]);
 
 				return $response;
 				}
