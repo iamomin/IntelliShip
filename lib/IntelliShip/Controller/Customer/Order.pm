@@ -4013,9 +4013,10 @@ sub generate_commercial_invoice
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->log->debug("___ generate_bill_of_lading ___");
+	$c->log->debug("___ generate_commercial_invoice ___");
 
-	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
+	my $shipmentid = (split('_',$params->{'shipmentid'}))[0];
+	my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid });
 	my $CO       = $Shipment->CO;
 	my $Customer = $CO->customer;
 

@@ -159,7 +159,7 @@ sub get_JSON_DATA :Private
 		}
 	elsif ($action eq 'generate_commercial_invoice')
 		{
-		$dataHash = $self->prepare_com_inv;
+		$dataHash = $self->prepare_commercial_invoice;
 		}
 	elsif ($action eq 'ship')
 		{
@@ -806,7 +806,7 @@ sub mark_shipment_as_printed
 
 	my $CO = $self->get_order;
 
-	my @shipmentids = split('_',$params->{shipmentid});
+	my @shipmentids = split('_',$params->{'shipmentid'});
 	foreach my $shipmentid (@shipmentids)
 		{
 		my $Shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $shipmentid, coid => $params->{coid} });
@@ -890,7 +890,7 @@ sub prepare_BOL
 	return { BOL => $HTML };
 	}
 
-sub prepare_com_inv
+sub prepare_commercial_invoice
 	{
 	my $self = shift;
 	my $HTML = $self->generate_commercial_invoice;
