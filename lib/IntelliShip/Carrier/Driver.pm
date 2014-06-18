@@ -323,7 +323,7 @@ sub SendPickUpEmail
 	my $CustomerTransactionId = shift;
 	my $ConfirmationNumber = shift;
 	my $c = $self->context;
-	
+
 	my $Shipment = $self->SHIPMENT;
 
 	my $subject;
@@ -347,7 +347,7 @@ sub SendPickUpEmail
 
 	my $CO = $self->CO;
 	my $Customer = $CO->customer;
-	
+
 	my $company_logo = $Customer->username . '-light-logo.png';
 	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . IntelliShip::Utils->get_branding_id . '/images/header/' . $company_logo;
 	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
@@ -366,6 +366,26 @@ sub SendPickUpEmail
 		{
 		$self->context->log->debug("Shipment Pick-Up notification email successfully sent to " . join(',',@{$Email->to}));
 		}
+	}
+
+sub note_confirmation_number
+	{
+	my $self = shift;
+	my $Shipment = shift;
+	my $ConfirmationNumber = shift;
+
+	my $noteData = {
+		'ownerid'      => $Shipment->shipmentid,
+		'note'         => 'Pick-Up Confirmation Number: ' . $ConfirmationNumber,
+		'contactid'    => $Shipment->contactid,
+		'notestypeid'  => '1000',
+		'datecreated'  => IntelliShip::DateUtils->get_timestamp_with_time_zone,
+		'datehappened' => $Shipment->datepacked,
+		};
+
+	my $Notes = $self->model('MyDBI::Note')->new($noteData);
+	$Notes->notesid($self->get_token_id);
+	$Notes->insert;
 	}
 
 sub log

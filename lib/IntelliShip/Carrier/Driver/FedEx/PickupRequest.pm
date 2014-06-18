@@ -91,6 +91,8 @@ sub process_request
 		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber) = $self->send_pickup_dispatch_reqeust($PickupRequest);
 		}
 
+	$self->note_confirmation_number($Shipment,$ConfirmationNumber) if $ConfirmationNumber;
+
 	$CustomerTransactionId = $PickupRequest->{CustomerTransactionId} unless $CustomerTransactionId;
 
 	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
