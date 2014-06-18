@@ -2443,6 +2443,7 @@ sub VOID_SHIPMENT :Private
 	$Handler->token($self->get_login_token);
 	$Handler->context($self->context);
 	$Handler->contact($self->contact);
+	$Handler->contact($CustomerService);
 	$Handler->carrier($carrier);
 	$Handler->CO($CO);
 	$Handler->SHIPMENT($Shipment);

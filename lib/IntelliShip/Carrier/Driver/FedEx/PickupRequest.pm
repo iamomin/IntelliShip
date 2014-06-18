@@ -251,7 +251,7 @@ sub send_pickup_dispatch_reqeust
 		}
 
 	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
-	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'}. "<br>";
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'};
 
 	return ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber);
 	}
