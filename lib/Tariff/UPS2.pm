@@ -276,6 +276,7 @@ sub GetTransit
 	if ( $ShipmentReturn->{Response}->{ResponseStatusDescription} =~ /Success/i )
 		{
 		$cost = $ShipmentReturn->{RatedShipment}->{TotalCharges}->{MonetaryValue};
+		$cost = $ShipmentReturn->{NegotiatedRates}->{NetSummaryCharges}->{GrandTotal}->{MonetaryValue} if $ShipmentReturn->{NegotiatedRates};
 		$Days = $1 if $ShipmentReturn->{'RatedShipment'}->{'GuaranteedDaysToDelivery'} =~ m/(\d+)\-Day/i;
 		}
 	else
