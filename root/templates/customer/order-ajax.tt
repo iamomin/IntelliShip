@@ -25,7 +25,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td><label for="dutyaccount">Duties Payer Account Number:</label><br/>
+			<td><label for="dutyaccount">Duties Payer Account Number (optional):</label><br/>
 			<input type="text" name="dutyaccount" id="dutyaccount" value ="[% dutyaccount %]" />
 			</td>
 			<td><label for="destinationcountry">Ultimate Destination Country:</label><br/>

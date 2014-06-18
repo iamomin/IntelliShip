@@ -163,7 +163,7 @@
 		</tr>
 	</table>
 
-	[% IF carrier_loop %]<center><input type="button" class="green" value="SAVE" onclick="Validate();"/></center>[% END %]
+	[% IF carrier_loop %]<center><input type="button" class="green" value="Place Order" onclick="Validate();"/></center>[% END %]
 
 </form>
 
