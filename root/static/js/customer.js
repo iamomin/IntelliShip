@@ -367,7 +367,7 @@ function ShowLegal()
 	$("#dialog-message").dialog({
 		title: 'Software License Agreement/Terms of Use',
 		width: '1000px',
-		maxHeight: 600,
+		maxHeight: 800,
 		show: { effect: "blind", duration: 1000 },
 		hide: { effect: "explode", duration: 1000 },
 		autoOpen: false,
