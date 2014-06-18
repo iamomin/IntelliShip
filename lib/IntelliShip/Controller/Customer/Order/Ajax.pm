@@ -715,6 +715,9 @@ sub add_package_product_row :Private
 		$c->stash->{dimheight} = $UnitType->dimheight;
 		}
 
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+	$c->stash->{default_package_type} = $params->{'unittypeid'};
+
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
 	$c->stash->{classlist_loop} = $self->get_select_list('CLASS') unless $c->stash->{classlist_loop};
