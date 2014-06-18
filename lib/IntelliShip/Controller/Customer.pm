@@ -441,6 +441,7 @@ sub get_select_list
 	elsif ($list_name eq 'ADDRESS_BOOK_CUSTOMERS')
 		{
 		my $CustomerID = $self->customer->customerid;
+		my $Contact = $self->contact;
 		my $smart_address_book = $self->customer->smartaddressbook || 0; # 0 = keep only 1,2,3 etc is interval
 
 		my $smart_address_book_sql = '( keep = 1 )';
@@ -472,6 +473,8 @@ sub get_select_list
 			$OrderBy
 		";
 =cut
+		my $and_contactid_sql = '';
+		$and_contactid_sql = "AND address.createdby = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
 		my $SQL = "
 		SELECT
 			MAX( co.coid ) coid
@@ -485,6 +488,7 @@ sub get_select_list
 			AND address.state <> ''
 			AND address.city <> ''
 			AND address.zip <> ''
+			$and_contactid_sql 
 		GROUP BY
 			country, state, city, zip, address1";
 

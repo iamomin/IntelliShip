@@ -1,0 +1,1 @@
+ALTER TABLE address ADD COLUMN createdby VARCHAR(13);

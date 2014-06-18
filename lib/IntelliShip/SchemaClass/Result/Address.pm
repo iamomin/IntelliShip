@@ -109,6 +109,14 @@ __PACKAGE__->table("address");
 
 =cut
 
+=head2 createdby
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 13
+
+=cut
+
 __PACKAGE__->add_columns(
   "addressid",
   { data_type => "char", is_nullable => 0, size => 13 },
@@ -132,6 +140,8 @@ __PACKAGE__->add_columns(
   { data_type => "char", is_nullable => 1, size => 2 },
   "lastvalidatedon",
   { data_type => "timestamp with time zone", is_nullable => 1 },
+  "createdby",
+  { data_type => "varchar", is_nullable => 1, size => 13 },
 );
 
 =head1 PRIMARY KEY
