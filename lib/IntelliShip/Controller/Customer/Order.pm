@@ -523,9 +523,9 @@ sub save_CO_details :Private
 			}
 		}
 
-	$coData->{'dimlength'} = $params->{'dimlength_1'} if $params->{'dimlength_1'};
-	$coData->{'dimwidth'} = $params->{'dimwidth_1'} if $params->{'dimwidth_1'};
-	$coData->{'dimheight'} = $params->{'dimheight_1'} if $params->{'dimheight_1'};
+	$coData->{'dimlength'} = ceil($params->{'dimlength_1'}) if $params->{'dimlength_1'};
+	$coData->{'dimwidth'} = ceil($params->{'dimwidth_1'}) if $params->{'dimwidth_1'};
+	$coData->{'dimheight'} = ceil($params->{'dimheight_1'}) if $params->{'dimheight_1'};
 	$coData->{'estimatedinsurance'} = $params->{'insurance'};
 
 	## International
