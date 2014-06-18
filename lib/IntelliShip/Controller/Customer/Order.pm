@@ -559,7 +559,6 @@ sub save_address :Private
 			state       => $params->{'fromstate'},
 			zip         => $params->{'fromzip'},
 			country     => $params->{'fromcountry'},
-			createdby   => $self->contact->contactid,
 			};
 
 		IntelliShip::Utils->trim_hash_ref_values($originAddressData);
@@ -601,7 +600,6 @@ sub save_address :Private
 			state       => $params->{'tostate'},
 			zip         => $params->{'tozip'},
 			country     => $params->{'tocountry'},
-			createdby   => $self->contact->contactid,
 			};
 
 		IntelliShip::Utils->trim_hash_ref_values($toAddressData);
@@ -642,7 +640,6 @@ sub save_address :Private
 			state       => $params->{'rtstate'},
 			zip         => $params->{'rtzip'},
 			country     => $params->{'rtcountry'},
-			createdby   => $self->contact->contactid,
 			};
 
 		IntelliShip::Utils->trim_hash_ref_values($returnAddressData);

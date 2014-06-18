@@ -474,7 +474,7 @@ sub get_select_list
 		";
 =cut
 		my $and_contactid_sql = '';
-		$and_contactid_sql = "AND address.createdby = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
+		$and_contactid_sql = "AND co.contactid = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
 		my $SQL = "
 		SELECT
 			MAX( co.coid ) coid
