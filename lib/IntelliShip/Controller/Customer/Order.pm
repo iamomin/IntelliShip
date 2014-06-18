@@ -3517,7 +3517,10 @@ sub generate_packing_list
 			{
 			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
 			$c->stash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
-			$self->setup_label_to_print ;
+			my $original_param_shipmentid = $params->{'shipmentid'};
+			$params->{'shipmentid'} = $shipmentid;
+			$self->setup_label_to_print;
+			$params->{'shipmentid'} = $original_param_shipmentid;
 			}
 
 		my $template = 'order-packing-list-' . $list_type . '.tt';
