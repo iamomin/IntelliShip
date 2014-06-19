@@ -329,7 +329,7 @@ sub SendPickUpEmail
 	my $subject;
 	if($ResponseCode eq '0000')
 		{
-		$subject = "NOTICE: Driver pickup scheduled on " . IntelliShip::DateUtils->american_date($Shipment->datepacked);
+		$subject = "NOTICE: Driver Dispatched (" . $self->carrier .",". IntelliShip::DateUtils->american_date($Shipment->datepacked).")";
 		}
 	else
 		{
