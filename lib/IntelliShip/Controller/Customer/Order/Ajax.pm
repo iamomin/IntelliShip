@@ -883,7 +883,6 @@ sub prepare_packing_list_details
 	{
 	my $self = shift;
 	my $HTML = $self->generate_packing_list;
-	$self->context->req->params->{'ajax'} = 1;
 	#$self->context->log->debug("Ajax.pm generate_packing_list : " . $HTML);
 	return { PACKING_LIST => $HTML };
 	}
@@ -892,7 +891,6 @@ sub prepare_BOL
 	{
 	my $self = shift;
 	my $HTML = $self->generate_bill_of_lading;
-	$self->context->req->params->{'ajax'} = 1;
 	#$self->context->log->debug("Ajax.pm generate_bill_of_lading : " . $HTML);
 	return { BOL => $HTML };
 	}
@@ -901,7 +899,6 @@ sub prepare_commercial_invoice
 	{
 	my $self = shift;
 	my $HTML = $self->generate_commercial_invoice;
-	$self->context->req->params->{'ajax'} = 1;
 	#$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
 	return { ComInv => $HTML };
 	}
