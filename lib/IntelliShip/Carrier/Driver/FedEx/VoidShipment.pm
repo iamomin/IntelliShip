@@ -163,7 +163,7 @@ sub cancel_pickup_request
 	my $CustomerService = $self->customerservice;
 
 	my $CarrierCode = ($Shipment->service =~ /Ground/i ? 'FDXE' : 'FDXG');
-	my $ScheduledDate = $Shipment->datepacked;
+	my $ScheduledDate = substr($Shipment->datepacked,0,10);
 
 	my $XML_request = <<END;
 	<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://fedex.com/ws/pickup/v6">
@@ -198,7 +198,8 @@ END
 	$self->log("... Cancel Pickup REQUEST: " . $XML_request);
 
 	$XML_request =~ s/\n+//g;
-	$XML_request =~ s/\s{2}//g;
+	$XML_request =~ s/\t+//g;
+	$XML_request =~ s/\s+/\s/g;
 
 	my $URL = 'https://ws.fedex.com:443/web-services';
 
