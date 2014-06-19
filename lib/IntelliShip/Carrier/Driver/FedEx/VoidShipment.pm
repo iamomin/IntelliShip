@@ -167,31 +167,31 @@ sub cancel_pickup_request
 
 	my $XML_request = <<END;
 	<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://fedex.com/ws/pickup/v6">
-	  <SOAP-ENV:Body>
+	<SOAP-ENV:Body>
 		<q0:CancelPickupRequest>
-		 <q0:WebAuthenticationDetail>
-			<q0:UserCredential>
-			  <q0:Key>I4nV8IlyPI3TkOA8</q0:Key>
-			  <q0:Password>yZatPfw3ZNBe7ucOGjKqIzevt</q0:Password>
-			</q0:UserCredential>
-		 </q0:WebAuthenticationDetail>
-		 <q0:ClientDetail>
-			<q0:AccountNumber>$CustomerService->{'webaccount'}</q0:AccountNumber>
-			<q0:MeterNumber>$CustomerService->{'meternumber'}</q0:MeterNumber>
-		 </q0:ClientDetail>
-		 <q0:Version>
-		   <q0:ServiceId>disp</q0:ServiceId>
-		   <q0:Major>6</q0:Major>
-		   <q0:Intermediate>0</q0:Intermediate>
-		   <q0:Minor>0</q0:Minor>
-		 </q0:Version>
-		 <q0:CarrierCode>$CarrierCode</q0:CarrierCode>
-		 <q0:PickupConfirmationNumber>$ConfirmationNumber</q0:PickupConfirmationNumber>
-		 <q0:ScheduledDate>$ScheduledDate</q0:ScheduledDate>
-		 <q0:Remarks>TEST REMARKS</q0:Remarks>
-		 <q0:Reason>NO LONGER NEEDED</q0:Reason>
-	   </q0:CancelPickupRequest>
-	 </SOAP-ENV:Body>
+			<q0:WebAuthenticationDetail>
+				<q0:UserCredential>
+					<q0:Key>I4nV8IlyPI3TkOA8</q0:Key>
+					<q0:Password>yZatPfw3ZNBe7ucOGjKqIzevt</q0:Password>
+				</q0:UserCredential>
+			</q0:WebAuthenticationDetail>
+			<q0:ClientDetail>
+				<q0:AccountNumber>$CustomerService->{'webaccount'}</q0:AccountNumber>
+				<q0:MeterNumber>$CustomerService->{'meternumber'}</q0:MeterNumber>
+			</q0:ClientDetail>
+			<q0:Version>
+				<q0:ServiceId>disp</q0:ServiceId>
+				<q0:Major>6</q0:Major>
+				<q0:Intermediate>0</q0:Intermediate>
+				<q0:Minor>0</q0:Minor>
+			</q0:Version>
+			<q0:CarrierCode>$CarrierCode</q0:CarrierCode>
+			<q0:PickupConfirmationNumber>$ConfirmationNumber</q0:PickupConfirmationNumber>
+			<q0:ScheduledDate>$ScheduledDate</q0:ScheduledDate>
+			<q0:Remarks>TEST REMARKS</q0:Remarks>
+			<q0:Reason>NO LONGER NEEDED</q0:Reason>
+		</q0:CancelPickupRequest>
+	</SOAP-ENV:Body>
 	</SOAP-ENV:Envelope>
 END
 
@@ -199,7 +199,6 @@ END
 
 	$XML_request =~ s/\n+//g;
 	$XML_request =~ s/\t+//g;
-	$XML_request =~ s/\s+/\s/g;
 
 	my $URL = 'https://ws.fedex.com:443/web-services';
 
