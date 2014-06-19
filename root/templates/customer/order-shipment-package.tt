@@ -4,7 +4,7 @@
 [% IF PACKAGE_DETAIL_ROW %]
 <table class="package" id="package-[% ROW_COUNT %]">
 	<tr>
-		<td id="package_type_[% ROW_COUNT %]" style="text-align: right;">[% IF PACKAGE_INDEX > 1 %]<a href="javascript:void(0);" onclick="removePackageDetails('[% ROW_COUNT %]');" class="round-black-button">X</a>&nbsp;[% END %]<select id="unittype_[% ROW_COUNT %]" name="unittype_[% ROW_COUNT %]" style="width: 80px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>&nbsp;QUANTITY:</td>
+		<td id="package_type_[% ROW_COUNT %]" style="text-align: right;">[% IF PACKAGE_INDEX > 1 %]<a href="javascript:void(0);" onclick="removePackageDetails('[% ROW_COUNT %]');" class="round-black-button">X</a>&nbsp;[% END %]<select id="unittype_[% ROW_COUNT %]" name="unittype_[% ROW_COUNT %]" style="width: 80px;">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == unittypeid %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>&nbsp;QUANTITY:</td>
 		<td><input type="text" class="small-text shipment-details" style="width: 30px" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
 		<th colspan="10">
 			[% IF SHIPPER_NUMBER %]

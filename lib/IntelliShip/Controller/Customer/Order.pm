@@ -220,7 +220,7 @@ sub setup_shipment_information :Private
 
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
-		$c->stash->{default_package_type} = $unit_type_id;
+		$c->stash->{unittypeid} = $unit_type_id;
 		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
 		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
