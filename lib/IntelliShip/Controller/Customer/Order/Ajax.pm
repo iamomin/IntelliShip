@@ -739,22 +739,17 @@ sub populate_package_default_detials :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $response_hash = {};
+	my ($dimlength,$dimwidth,$dimheight);
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
-		$response_hash->{'PACKAGE_TYPE'} = uc $UnitType->unittypename;
-		$response_hash->{'unittypeid'} = uc $UnitType->unittypeid;
-		$response_hash->{'dimlength'} = $UnitType->dimlength;
-		$response_hash->{'dimwidth'}  = $UnitType->dimwidth;
-		$response_hash->{'dimheight'} = $UnitType->dimheight;
-		}
-	else
-		{
-		$response_hash->{'error'} = "Package default details not found";
+		$dimlength = $UnitType->dimlength;
+		$dimwidth  = $UnitType->dimwidth;
+		$dimheight = $UnitType->dimheight;
 		}
 
-	return $response_hash;
+	return { dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight };
 	}
+
 sub set_third_party_delivery
 	{
 	my $self = shift;
