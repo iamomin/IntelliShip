@@ -216,6 +216,7 @@ function setCityAndState(type)
 			if (JSON_data.state.length > 0) $("#"+type+"state").val(JSON_data.state);
 			if (JSON_data.country.length > 0) $("#"+type+"country").val(JSON_data.country);
 			if ($("#fromstatespan").length && type == 'from') $("#fromstatespan").text(JSON_data.state);
+			if ($('#destinationcountry').length > 0) $("#destinationcountry").val($("#tocountry").val());
 			});
 		}
 	}
@@ -400,6 +401,7 @@ function setCustomsCommodityValue()
 	if ($("#insurance").length == 0) return;
 	var insurance = parseFloat($("#insurance").val());
 	$("#commoditycustomsvalue").val(insurance.toFixed(2));
+	$('#destinationcountry').val($('#tocountry').val());
 	}
 
 function checkInternationalSection()
