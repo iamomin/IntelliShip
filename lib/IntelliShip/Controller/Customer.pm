@@ -1216,9 +1216,9 @@ sub set_header_section
 	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/engage/images/profile/' . $user_profile;
 	$c->stash->{user_profile} = $user_profile if -e $fullpath;
 
-	my $halousername = $Controller->contact->get_only_contact_data_value("halousername");
-	my $halopassword = $Controller->contact->get_only_contact_data_value("halopassword");
-	my $halourl = $Controller->contact->get_only_contact_data_value("halourl");
+	my $halousername = $Contact->get_only_contact_data_value("halousername");
+	my $halopassword = $Contact->get_only_contact_data_value("halopassword");
+	my $halourl = $Contact->get_only_contact_data_value("halourl");
 
 	$c->stash->{'HALO_URL'} = $halourl if $halousername && $halopassword && $halourl;
 	}
