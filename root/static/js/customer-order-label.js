@@ -74,18 +74,18 @@ function CheckAfterLabelPrintActivities(coid,shipmentid,boolReprintLabel)
 
 function GeneratePrintPackingList(coid, shipmentid)
 	{
-	var query_param = 'action=generate_packing_list&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
+	var query_param = 'action=generate_packing_list&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
 	window.location.href = '/customer/order/ajax?' + query_param;
 	}
 
 function GenerateBillOfLading(coid, shipmentid)
 	{
-	var query_param = 'action=generate_bill_of_lading&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
+	var query_param = 'action=generate_bill_of_lading&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
 	window.location.href = '/customer/order/ajax?' + query_param;
 	}
 
 function GenerateCommercialInvoice(coid, shipmentid)
 	{
-	var query_param = 'action=generate_commercial_invoice&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
+	var query_param = 'action=generate_commercial_invoice&ajax=1&type=HTML&coid=' + coid + '&shipmentid=' + shipmentid;
 	window.location.href = '/customer/order/ajax?' + query_param;
 	}
