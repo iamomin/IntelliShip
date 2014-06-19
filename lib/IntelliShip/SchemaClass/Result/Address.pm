@@ -175,6 +175,12 @@ sub update
 	return $self;
 	}
 
+sub is_valid
+	{
+	my $self = shift;
+	return ($self->address1 && $self->city && $self->state && $self->zip & $self->country);
+	}
+
 sub set_address_code_details
 	{
 	my $self = shift;

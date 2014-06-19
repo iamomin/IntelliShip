@@ -127,7 +127,7 @@ sub setup_address :Private
 		}
 
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
-	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
+	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid;
 
 	$self->set_company_address;
 
