@@ -373,10 +373,11 @@ sub note_confirmation_number
 	my $self = shift;
 	my $Shipment = shift;
 	my $ConfirmationNumber = shift;
+	my $location =shift;	
 
 	my $noteData = {
 		'ownerid'      => $Shipment->shipmentid,
-		'note'         => 'Pick-Up Confirmation Number: ' . $ConfirmationNumber,
+		'note'         => 'Pick-Up Location: ' . $location . ' Confirmation Number: ' . $ConfirmationNumber,
 		'contactid'    => $Shipment->contactid,
 		'notestypeid'  => '1000',
 		'datecreated'  => IntelliShip::DateUtils->get_timestamp_with_time_zone,

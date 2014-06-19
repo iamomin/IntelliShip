@@ -148,7 +148,7 @@ sub cancel_pickup_request
 	my $c = $self->context;
 	my $Shipment = $self->SHIPMENT;
 
-	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Confirmation Number%' } });
+	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
 
 	unless ($Note)
 		{
@@ -157,8 +157,9 @@ sub cancel_pickup_request
 		}
 
 	my $ConfirmationNumber = (split(/\ /,$Note->note))[-1];
+	my $location = (split(/\ /,$Note->note))[-3];
 
-	$self->log("... Cancel Pickup REQUEST, ConfirmationNumber: " . $ConfirmationNumber);
+	$self->log("... Cancel Pickup REQUEST Location" . $location . " ConfirmationNumber: " . $ConfirmationNumber);
 
 	my $CustomerService = $self->customerservice;
 
@@ -188,6 +189,7 @@ sub cancel_pickup_request
 			<q0:CarrierCode>$CarrierCode</q0:CarrierCode>
 			<q0:PickupConfirmationNumber>$ConfirmationNumber</q0:PickupConfirmationNumber>
 			<q0:ScheduledDate>$ScheduledDate</q0:ScheduledDate>
+			<q0:Location>$location</q0:Location>
 			<q0:Remarks>TEST REMARKS</q0:Remarks>
 			<q0:Reason>NO LONGER NEEDED</q0:Reason>
 		</q0:CancelPickupRequest>
