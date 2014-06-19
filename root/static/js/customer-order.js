@@ -216,7 +216,6 @@ function setCityAndState(type)
 			if (JSON_data.state.length > 0) $("#"+type+"state").val(JSON_data.state);
 			if (JSON_data.country.length > 0) $("#"+type+"country").val(JSON_data.country);
 			if ($("#fromstatespan").length && type == 'from') $("#fromstatespan").text(JSON_data.state);
-			$('#destinationcountry').val($('#tocountry').val());
 			});
 		}
 	}
@@ -232,9 +231,7 @@ function updateStateList(type,call_back_fn)
 
 	var query_param = "country=" + country + '&control=' + type + 'state';
 
-	send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, function (){
-		$('#destinationcountry').val($('#tocountry').val());
-	});
+	send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
 	}
 
 function populateShipAddress(direction, referenceid)
@@ -423,7 +420,6 @@ function checkInternationalSection()
 			$("#intlCommoditySec").slideDown(1000, setCustomsCommodityValue);
 			$("#insurance").change(setCustomsCommodityValue);
 			$("#freightinsurance").change(setCustomsCommodityValue);
-			$('#destinationcountry').val($('#tocountry').val());
 			});
 		} else {
 		$("#intlCommoditySec").slideUp("slow");
