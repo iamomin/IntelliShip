@@ -488,7 +488,7 @@ sub get_select_list
 			AND address.state <> ''
 			AND address.city <> ''
 			AND address.zip <> ''
-			$and_contactid_sql 
+			$and_contactid_sql
 		GROUP BY
 			country, state, city, zip, address1";
 
@@ -1076,11 +1076,11 @@ sub get_select_list
 			{ name => 'DDP',      value => '5' },
 			];
 		if ($self->customer->username =~ /qamf/)
-			{	
+			{
 				foreach my $Terms_Name(@$list)
 				{
 				 $Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
-				 $Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);	
+				 $Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);
 				}
 			}
 		}
@@ -1215,6 +1215,12 @@ sub set_header_section
 	my $user_profile = $Customer->username . '-' . $Contact->username . '.png';
 	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/engage/images/profile/' . $user_profile;
 	$c->stash->{user_profile} = $user_profile if -e $fullpath;
+
+	my $halousername = $Controller->contact->get_only_contact_data_value("halousername");
+	my $halopassword = $Controller->contact->get_only_contact_data_value("halopassword");
+	my $halourl = $Controller->contact->get_only_contact_data_value("halourl");
+
+	$c->stash->{'HALO_URL'} = $halourl if $halousername && $halopassword && $halourl;
 	}
 
 sub set_navigation_rules

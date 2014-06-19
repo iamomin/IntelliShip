@@ -139,7 +139,7 @@ sub end : Private {
 	my $print_label = $c->stash->{print_label} || 0;
 
 	$c->stash->{contactObj} = $Controller->contact;
-	
+
 
 	if ($Token and $ajax)
 		{
@@ -151,16 +151,6 @@ sub end : Private {
 		}
 	elsif ($Token)
 		{
-		my $halousername = $Controller->contact->get_only_contact_data_value("halousername");
-		my $halopassword = $Controller->contact->get_only_contact_data_value("halopassword");
-		my $halourl = $Controller->contact->get_only_contact_data_value("halourl");
-		if($halousername && $halopassword && $halousername ne '' && $halopassword ne '')
-		{
-			$c->stash->{'HALO_URL'} = $halourl;
-		}
-		#warn "########### Halo username: $halousername"; 
-		#warn "########### Halo password: $halopassword";
-		warn "########### Halo URL: $halourl";
 		$Controller->set_header_section;
 		$Controller->set_navigation_rules;
 
