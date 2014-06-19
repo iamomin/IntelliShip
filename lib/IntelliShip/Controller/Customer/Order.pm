@@ -46,6 +46,10 @@ sub quickship :Local
 		{
 		$self->setup_label_to_print;
 		}
+	elsif ($do_value eq 'download')
+		{
+		$self->export_label;
+		}
 	elsif ($do_value eq 'cancel')
 		{
 		$self->cancel_order;
@@ -2187,7 +2191,7 @@ sub generate_label :Private
 		}
 	}
 
-sub setup_label_to_print
+sub setup_label_to_print :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -2207,6 +2211,46 @@ sub setup_label_to_print
 		}
 
 	$c->stash(template => "templates/customer/order-label.tt");
+	}
+
+sub export_label :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my @shipmentids = split('_',$params->{'shipmentid'});
+
+	my $file = $params->{'shipmentid'} . '.zip';
+	my $file_path = '/tmp/' . $file;
+
+	my $zipCommand = 'zip -j ' . $file_path;
+
+	foreach my $shipmentid (@shipmentids)
+		{
+		$zipCommand .= ' ' . IntelliShip::MyConfig->label_file_directory . '/' . $shipmentid . '.jpg';
+		}
+
+	$c->log->debug("zipCommand: " . $zipCommand);
+	system($zipCommand);
+
+	my $FH = new IO::File;
+
+	unless (open($FH, $file_path))
+		{
+		return 1;
+		}
+
+	my $BUFFER;
+	$BUFFER .= $_ while (<$FH>);
+
+	close($FH);
+
+	my $content_type = (split(/\./, $file))[-1];
+
+	$c->res->header('Content-disposition' => "attachment; filename=" . $file);
+	$c->res->content_type('text/' . $content_type);
+	$c->res->body($BUFFER);
 	}
 
 sub setup_label

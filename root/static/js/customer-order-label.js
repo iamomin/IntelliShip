@@ -54,14 +54,37 @@ function SendEmailNotification(coid,shipmentid)
 
 function DownloadLabelImage(coid,shipmentid)
 	{
-	var arr = shipmentid.split("_");
-	jQuery.each(arr, function(index, item) {
-		var img = document.getElementById('lbl_'+item);
-		var url = img.src.replace("/print", "/download");
-		window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
+	//var arr = shipmentid.split("_");
+	//jQuery.each(arr, function(index, item) {
+	//	var img = document.getElementById('lbl_'+item);
+	//	var url = img.src.replace("/print", "/download");
+	//	window.open(url, '', 'left=0,top=0,width=900,height=500,status=0');
 
-		if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
-		});
+	//	if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
+	//	});
+
+	var iframe = $('<iframe/>', {
+				id: 'i-download-label',
+				src: '/customer/order/quickship?do=download&shipmentid='+shipmentid,
+				style: 'display:none',
+				load: function() {
+					alert('iframe loaded !');
+					CheckAfterLabelPrintActivities(coid,shipmentid);
+					}
+			});
+
+	$('body').append(iframe);
+	setInterval(function(){CheckAfterLabelPrintActivities(coid,shipmentid);}, 3000);
+/*
+	var frame = document.createElement("iframe");
+	var att=document.createAttribute("src");
+	att.value="/customer/order/quickship?do=download&shipmentid="+shipmentid;
+	frame.setAttributeNode(att);
+	frame.onload = function(){console.log("IFRAME load getting called");};
+	frame.onabort = function(){console.log("IFRAME abort getting called");};
+	frame.onerror = function(){console.log("IFRAME error getting called");};
+	document.body.appendChild(frame);
+*/
 	}
 
 function CheckAfterLabelPrintActivities(coid,shipmentid,boolReprintLabel)

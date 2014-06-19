@@ -21,7 +21,6 @@
 	<input type="hidden" id="printpackinglist" name="printpackinglist" value="[% printpackinglist %]"/>
 	<input type="hidden" id="billoflading" name="billoflading" value="[% billoflading %]"/>
 	<input type="hidden" id="printcominv" name="printcominv" value="[% printcominv %]"/>
-	<input type="hidden" id="shipmentids" name="shipmentids" value="[% shipmentids %]"/>
 
 	[% UNLESS REPRINT_LABEL %]
 	<table class="center DoNotPrint">
