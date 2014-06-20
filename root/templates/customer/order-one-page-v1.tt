@@ -186,16 +186,16 @@
 		var type = arr[0];
 		var ID = arr[1];
 
-		$(this).addClass("green",1000);
+		$(this).addClass("green",100);
 
 		if (type == 'weightperpackage')
 			{
-			$('#totalweight-'+ID).removeClass("green",1000);
+			$('#totalweight-'+ID).removeClass("green",100);
 			$('#quantityxweight-'+ID).val(0);
 			}
 		else
 			{
-			$('#weightperpackage-'+ID).removeClass("green",1000);
+			$('#weightperpackage-'+ID).removeClass("green",100);
 			$('#quantityxweight-'+ID).val(1);
 			}
 
