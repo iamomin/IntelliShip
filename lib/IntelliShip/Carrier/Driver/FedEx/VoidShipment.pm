@@ -224,6 +224,29 @@ END
 	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
 
 	$self->log("responseDS: " . Dumper $responseDS);
+
+	my $NotificationRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CancelPickupReply'}{'v6:Notifications'};
+
+	my ($Message,$ResponseCode) = ("","");
+
+	if (ref $NotificationRef eq 'ARRAY')
+		{
+		foreach my $msg (@$NotificationRef)
+			{
+			$Message      = $Message . "<br>" . $msg->{'v6:Message'};
+			$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
+			}
+
+		$Message      = $Message . "<br>";
+		$ResponseCode = $ResponseCode  . "<br>";
+		}
+	else
+		{
+		$Message      = $NotificationRef->{'v6:Message'};
+		$ResponseCode = $NotificationRef->{'v6:Code'};
+		}
+
+	$self->SendCancelPickupNotification($ResponseCode,$Message,$ConfirmationNumber);
 	}
 
 __PACKAGE__->meta()->make_immutable();

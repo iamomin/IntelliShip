@@ -315,7 +315,7 @@ sub insert_shipment
 	return $Shipment;
 	}
 
-sub SendPickUpEmail
+sub SendPickUpNotification
 	{
 	my $self = shift;
 	my $ResponseCode = shift;
@@ -368,12 +368,64 @@ sub SendPickUpEmail
 		}
 	}
 
+sub SendCancelPickupNotification
+	{
+	my $self = shift;
+	my $ResponseCode = shift;
+	my $Message = shift;
+	my $ConfirmationNumber = shift;
+
+	my $c = $self->context;
+
+	my $Shipment = $self->SHIPMENT;
+
+	my $subject;
+	if($ResponseCode eq '0000')
+		{
+		$subject = "NOTICE: Pickup Cancelled (" . $self->carrier .",". IntelliShip::DateUtils->american_date($Shipment->datepacked).")";
+		}
+	else
+		{
+		$subject = "ALERT: Error cancel driver pickup on ". IntelliShip::DateUtils->american_date($Shipment->datepacked);
+		}
+
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
+	$Email->subject($subject);
+	$Email->add_to('noc@engagetechnology.com');
+	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
+
+	my $CO = $self->CO;
+	my $Customer = $CO->customer;
+
+	my $company_logo = $Customer->username . '-light-logo.png';
+	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . IntelliShip::Utils->get_branding_id . '/images/header/' . $company_logo;
+	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
+	$c->stash->{logo} = $company_logo;
+
+	$c->stash->{Shipment_list} = $Shipment;
+
+	$c->stash->{Message} = $Message;
+	$c->stash->{ResponseCode} = $ResponseCode;
+	$c->stash->{ConfirmationNumber} = $ConfirmationNumber if $ConfirmationNumber;
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/cancel-pickup-notification.tt' ]));
+
+	if ($Email->send)
+		{
+		$self->context->log->debug("Shipment Pick-Up-Cancel notification email successfully sent to " . join(',',@{$Email->to}));
+		}
+	}
+
 sub note_confirmation_number
 	{
 	my $self = shift;
 	my $Shipment = shift;
 	my $ConfirmationNumber = shift;
-	my $location =shift;	
+	my $location = shift;
 
 	my $noteData = {
 		'ownerid'      => $Shipment->shipmentid,
