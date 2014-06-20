@@ -14,7 +14,9 @@ function BindCompanyAutoComplete(direction,availableCustomers)
 			ui.item.value = Company;
 			populateShipAddress(direction,RefID);
 			}
-		});
+		}).focus(function() {
+			$(this).autocomplete("search", "|");
+			});
 	}
 
 /*
