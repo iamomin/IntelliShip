@@ -785,7 +785,7 @@ function updateShipmentSummary()
 
 		var packageClass = $("#class_"+row_ID).val();
 		var packageQuantity = +$("#quantity_"+row_ID).val();
-		var packageWeight = +$("#weight_"+row_ID).val();
+		var packageWeight = (+$("#weight_"+row_ID).val() > +$("#dimweight_"+row_ID).val() ? +$("#weight_"+row_ID).val() : +$("#dimweight_"+row_ID).val());
 		var packageValue = +$("#decval_"+row_ID).val();
 
 		if ($("#quantityxweight-"+row_ID).val() == 0) packageWeight = (packageQuantity * packageWeight);

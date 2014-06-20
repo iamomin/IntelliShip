@@ -11,7 +11,7 @@
 				<input type="hidden" id="originalcoid_[% ROW_COUNT%]" name="originalcoid_[% ROW_COUNT%]" value="[% SHIPPER_NUMBER %]"/>
 				<div class="float-left" style="color:#1875BA">Original Shipper # : [% SHIPPER_NUMBER %]</div>
 			[% END %]
-			<div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div>
+			<div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]" onchange="calculateTotalWeight();"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div>
 		</th>
 	</tr>
 	<tr>
