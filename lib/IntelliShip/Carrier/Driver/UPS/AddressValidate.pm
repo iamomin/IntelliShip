@@ -74,13 +74,20 @@ sub process_request
 
 	if($xmlResp->{Response}->{ResponseStatusDescription} =~ /Success/i)
 		{
-		$self->destination_address->lastvalidatedon(IntelliShip::DateUtils->get_timestamp_with_time_zone);
-		$self->destination_address->update;
-		return 1;
+		if (exists $xmlResp->{ValidAddressIndicator})
+			{
+			$self->destination_address->lastvalidatedon(IntelliShip::DateUtils->get_timestamp_with_time_zone);
+			$self->destination_address->update;
+			return $xmlResp;
+			}
+		else
+			{
+			$self->add_error("The Ship To address provided is invalid, or requires additional information.");
+			}
 		}
 	else
 		{
-		$self->add_error("Invalid Address: " . $xmlResp->{Response}->{Error}->{ErrorDescription});
+		$self->add_error("Invalid Destination Address - " . $xmlResp->{Response}->{Error}->{ErrorDescription});
 		return undef;
 		}
 	}

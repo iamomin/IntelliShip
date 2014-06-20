@@ -716,7 +716,7 @@ sub add_package_product_row :Private
 		}
 
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-	$c->stash->{unittypeid} = $params->{'unittypeid'};
+	$c->stash->{default_package_type} = $params->{'unittypeid'};
 
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
@@ -739,15 +739,16 @@ sub populate_package_default_detials :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my ($dimlength,$dimwidth,$dimheight);
+	my ($unittypename,$dimlength,$dimwidth,$dimheight);
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$dimlength = $UnitType->dimlength;
 		$dimwidth  = $UnitType->dimwidth;
 		$dimheight = $UnitType->dimheight;
+		$unittypename = uc $UnitType->unittypename;
 		}
 
-	return { dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight };
+	return {PACKAGE_TYPE => $unittypename, dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight };
 	}
 
 sub set_third_party_delivery
@@ -919,7 +920,7 @@ sub ship_to_carrier
 			$c->log->debug("... validating Address");
 
 			## Validate address through UPS API
-			$self->validate_address;
+			my $XML_RESPOSE = $self->validate_address;
 
 			if ($self->has_errors)
 				{

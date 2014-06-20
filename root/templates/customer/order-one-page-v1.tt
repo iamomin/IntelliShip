@@ -49,7 +49,7 @@
 
 	[% ADDRESS_SECTION %]
 
-	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == unittypeid %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
+	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
 		<table class="float-right">
 		<tr>
 		[% IF print_return_shipment == 1 %]
