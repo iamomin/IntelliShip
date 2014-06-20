@@ -323,7 +323,7 @@
 						<td><label class="float-right" for="cust_sopid">SOP:</label></td>
 						<td>
 						<label>
-							<select name="cust_sopid" id="cust_sopid">
+							<select name="cust_sopid" id="cust_sopid" style="width:218px;">
 								[% FOREACH item IN customerlist_loop %]
 									<option value="[% item.value %]" [% (item.value == cust_sopid) ? 'SELECTED' : '' %]>[% item.name %]</option>
 								[% END %]
