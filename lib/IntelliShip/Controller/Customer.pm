@@ -427,11 +427,26 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
-		my $WHERE = {
-		customername => { '!=' => '' },
-		};
+		my $WHERE = {};
 
-		$WHERE->{createdby} = $self->customer->customerid if ($self->contact->is_administrator && !$self->contact->is_superuser);
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE = {
+				-and => [
+				  -or => [
+					createdby => $self->customer->customerid,
+					customerid  => $self->customer->customerid,
+				  ],
+				  customername => { '!=' => '' },
+				],
+				}
+			}
+		else
+			{
+			$WHERE = {
+				customername => { '!=' => '' },
+				};
+			}
 
 		my @customers = $c->model('MyDBI::Customer')->search( $WHERE,
 			{
