@@ -693,6 +693,7 @@ sub get_select_list
 		for (my $row = 0; $row < scalar @ass_names; $row++)
 			{
 			next if $ass_names[$row] =~ /dryice/i;
+			$ass_displays[$row] = 'Pickup Request (today avail before 1pm, for Express)' if $ass_displays[$row] eq 'Pickup Request';
 			push(@$list, { name => $ass_displays[$row], value => $ass_names[$row] });
 			}
 		}
