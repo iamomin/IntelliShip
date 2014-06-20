@@ -12,10 +12,25 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 <h2>CHARGE-THRESHOLD-NOTIFICATION</h2>
 
 <div id="notification">
-	[% ordernumberaka %] [% ordernumber %] was routed by Intelliship selecting [% origcarrier %], [% origservice %] for [% defaultcsidtotalcost %] expected to ship [% datecreated %].
-
-	This selection was overridden by [% username %] selecting [% carrier %], [% service %] for [% totalshipmentcharges %].
-
+	
+	<table class="content-wrap" border="0">
+		<tr>
+			<th>Order Number</th><td>[% ordernumber %]</td>
+		</tr>
+		<tr>
+			<th>User The Overrided</th><td>[% username %]</td>
+		</tr>
+		<tr>
+			<th>Recommanded Carrier, Service and Cost</th><td>[% origcarrier %],[%  origservice %], [% defaultcsidtotalcost %]</td>
+		</tr>
+		<tr>
+			<th>Chossed Carrier, Service and Cost</th><td>[% carrier %], [% service %], [% totalshipmentcharges %]</td>
+		</tr>
+		<tr>
+			<th>Expected Ship date</th><td>[% datecreated %]</td>
+		</tr>
+	</table>
+	
 	<div class="notice">If you have any questions about your shipment, please contact<br>the shipping carrier or your company representative.</div>
 	
 	<div id="logo">
