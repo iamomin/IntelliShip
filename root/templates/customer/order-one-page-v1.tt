@@ -288,9 +288,12 @@
 		});
 
 	$('#deleted').click(function() {
-		requiredFieldHash = {};
-		$("#do").val("delete");
-		$('#frm_order').submit();
+		showConfirmBox('Are you sure you want to delete Order?', 'Delete Order Confirmation', function(){
+			requiredFieldHash = {};
+			$("#do").val("delete");
+			$('#frm_order').submit();
+			return;
+			});
 		});
 
 	$("#frm_order").submit(function() {
