@@ -526,13 +526,13 @@ sub get_select_list
 			my $address_name = $Address->addressname;
 			my $address1 = $Address->address1;
 			push(@$list, {
-					company_name => "\Q$address_name\S",
+					company_name => "\Q$address_name\E",
 					reference_id => $data->{'coid'},
-					address1     => "\Q$address1\S",
+					address1     => "\Q$address1\E",
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
-					contactname  => "\Q$address_data->{contactname}\S",
+					contactname  => "\Q$address_data->{contactname}\E",
 				});
 			}
 		}
