@@ -780,7 +780,7 @@ label.void {font-size: 13px; font-weight: bold; white-space: nowrap; color: #A25
 #myShipments table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
 #myShipments table tr:nth-child(even) {color: #000; background: #E4E5E7 }
 #myShipments table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
-#myShipments table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap;}
+#myShipments table td {padding: 3px;}
 #myShipments table td.center {text-align: center;}
 
 #myShipments a.red {
