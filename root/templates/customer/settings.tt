@@ -4,7 +4,7 @@
 [% #---------------------------------------------------------- %]
 [% IF settings_loop %]
 <h2>Settings</h2>
-
+<script type="text/javascript" src="/static/js/customer.js"></script>
 [% IF MESSAGE %]<div class="notice">[% MESSAGE %]</div>[% END %]
 
 <div ID="list">
@@ -100,7 +100,6 @@ $(document).ready(function(){
 				<td><input type="text" class="text" id="customerskuid" name="customerskuid" /></td>
 				<td><input type="button" class="blue" id="sku_edit" value="Edit" /></td>
 				<td><input type="button" class="green" id="sku_add" value="Add New" /></td>
-				<td><input type="button" class="red" id="sku_delete" value="Delete" /></td>
 				<td><input type="button" class="button" id="cancel" value="Cancel" onclick="window.location.href='/customer/settings'"/></td>
 				<td><label class="float-right" for="records_per_page">Records Per Page:</td>
 				<td>
@@ -129,7 +128,6 @@ $(document).ready(function(){
 	<table class="report">
 		<tr>
 			<th>&nbsp;</th>
-			<th>&nbsp;</th>
 			<th>SKU</th>
 			<th>Description</th>
 			<th>UPC</th>
@@ -147,7 +145,6 @@ $(document).ready(function(){
 		[% FOREACH item IN productskulist %]
 			<tr>
 				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
-				<td><a href="javascript:deleteProductSku('[% item.productskuid %]');">DELETE</a></td>
 				<td>[% item.customerskuid %]</td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>
@@ -173,26 +170,6 @@ $(document).ready(function(){
 		$("#customerskuid").val("");
 		$("#productskuid").val(productskuid);
 		$("#frm_sku_management").submit();
-		}
-
-	function deleteProductSku(productskuid) {
-
-		$("#dialog-message").dialog( {
-			title: "Delete Product SKU",
-			width: '400px',
-			buttons: {
-				Ok: function() {
-					$("#do").val('delete');
-					$("#productskuid").val(productskuid);
-					$("#sku_page").prop('disabled','disabled');
-					$("#frm_sku_management").submit();
-					},
-				Cancel: function() { $( this ).dialog( "close" ); }
-				}
-			});
-
-		$("#dialog-message").html("<div class='notice'>Are you sure you want to delete SKU?</div>");
-		$("#dialog-message").dialog("open");
 		}
 
 	var cachedProductSkus = {};
@@ -229,13 +206,6 @@ $(document).ready(function(){
 				$("#do").val('setup');
 				$("#sku_page").prop('disabled','disabled');
 				$("#frm_sku_management").submit();
-				}
-			});
-
-		$("#sku_delete").click(function() {
-			$("#do").val('delete');
-			if (validateForm({ customerskuid : { minlength: 1, description: "Please specify valid poduct SKU" } })) {
-				deleteProductSku();
 				}
 			});
 
@@ -396,12 +366,24 @@ $(document).ready(function(){
 		</table>
 		<center>
 			<input type="submit" class="green" id="update_productsku" value="[% IF productskuid %]Update[% ELSE %]Add[% END %] Product Sku" />
-			&nbsp;&nbsp;
+			<input type="button" class="red" id="sku_delete" value="Delete" onclick="deleteProductSku('[% productskuid %]')"/>
 			<input type="button" class="button" id="cancel" value="Cancel" onclick="window.location.href='/customer/settings/skumanagement'"/>
 		</center>
 	</form>
 
 	<script>
+	
+	function deleteProductSku(productskuid) {
+		showConfirmBox('Are you sure you want to delete SKU?', 'Delete Product SKU', function(){
+			$("#do").val('delete');
+			$("#productskuid").val(productskuid);
+			$("#sku_page").prop('disabled','disabled');
+			$("#frm_setup_sku").submit();
+			return;
+			});
+		}
+	
+	
 	$("#frm_setup_sku").submit(function () {
 		var requireHash = { customerskuid : { minlength: 1, description: "Please specify customer sku ID" }
 			};
