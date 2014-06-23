@@ -92,7 +92,7 @@ sub setup_supply_ordering :Private
 
 	my $my_only = $Contact->get_contact_data_value('myonly');
 	my $ToAddress = $Contact->address;
-	$ToAddress = $Customer->address if !$ToAddress && !$my_only;
+	$ToAddress = $Customer->address if (!$ToAddress || !$ToAddress->is_valid) && !$my_only;
 
 	my $tocontact = ($Contact->lastname ? $Contact->firstname . ' ' .  $Contact->lastname : $Contact->firstname);
 	$tocontact = $Customer->contact if !$tocontact && !$my_only;
