@@ -14,9 +14,7 @@ function BindCompanyAutoComplete(direction,availableCustomers)
 			ui.item.value = Company;
 			populateShipAddress(direction,RefID);
 			}
-		}).focus(function() {
-			$(this).autocomplete("search", "|");
-			});
+		});
 	}
 
 /*
@@ -80,7 +78,7 @@ function RestoreAddress(address, direction, type)
 	}
 
 var from_to_Hash = {};
-var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email'];
+var fieldArray = ['name', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'contact', 'phone', 'department', 'customernumber', 'email', 'search'];
 
 function ConfigureAddressSection(address, direction, type)
 	{
@@ -128,6 +126,10 @@ function ConfigureAddressSection(address, direction, type)
 				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
 				$('#'+targetDiv).html('<input type="text" name="'+targetCtrl+'" id="'+targetCtrl+'" class="labellike" value="'+$('#'+targetCtrl).val()+'"/>');
 				}
+			}
+		else if (val == 'search')
+			{
+			$('#'+targetCtrl).css('display', (editable ? 'inline' : 'none'));
 			}
 		else
 			{
@@ -577,7 +579,7 @@ function addNewPackageProduct(package_id,type)
 			updatePackageProductSequence();
 			});
 	}
-	
+
 function populatePackageDefaultDetials(row_ID)
 	{
 	var query_param = '&unittypeid=' + $('#unittype_'+row_ID).val();

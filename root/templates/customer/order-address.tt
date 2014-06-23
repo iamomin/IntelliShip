@@ -36,7 +36,7 @@
 			<table class="app">
 				<caption>SHIP FROM</caption>
 				<tr>
-					<td><label for="fromname" class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" name="fromname" id="fromname" value='[% fromAddress.addressname %]'/></td>
+					<td><label for="fromname" class="float-right">Company:</label></td><td><input readonly type="text" class="labellike" name="fromname" id="fromname" value='[% fromAddress.addressname %]'/>[% IF quickship%]<input type="button" id="fromsearch"/></td>[% END %]
 				</tr>
 				<tr>
 					<td><label for="fromaddress1" class="float-right">Address 1:</label></td><td><input readonly type="text" class="labellike" name="fromaddress1" id="fromaddress1" value='[% fromAddress.address1 %]'/></td>
@@ -112,7 +112,7 @@
 			<table class="app">
 				<caption>SHIP TO</caption>
 				<tr>
-					<td><label for="toname" class="float-right require">Company: </label></td><td><input type="text" class="broad-text" name="toname" id="toname" value="[% toAddress.addressname %]"/></td>
+					<td><label for="toname" class="float-right require">Company: </label></td><td><input type="text" class="broad-text" name="toname" id="toname" value="[% toAddress.addressname %]"/><input type="button" id="tosearch"/></td>
 				</tr>
 				<tr>
 					<td><label for="toaddress1" class="float-right require">Address 1:</label></td><td><input type="text" class="broad-text" name="toaddress1" id="toaddress1" value="[% toAddress.address1 %]"/></td>
@@ -265,6 +265,12 @@
 
 <script>
 
+	$("#tosearch").click(function() { $("#toname").autocomplete("search", "|") });
+	$("#tosearch").focusout(function() { $("#toname").autocomplete("search", "") })
+
+	$("#fromsearch").click(function() { $("#fromname").autocomplete("search", "|") });
+	$("#fromsearch").focusout(function() { $("#fromname").autocomplete("search", "") });
+
 	$("#fromdepartment").change(function() {
 		validateDepartment('fromdepartment', '[% contactObj.customerid %]');
 		});
@@ -315,7 +321,7 @@
 		if (previousCheck != undefined) ConfigureInboundOutboundDropship();
 
 		if ($("#fromcity").val().length == 0) {
-			$("#fromstate").change(); 
+			$("#fromstate").change();
 			setCityAndState('from');
 			}
 
