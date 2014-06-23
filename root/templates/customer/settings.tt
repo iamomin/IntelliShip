@@ -670,13 +670,19 @@ $(document).ready(function(){
 
 			<td><label class="float-right" for="contact_state">Shipping State:</label></td>
 			<td>
+			<div id="contact_StateDiv">
+			[% IF statelist_loop %]
 			<label>
 				<select name="contact_state" id="contact_state">
 					[% FOREACH item IN statelist_loop %]
-						<option value="[% item.value %]" [% item.value == contactAddress.state ? 'SELECTED' : '' %]>[% item.name %]</option>
+						<option value="[% item.value %]" [% IF item.value == contactAddress.state %]SELECTED[% END %]>[% item.value ? item.value _ ' - ' _ item.name : '' %]</option>
 					[% END %]
 				</select>
 			</label>
+			[% ELSE %]
+				<input type="text" name="contact_state" id="contact_state" value="[% contactAddress.state %]" style="width: 35px;">
+			[% END %]
+			</div>
 			</td>
 		</tr>
 		<tr>
@@ -693,7 +699,7 @@ $(document).ready(function(){
 			<td><label for="contact_country" class="float-right">Country:</label></td>
 			<td>
 			<label>
-				<select name="contact_country" id="contact_country">
+				<select name="contact_country" id="contact_country" onchange="updateStateList('contact_');"  style="width: 218px;">
 					[% FOREACH item IN countrylist_loop %]
 						<option value="[% item.value %]" [% item.value == contactAddress.country ? 'SELECTED' : '' %]>[% item.name %]</option>
 					[% END %]
@@ -815,6 +821,16 @@ $(document).ready(function(){
 	</form>
 
 	<script>
+	function updateStateList(type,call_back_fn){
+			$("#"+type+"city").val('');
+			$("#"+type+"state").val('');
+			$("#"+type+"zip").val('');
+			var country = $("#"+type+"country").val();
+			if (country.length == 0) return;
+			var query_param = "country=" + country + '&control=' + type + 'state';
+			send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
+	}
+
 	function validateContactUsername(){
 			if ($("#contact_username").val.length == 0) return;
 			var customerid = $("#customerid").val();

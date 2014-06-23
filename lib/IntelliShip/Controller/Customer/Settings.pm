@@ -665,10 +665,10 @@ sub contactinformation :Local
 			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
 			$c->stash->{SSO_CUSTOMER}		= 1 if $Contact->customer->is_single_sign_on_customer;
+			$c->stash->{statelist_loop}     = $self->get_select_list('US_STATES') if ($Contact->address && $Contact->address->country eq 'US');
 			}
 
 		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
-		$c->stash->{statelist_loop}          = $self->get_select_list('US_STATES');
 		$c->stash->{countrylist_loop}        = $self->get_select_list('COUNTRY');
 
 		$c->stash->{capability_loop}         = $self->get_select_list('CAPABILITY_LIST');
