@@ -568,13 +568,15 @@ function addNewPackageProduct(package_id,type)
 		pkg_detail_row_count = ( count > pkg_detail_row_count ? count : pkg_detail_row_count);
 		});
 
-	var query_param = '&row_ID=' + ++pkg_detail_row_count + '&detail_type=' + type + '&unittypeid=' + $("#unittype").val();
+	var new_row_ID = pkg_detail_row_count + 1;
+	var query_param = '&row_ID=' + new_row_ID + '&detail_type=' + type + '&unittypeid=' + $("#unittype").val();
 
 	send_ajax_request('', 'JSON', 'order', 'add_package_product_row', query_param, function (){
 
 			if (type == 'package') $('#add-package-btn').before(JSON_data.rowHTML);
 			if (type == 'product') $('#'+product_table_id+' > tbody:last').append(JSON_data.rowHTML);
 
+			$('#product-list-header-' + pkg_detail_row_count).show();
 			configureShipmentDetails(type);
 			updatePackageProductSequence();
 			});

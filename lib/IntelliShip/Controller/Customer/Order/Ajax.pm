@@ -707,6 +707,8 @@ sub add_package_product_row :Private
 	my $flag = uc($params->{'detail_type'}) . '_DETAIL_ROW';
 
 	$c->stash($params);
+	$c->stash->{HIDE_PRODUCT} = 1 if $self->contact->get_contact_data_value('packageproductlevel') == 2;
+
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;

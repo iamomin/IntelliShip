@@ -56,7 +56,7 @@
 		<div class="float-left full-width"><table><tr><td><a href="javascript:void(0);" onclick="addNewPackageProduct([% ROW_COUNT %],'product');" class="round-green-button">+</a></td><td><green>Add Product Details</green></td></tr></table>
 
 			<table id="product-list-[% ROW_COUNT %]" class="app">
-				<tr>
+				<tr id="product-list-header-[% ROW_COUNT %]"[% IF HIDE_PRODUCT %]style="display: none"[% END %]>
 					<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
 				</tr>
 				[% IF RODUCT_DETAILS %]
