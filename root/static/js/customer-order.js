@@ -551,6 +551,7 @@ function CalculateDimentionalWeight(customerserviceid)
 
 		send_ajax_request('', 'JSON', 'order', 'get_dim_weight', query_param, function() {
 			$("#dimweight_" + JSON_data.row).val(JSON_data.dimweight);
+			calculateTotalWeight();
 			});
 		}
 	}
