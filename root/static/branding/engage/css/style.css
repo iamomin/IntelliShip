@@ -1128,6 +1128,6 @@ table.dialog-header {
     border: 1px;
     color: transparent;
     cursor: pointer;
-    position: absolute;
+    position: relative;
     margin-left: -24px;
 }
