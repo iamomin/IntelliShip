@@ -81,10 +81,6 @@ sub get_HTML :Private
 		{
 		$self->get_consolidate_orders_list;
 		}
-	elsif ($action eq 'confirm_notification_emails')
-		{
-		$self->confirm_notification_emails;
-		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -180,6 +176,10 @@ sub get_JSON_DATA :Private
 	elsif ($action eq 'populate_package_default_detials')
 		{
 		$dataHash = $self->populate_package_default_detials;
+		}
+	elsif ($action eq 'confirm_notification_emails')
+		{
+		$dataHash = $self->confirm_notification_emails;
 		}
 	else
 		{
@@ -757,6 +757,21 @@ sub populate_package_default_detials :Private
 	return {PACKAGE_TYPE => $unittypename, dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight };
 	}
 
+sub confirm_notification_emails
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Shipment =($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }));
+
+	$c->stash->{CONFIRM_NOTIFICATION_EMAILS} = 1;
+	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification && $self->contact->get_contact_data_value('combineemail');
+
+	return { HTML => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]); };
+	}
+
 sub set_third_party_delivery
 	{
 	my $self = shift;
@@ -792,19 +807,6 @@ sub save_third_party_info
 	my $self = shift;
 	$self->save_third_party_details;
 	return { UPDATED => 1};
-	}
-
-sub confirm_notification_emails
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	my $Shipment =($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }));
-
-	$c->stash->{CONFIRM_NOTIFICATION_EMAILS} = 1;
-	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
-	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification && $self->contact->get_contact_data_value('combineemail');
 	}
 
 sub send_email_notification
