@@ -140,7 +140,8 @@
 		<tr>
 		<td><input type="button" class="green" id="save" value="SAVE"/></td>
 		[% IF quickship %]<td><input type="button" class="green" id="ship_now" value="SHIP"/></td>[% END %]
-		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
+		<!--<td><input type="button" class="gray" id="cancel" value="CANCEL" onclick="javascript:history.back();"/></td> -->
+		<td><input type="button" class="gray" value="CANCEL" onclick="javascript:history.back();"/></td>
 		[% IF SUPER_USER %]<td><input type="button" class="red" id="deleted" value="DELETE"/></td>[% END %]
 		</tr>
 		</table>
@@ -280,13 +281,13 @@
 			$("#frm_order").submit();
 			});
 		});
-
+/*
 	$('#cancel').click(function() {
 		requiredFieldHash = {};
 		$("#do").val("cancel");
 		$("#frm_order").submit();
 		});
-
+*/
 	$('#deleted').click(function() {
 		showConfirmBox('Are you sure you want to delete Order?', 'Delete Order Confirmation', function(){
 			requiredFieldHash = {};
