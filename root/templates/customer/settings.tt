@@ -144,7 +144,7 @@ $(document).ready(function(){
 		</tr>
 		[% FOREACH item IN productskulist %]
 			<tr>
-				<td><a href="javascript:editProductSku('[% item.productskuid %]');">EDIT</a></td>
+				<td><a class="green" href="javascript:editProductSku('[% item.productskuid %]');"></a></td>
 				<td>[% item.customerskuid %]</td>
 				<td>[% item.description %]</td>
 				<td>[% item.upccode %]</td>

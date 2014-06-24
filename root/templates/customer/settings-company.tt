@@ -62,7 +62,7 @@
 		</tr>
 		[% FOREACH item IN customerlist %]
 			<tr>
-				<td class="center"><a href="javascript:editCustomer('[% item.customerid %]');" class="center track">EDIT</a></td>
+				<td class="center"><a class="green" href="javascript:editCustomer('[% item.customerid %]');" class="center track"></a></td>
 				<td>[% item.customername %]</td>
 				<td>[% item.contact %]</td>
 				<td>[% item.phone %]</td>
@@ -911,7 +911,7 @@
 		</tr>
 		[% FOREACH item IN contactlist %]
 			<tr>
-				<td class="center"><a href="javascript:editContact('[% item.contactid %]');" class="track">EDIT</a></td>
+				<td class="center"><a class="green" href="javascript:editContact('[% item.contactid %]');" class="track"></a></td>
 				<td>[% item.firstname %]</td>
 				<td>[% item.lastname %]</td>
 				<td>[% item.phonemobile %]</td>
