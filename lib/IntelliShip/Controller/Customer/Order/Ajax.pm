@@ -889,7 +889,7 @@ sub get_dim_weight
 
 	my $dimWeight = $self->API->get_dim_weight($csid, $dimlength, $dimwidth, $dimheight) || 0;
 
-	$dimWeight = $dimWeight * $params->{quantity};
+	#$dimWeight = $dimWeight * $params->{quantity};
 
 	$c->log->debug("... DIM WEIGHT: " . $dimWeight);
 
