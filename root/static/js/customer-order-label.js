@@ -45,11 +45,12 @@ function SendEmailNotification(coid,shipmentid)
 	jQuery.each(arr, function(index, item) {
 		var query_param = 'coid=' + coid + '&shipmentid=' + item;
 		send_ajax_request('dialog-message', 'HTML', 'order', 'confirm_notification_emails', query_param, function() {
-			showConfirmBox(JSON_data.HTML, "Shipment Notification", function(){
+			showConfirmBox(undefinded, "Shipment Notification", function(){
 				query_param += '&to_email=' + $("#to_email").val();
-				if ($("#from_email").length) query_param += '&from_email=' + $("#from_email").val()
-				send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param,'');
-				if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
+				if ($("#from_email").length) query_param += '&from_email=' + $("#from_email").val();
+				send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param, function() {
+					if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
+					});
 				});
 			});
 		});
