@@ -81,6 +81,10 @@ sub get_HTML :Private
 		{
 		$self->get_consolidate_orders_list;
 		}
+	elsif ($action eq 'confirm_notification_emails')
+		{
+		$self->confirm_notification_emails;
+		}
 
 	$c->stash(template => "templates/customer/order-ajax.tt") unless $c->stash->{template};
 	}
@@ -790,13 +794,26 @@ sub save_third_party_info
 	return { UPDATED => 1};
 	}
 
+sub confirm_notification_emails
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Shipment =($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }));
+
+	$c->stash->{CONFIRM_NOTIFICATION_EMAILS} = 1;
+	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification && $self->contact->get_contact_data_value('combineemail');
+	}
+
 sub send_email_notification
 	{
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid} }));
+	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }),$params->{'from_email'},$params->{'to_email'});
 
 	return { EMAIL_SENT => 1};
 	}
@@ -823,8 +840,6 @@ sub mark_shipment_as_printed
 
 		$c->log->debug("... Marked shipment $shipmentid as 'Printed'");
 		}
-
-	#$self->SendShipNotification($Shipment);
 
 	my $response = { UPDATED => 1};
 

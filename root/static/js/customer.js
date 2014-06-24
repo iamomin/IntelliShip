@@ -159,7 +159,7 @@ function showConfirmBox( dialogMessage, dialogTitle, ok_button_callback, cancel_
 			}
 		});
 
-	$( "#dialog-message" ).html( "<div class='notice'>" + dialogMessage + "</div>");
+	if (dialogMessage != undefined) $( "#dialog-message" ).html( "<div class='notice'>" + dialogMessage + "</div>");
 	$( "#dialog-message" ).dialog("open");
 	}
 

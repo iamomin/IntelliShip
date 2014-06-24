@@ -449,3 +449,18 @@
 	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
 	[% CONSOLIDATED_PACKAGE %]
 [% END %]
+
+[% IF CONFIRM_NOTIFICATION_EMAILS %]
+	<table>
+		[% IF FROM_EMAIL %]
+		<tr>
+			<td>FROM</td>
+			<td><input type="text" name="from_email" id="from_email" value ="[% FROM_EMAIL %]"/></td>
+		</tr>
+		[% END %]
+		<tr>
+			<td>TO</td>
+			<td><input type="text" name="to_email" id="to_email" value ="[% TO_EMAIL %]"/></td>
+		</tr>
+	</table>
+[% END %]

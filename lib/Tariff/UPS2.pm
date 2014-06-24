@@ -295,7 +295,7 @@ sub ProcessLocalRequest
 	my $self = shift;
 	my $XML_request = shift;
 
-	warn "\n XML_request: " . $XML_request;
+	#warn "\n XML_request: " . $XML_request;
 
 	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
 
@@ -314,7 +314,7 @@ sub ProcessLocalRequest
 
 	my $parser = new XML::Simple;
 	my $XML_response = $response->content;
-	warn "XML_response: " . $XML_response;
+	#warn "XML_response: " . $XML_response;
 	my $responseDS= $parser->XMLin($XML_response);
 
 	#warn "Response DS: " . Dumper $responseDS;
