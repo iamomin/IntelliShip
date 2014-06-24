@@ -564,9 +564,15 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'UNIT_TYPE')
 		{
+		#my $carriers = $self->API->get_customer_carriers($optional_hash->{'customerid'}) if $optional_hash->{'customerid'};
+		#my %carrierHash = map { uc($_) => 1 } @$carriers;
+		#print STDERR Dumper %carrierHash;
 		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
+			#print STDERR "\nUnitType->carrier: |" . uc($UnitType->carrier) . "|";
+			#next if $UnitType->carrier && !$carrierHash{uc($UnitType->carrier)};
+
 			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
 			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });
 			}

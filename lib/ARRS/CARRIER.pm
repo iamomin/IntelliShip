@@ -21,6 +21,7 @@
 
 	use strict;
 
+	use Data::Dumper;
 	use ARRS::DBOBJECT;
 	@ARRS::CARRIER::ISA = ("ARRS::DBOBJECT");
 
@@ -80,6 +81,36 @@
 		# If no unexcluded CS's, exclude the carrier
 		return 1;
 	}
+
+	sub GetMyCarriers
+		{
+		my $self = shift;
+		my ($CustomerID) = @_;
+
+		my $SQL = "
+			SELECT
+				DISTINCT carriername
+			FROM
+				customerservice
+				INNER JOIN service ON service.serviceid=customerservice.serviceid
+				INNER JOIN carrier ON carrier.carrierid=service.carrierid
+			WHERE
+				customerid='$CustomerID'
+			ORDER BY
+				1";
+
+		warn "\n.... GetMyCarriers: " . $SQL;
+		my $STH = $self->{'dbref'}->{'aos'}->prepare($SQL) || die "Cannot prepare comment select sql statement";
+
+		$STH->execute() || die "Cannot execute comment select sql statement";
+
+		my ($Carriers) = $STH->fetchrow_array();
+
+		$STH->finish();
+		warn "\nCarriers: " . Dumper $Carriers;
+
+		return $Carriers;
+		}
 }
 
 1;

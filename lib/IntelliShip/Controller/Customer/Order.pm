@@ -187,11 +187,11 @@ sub setup_shipment_information :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
+
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $Customer->customerid });
 
 	my $do = $c->req->param('do') || '';
 	if (!$do or $do eq 'shipment' or $do eq 'step1')

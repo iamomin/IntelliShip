@@ -526,8 +526,7 @@ sub get_assessorial_charge
 	}
 
 sub get_address_code
-{
-	warn "########## get_address_code";
+	{
 	my $self = shift;
 	my ($addressname,$address1,$address2,$city, $state, $zip, $country) = @_;
 
@@ -543,7 +542,42 @@ sub get_address_code
 		};
 
 	return $self->APIRequest($http_request);
-}
+	}
+
+sub get_customer_carriers
+	{
+	my $self = shift;
+	my $CustomerID = shift;
+
+	my $SQL = "
+			SELECT
+				DISTINCT carriername
+			FROM
+				customerservice
+				INNER JOIN service ON service.serviceid=customerservice.serviceid
+				INNER JOIN carrier ON carrier.carrierid=service.carrierid
+			WHERE
+				customerservice.customerid='$CustomerID'
+			ORDER BY
+				1";
+	warn $SQL;
+	my $sth = $self->context->model('MyArrs')->select($SQL);
+
+	my $carriers = [];
+	for (my $row=0; $row < $sth->numrows; $row++)
+		{
+		my $data = $sth->fetchrow($row);
+		push(@$carriers,$data->{'carriername'});
+		}
+	return $carriers;
+
+	my $http_request = {
+		action     => 'GetMyCarriers',
+		customerid => $CustomerID
+		};
+
+	return $self->APIRequest($http_request);
+	}
 
 __PACKAGE__->meta()->make_immutable();
 
