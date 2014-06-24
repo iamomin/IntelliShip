@@ -769,7 +769,7 @@ sub confirm_notification_emails
 	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
 	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification && $self->contact->get_contact_data_value('combineemail');
 
-	return { HTML => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]); };
+	return { HTML => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]) };
 	}
 
 sub set_third_party_delivery
