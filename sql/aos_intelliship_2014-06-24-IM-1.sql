@@ -1,0 +1,1 @@
+ALTER TABLE unittype ADD COLUMN carrier VARCHAR(50);

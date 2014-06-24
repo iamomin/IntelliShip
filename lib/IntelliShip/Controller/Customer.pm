@@ -567,7 +567,8 @@ sub get_select_list
 		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
-			push(@$list, { name => $UnitType->unittypename, value => $UnitType->unittypeid });
+			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
+			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });
 			}
 		}
 	elsif ($list_name eq 'WEIGHT_TYPE')

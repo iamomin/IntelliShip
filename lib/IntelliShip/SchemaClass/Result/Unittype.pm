@@ -95,6 +95,12 @@ __PACKAGE__->table("unittype");
   data_type: 'double precision'
   is_nullable: 1
 
+=head2 carrier
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 50
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -118,6 +124,8 @@ __PACKAGE__->add_columns(
   { data_type => "double precision", is_nullable => 1 },
   "shortlistsortorder",
   { data_type => "double precision", is_nullable => 1 },
+  "carrier",
+  { data_type => "varchar", is_nullable => 1, size => 50 },
 );
 
 =head1 PRIMARY KEY
