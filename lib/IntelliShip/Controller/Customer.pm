@@ -475,25 +475,7 @@ sub get_select_list
 		$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
 
 		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname";
-=as
-		my $SQL = "
-		SELECT
-			DISTINCT ON (addressname,city,state,address1)
-			addressname,city,state,address1,
-			co.coid as referenceid
-		FROM
-			co
-			INNER JOIN
-			address
-			ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
-		WHERE
-			co.cotypeid in (1,2,10) AND
-			address.addressname <> '' AND
-			$smart_address_book_sql
-		Order BY
-			$OrderBy
-		";
-=cut
+
 		my $and_contactid_sql = '';
 		$and_contactid_sql = "AND co.contactid = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
 		my $SQL = "
@@ -585,10 +567,31 @@ sub get_select_list
 			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });
 			}
 		}
-	elsif ($list_name eq 'CUSTOMER_SHIPMENT_CARRIER')
+	elsif ($list_name eq 'CUSTOMER_CARRIERS')
 		{
-		my $myDBI = $c->model('MyDBI');
 		my $sql = "SELECT DISTINCT carrier FROM shipment INNER JOIN co ON shipment.coid = co.coid WHERE co.customerid = '" . $self->customer->customerid . "' AND shipment.carrier <> '' ORDER BY 1";
+		my $myDBI = $c->model('MyDBI');
+
+		my $customer_ids = (ref $optional_hash->{'customers'} eq 'ARRAY' ? $optional_hash->{'customers'} : [$optional_hash->{'customers'}]) if $optional_hash->{'customers'};
+		print STDERR "customer_ids : $customer_ids";
+		if ($customer_ids)
+			{
+			$myDBI = $c->model('MyArrs');
+			my $ids_IN = '';
+			if(@$customer_ids[0] eq 'all')
+				{
+				my $my_customers = $self->get_select_list('MY_CUSTOMERS');
+				$ids_IN = "'" . join ("','", map { %$_->{value}} @$my_customers) . "'";
+				}
+			else
+				{
+				$ids_IN = "'" . join("','",@$customer_ids) . "'";
+				}
+			my $WHERE = "WHERE customerid IN ($ids_IN)" if $ids_IN;
+			$sql = "SELECT DISTINCT carriername as carrier FROM customerservice INNER JOIN service ON service.serviceid = customerservice.serviceid INNER JOIN carrier ON carrier.carrierid = service.carrierid $WHERE ORDER BY 1;";
+			}
+
+		print STDERR "sql : $sql";
 		my $sth = $myDBI->select($sql);
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
@@ -731,6 +734,26 @@ sub get_select_list
 		foreach my $Loginlevel (@records)
 			{
 			push(@$list, { name => $Loginlevel->loginlevelname, value => $Loginlevel->loginlevelid});
+			}
+		}
+	elsif ($list_name eq 'MY_CUSTOMERS')
+		{
+		my $myDBI = $c->model('MyDBI');
+		my $WHERE = '';
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE .= " createdby = '" . $self->customer->customerid . "' OR customerid = '".$self->customer->customerid . "' ";
+			}
+
+		$WHERE = " WHERE " . $WHERE if $WHERE;
+
+		my $sql = "SELECT customerid, customername FROM customer $WHERE ORDER BY customername";
+		my $sth = $myDBI->select($sql);
+
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			push(@$list, { name => $data->{'customername'}, value => $data->{'customerid'} });
 			}
 		}
 	elsif ($list_name eq 'ACTIVE_INACTIVE')

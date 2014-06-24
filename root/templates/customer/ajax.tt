@@ -1,6 +1,22 @@
 [% JSON_DATA %]
 
-[% IF CARRIER_LIST %]
+[% IF mycustomers_loop %]
+	[% count=0 %]
+	<table class="css3-checkboxes"><tr>
+	[% FOREACH item IN mycustomers_loop %]
+		[% count=count+1 %]
+			<td nowrap>
+			<label><input type="checkbox" name="customers" id="[% item.value %]" value="[% item.value %]" class="customer-change"/><span><label for="[% item.value %]">&nbsp;[% item.name %]</label></span></label>
+			</td>
+		[% IF count == 4 %]
+			</tr><tr>
+		[% count = 0 %]
+		[% END %]
+	[% END %]
+	</tr></table>
+[% END %]
+
+[% IF CUSTOMER_CARRIERS %]
 	[% count=0 %]
 	<table class="css3-checkboxes"><tr>
 	[% FOREACH item IN CARRIER_LIST %]
@@ -13,6 +29,8 @@
 		[% count = 0 %]
 		[% END %]
 	[% END %]
+	
+	[% UNLESS CARRIER_LIST %]<td>No carriers found</td>[% END %]
 	</tr></table>
 [% END %]
 

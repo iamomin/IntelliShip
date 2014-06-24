@@ -47,9 +47,13 @@ sub get_HTML :Private
 	my $c = $self->context;
 
 	my $action = $c->req->param('action');
-	if ($action eq 'customer_carrier_chkbox')
+	if ($action eq 'get_my_customer_list')
 		{
-		$self->set_customer_carrier_chkbox;
+		$self->get_my_customer_list;
+		}
+	elsif ($action eq 'get_customer_carriers')
+		{
+		$self->get_customer_carriers;
 		}
 	elsif ($action eq 'costatus_chkbox')
 		{
@@ -59,12 +63,19 @@ sub get_HTML :Private
 	$c->stash(template => "templates/customer/ajax.tt");
 	}
 
-sub set_customer_carrier_chkbox
+sub get_my_customer_list
 	{
 	my $self = shift;
 	my $c = $self->context;
+	$c->stash->{mycustomers_loop} = $self->get_select_list('MY_CUSTOMERS');
+	}
 
-	$c->stash->{CARRIER_LIST} = $self->get_select_list('CUSTOMER_SHIPMENT_CARRIER');
+sub get_customer_carriers
+	{
+	my $self = shift;
+	my $c = $self->context;
+	$c->stash->{CUSTOMER_CARRIERS} = 1;
+	$c->stash->{CARRIER_LIST} = $self->get_select_list('CUSTOMER_CARRIERS', $c->req->params);
 	}
 
 sub set_costatus_chkbox

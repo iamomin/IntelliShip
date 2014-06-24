@@ -84,11 +84,12 @@ sub generate_shipment_report
 	$c->log->debug("Filter Criteria, start_date: " . $start_date .
 					", stop_date: " . $stop_date .
 					", customerid: " . $Customer->customerid .
-					", Carriers: " . Dumper($params->{'carriers'}));
+					", Carriers: " . Dumper($params->{'carriers'}) .
+					", Customers: " . Dumper($params->{'all_customers'}));
 
 	my ($report_heading_loop, $report_output_row_loop)= ([],[]);
 
-	my $and_customerid_sql = " AND c.customerid = '" . $Customer->customerid . "'";
+	my $and_customerid_sql = $self->get_customer_sql;
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
 
@@ -100,10 +101,10 @@ sub generate_shipment_report
 
 	my $and_username_sql = '';
 	my $and_contactid_sql = "AND sh.contactid = '". $Contact->contactid ."'" if $Contact->show_only_my_items;
-	unless ($Customer->superuser)
-		{
-		$and_username_sql .= " AND c.username = '" . $Customer->username . "'";
-		}
+	#unless ($Customer->superuser)
+	#	{
+	#	$and_username_sql .= " AND c.username = '" . $Customer->username . "'";
+	#	}
 	## check for restricted login
 	my $and_allowed_extcustnum_sql = '';
 	if ($Contact->is_restricted)
@@ -319,7 +320,7 @@ sub generate_shipment_report
 
 	$report_SQL .= " ORDER BY 3,2,4 ";
 
-	#$c->log->debug("SHIPMENT REPORT SQL: \n" . $report_SQL);
+	$c->log->debug("SHIPMENT REPORT SQL: \n" . $report_SQL);
 
 	my $report_sth = $c->model('MyDBI')->select($report_SQL);
 
@@ -589,7 +590,7 @@ sub generate_summary_service_report
 			];
 
 
-	my $and_customerid_sql = " AND co.customerid = '" . $Customer->customerid . "'";
+	my $and_customerid_sql = $self->get_customer_sql;;
 	my $and_start_date_sql = " AND sh.dateshipped >= timestamp '$start_date 00:00:00' ";
 	my $and_stop_date_sql = " AND sh.dateshipped <= timestamp '$stop_date 23:59:59' ";
 	my $and_contactid_sql = "AND sh.contactid = '". $Contact->contactid ."'" if $Contact->show_only_my_items;
@@ -849,6 +850,30 @@ sub get_carrier_sql
 		$and_carrier_sql = " AND sh.carrier = '" . $params->{'carriers'} . "' ";
 		}
 	return $and_carrier_sql;
+	}
+
+sub get_customer_sql
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $and_customerid_sql;
+	if ($params->{'customers'} eq 'all')
+		{
+		return $params->{'all_customers'};
+		}
+
+	if (ref $params->{'customers'} eq 'ARRAY')
+		{
+		$and_customerid_sql = " AND co.customerid IN ('" . join("','", @{$params->{'customers'}}) . "') ";
+		}
+	else
+		{
+		$and_customerid_sql = " AND co.customerid = '" . $self->customer->customerid . "' ";
+		}
+	$c->log->debug("\n and_customerid_sql: " . $and_customerid_sql);
+	return $and_customerid_sql;
 	}
 
 sub get_co_status_sql
