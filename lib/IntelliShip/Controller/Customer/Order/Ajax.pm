@@ -268,7 +268,7 @@ sub get_carrier_service_list
 	foreach my $Package (@packages)
 		{
 		my $carrier = uc $Package->unittype->carrier if $Package->unittype;
-		$shipmentCarriers->{$carrier} = 1;
+		$shipmentCarriers->{$carrier} = 1 if $carrier;
 		}
 
 	#$c->log->debug("***** shipmentCarriers: " . Dumper($shipmentCarriers));
