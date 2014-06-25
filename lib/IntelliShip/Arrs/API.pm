@@ -560,7 +560,7 @@ sub get_customer_carriers
 				customerservice.customerid='$CustomerID'
 			ORDER BY
 				1";
-	warn $SQL;
+	#warn $SQL;
 	my $sth = $self->context->model('MyArrs')->select($SQL);
 
 	my $carriers = [];

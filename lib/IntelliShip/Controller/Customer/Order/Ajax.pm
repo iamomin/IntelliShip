@@ -691,7 +691,7 @@ sub add_pkg_detail_row :Private
 	$c->stash->{PKG_DETAIL_ROW} = 1;
 	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
 	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
 
 	$c->stash->{unittype} = ($params->{'detail_type'} eq 'package' ? $self->contact->default_package_type : $self->contact->default_product_type);
 
@@ -721,7 +721,7 @@ sub add_package_product_row :Private
 		$c->stash->{dimheight} = $UnitType->dimheight;
 		}
 
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
 	$c->stash->{default_package_type} = $params->{'unittypeid'};
 
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';

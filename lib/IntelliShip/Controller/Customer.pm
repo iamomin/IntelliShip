@@ -505,6 +505,7 @@ sub get_select_list
 			my $sth1 = $self->myDBI->select("SELECT addressid, contactname FROM co WHERE coid = '$data->{'coid'}'");
 			my $address_data = $sth1->fetchrow(0);
 			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
+			my $contact_name = $address_data->{contactname} || '';
 			my $address_name = $Address->addressname;
 			my $address1 = $Address->address1;
 			push(@$list, {
@@ -514,7 +515,7 @@ sub get_select_list
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
-					contactname  => "\Q$address_data->{contactname}\E",
+					contactname  => "\Q$contact_name\E",
 				});
 			}
 		}
@@ -546,14 +547,14 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'UNIT_TYPE')
 		{
-		#my $carriers = $self->API->get_customer_carriers($optional_hash->{'customerid'}) if $optional_hash->{'customerid'};
-		#my %carrierHash = map { uc($_) => 1 } @$carriers;
+		my $carriers = $self->API->get_customer_carriers($optional_hash->{'customerid'}) if $optional_hash->{'customerid'};
+		my %carrierHash = map { uc($_) => 1 } @$carriers;
 		#print STDERR Dumper %carrierHash;
 		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
 			#print STDERR "\nUnitType->carrier: |" . uc($UnitType->carrier) . "|";
-			#next if $UnitType->carrier && !$carrierHash{uc($UnitType->carrier)};
+			next if $UnitType->carrier && !$carrierHash{uc($UnitType->carrier)};
 
 			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
 			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });
