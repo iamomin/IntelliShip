@@ -267,6 +267,16 @@ sub get_carrier_service_list
 	my ($carrier_Details,$DefaultCSID,$DefaultTotalCost) = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
 
+	my @packages = $CO->packages;
+	my $shipmentCarriers = {};
+	foreach my $Package (@packages)
+		{
+		my $carrier = uc $Package->unittype->carrier if $Package->unittype;
+		$shipmentCarriers->{$carrier} = 1;
+		}
+
+	#$c->log->debug("***** shipmentCarriers: " . Dumper($shipmentCarriers));
+
 	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
 	foreach my $customerserviceid (keys %$carrier_Details)
 		{
@@ -280,6 +290,13 @@ sub get_carrier_service_list
 			#$c->log->debug("CSData: " . Dumper($CSData));
 			$carrier =~ s/^\*+\s//;
 			$no_on_time = 1;
+			}
+
+		#$c->log->debug("***** CARRIER: " . $carrier);
+		if (scalar keys %$shipmentCarriers && !$shipmentCarriers->{uc($carrier)})
+			{
+			#$c->log->debug("***** SKIP carrier");
+			next;
 			}
 
 		my ($service, $estimated_date, $shipment_charge);
