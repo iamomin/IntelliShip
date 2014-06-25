@@ -105,10 +105,6 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->adjust_due_date;
 		}
-	elsif ($action eq 'add_pkg_detail_row')
-		{
-		$dataHash = $self->add_pkg_detail_row;
-		}
 	elsif ($action eq 'add_package_product_row')
 		{
 		$dataHash = $self->add_package_product_row;
@@ -696,27 +692,6 @@ sub adjust_due_date
 	#$c->log->debug("adjusted_datetime : $adjusted_datetime");
 
 	return { dateneeded => $adjusted_datetime };
-	}
-
-sub add_pkg_detail_row :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	$c->stash->{one_page} = 1;
-	$c->stash->{PKG_DETAIL_ROW} = 1;
-	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
-	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
-
-	$c->stash->{unittype} = ($params->{'detail_type'} eq 'package' ? $self->contact->default_package_type : $self->contact->default_product_type);
-
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	#$c->log->debug("add_pkg_detail_row : " . $row_HTML);
-	$c->stash->{PKG_DETAIL_ROW} = 0;
-
-	return { rowHTML => $row_HTML };
 	}
 
 sub add_package_product_row :Private
