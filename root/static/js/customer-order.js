@@ -236,7 +236,7 @@ function updateStateList(type,call_back_fn)
 
 	var query_param = "country=" + country + '&control=' + type + 'state';
 
-	send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
+	send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param,CalculateDimentionalWeight()) ;
 	}
 
 function populateShipAddress(direction, referenceid)
@@ -543,18 +543,27 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 
 function CalculateDimentionalWeight()
 	{
-	var customerserviceid = $('input:radio[name=customerserviceid]:checked').val();
-
-	if (customerserviceid == undefined || customerserviceid == "") return;
-
-	if ($("#dimweight_1").val() == undefined || customerserviceid == undefined || customerserviceid.length == 0) return;
-
+	var customerserviceid;
+	customerserviceid = $('input:radio[name=customerserviceid]:checked').val();
 	updatePackageProductSequence();
 	var total_package_rows = $("#pkg_detail_row_count").val();
+	if (customerserviceid == undefined || customerserviceid == "")
+		{
+		for(var package_row=1; package_row <= total_package_rows; package_row++)
+			{
+			var DimFactor = ($("#tocountry").val() != $("#fromcountry").val()) ? 139 : 166;
+			var DimLength = +$("#dimlength_" + package_row).val() || 0.00;
+			var DimWidth = +$("#dimwidth_" + package_row).val() || 0.00;
+			var DimHeight = +$("#dimheight_" + package_row).val() || 0.00;
+
+			$("#dimweight_"+ package_row).val( Math.ceil ( ( DimLength * DimWidth * DimHeight) / DimFactor));
+			}
+		return;
+		}
 	for(var package_row=1; package_row <= total_package_rows; package_row++)
 		{
 		var query_param = '&row=' + package_row + '&CSID=' + customerserviceid + '&dimlength=' + $("#dimlength_" + package_row).val() + '&dimwidth=' + $("#dimwidth_" + package_row).val() + '&dimheight=' + $("#dimheight_" + package_row).val() + '&quantity=' + $("#quantity_" + package_row).val();
-
+		
 		send_ajax_request('', 'JSON', 'order', 'get_dim_weight', query_param, function() {
 			$("#dimweight_" + JSON_data.row).val(JSON_data.dimweight);
 			calculateTotalWeight();
