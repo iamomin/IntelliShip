@@ -531,7 +531,7 @@ function resetCSList()
 	$("#customerserviceid").val('');
 	$("#carrier").val('');
 
-	if (has_FC) $("#carrier-service-list").slideUp(1000);
+	if (has_FC) $("#carrier-service-list").slideUp(1000,function(){$("#carrier-service-list").empty()});
 	}
 
 function addCheckBox(container_ID, control_ID, control_Value, control_Label)
@@ -541,8 +541,12 @@ function addCheckBox(container_ID, control_ID, control_Value, control_Label)
 	$('<label />', { 'for': control_ID, text: control_Label }).appendTo(container);
 	}
 
-function CalculateDimentionalWeight(customerserviceid)
+function CalculateDimentionalWeight()
 	{
+	var customerserviceid = $('input:radio[name=customerserviceid]:checked').val();
+
+	if (customerserviceid == undefined || customerserviceid == "") return;
+
 	if ($("#dimweight_1").val() == undefined || customerserviceid == undefined || customerserviceid.length == 0) return;
 
 	updatePackageProductSequence();

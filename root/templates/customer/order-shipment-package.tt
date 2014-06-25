@@ -40,11 +40,11 @@
 			<label>[% WEIGHT_TYPE %]</label>
 			</div>
 		</td>
-		<td class="spacer"><input type="text" class="small-text" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" value="[% dimlength %]"/></td>
+		<td class="spacer"><input type="text" class="small-text" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" value="[% dimlength %]" onchange="CalculateDimentionalWeight();"/></td>
 		<td style="padding: 0;">X</td>
-		<td><input type="text" class="small-text" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" value="[% dimwidth %]"/></td>
+		<td><input type="text" class="small-text" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" value="[% dimwidth %]" onchange="CalculateDimentionalWeight();"/></td>
 		<td style="padding: 0;">X</td>
-		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]"/></td>
+		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]" onchange="CalculateDimentionalWeight();"/></td>
 		<td><select class="small-text" name="unitofmeasure_[% ROW_COUNT %]" id="unitofmeasure_[% ROW_COUNT %]">[% FOREACH item IN measureunit_loop %]<option [% item.value == unitofmeasure ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 		<td class="spacer"><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 		<td><select class="small-text shipment-details" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
