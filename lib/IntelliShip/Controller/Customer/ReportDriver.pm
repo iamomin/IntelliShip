@@ -861,14 +861,13 @@ sub get_customer_sql
 	my $and_customerid_sql;
 	if ($params->{'all_customers'})
 		{
-		my @arr;
+		my $arr = [];
 		my $Contact = $self->contact;
 		unless ($Contact->is_superuser)
 			{
-			@arr = $Contact->my_customers(undef,{ select => [ 'customerid' ] });
-			push @arr, $Contact->customerid;
+			$arr = $Contact->my_customers(undef,{ select => [ 'customerid' ] });
 			}
-		$and_customerid_sql = " co.customerid IN ('" . join ("','", map { $_->customerid } @arr) . "')" if @arr;
+		$and_customerid_sql = " co.customerid IN ('" . join ("','", map { $_->customerid } @$arr) . "')" if @$arr;
 		}
 	elsif (ref $params->{'customers'} eq 'ARRAY')
 		{

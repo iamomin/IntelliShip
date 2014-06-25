@@ -724,22 +724,20 @@ sub get_select_list
 		{
 		my $myDBI = $c->model('MyDBI');
 
-		my $WHERE = " customername <> '' ";
 		my $CustomerID = $self->customer->customerid;
 
-		my ($SQL,$sql_2) = ('','');
+		my ($sql_1,$sql_2) = ('','');
 		unless ($self->contact->is_superuser)
 			{
-			$WHERE .= " AND createdby = '$CustomerID'" if $self->contact->is_administrator;
+			$sql_1 = "SELECT customerid, customername FROM customer WHERE createdby = '$CustomerID' AND customername <> ''" if $self->contact->is_administrator;
 			$sql_2 = "SELECT customerid, customername FROM customer WHERE customerid = '$CustomerID'";
 			}
 
-		$WHERE = " WHERE " . $WHERE if $WHERE;
-
-		$SQL = "SELECT customerid, customername FROM customer $WHERE";
-		$SQL = "($SQL) UNION ($sql_2)" if $sql_2;
+		my $SQL = $sql_1;
+		$SQL = ($sql_1 ? "($sql_1) UNION ($sql_2)" : $sql_2) if $sql_2;
 		$SQL .= " ORDER BY 2";
 
+		warn $SQL;
 		my $sth = $myDBI->select($SQL);
 
 		for (my $row=0; $row < $sth->numrows; $row++)
