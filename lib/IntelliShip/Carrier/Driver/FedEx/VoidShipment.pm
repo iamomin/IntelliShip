@@ -246,7 +246,8 @@ END
 		$ResponseCode = $NotificationRef->{'v6:Code'};
 		}
 
-	$self->SendCancelPickupNotification($ResponseCode,$Message,$ConfirmationNumber);
+	#$self->SendCancelPickupNotification($ResponseCode,$Message,$ConfirmationNumber);
+	$self->SendDispatchNotification('Cancellation');
 	}
 
 __PACKAGE__->meta()->make_immutable();

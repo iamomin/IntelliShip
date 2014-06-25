@@ -97,7 +97,8 @@ sub process_request
 
 	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
-	$self->SendPickUpNotification($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
+	$self->SendDispatchNotification('Pickup');
+	#$self->SendPickUpNotification($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
 	}
 
 sub send_same_day_pickup_request

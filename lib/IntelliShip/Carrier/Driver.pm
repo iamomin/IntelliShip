@@ -315,6 +315,147 @@ sub insert_shipment
 	return $Shipment;
 	}
 
+sub SendDispatchNotification
+	{
+	my $self = shift;
+	my $Type = shift;
+
+	my $c = $self->context;
+	my $CO = $self->CO;
+	my $Shipment = $self->SHIPMENT;
+	my $Customer = $CO->customer;
+	my $Service = $self->service;
+
+	my $notetypeid;
+	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
+
+	if ( $Type eq 'Cancellation' )
+		{
+		$notetypeid ='1600'
+		}
+	else
+		{
+		$notetypeid = '1500';
+		}
+
+	my $noteData = {
+		'ownerid'      => $Shipment->shipmentid,
+		'note'         => $Type,
+		'contactid'    => $Shipment->contactid,
+		'notestypeid'  => $notetypeid,
+		'datecreated'  => IntelliShip::DateUtils->get_timestamp_with_time_zone,
+		'datehappened' => $Shipment->datepacked,
+		};
+
+	my $Notes = $self->model('MyDBI::Note')->new($noteData);
+	$Notes->notesid($self->get_token_id);
+	$Notes->insert;
+
+	my $subject;
+	$subject = "NOTICE:  Customer ". $Customer->username ."-". $Shipment->service ."( Dispatched ". $Type ." ".IntelliShip::DateUtils->current_date .")";
+
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
+
+	$Email->subject($subject);
+	$Email->add_to('noc@engagetechnology.com');
+	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
+
+	$c->stash->{dispatchtitle} = "Dispatch " . $Type;
+	if (my $OAAddress = $Shipment->origin_address)
+		{
+		my $shipper_address = $OAAddress->addressname;
+		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
+		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
+		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
+		$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
+		$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
+		$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
+
+		$c->stash->{'fullfrom'} = $shipper_address;
+		}
+
+	$c->stash->{branchcontact} =$Shipment->oacontactname;
+	$c->stash->{branchphone} = $Shipment->oacontactphone;
+	$c->stash->{refnumber} = $CO->ordernumber;
+	$c->stash->{shipdate} =$Shipment->dateshipped;
+	$c->stash->{branchairportcode} ='';
+
+	if (my $DAAddress = $Shipment->destination_address)
+		{
+		my $destination_address = $DAAddress->addressname;
+		$destination_address   .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
+		$destination_address   .= " " . $DAAddress->address2    if $DAAddress->address2;
+		$destination_address   .= "<br>" . $DAAddress->city     if $DAAddress->city;
+		$destination_address   .= ", " . $DAAddress->state      if $DAAddress->state;
+		$destination_address   .= "  " . $DAAddress->zip        if $DAAddress->zip;
+		$destination_address   .= "<br>" . $DAAddress->country  if $DAAddress->country;
+		$c->stash->{fullto} = $destination_address;
+		}
+
+	$c->stash->{contactname} =	$CO->contactname;
+	$c->stash->{contactphone} =	$CO->contactphone;
+	$c->stash->{ponumber} =	 $Shipment->ponumber;
+	$c->stash->{etadate} =	$Shipment->datedelivered;
+	#$c->stash->{airportcode} = '';
+
+	#my $BillingAddressInfo = $self->GetBillingAddressInfo(
+	#		$Shipment->customerserviceid,
+	#		$webaccount,
+	#		$Customer->customername,
+	#		$Customer->customerid,
+	#		$Shipment->billingaccount,
+	#		$Shipment->freightcharges,
+	#	$Shipment->addressiddestin,
+	#		undef,
+	#		undef
+	#		);
+
+	#if ( $BillingAddressInfo )
+	#	{
+	#	my $billingaddress = $BillingAddressInfo->{'addressname'};
+	#	$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
+	#	$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
+	#	$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
+	#	$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
+	#	$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
+	#	$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
+
+	#	$c->stash->{fullbilling} = $billingaddress;
+	#	#$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
+	#	}
+
+	$c->stash->{fullbilling} = $Shipment->billingaccount;
+	$c->stash->{pickupweight} = $Shipment->weight;
+	$c->stash->{pickupdimweight} = $Shipment->dimweight;
+	$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;;
+	$c->stash->{density} = $Shipment->density;
+	$c->stash->{totalquantity} = $Shipment->total_quantity;
+	$c->stash->{zonenumber} = $Shipment->zonenumber;
+
+	$c->stash->{tracking1} = $Shipment->tracking1;
+	$c->stash->{customsdescription} = $Shipment->customsdescription;
+	$c->stash->{description} = $CO->description;
+	$c->stash->{carrier}	= $Shipment->carrier;
+	$c->stash->{service} = $Shipment->service;
+
+	my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+	$c->stash->{barcode} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+
+	$c->stash->{labelbanner} = 'Freight Charge';
+	$c->stash->{commentstring} = 'Fuel Surcharge';
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/pickup-notification-1.tt' ]));
+
+	if ($Email->send)
+		{
+		$self->context->log->debug("Shipment Pick-Up notification email successfully sent to " . join(',',@{$Email->to}));
+		}
+	}
+
 sub SendPickUpNotification
 	{
 	my $self = shift;
