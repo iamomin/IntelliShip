@@ -125,11 +125,6 @@ sub GetCost
 	return ($Cost,$days);
 }
 
-my $UPS_ACCT_DETAILS = {
-	F5618Y => { USERNAME => 'tsharp212', PASSWORD => 'Tony212!@' },
-	AW5282 => { USERNAME => 'SprintAW5282', PASSWORD => '2wsx!QAZ' },
-	};
-
 sub GetTransit
 {
 	my $self = shift;
@@ -172,10 +167,16 @@ sub GetTransit
 	$length = ceil($length);
 	$weight = ceil($weight);
 
+	my $UPS_ACCT_DETAILS = {
+		'F5618Y' => { USERNAME => 'tsharp212', PASSWORD => 'Tony212!@' },
+		'AW5282' => { USERNAME => 'SprintAW5282', PASSWORD => '2wsx!QAZ' },
+		};
+
 	my $UserId = $UPS_ACCT_DETAILS->{$acctnum}->{USERNAME};
 	my $Password = $UPS_ACCT_DETAILS->{$acctnum}->{PASSWORD};
 
-	my $XML = "<?xml version=\"1.0\"?>
+	my $XML = <<END;
+<?xml version=\"1.0\"?>
 <AccessRequest xml:lang=\"en-US\">
 	<AccessLicenseNumber>7CD03B13C7D39706</AccessLicenseNumber>
 	<UserId>$UserId</UserId>
@@ -267,7 +268,8 @@ sub GetTransit
 			<NegotiatedRatesIndicator></NegotiatedRatesIndicator>
 		</RateInformation>
 	</Shipment>
-</RatingServiceSelectionRequest>";
+</RatingServiceSelectionRequest>
+END
 
 	my $ShipmentReturn = $self->ProcessLocalRequest($XML);
 
@@ -297,7 +299,8 @@ sub ProcessLocalRequest
 
 	#warn "\n XML_request: " . $XML_request;
 
-	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
+	#my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
+	my $url = 'https://onlinetools.ups.com/ups.app/xml/Rate';
 
 	#Send HTTP Request
 	my $browser = LWP::UserAgent->new();
