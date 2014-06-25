@@ -55,16 +55,6 @@ sub run :Local
 		$c->detach("setup",$params);
 		return;
 		}
-	if ($params->{'carriers'} and ref $params->{'carriers'} eq 'ARRAY' and grep(/all/, @{$params->{'carriers'}}))
-		{
-		$params->{'carriers'} = 'all';
-		}
-
-	if ($params->{'customers'} eq 'all')
-		{
-		my $my_customers = $self->get_select_list('MY_CUSTOMERS');
-		$params->{'all_customers'} = " co.customerid IN ('" . join ("','", map { %$_->{value}} @$my_customers) . "')";
-		}
 
 	my $ReportDriver = IntelliShip::Controller::Customer::ReportDriver->new;
 	$ReportDriver->API($self->API);

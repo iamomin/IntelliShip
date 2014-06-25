@@ -544,10 +544,12 @@ sub get_address_code
 	return $self->APIRequest($http_request);
 	}
 
-sub get_customer_carriers
+sub get_customers_carriers
 	{
 	my $self = shift;
-	my $CustomerID = shift;
+	my $CustomerIDs = shift;
+
+	my $ids_IN = "'" . join("','",@$CustomerIDs) . "'";
 
 	my $SQL = "
 			SELECT
@@ -557,7 +559,7 @@ sub get_customer_carriers
 				INNER JOIN service ON service.serviceid=customerservice.serviceid
 				INNER JOIN carrier ON carrier.carrierid=service.carrierid
 			WHERE
-				customerservice.customerid='$CustomerID'
+				customerservice.customerid IN ($ids_IN)
 			ORDER BY
 				1";
 	#warn $SQL;
@@ -573,7 +575,7 @@ sub get_customer_carriers
 
 	my $http_request = {
 		action     => 'GetMyCarriers',
-		customerid => $CustomerID
+		customerid => $CustomerIDs
 		};
 
 	return $self->APIRequest($http_request);

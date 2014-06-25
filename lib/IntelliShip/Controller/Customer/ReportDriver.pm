@@ -534,7 +534,7 @@ sub generate_shipment_report
 			}
 	push(@$report_output_row_loop, $report_summary_row_loop);
 
-	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
+	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'all_carriers'};
 
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
@@ -710,7 +710,7 @@ sub generate_summary_service_report
 					{ value => $grand_total_weight, align => 'right' , grandtotal => '1'},
 				]);
 
-	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'carriers'} eq 'all';
+	$WHERE .= " AND carrier = " . join(',', (keys %$distinctCarriers) ) if $params->{'all_carriers'};
 
 	my $filter_criteria_loop = $self->get_filter_details($WHERE);
 
@@ -835,7 +835,7 @@ sub get_carrier_sql
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	if ($params->{'carriers'} eq 'all')
+	if ($params->{'all_carriers'})
 		{
 		return '';
 		}
@@ -859,12 +859,18 @@ sub get_customer_sql
 	my $params = $c->req->params;
 
 	my $and_customerid_sql;
-	if ($params->{'customers'} eq 'all')
+	if ($params->{'all_customers'})
 		{
-		return $params->{'all_customers'};
+		my @arr;
+		my $Contact = $self->contact;
+		unless ($Contact->is_superuser)
+			{
+			@arr = $Contact->my_customers(undef,{ select => [ 'customerid' ] });
+			push @arr, $Contact->customerid;
+			}
+		$and_customerid_sql = " co.customerid IN ('" . join ("','", map { $_->customerid } @arr) . "')" if @arr;
 		}
-
-	if (ref $params->{'customers'} eq 'ARRAY')
+	elsif (ref $params->{'customers'} eq 'ARRAY')
 		{
 		$and_customerid_sql = " AND co.customerid IN ('" . join("','", @{$params->{'customers'}}) . "') ";
 		}
@@ -872,7 +878,9 @@ sub get_customer_sql
 		{
 		$and_customerid_sql = " AND co.customerid = '" . $self->customer->customerid . "' ";
 		}
-	$c->log->debug("\n and_customerid_sql: " . $and_customerid_sql);
+
+	$c->log->debug("and_customerid_sql: " . $and_customerid_sql);
+
 	return $and_customerid_sql;
 	}
 

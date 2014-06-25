@@ -372,6 +372,18 @@ sub get_label_type
 	return $LabelType;
 	}
 
+sub my_customers
+	{
+	my $self = shift;
+	my $filter = shift || {};
+	my $options = shift || {};
+	$options->{order_by} = 'customername';
+	my $Customer = $self->customer;
+	my @arr = $Customer->mycustomers($filter,$options) if $self->is_administrator;
+	push @arr, $Customer;
+	return \@arr;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
