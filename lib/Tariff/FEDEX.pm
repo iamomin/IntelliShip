@@ -1,4 +1,4 @@
-!/usr/bin/perl -w
+#!/usr/bin/perl -w
 
 #==========================================================
 #   Project:	ARRS
@@ -339,6 +339,23 @@ warn "RECEIVE: ".$ShipmentReturn;
 			my ($TotalSurcharges) = $ShipmentReturn =~ /"35,"(\d+?)"/;
 			#$cost = sprintf("%.2f", ($NetCharge - $TotalSurcharges));
 			($Days) = $ShipmentReturn =~ /"3058,"(\d+?)"/;
+			if(!$Days || $Days eq '')
+			{
+				$Days = 0;
+				my ($shipByDate) = $ShipmentReturn =~ /"409,"(\w+?)"/;
+				warn "########## shipByDate: $shipByDate";
+				if($shipByDate && $shipByDate ne '')
+				{
+					my $mm =  substr($dateshipped, 0,2);
+					my $dd =  substr($dateshipped, 2,2);
+					my $yyyy =  substr($dateshipped, 4,4);
+					my $fds = "$yyyy/$mm/$dd";
+					warn "########## formatted dateshipped: $fds";
+					$Days = IntelliShip::DateUtils->get_delta_days($fds, $shipByDate);
+					warn "########## Days: $Days";
+				}
+			}
+
 			$cost = ($NetCharge - $TotalSurcharges);
 			$cost =~ s/(\d+)(\d{2})/$1\.$2/;
 
