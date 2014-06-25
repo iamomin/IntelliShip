@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+!/usr/bin/perl -w
 
 #==========================================================
 #   Project:	ARRS
@@ -203,6 +203,7 @@ warn "dateshipped: $dateshipped";
 
 		my %ShipData = (
 			 1    => "$fileid",     # unique id sent and also returned in response
+			 9    => "$oazip",              # Sender Postal Code
 			 20   => "$acctnum",    # Recipient Postal Code
 			 17   => "$dazip",      # Recipient Postal Code
 			 23   => "1",           # Pay Type
@@ -337,6 +338,7 @@ warn "RECEIVE: ".$ShipmentReturn;
 			my ($NetCharge) = $ShipmentReturn =~ /"37,"(\d+?)"/;
 			my ($TotalSurcharges) = $ShipmentReturn =~ /"35,"(\d+?)"/;
 			#$cost = sprintf("%.2f", ($NetCharge - $TotalSurcharges));
+			($Days) = $ShipmentReturn =~ /"3058,"(\d+?)"/;
 			$cost = ($NetCharge - $TotalSurcharges);
 			$cost =~ s/(\d+)(\d{2})/$1\.$2/;
 
