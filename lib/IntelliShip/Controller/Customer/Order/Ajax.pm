@@ -705,15 +705,18 @@ sub add_package_product_row :Private
 	$c->stash($params);
 	$c->stash->{HIDE_PRODUCT} = 1 if $self->contact->get_contact_data_value('packageproductlevel') == 2;
 
+	my $filter = { customerid => $self->contact->customerid };
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		$c->stash->{dimlength} = $UnitType->dimlength;
 		$c->stash->{dimwidth}  = $UnitType->dimwidth;
 		$c->stash->{dimheight} = $UnitType->dimheight;
+
+		$filter->{carrier} = $UnitType->carrier if $UnitType->carrier;
 		}
 
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',$filter) unless $c->stash->{packageunittype_loop};
 	$c->stash->{default_package_type} = $params->{'unittypeid'};
 
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';

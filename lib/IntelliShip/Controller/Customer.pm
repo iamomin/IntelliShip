@@ -547,12 +547,17 @@ sub get_select_list
 		{
 		my $carriers = $self->API->get_customers_carriers([$optional_hash->{'customerid'}]) if $optional_hash->{'customerid'};
 		my %carrierHash = map { uc($_) => 1 } @$carriers;
-		#print STDERR Dumper %carrierHash;
-		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
+
+		#$c->log->debug("carrierHash: " . Dumper %carrierHash);
+
+		my $filter = {};
+		$filter->{carrier} = $optional_hash->{carrier} if $optional_hash->{carrier};
+		my @records = $c->model('MyDBI::Unittype')->search($filter, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
-			#print STDERR "\nUnitType->carrier: |" . uc($UnitType->carrier) . "|";
-			next if $UnitType->carrier && !$carrierHash{uc($UnitType->carrier)};
+			#$c->log->debug("UnitType->carrier: " . $UnitType->carrier);
+
+			next if $UnitType->carrier && keys %carrierHash && !$carrierHash{uc($UnitType->carrier)};
 
 			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
 			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });

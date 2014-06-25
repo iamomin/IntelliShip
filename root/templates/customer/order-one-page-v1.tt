@@ -59,7 +59,7 @@
 		[% END %]
 		[% IF default_packing_list == 1 %]
 		<td class="css3-checkboxes">
-		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% UNLESS default_package_type_text == 'ENVELOPE'%] CHECKED [% END %]/><span><label for="printpackinglist">Print Packing List</label></span></label>
+		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% UNLESS default_package_type_text == 'ENVELOPE'%]CHECKED[% END %]/><span><label for="printpackinglist">Print Packing List</label></span></label>
 		</td>
 		[% END %]
 		</tr>

@@ -162,7 +162,7 @@ sub setup :Local
 	$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
 	$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
 	$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
-	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE');
+	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE',{ customerid => $Customer->customerid });
 	$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
 	$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
 	$c->stash->{companytype_loop}        = $self->get_select_list('COMPANY_TYPE');

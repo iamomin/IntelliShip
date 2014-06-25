@@ -191,8 +191,6 @@ sub setup_shipment_information :Private
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $Customer->customerid }) unless $c->stash->{packageunittype_loop};
-
 	my $do = $c->req->param('do') || '';
 	if (!$do or $do eq 'shipment' or $do eq 'step1')
 		{
@@ -224,11 +222,14 @@ sub setup_shipment_information :Private
 
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
-		$c->stash->{default_package_type} = $unit_type_id;
-		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
 		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
+
+		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
+		$c->stash->{default_package_type} = $unit_type_id;
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
+
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
 
 	if ($c->stash->{default_package_type_text} eq 'ENVELOPE' and $c->stash->{default_packing_list} == 2)
 		{

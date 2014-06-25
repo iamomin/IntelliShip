@@ -276,7 +276,7 @@ sub productskusetup :Local
 		$c->stash->{unitofmeasure} = 'EA' unless $c->stash->{unitofmeasure}; ## Each
 		$c->stash->{unittypeid} = '3' unless $c->stash->{unittypeid}; ## Each
 		$c->stash->{dimention_list} = $self->get_select_list('DIMENTION');
-		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE');
+		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE', { customerid => $self->customer->customerid });
 		$c->stash->{yesno_list} = $self->get_select_list('YES_NO_NUMERIC');
 		$c->stash->{weighttype_list} = $self->get_select_list('WEIGHT_TYPE');
 		$c->stash->{class_list} = $self->get_select_list('CLASS');
@@ -654,8 +654,10 @@ sub contactinformation :Local
 			$c->stash->{customerid} = $Contact->customerid
 			}
 
+		my $customerid;
 		if ($Contact)
 			{
+			$customerid = $Contact->customerid;
 			$c->stash->{contactInfo}		= $Contact;
 			$c->stash->{contact_password}	= $Contact->password;
 			$c->stash->{contactAddress}		= $Contact->address;
@@ -675,7 +677,7 @@ sub contactinformation :Local
 		$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
 		$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
 		$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
-		$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE');
+		$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE', { customerid => $customerid });
 		$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
 		$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
 		$c->stash->{defaultpackinglist_loop} = $self->get_select_list('DEFAULT_PACKING_LIST');
