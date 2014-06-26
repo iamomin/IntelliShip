@@ -432,7 +432,7 @@ sub SendDispatchNotification
 	$c->stash->{service}            = $Shipment->service;
 
 	my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
-	$c->stash->{barcode} = 'http://' . $c->request->hostname . '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+	$c->stash->{barcode} = 'http://dintelliship2.engagetechnology.com/print/barcode/'. $Shipment->tracking1 . '.png' if -e $barcode_image;
 
 	$c->stash->{labelbanner} = 'Freight Charge';
 	$c->stash->{commentstring} = 'Fuel Surcharge';
