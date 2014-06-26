@@ -241,9 +241,14 @@ function validateForm( requireFields )
 			var value = properties[proerty];
 
 			//if (boolRequired && proerty != "description") return false;
-
-			if ( proerty == "email" )
-				boolRequired = ( value ? !validateEmail($('#'+control).val()) : ($('#'+control).val().length > 0 && !validateEmail($('#'+control).val())));
+			/* Validate Emails string separated by Comma */
+			if ( proerty == "email" ){
+				var email_arr = $('#'+control).val().split(",");
+				$.each(email_arr, function( index, email ) {
+					email = $.trim(email);
+					boolRequired = ( value ? !validateEmail(email) : (email.length > 0 && !validateEmail(email)));
+					});
+				}
 			else if ( proerty == "phone" )
 				boolRequired = ( value ? !validPhoneNumber($('#'+control).val()) : ($('#'+control).val().length > 0 && !validPhoneNumber($('#'+control).val())));
 			else if ( proerty == "date" )

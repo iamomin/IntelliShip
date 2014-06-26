@@ -2411,14 +2411,21 @@ sub SendShipNotification :Private
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 	$Email->from_name('IntelliShip2');
-
+	my $email;
 	$email_to = $Shipment->shipmentnotification unless $email_to;
-	$Email->add_to($email_to) if $email_to;
-
+	foreach $email (split(',',$email_to))
+		{
+		$email =~ s/^\s+|\s+$//g;
+		$Email->add_to($email) if $email;
+		}
 	$email_from = $Shipment->deliverynotification unless $email_from;
 	if ($Contact->get_contact_data_value('combineemail') && $email_from)
 		{
-		$Email->add_to($email_from);
+		foreach $email (split(',',$email_from))
+			{
+			$email =~ s/^\s+|\s+$//g;
+			$Email->add_to($email) if $email;
+			}
 		}
 
 	$self->set_header_section;
