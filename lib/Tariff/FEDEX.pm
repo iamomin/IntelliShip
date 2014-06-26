@@ -352,8 +352,21 @@ warn "RECEIVE: ".$ShipmentReturn;
 					my $dd =  substr($dateshipped, 2,2);
 					my $yyyy =  substr($dateshipped, 4,4);
 					my $fds = "$yyyy/$mm/$dd";
-					warn "########## formatted dateshipped: $fds";
-					$Days = IntelliShip::DateUtils->get_delta_days($fds, $shipByDate);
+					my $fds2 = "$yyyy-$mm-$dd";
+					
+					my %map = ( 'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
+								'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
+								'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
+					
+					$dd = substr($shipByDate, 0,2);
+					$mm = substr($shipByDate, 2,3);
+					$yyyy = "20".substr($shipByDate, 5,2);
+					
+					$mm = $map{$mm};
+					
+					my $fshipBy = "$yyyy-$mm-$dd";
+					warn "########## formatted dateshipped: $fds2 , formatted shipByDate: $fshipBy";
+					$Days = IntelliShip::DateUtils->get_business_days_between_two_dates($fds2, $fshipBy);
 					warn "########## Days: $Days";
 				}
 			}
