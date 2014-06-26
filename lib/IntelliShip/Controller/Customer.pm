@@ -551,7 +551,9 @@ sub get_select_list
 		#$c->log->debug("carrierHash: " . Dumper %carrierHash);
 
 		my $filter = {};
-		$filter->{carrier} = $optional_hash->{carrier} if $optional_hash->{carrier};
+		#$filter->{carrier} = $optional_hash->{carrier} if $optional_hash->{carrier};
+		%carrierHash = (uc($optional_hash->{carrier}) => 1) if $optional_hash->{carrier};
+
 		my @records = $c->model('MyDBI::Unittype')->search($filter, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
