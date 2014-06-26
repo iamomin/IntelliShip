@@ -1124,12 +1124,12 @@ sub get_select_list
 			{ name => 'EXW',      value => '4' },
 			{ name => 'DDP',      value => '5' },
 			];
-		if ($self->customer->username =~ /qamf/)
+		if ($self->contact->customer->username =~ /qamf/)
 			{
-				foreach my $Terms_Name(@$list)
+			foreach my $Terms_Name(@$list)
 				{
-				 $Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
-				 $Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);
+				$Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
+				$Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);
 				}
 			}
 		}
