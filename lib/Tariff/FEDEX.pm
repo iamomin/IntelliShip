@@ -139,6 +139,7 @@ warn "CUSTOMERID: $CustomerID";
 		my $Days = 0;
 		my $cost = -1;
 		my $ErrorCode;
+		my $yyyymmdd = $dateshipped;
 		warn "FEDEX: FILE=$File";
 =b
 		if ( $File && -r $File )
@@ -205,7 +206,7 @@ warn "dateshipped: $dateshipped";
 			 1    => "$fileid",     # unique id sent and also returned in response
 			 9    => "$oazip",              # Sender Postal Code
 			 20   => "$acctnum",    # Recipient Postal Code
-			 24	  => "$dateshipped",	# Ship Date
+			 24	  => "$yyyymmdd",	# Ship Date
 			 17   => "$dazip",      # Recipient Postal Code
 			 23   => "1",           # Pay Type
 			 50   => "$tocountry",  # Recipient Country Code
