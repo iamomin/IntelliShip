@@ -348,6 +348,7 @@ function validateDepartment(control_ID, customerid)
 			if (JSON_data.COUNT > 0) return;
 			showError("Please specify valid department name");
 			$("#"+control_ID).val("");
+			$("#"+control_ID).focus();
 			});
 	}
 
