@@ -592,18 +592,31 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'SOP')
 		{
-		my $myDBI = $self->context->model('MyDBI');
-		$list = $self->get_select_list('MY_CUSTOMERS');
-		my $customer_ids = [ map { $_->{value} } @$list ];
-
-		my $sopid = $self->customer->get_contact_data_value('sopid');
-		if ($sopid)
+		if($self->contact->is_superuser)
 			{
-			unless ( grep $_ eq $sopid, @$customer_ids )
+			$list = $self->get_select_list('MY_CUSTOMERS');
+			}
+		else
+			{
+			my $myDBI = $self->context->model('MyDBI');
+			my $Customer = $self->customer;
+			my $sql = "SELECT 
+							customerid, customername
+						FROM 
+							customer 
+						WHERE 
+							customerid IN (
+									(SELECT customerid FROM customer WHERE createdby = '" . $Customer->customerid . "')
+								UNION
+									(SELECT value FROM custcondata WHERE ownerid IN (SELECT customerid FROM customer WHERE createdby = '" . $Customer->customerid . "') AND datatypename= 'sopid'))
+						OR customerid='" . $Customer->customerid . "'";
+
+			my $sth = $myDBI->select($sql);
+			for (my $row=0; $row < $sth->numrows; $row++)
 				{
-				my $sth = $myDBI->select("SELECT customerid, customername FROM customer WHERE customerid = '"  . $sopid . "'");
-				push(@$list, { name => $sth->fetchrow(0)->{'customername'}, value => $sth->fetchrow(0)->{'customerid'} }) if $sth->numrows;
+				push(@$list, { name => $sth->fetchrow($row)->{'customername'}, value => $sth->fetchrow($row)->{'customerid'} }) if $sth->numrows;
 				}
+			#$c->log->debug('list is' . Dumper($list));
 			}
 		}
 	elsif ($list_name eq 'PRODUCT_DESCRIPTION')
