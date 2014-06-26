@@ -343,7 +343,7 @@ function validateDepartment(control_ID, customerid)
 	var department = $("#"+control_ID).val();
 	if (department == undefined || department.length == 0) return;
 	var query_param = 'term=' + department;
-	if (customerid != undefined || customerid != '') query_param += '&customerid=' + customerid;
+	if (customerid != undefined && customerid != '') query_param += '&customerid=' + customerid;
 
 	send_ajax_request('', 'JSON', '', 'validate_department', query_param, function() {
 			if (JSON_data.COUNT > 0) return;

@@ -188,7 +188,7 @@ sub validate_department :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $customerid = $params->{'customerid'};
+	my $customerid;# = $params->{'customerid'};
 	$customerid = $self->customer->customerid unless $customerid;
 
 	my $WHERE = { 
