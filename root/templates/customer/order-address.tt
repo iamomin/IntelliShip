@@ -272,7 +272,7 @@
 	$("#fromsearch").focusout(function() { $("#fromname").autocomplete("search", "") });
 
 	$("#fromdepartment").change(function() {
-		validateDepartment('fromdepartment', '[% contactObj.customerid %]');
+		validateDepartment('fromdepartment');
 		});
 
 	[% IF one_page %]

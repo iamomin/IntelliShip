@@ -206,6 +206,8 @@ sub validate_department :Private
 		$department_found = ($c->model('MyDBI::Droplistdata')->search($WHERE)->count == 0);
 		}
 
+	$c->log->debug("department '$params->{term}' for customer $customerid count = $department_found");
+
 	return { COUNT => $department_found };
 	}
 
