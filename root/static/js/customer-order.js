@@ -554,6 +554,7 @@ function CalculateDimentionalWeight()
 		for(var package_row=1; package_row <= total_package_rows; package_row++)
 			{
 			var DimFactor = ($("#tocountry").val() != $("#fromcountry").val()) ? 139 : 166;
+			if ($("#is_international").length > 0) DimFactor = 139;
 			var DimLength = +$("#dimlength_" + package_row).val() || 0.00;
 			var DimWidth = +$("#dimwidth_" + package_row).val() || 0.00;
 			var DimHeight = +$("#dimheight_" + package_row).val() || 0.00;
