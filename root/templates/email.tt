@@ -22,7 +22,7 @@
 						<tr>
 							<td>
 								<!-- Callout Panel -->
-								<p class="callout">
+								<p>
 								[% content %]
 								</p>
 								<!-- /Callout Panel -->
