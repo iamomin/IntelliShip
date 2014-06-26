@@ -410,7 +410,6 @@ function setCustomsCommodityValue()
 
 function checkInternationalSection()
 	{
-
 	if ($('#intlCommoditySec').length == 0) return;
 	if ($("#tocountry").val() == '' || $("#fromcountry").val() == '') return;
 
@@ -422,14 +421,17 @@ function checkInternationalSection()
 			}
 
 		var params = 'coid=' + $("#coid").val();
-		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', params, function (){
-			$("#intlCommoditySec").slideDown(1000, setCustomsCommodityValue);
+		send_ajax_request('intlCommoditySec', 'HTML', 'order', 'display_international', params, function() {
+			$("#intlCommoditySec").slideDown(1000, function() {
+				setCustomsCommodityValue();
+				CalculateDimentionalWeight();
+				});
 			$("#insurance").change(setCustomsCommodityValue);
 			$("#freightinsurance").change(setCustomsCommodityValue);
 			});
 		} else {
-		$("#intlCommoditySec").slideUp("slow");
-		//$("#intlCommoditySec").empty();
+		$("#intlCommoditySec").slideUp("slow",CalculateDimentionalWeight);
+		$("#intlCommoditySec").empty();
 		}
 	}
 
