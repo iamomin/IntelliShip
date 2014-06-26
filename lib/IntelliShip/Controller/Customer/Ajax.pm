@@ -202,8 +202,8 @@ sub validate_department :Private
 	unless ($department_found)
 		{
 		## If no department found for customer then bypass the validations
-		delete $WHERE->{'fieldvalue'};
-		$department_found = ($c->model('MyDBI::Droplistdata')->search($WHERE)->count == 0);
+		#delete $WHERE->{'fieldvalue'};
+		#$department_found = ($c->model('MyDBI::Droplistdata')->search($WHERE)->count == 0);
 		}
 
 	$c->log->debug("department '$params->{term}' for customer $customerid count = $department_found");
