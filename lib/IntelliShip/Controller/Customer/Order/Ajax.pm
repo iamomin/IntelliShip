@@ -741,15 +741,21 @@ sub populate_package_default_detials :Private
 	my $params = $c->req->params;
 
 	my ($unittypename,$dimlength,$dimwidth,$dimheight);
+	my $filter = {};
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$dimlength = $UnitType->dimlength;
 		$dimwidth  = $UnitType->dimwidth;
 		$dimheight = $UnitType->dimheight;
 		$unittypename = uc $UnitType->unittypename;
+		$filter->{'carrier'} = $UnitType->carrier;
 		}
 
-	return {PACKAGE_TYPE => $unittypename, dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight };
+	$c->stash->{PACKAGE_UNIT_TYPES} = 1;
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',$filter);
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	return {PACKAGE_TYPE => $unittypename, dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight, optionHTML => $HTML };
 	}
 
 sub confirm_notification_emails

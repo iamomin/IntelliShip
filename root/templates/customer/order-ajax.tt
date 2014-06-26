@@ -466,3 +466,9 @@
 		</tr>
 	</table>
 [% END %]
+
+[% IF PACKAGE_UNIT_TYPES %]
+	[% FOREACH item IN packageunittype_loop %]
+		<option value="[% item.value %]">[% item.name %]</option>
+	[% END %]
+[% END %]

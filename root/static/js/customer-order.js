@@ -609,6 +609,21 @@ function populatePackageDefaultDetials(row_ID)
 		$("#dimheight_"+row_ID).val(JSON_data.dimheight);
 		$("#dimweight_"+row_ID).val(0);
 		$("#weightperpackage-"+row_ID).html("Weight Per " + JSON_data.PACKAGE_TYPE);
+
+		var unittype_val = $('#unittype').val();
+		$('#unittype').find('option').remove();
+		$('#unittype').append(JSON_data.optionHTML);
+		$('#unittype').val(unittype_val);
+		$('input[id^=rownum_id_]').each(function() {
+
+			var res = this.id.split('_');
+			var ID = res[2];
+
+			var val = $('#unittype_'+ID).val();
+			$('#unittype_'+ID).find('option').remove();
+			$('#unittype_'+ID).append(JSON_data.optionHTML);
+			$('#unittype_'+ID).val(val);
+			});
 		});
 	}
 
