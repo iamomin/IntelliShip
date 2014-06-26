@@ -3823,6 +3823,7 @@ sub generate_bill_of_lading
 				$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
 				$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
 				$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
+				$dataHash->{'billingcountry'}  = uc $BillingAddressInfo->{'country'};
 				}
 
 			my $CSRef = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);

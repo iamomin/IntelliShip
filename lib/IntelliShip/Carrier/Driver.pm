@@ -325,6 +325,7 @@ sub SendDispatchNotification
 	my $Shipment = $self->SHIPMENT;
 	my $Customer = $CO->customer;
 	my $Service = $self->service;
+	my $shipmentData = $self->data;
 
 	my $notetypeid;
 	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
@@ -396,54 +397,42 @@ sub SendDispatchNotification
 		$c->stash->{fullto} = $destination_address;
 		}
 
-	$c->stash->{contactname} =	$CO->contactname;
-	$c->stash->{contactphone} =	$CO->contactphone;
-	$c->stash->{ponumber} =	 $Shipment->ponumber;
-	$c->stash->{etadate} =	$Shipment->datedelivered;
+	$c->stash->{contactname}  = $CO->contactname;
+	$c->stash->{contactphone} = $CO->contactphone;
+	$c->stash->{ponumber}     = $Shipment->ponumber;
+	$c->stash->{etadate}      = $Shipment->datedelivered;
 	#$c->stash->{airportcode} = '';
 
-	#my $BillingAddressInfo = $self->GetBillingAddressInfo(
-	#		$Shipment->customerserviceid,
-	#		$webaccount,
-	#		$Customer->customername,
-	#		$Customer->customerid,
-	#		$Shipment->billingaccount,
-	#		$Shipment->freightcharges,
-	#	$Shipment->addressiddestin,
-	#		undef,
-	#		undef
-	#		);
+	if ($shipmentData->{'billingaddress1'})
+		{
+		my $billingaddress = $shipmentData->{'billingname'};
+		$billingaddress   .= "<br>" . $shipmentData->{'billingaddress1'} if $shipmentData->{'billingaddress1'};
+		$billingaddress   .= " " . $shipmentData->{'billingaddress2'}    if $shipmentData->{'billingaddress2'};
+		$billingaddress   .= "<br>" . $shipmentData->{'billingcity'}     if $shipmentData->{'billingcity'};
+		$billingaddress   .= ", " . $shipmentData->{'billingstate'}      if $shipmentData->{'billingstate'};
+		$billingaddress   .= "  " . $shipmentData->{'billingzip'}        if $shipmentData->{'billingzip'};
+		$billingaddress   .= "<br>" . $shipmentData->{'billingcountry'}  if $shipmentData->{'billingcountry'};
 
-	#if ( $BillingAddressInfo )
-	#	{
-	#	my $billingaddress = $BillingAddressInfo->{'addressname'};
-	#	$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
-	#	$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
-	#	$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
-	#	$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
-	#	$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
-	#	$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
+		$c->stash->{fullbilling} = $billingaddress;
 
-	#	$c->stash->{fullbilling} = $billingaddress;
-	#	#$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
-	#	}
+		$c->stash->{'addressname'}   .= " ($shipmentData->{'billingaccount'})" if $shipmentData->{'billingaccount'};
+		}
 
-	$c->stash->{fullbilling} = $Shipment->billingaccount;
-	$c->stash->{pickupweight} = $Shipment->weight;
-	$c->stash->{pickupdimweight} = $Shipment->dimweight;
-	$c->stash->{dims} = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;;
-	$c->stash->{density} = $Shipment->density;
-	$c->stash->{totalquantity} = $Shipment->total_quantity;
-	$c->stash->{zonenumber} = $Shipment->zonenumber;
+	$c->stash->{pickupweight}   = $Shipment->weight;
+	$c->stash->{pickupdimweight}= $Shipment->dimweight;
+	$c->stash->{dims}           = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;;
+	$c->stash->{density}        = $Shipment->density;
+	$c->stash->{totalquantity}  = $Shipment->total_quantity;
+	$c->stash->{zonenumber}     = $Shipment->zonenumber;
 
-	$c->stash->{tracking1} = $Shipment->tracking1;
+	$c->stash->{tracking1}          = $Shipment->tracking1;
 	$c->stash->{customsdescription} = $Shipment->customsdescription;
-	$c->stash->{description} = $CO->description;
-	$c->stash->{carrier}	= $Shipment->carrier;
-	$c->stash->{service} = $Shipment->service;
+	$c->stash->{description}        = $CO->description;
+	$c->stash->{carrier}            = $Shipment->carrier;
+	$c->stash->{service}            = $Shipment->service;
 
 	my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
-	$c->stash->{barcode} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+	$c->stash->{barcode} = 'http://' . $c->request->hostname . '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
 
 	$c->stash->{labelbanner} = 'Freight Charge';
 	$c->stash->{commentstring} = 'Fuel Surcharge';

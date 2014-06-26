@@ -67,6 +67,7 @@ sub auto :Private
 	my($self, $c) = @_;
 
 	$c->log->debug('Auto Divert to ' . $c->action);
+	$c->log->debug('Request hostname ' . $c->request->hostname);
 
 	return 1 unless $c->request->action =~ /customer/;
 
