@@ -590,6 +590,22 @@ sub get_select_list
 			push(@$list, { name => $_, value => $_ });
 			}
 		}
+	elsif ($list_name eq 'SOP')
+		{
+		my $myDBI = $self->context->model('MyDBI');
+		$list = $self->get_select_list('MY_CUSTOMERS');
+		my $customer_ids = [ map { $_->{value} } @$list ];
+
+		my $sopid = $self->customer->get_contact_data_value('sopid');
+		if ($sopid)
+			{
+			unless ( grep $_ eq $sopid, @$customer_ids )
+				{
+				my $sth = $myDBI->select("SELECT customerid, customername FROM customer WHERE customerid = '"  . $sopid . "'");
+				push(@$list, { name => $sth->fetchrow(0)->{'customername'}, value => $sth->fetchrow(0)->{'customerid'} }) if $sth->numrows;
+				}
+			}
+		}
 	elsif ($list_name eq 'PRODUCT_DESCRIPTION')
 		{
 		push(@$list, { name => '', value => ''});
@@ -744,7 +760,9 @@ sub get_select_list
 		$SQL = ($sql_1 ? "($sql_1) UNION ($sql_2)" : $sql_2) if $sql_2;
 		$SQL .= " ORDER BY 2";
 
-		warn $SQL;
+		$SQL = "SELECT customerid, customername FROM customer WHERE customername <> '' ORDER BY 2" if $self->contact->is_superuser;
+
+		warn "\n SQL: " . $SQL;
 		my $sth = $myDBI->select($SQL);
 
 		for (my $row=0; $row < $sth->numrows; $row++)
