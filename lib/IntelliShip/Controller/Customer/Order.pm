@@ -4417,19 +4417,19 @@ sub SendDispatchNotification
 			undef,
 			$CSValueRef->{'baaddressid'}
 			);
+		if ( $BillingAddressInfo )
+			{
+			my $billingaddress = $BillingAddressInfo->{'addressname'};
+			$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
+			$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
+			$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
+			$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
+			$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
+			$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
 
-	if ($BillingAddressInfo)
-		{
-		$dataHash->{'billingname'}     = uc $BillingAddressInfo->{'addressname'};
-		$dataHash->{'billingaddress1'} = uc $BillingAddressInfo->{'address1'};
-		$dataHash->{'billingaddress2'} = uc $BillingAddressInfo->{'address2'};
-		$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
-		$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
-		$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
-		$dataHash->{'billingcountry'}  = uc $BillingAddressInfo->{'country'};
-		}
-
-	$c->stash->{fullbilling}    = $billingaddress;
+			$c->stash->{'fullbilling'} = $billingaddress;
+			$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
+			}
 	$c->stash->{pickupweight}   = $Shipment->weight;
 	$c->stash->{pickupdimweight}= $Shipment->dimweight;
 	$c->stash->{dims}           = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;;
