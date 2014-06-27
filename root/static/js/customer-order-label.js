@@ -46,11 +46,8 @@ function SendEmailNotification(coid,shipmentid)
 		var query_param = 'coid=' + coid + '&shipmentid=' + item;
 		send_ajax_request('', 'JSON', 'order', 'confirm_notification_emails', query_param, function() {
 			showConfirmBox(JSON_data.HTML, "Shipment Notification", function(){
-				var requireHash = {
-					to_email : { email: false, description: "Please specify valid TO email address" },
-					from_email : { email: false, description: "Please specify valid FROM email address" }
-					};
-				if (validateForm(requireHash))
+				
+				if (validateForm(requireNoficationHash))
 					{
 					query_param += '&to_email=' + $("#to_email").val();
 					if ($("#from_email").length) query_param += '&from_email=' + $("#from_email").val();

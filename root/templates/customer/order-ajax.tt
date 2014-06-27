@@ -452,7 +452,16 @@
 
 [% IF CONFIRM_NOTIFICATION_EMAILS %]
 	<table>
+		<script>
+		var requireNoficationHash = {
+					to_email : { email: false, description: "Please specify valid TO email address" },
+					};
+		</script>
+			
 		[% IF FROM_EMAIL %]
+		<script>
+		requireNoficationHash['from_email'] = { email: false, description: "Please specify valid TO email address" };
+		</script>
 		<tr>
 			<td>FROM</td>
 			<td>:</td>
@@ -464,8 +473,8 @@
 			<td>:</td>
 			<td><input type="text" class="broad-text" name="to_email" id="to_email" value ="[% TO_EMAIL %]"/></td>
 		</tr>
-	</table>
-[% END %]
+		</table>
+		[% END %]
 
 [% IF PACKAGE_UNIT_TYPES %]
 	[% FOREACH item IN packageunittype_loop %]
