@@ -1,9 +1,20 @@
 <html>
 	<head>
 		<title>[% dispatchtitle %]</title>
+		<style>
+			div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid #97C1DA;color: #264C72;background-color: #D0E3EF;text-align: left;}
+		</style>
 	</head>
 	<body>
-		<table width="450" border="1" cellspacing="0" cellpadding="0" align="left" bordercolor="#000000" bgcolor="#FFFFFF">
+	<table width=45% cellpadding=1 cellspacing=0 border="0">
+	<tr>
+		<td><div class="notice">***This is an automated message, do not reply to this email.***</div></td></tr>
+	<tr>
+		<td><h2>[% type %]-PICKUP-NOTIFICATION</h2></td></tr>
+	<tr>
+		<td><div class="notice">Your shipment pick-up dispatch has been scheduled</div></td></tr>
+	<tr>
+		<td><table width="450" border="1" cellspacing="0" cellpadding="0" align="left" bordercolor="#000000" bgcolor="#FFFFFF">
 			<tr>
 				<td>
 					<table width=90% cellpadding=1 cellspacing=0>
@@ -133,7 +144,24 @@
 					</tr>
 				</table>
 				</td>
-			</tr>
-		</table>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	</tr><td><div class="notice">If you have any questions about your shipment, please contact<br>the shipping carrier or your company representative.</div></td></tr>
+	</tr>
+		<td><div id="logo">
+			<table width="100%">
+				<tr>
+					<td align="left"><img height="30px" width="150px"src="https://dintelliship2.engagetechnology.com/static/branding/engage/images/login/logo.png"/></td>
+					[% IF logo %]
+						<td align="right"><img height="30px" width="150px" src="https://dintelliship2.engagetechnology.com/static/branding/engage/images/header/[% logo %]"/></td>
+					[% END %]
+				</tr>
+			</table>
+			</div>
+		</td>
+	</tr>
+	</table>
 	</body>
 </html>
