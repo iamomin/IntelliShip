@@ -1436,7 +1436,20 @@ sub AuthenticateContact
 	my $myDBI = $self->myDBI;
 	my $SQL;
 	## New contact user
-	if ($Username =~ /\//)
+	if ($Username =~ /\@/)
+		{
+		$SQL = "
+			SELECT
+				contactid, 
+				customerid
+			FROM
+				contact
+			WHERE
+				username = '$Username'
+				AND datedeactivated is null
+		";
+		}
+	elsif ($Username =~ /\//)
 		{
 		my ($Domain, $Contact) = $Username =~ m/^(.*)\/(.*)$/;
 
@@ -1614,7 +1627,7 @@ sub printImports
 
 	my $c = $self->context;
 
-	my $authorized_user = $self->customer->username . "/" . $self->contact->username;
+	my $authorized_user = ($self->contact->username =~ /\@/ ? $self->contact->username : $self->customer->username . "/" . $self->contact->username);
 
 	my $return1 = '';
 	my $return2 = '';
