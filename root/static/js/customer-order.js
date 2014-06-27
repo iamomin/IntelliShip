@@ -1,7 +1,9 @@
 var requiredFieldHash = {};
-
+var ReferenceId = '';
+var Direction = '';
 function BindCompanyAutoComplete(direction,availableCustomers)
 	{
+	/*
 	$("#"+direction+"name").autocomplete({
 		source: availableCustomers,
 		select: function( event, ui ) {
@@ -15,8 +17,28 @@ function BindCompanyAutoComplete(direction,availableCustomers)
 			populateShipAddress(direction,RefID);
 			}
 		});
-	}
+	*/
 
+	$("#"+direction+"name").autocomplete({
+		source: availableCustomers,
+		focus: function( event, ui ) {
+			$( "#"+direction+"name" ).val( ui.item.company_name );
+			$( "#"+direction+"country" ).val( ui.item.country );
+			$( "#"+direction+"city" ).val( ui.item.city );
+			$( "#"+direction+"state" ).val( ui.item.state );
+			$( "#"+direction+"zip" ).val( ui.item.zip );
+			$( "#"+direction+"address1" ).val( ui.item.address1 );
+			$( "#"+direction+"address2" ).val( ui.item.address2 );
+			$( "#"+direction+"contact" ).val( ui.item.contactname );
+			$( "#"+direction+"phone" ).val( ui.item.contactphone );
+			$( "#"+direction+"customernumber" ).val( ui.item.customernumber );
+			$( "#"+direction+"email" ).val( ui.item.email );
+			ReferenceId = ui.item.referenceid;
+			Direction = direction;
+			}
+		});
+	}
+	
 /*
 ########################################################################################
 ## Inbound / Outbound / Dropship stuffs

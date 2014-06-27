@@ -500,20 +500,29 @@ sub get_select_list
 		for (my $row=0; $row < $sth->numrows; $row++)
 			{
 			my $data = $sth->fetchrow($row);
-			my $sth1 = $self->myDBI->select("SELECT addressid, contactname FROM co WHERE coid = '$data->{'coid'}'");
+			my $sth1 = $self->myDBI->select("SELECT addressid, contactname, contactphone, custnum, shipmentnotification  FROM co WHERE coid = '$data->{'coid'}'");
 			my $address_data = $sth1->fetchrow(0);
 			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
 			my $contact_name = $address_data->{contactname} || '';
+			my $contact_phone = $address_data->{contactphone} || '';
+			my $customer_number = $address_data->{custnum} || '';
+			my $email = $address_data->{shipmentnotification} || '';
 			my $address_name = $Address->addressname;
 			my $address1 = $Address->address1;
+			my $address2 = $Address->address2;
 			push(@$list, {
 					company_name => "\Q$address_name\E",
 					reference_id => $data->{'coid'},
 					address1     => "\Q$address1\E",
+					address2     => "\Q$address2\E",
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
+					country          => $Address->country,
 					contactname  => "\Q$contact_name\E",
+					contactphone  => "\Q$contact_phone\E",
+					customernumber  => "\Q$customer_number\E",
+					email  => "\Q$email\E",
 				});
 			}
 		}
