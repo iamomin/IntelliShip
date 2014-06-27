@@ -4321,14 +4321,12 @@ sub send_pickup_request
 sub SendDispatchNotification
 	{
 	my $self = shift;
+	my $Shipment = shift;
 	my $Type = shift;
 
 	my $c = $self->context;
-	my $CO = $self->CO;
-	my $Shipment = $self->SHIPMENT;
+	my $CO = $Shipment->CO;
 	my $Customer = $CO->customer;
-	my $Service = $self->service;
-	my $shipmentData = $self->data;
 
 	my $notetypeid;
 	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
@@ -4351,7 +4349,7 @@ sub SendDispatchNotification
 		'datehappened' => $Shipment->datepacked,
 		};
 
-	my $Notes = $self->model('MyDBI::Note')->new($noteData);
+	my $Notes = $c->model('MyDBI::Note')->new($noteData);
 	$Notes->notesid($self->get_token_id);
 	$Notes->insert;
 
@@ -4406,22 +4404,32 @@ sub SendDispatchNotification
 	$c->stash->{ponumber}     = $Shipment->ponumber;
 	$c->stash->{etadate}      = $Shipment->datedelivered;
 	#$c->stash->{airportcode} = '';
+	
+	my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->customerid);
+		my $BillingAddressInfo = $self->GetBillingAddressInfo(
+			$Shipment->customerserviceid,
+			undef,
+			undef,
+			$Customer->customerid,
+			$Shipment->billingaccount,
+			$Shipment->freightcharges,
+			$Shipment->addressiddestin,
+			undef,
+			$CSValueRef->{'baaddressid'}
+			);
 
-	if ($shipmentData->{'billingaddress1'})
+	if ($BillingAddressInfo)
 		{
-		my $billingaddress = $shipmentData->{'billingname'};
-		$billingaddress   .= "<br>" . $shipmentData->{'billingaddress1'} if $shipmentData->{'billingaddress1'};
-		$billingaddress   .= " " . $shipmentData->{'billingaddress2'}    if $shipmentData->{'billingaddress2'};
-		$billingaddress   .= "<br>" . $shipmentData->{'billingcity'}     if $shipmentData->{'billingcity'};
-		$billingaddress   .= ", " . $shipmentData->{'billingstate'}      if $shipmentData->{'billingstate'};
-		$billingaddress   .= "  " . $shipmentData->{'billingzip'}        if $shipmentData->{'billingzip'};
-		$billingaddress   .= "<br>" . $shipmentData->{'billingcountry'}  if $shipmentData->{'billingcountry'};
-
-		$c->stash->{fullbilling} = $billingaddress;
-
-		$c->stash->{'addressname'}   .= " ($shipmentData->{'billingaccount'})" if $shipmentData->{'billingaccount'};
+		$dataHash->{'billingname'}     = uc $BillingAddressInfo->{'addressname'};
+		$dataHash->{'billingaddress1'} = uc $BillingAddressInfo->{'address1'};
+		$dataHash->{'billingaddress2'} = uc $BillingAddressInfo->{'address2'};
+		$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
+		$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
+		$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
+		$dataHash->{'billingcountry'}  = uc $BillingAddressInfo->{'country'};
 		}
 
+	$c->stash->{fullbilling}    = $billingaddress;
 	$c->stash->{pickupweight}   = $Shipment->weight;
 	$c->stash->{pickupdimweight}= $Shipment->dimweight;
 	$c->stash->{dims}           = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;;
