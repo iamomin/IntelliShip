@@ -454,20 +454,15 @@
 	<table>
 		<script>
 		var requireNoficationHash = {
-					to_email : { email: false, description: "Please specify valid TO email address" },
+					to_email : { email: false, description: "Please specify valid To email address" },
+					from_email : { email: false, description: "Please specify valid From email address" }
 					};
-		</script>
-			
-		[% IF FROM_EMAIL %]
-		<script>
-		requireNoficationHash['from_email'] = { email: false, description: "Please specify valid TO email address" };
 		</script>
 		<tr>
 			<td>FROM</td>
 			<td>:</td>
 			<td><input type="text" class="broad-text" name="from_email" id="from_email" value ="[% FROM_EMAIL %]"/></td>
 		</tr>
-		[% END %]
 		<tr>
 			<td>TO</td>
 			<td>:</td>
