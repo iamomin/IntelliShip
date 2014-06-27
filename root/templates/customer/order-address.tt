@@ -281,8 +281,14 @@
 		$("#dateneeded").datepicker({ minDate: '-0d' });
 	[% END %]
 
-	var availableCustomers = [[% FOREACH item IN customerlist_loop %]'[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]',[% END %]];
-	var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]'[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]': '[% item.reference_id %]',[% END %]};
+	//var availableCustomers = [[% FOREACH item IN customerlist_loop %]'[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]',[% END %]];
+	//var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]'[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]': '[% item.reference_id %]',[% END %]};
+
+	var availableCustomers = [
+								[% FOREACH item IN customerlist_loop %]
+									{value:"'[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]'",company_name:"[% item.company_name %]",city:"[% item.city %]",state:"[% item.state %]",zip:"[% item.zip %]",country:"[% item.country %]",address1:"[% item.address1 %]",address2:"[% item.address2 %]",contactname:"[% item.contactname %]",contactphone:"[% item.contactphone %]",customernumber:"[% item.customernumber %]",email:"[% item.email %]",referenceid:"[% item.reference_id %]"},
+								[% END %]
+							];
 
 	BindCompanyAutoComplete('to',availableCustomers);
 
@@ -354,4 +360,35 @@
 		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
 		});
 	[% END %]
-</script>
+
+	/*	Customised Autocomplete feture to show the data in tabular form 
+		Reference Link : http://stackoverflow.com/questions/8432204/displaying-jquery-ui-autocomplete-as-a-table
+	*/
+	$(function() {
+
+		//overriding jquery-ui.autocomplete .js functions
+		$.ui.autocomplete.prototype._renderMenu = function(ul, items) {
+			ul.attr("id", "myShipments");
+		  var self = this;
+		  //table definitions 
+		  ul.append("<table style='cursor:pointer;margin:0px 0px 0px 0px;'><thead><tr><th>Company&nbsp; Name</th><th>City</th><th>State</th><th>Zip</th><th>Contact&nbsp;Name</th><th>Address1</th></tr></thead><tbody></tbody></table>");
+		  $.each( items, function( index, item ) {
+			self._renderItemData(ul, ul.find("table tbody"), item );
+		  });
+		};
+
+		$.ui.autocomplete.prototype._renderItemData = function(ul,table, item) {
+		  return this._renderItem( table, item ).data( "ui-autocomplete-item", item );
+		};
+
+		$.ui.autocomplete.prototype._renderItem = function(table, item) {
+		  return $( "<tr class='ui-menu-item' onclick=\"selectAddress()\"></tr>" ).data( "item.autocomplete", item ).append( "<td >"+item.company_name+"</td>"+"<td>"+item.city+"</td>"+"<td>"+item.state+"</td>"+"<td>"+item.zip+"</td>"+"<td>"+item.address1+"</td>"+"<td>"+item.contactname ).appendTo( table );
+		};
+	});
+
+	function selectAddress()
+		{
+		$(".ui-autocomplete").hide();
+		populateShipAddress(Direction,ReferenceId);
+		}
+	</script>
