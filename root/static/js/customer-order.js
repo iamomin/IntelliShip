@@ -688,19 +688,22 @@ function calculateTotalWeight(event_row_ID)
 		//alert("PackageWeight: " + PackageWeight + ", quantity_: " + $("#quantity_"+row_ID).val());
 
 		var TotalPackageWeight = 0;
+		var TotalPackageDimentionalWeight = 0;
 
 		if ($("#quantityxweight-"+row_ID).val() == 1)
 			{
 			TotalPackageWeight = +$("#weight_"+row_ID).val();
+			TotalPackageDimentionalWeight = +$("#dimweight_"+row_ID).val();
 			}
 		else
 			{
 			TotalPackageWeight = +$("#quantity_"+row_ID).val() * PackageWeight;
+			TotalPackageDimentionalWeight = +$("#quantity_"+row_ID).val() * +$("#dimweight_"+row_ID).val();
 			}
 
-		if ($("#dimweight_"+row_ID).val() > TotalPackageWeight)
+		if (TotalPackageDimentionalWeight > TotalPackageWeight)
 			{
-			TotalPackageWeight = +$("#dimweight_"+row_ID).val();
+			TotalPackageWeight = TotalPackageDimentionalWeight;
 			}
 
 		BillablePackageWeight += TotalPackageWeight;
