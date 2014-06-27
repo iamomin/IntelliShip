@@ -540,7 +540,7 @@ sub validate_contact_username :Private
 	my $params = $c->req->params;
 
 	my $WHERE = {
-		contactid => { '!=' => $params->{'contactid'}},
+		#contactid => { '!=' => $params->{'contactid'}},
 		username => $params->{'username'}
 		};
 
