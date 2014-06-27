@@ -359,7 +359,8 @@ sub ProcessLocalRequest
 
 	#warn "\n XML_request: " . $XML_request;
 
-	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
+	#my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
+	my $url = 'https://onlinetools.ups.com/ups.app/xml/Rate';
 
 	#Send HTTP Request
 	my $browser = LWP::UserAgent->new();
