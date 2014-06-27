@@ -118,13 +118,13 @@ __PACKAGE__->table("co");
 
   data_type: 'char'
   is_nullable: 1
-  size: 20
+  size: 100
 
 =head2 extloginid
 
   data_type: 'char'
   is_nullable: 1
-  size: 20
+  size: 100
 
 =head2 department
 
@@ -551,9 +551,9 @@ __PACKAGE__->add_columns(
   "dateneeded",
   { data_type => "timestamp with time zone", is_nullable => 1 },
   "loginid",
-  { data_type => "char", is_nullable => 1, size => 20 },
+  { data_type => "char", is_nullable => 1, size => 100 },
   "extloginid",
-  { data_type => "char", is_nullable => 1, size => 20 },
+  { data_type => "char", is_nullable => 1, size => 100 },
   "department",
   { data_type => "varchar", is_nullable => 1, size => 500 },
   "workorderid",
