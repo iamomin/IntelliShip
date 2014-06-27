@@ -4330,14 +4330,16 @@ sub SendDispatchNotification
 
 	my $notetypeid;
 	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
-
+	my $subject;
 	if ( $Type eq 'CANCEL' )
 		{
 		$notetypeid ='1600'
+		$subject = "ALERT:  Shipment Dispatched " .$Type . "(" $Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
 		}
 	else
 		{
 		$notetypeid = '1500';
+		$subject = "ALERT:  Shipment Dispatched (" $Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
 		}
 
 	my $noteData = {
@@ -4352,9 +4354,6 @@ sub SendDispatchNotification
 	my $Notes = $c->model('MyDBI::Note')->new($noteData);
 	$Notes->notesid($self->get_token_id);
 	$Notes->insert;
-
-	my $subject;
-	$subject = "NOTICE:  Customer ". $Customer->username ."-". $Shipment->service ."( Dispatched ". $Type ." ".IntelliShip::DateUtils->current_date .")";
 
 	my $Email = IntelliShip::Email->new;
 
