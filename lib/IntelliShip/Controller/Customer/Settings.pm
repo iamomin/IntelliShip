@@ -276,7 +276,7 @@ sub productskusetup :Local
 		$c->stash->{unitofmeasure} = 'EA' unless $c->stash->{unitofmeasure}; ## Each
 		$c->stash->{unittypeid} = '3' unless $c->stash->{unittypeid}; ## Each
 		$c->stash->{dimention_list} = $self->get_select_list('DIMENTION');
-		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE');
+		$c->stash->{unittype_list} = $self->get_select_list('UNIT_TYPE', { customerid => $self->customer->customerid });
 		$c->stash->{yesno_list} = $self->get_select_list('YES_NO_NUMERIC');
 		$c->stash->{weighttype_list} = $self->get_select_list('WEIGHT_TYPE');
 		$c->stash->{class_list} = $self->get_select_list('CLASS');
@@ -654,8 +654,10 @@ sub contactinformation :Local
 			$c->stash->{customerid} = $Contact->customerid
 			}
 
+		my $customerid;
 		if ($Contact)
 			{
+			$customerid = $Contact->customerid;
 			$c->stash->{contactInfo}		= $Contact;
 			$c->stash->{contact_password}	= $Contact->password;
 			$c->stash->{contactAddress}		= $Contact->address;
@@ -665,17 +667,17 @@ sub contactinformation :Local
 			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
 			$c->stash->{SSO_CUSTOMER}		= 1 if $Contact->customer->is_single_sign_on_customer;
+			$c->stash->{statelist_loop}     = $self->get_select_list('US_STATES') if ($Contact->address && $Contact->address->country eq 'US');
 			}
 
 		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
-		$c->stash->{statelist_loop}          = $self->get_select_list('US_STATES');
 		$c->stash->{countrylist_loop}        = $self->get_select_list('COUNTRY');
 
 		$c->stash->{capability_loop}         = $self->get_select_list('CAPABILITY_LIST');
 		$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
 		$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
 		$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
-		$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE');
+		$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE', { customerid => $customerid });
 		$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
 		$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
 		$c->stash->{defaultpackinglist_loop} = $self->get_select_list('DEFAULT_PACKING_LIST');
@@ -686,6 +688,7 @@ sub contactinformation :Local
 		$c->stash->{printreturnshipment_loop}= $self->get_select_list('PRINT_RETURN_SHIPMENT');
 		$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 		$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
+		$c->stash->{addressvalidation_loop}  = $self->get_select_list('ADDRESS_VALIDATION_LIST');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;

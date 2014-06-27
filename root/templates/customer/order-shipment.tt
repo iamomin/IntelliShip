@@ -84,12 +84,12 @@
 		<tr>
 			<td><input  type="text" class="package-details float-right" name="quantity_1" id="quantity_1" style="width: 50px;" value="[% quantity ? quantity : 1 %]"/></td>
 			<td><input  type="text" style="width: 150px;" name="description_1" id="description_1" value="[% description %]"/></td>
-			<td><select class="package-details" name="unittype_1" id="unittype_1" style="width: 100px;">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittypeid %]SELECTED[% END %]>[% item.name %]</option>[% END %]</select></td>
+			<td><select class="package-details" name="unittype_1" id="unittype_1" style="width: 100px;" onchange="populatePackageDefaultDetials(1);">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittypeid %]SELECTED[% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td><input  type="text" class="package-details" name="weight_1" id="weight_1" style="width: 100px;" value="[% weight %]"/></td>
 			<td><input  type="text" class="package-details" name="dimweight_1" id="dimweight_1" style="width: 100px;" value="[% dimweight %]"/></td>
-			<td><input  type="text" class="package-details" name="dimlength_1" id="dimlength_1" style="width: 50px;" value="[% dimlength %]"/></td>
-			<td><input  type="text" class="package-details" name="dimwidth_1" id="dimwidth_1" style="width: 50px;" value="[% dimwidth %]"/></td>
-			<td><input  type="text" class="package-details" name="dimheight_1" id="dimheight_1" style="width: 50px;" value="[% dimheight %]"/></td>
+			<td><input  type="text" class="package-details" name="dimlength_1" id="dimlength_1" style="width: 50px;" value="[% dimlength %]" onchange="CalculateDimentionalWeight();" /></td>
+			<td><input  type="text" class="package-details" name="dimwidth_1" id="dimwidth_1" style="width: 50px;" value="[% dimwidth %]" onchange="CalculateDimentionalWeight();"/></td>
+			<td><input  type="text" class="package-details" name="dimheight_1" id="dimheight_1" style="width: 50px;" value="[% dimheight %]" onchange="CalculateDimentionalWeight();"/></td>
 			<td><input  type="text" name="density_1" id="density_1" style="width: 100px;" value="[% density ? density : 0 %]"/></td>
 			<td><input  type="text" class="package-details" name="decval_1" id="decval_1" style="width: 100px;" value="[% decval ? decval : 0.00 %]"/></td>
 		</tr>
@@ -97,7 +97,8 @@
 
 	<div style="clear: both;">&nbsp;</div>
 
-	[% IF INTERNATIONAL_AND_COMMODITY %]
+	[% IF INTERNATIONAL_AND_COMMODITY %].
+		<input type="hidden" id="is_international" value="1"/>
 		[% INTERNATIONAL_AND_COMMODITY %]
 		<div style="clear: both;">&nbsp;</div>
 	[% END %]

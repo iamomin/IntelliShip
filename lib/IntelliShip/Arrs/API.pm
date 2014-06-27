@@ -364,9 +364,14 @@ sub get_carrrier_service_rate_list
 	my @CSIDs = split(/\t/,$response->{'csids'}) if defined($response->{'csids'});
 	my @CSNames = split(/\t/,$response->{'csnames'}) if defined($response->{'csnames'});
 
-	# my $DefaultCSID = $response->{'defaultcsid'};
-	# my $DefaultCost = $contact_login_level == 20 ? undef : $response->{'defaultcost'};
-	# my $DefaultTotalCost = $contact_login_level == 20 ? undef : $response->{'defaulttotalcost'};
+	my $DefaultCSID = $response->{'defaultcsid'};
+	my $DefaultCost = $contact_login_level == 20 ? undef : $response->{'defaultcost'};
+	my $DefaultTotalCost = $contact_login_level == 20 ? undef : $response->{'defaulttotalcost'};
+
+	$self->context->log->debug("defaultcsid         : $response->{'defaultcsid'} ");
+	$self->context->log->debug("defaultcsidtotalcost: $response->{'defaulttotalcost'}");
+	$self->context->log->debug("contact_login_level : $contact_login_level");
+
 	my $CostList = $contact_login_level == 20 ? undef : $response->{'costlist'};
 	my @costlist_arr = split(/,/,$CostList) if ($CostList);
 
@@ -381,7 +386,7 @@ sub get_carrrier_service_rate_list
 		$carrier_Details = $self->get_other_carrier_data($carrier_Details, $Customer, $request);
 		}
 
-	return $carrier_Details;
+	return ($carrier_Details,$DefaultCSID,$DefaultTotalCost);
 	}
 
 sub get_hashref
@@ -521,8 +526,7 @@ sub get_assessorial_charge
 	}
 
 sub get_address_code
-{
-	warn "########## get_address_code";
+	{
 	my $self = shift;
 	my ($addressname,$address1,$address2,$city, $state, $zip, $country) = @_;
 
@@ -538,7 +542,44 @@ sub get_address_code
 		};
 
 	return $self->APIRequest($http_request);
-}
+	}
+
+sub get_customers_carriers
+	{
+	my $self = shift;
+	my $CustomerIDs = shift;
+
+	my $ids_IN = "'" . join("','",@$CustomerIDs) . "'";
+
+	my $SQL = "
+			SELECT
+				DISTINCT carriername
+			FROM
+				customerservice
+				INNER JOIN service ON service.serviceid=customerservice.serviceid
+				INNER JOIN carrier ON carrier.carrierid=service.carrierid
+			WHERE
+				customerservice.customerid IN ($ids_IN)
+			ORDER BY
+				1";
+	warn $SQL;
+	my $sth = $self->context->model('MyArrs')->select($SQL);
+
+	my $carriers = [];
+	for (my $row=0; $row < $sth->numrows; $row++)
+		{
+		my $data = $sth->fetchrow($row);
+		push(@$carriers,$data->{'carriername'});
+		}
+	return $carriers;
+
+	my $http_request = {
+		action     => 'GetMyCarriers',
+		customerid => $CustomerIDs
+		};
+
+	return $self->APIRequest($http_request);
+	}
 
 __PACKAGE__->meta()->make_immutable();
 

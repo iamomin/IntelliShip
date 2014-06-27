@@ -37,6 +37,7 @@ sub setup :Local
 
 	$c->stash($c->req->params);
 	$c->stash->{report_setup} = 1;
+	$c->stash->{SHOW_CUSTOME_FILTER} = ($self->contact->is_administrator || $self->contact->is_superuser);
 	$c->stash->{template} = "templates/customer/report.tt";
 	}
 
@@ -53,10 +54,6 @@ sub run :Local
 		$c->stash->{MESSAGE} = "Invalid email address, please enter valid email address";
 		$c->detach("setup",$params);
 		return;
-		}
-	if ($params->{'carriers'} and ref $params->{'carriers'} eq 'ARRAY' and grep(/all/, @{$params->{'carriers'}}))
-		{
-		$params->{'carriers'} = 'all';
 		}
 
 	my $ReportDriver = IntelliShip::Controller::Customer::ReportDriver->new;

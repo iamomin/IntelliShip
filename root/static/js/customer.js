@@ -97,7 +97,7 @@ function afterSuccessCallBack(response_type, result_div, call_back_function, res
 
 //$(".datefield").datepicker({ dateFormat: 'mm/dd/yy', gotoCurrent: true, clearText:'Clear', minDate: 0 });
 
-if ($( "#dialog-message" ).length)
+if ($( "#dialog-message" ) != undefined && $( "#dialog-message" ).length)
 	{
 	$( "#dialog-message" ).dialog({
 		show: { effect: "blind", duration: 1000 },
@@ -142,6 +142,24 @@ function showError( dialogMessage, dialogTitle ) {
 		});
 
 	$( "#dialog-message" ).html( "<div class='error'><p>" + dialogMessage + "</p>" );
+	$( "#dialog-message" ).dialog("open");
+	}
+
+function showConfirmBox( dialogMessage, dialogTitle, ok_button_callback, cancel_button_callback ) {
+	if (dialogTitle == undefined) dialogTitle = "Message";
+	if (ok_button_callback == null) ok_button_callback = function() { $('#dialog-message').dialog( "close" ) };
+	if (cancel_button_callback == null) cancel_button_callback = function() { $('#dialog-message').dialog( "close" ) };
+
+	$('#dialog-message').dialog( {
+		title: dialogTitle,
+		width: '400px',
+		buttons: {
+			Ok: ok_button_callback,
+			Cancel: cancel_button_callback
+			}
+		});
+
+	if (dialogMessage != undefined) $( "#dialog-message" ).html( "<div class='notice'>" + dialogMessage + "</div>");
 	$( "#dialog-message" ).dialog("open");
 	}
 
@@ -223,9 +241,14 @@ function validateForm( requireFields )
 			var value = properties[proerty];
 
 			//if (boolRequired && proerty != "description") return false;
-
-			if ( proerty == "email" )
-				boolRequired = ( value ? !validateEmail($('#'+control).val()) : ($('#'+control).val().length > 0 && !validateEmail($('#'+control).val())));
+			/* Validate Emails string separated by Comma */
+			if ( proerty == "email" ){
+				var email_arr = $('#'+control).val().split(",");
+				$.each(email_arr, function( index, email ) {
+					email = $.trim(email);
+					boolRequired = ( value ? !validateEmail(email) : (email.length > 0 && !validateEmail(email)));
+					});
+				}
 			else if ( proerty == "phone" )
 				boolRequired = ( value ? !validPhoneNumber($('#'+control).val()) : ($('#'+control).val().length > 0 && !validPhoneNumber($('#'+control).val())));
 			else if ( proerty == "date" )
@@ -319,12 +342,14 @@ function validateDepartment(control_ID, customerid)
 	{
 	var department = $("#"+control_ID).val();
 	if (department == undefined || department.length == 0) return;
-	var query_param  = 'customerid=' + customerid + '&term=' + department;
+	var query_param = 'term=' + department;
+	if (customerid != undefined && customerid != '') query_param += '&customerid=' + customerid;
 
 	send_ajax_request('', 'JSON', '', 'validate_department', query_param, function() {
 			if (JSON_data.COUNT > 0) return;
 			showError("Please specify valid department name");
 			$("#"+control_ID).val("");
+			$("#"+control_ID).focus();
 			});
 	}
 
@@ -349,7 +374,7 @@ function ShowLegal()
 	$("#dialog-message").dialog({
 		title: 'Software License Agreement/Terms of Use',
 		width: '1000px',
-		maxHeight: 600,
+		maxHeight: 800,
 		show: { effect: "blind", duration: 1000 },
 		hide: { effect: "explode", duration: 1000 },
 		autoOpen: false,

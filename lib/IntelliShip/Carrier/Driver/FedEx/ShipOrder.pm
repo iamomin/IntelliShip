@@ -102,6 +102,7 @@ sub process_request
 
 	# Pop reference field with 'Order# - Customer#'
 	$shipmentData->{'refnumber'} = $shipmentData->{'ordernumber'};
+	$shipmentData->{'refnumber'} = $shipmentData->{'department'} if $Customer->customerid eq '8ETKCWZXZC0UY';
 	if ($shipmentData->{'ponumber'})
 		{
 		$shipmentData->{'refnumber'} .= " - " . $shipmentData->{'ponumber'};

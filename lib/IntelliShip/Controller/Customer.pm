@@ -427,7 +427,26 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'CUSTOMER')
 		{
-		my @customers = $c->model('MyDBI::Customer')->search( { customername => { '!=' => '' } },
+		my $WHERE = {};
+
+		if ($self->contact->is_administrator && !$self->contact->is_superuser)
+			{
+			$WHERE = {
+				-and => [
+				  -or => [
+					createdby => $self->customer->customerid,
+					customerid  => $self->customer->customerid,
+				  ],
+				  customername => { '!=' => '' },
+				],
+				}
+			}
+		else
+			{
+			$WHERE = { customername => { '!=' => '' } };
+			}
+
+		my @customers = $c->model('MyDBI::Customer')->search( $WHERE,
 			{
 			select => [ 'customerid', 'customername' ],
 			order_by => 'customername',
@@ -441,6 +460,7 @@ sub get_select_list
 	elsif ($list_name eq 'ADDRESS_BOOK_CUSTOMERS')
 		{
 		my $CustomerID = $self->customer->customerid;
+		my $Contact = $self->contact;
 		my $smart_address_book = $self->customer->smartaddressbook || 0; # 0 = keep only 1,2,3 etc is interval
 
 		my $smart_address_book_sql = '( keep = 1 )';
@@ -453,25 +473,9 @@ sub get_select_list
 		$extcustnum_field = "extcustnum," if $CustomerID =~ /VOUGHT/;
 
 		my $OrderBy = ($CustomerID =~ /VOUGHT/ ? "extcustnum, " : "") . "addressname";
-=as
-		my $SQL = "
-		SELECT
-			DISTINCT ON (addressname,city,state,address1)
-			addressname,city,state,address1,
-			co.coid as referenceid
-		FROM
-			co
-			INNER JOIN
-			address
-			ON co.addressid = address.addressid AND co.customerid = '$CustomerID'
-		WHERE
-			co.cotypeid in (1,2,10) AND
-			address.addressname <> '' AND
-			$smart_address_book_sql
-		Order BY
-			$OrderBy
-		";
-=cut
+
+		my $and_contactid_sql = '';
+		$and_contactid_sql = "AND co.contactid = '" . $Contact->contactid . "'" if $Contact->show_only_my_items;
 		my $SQL = "
 		SELECT
 			MAX( co.coid ) coid
@@ -485,6 +489,7 @@ sub get_select_list
 			AND address.state <> ''
 			AND address.city <> ''
 			AND address.zip <> ''
+			$and_contactid_sql
 		GROUP BY
 			country, state, city, zip, address1";
 
@@ -498,16 +503,17 @@ sub get_select_list
 			my $sth1 = $self->myDBI->select("SELECT addressid, contactname FROM co WHERE coid = '$data->{'coid'}'");
 			my $address_data = $sth1->fetchrow(0);
 			my $Address = $c->model('MyDBI::Address')->find({ addressid => $address_data->{'addressid'} });
+			my $contact_name = $address_data->{contactname} || '';
 			my $address_name = $Address->addressname;
 			my $address1 = $Address->address1;
 			push(@$list, {
-					company_name => "\Q$address_name\S",
+					company_name => "\Q$address_name\E",
 					reference_id => $data->{'coid'},
-					address1     => "\Q$address1\S",
+					address1     => "\Q$address1\E",
 					city         => $Address->city,
 					state        => $Address->state,
 					zip          => $Address->zip,
-					contactname  => "\Q$address_data->{contactname}\S",
+					contactname  => "\Q$contact_name\E",
 				});
 			}
 		}
@@ -539,10 +545,24 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'UNIT_TYPE')
 		{
-		my @records = $c->model('MyDBI::Unittype')->search({}, {order_by => 'unittypename'});
+		my $carriers = $self->API->get_customers_carriers([$optional_hash->{'customerid'}]) if $optional_hash->{'customerid'};
+		my %carrierHash = map { uc($_) => 1 } @$carriers;
+
+		#$c->log->debug("carrierHash: " . Dumper %carrierHash);
+
+		my $filter = {};
+		#$filter->{carrier} = $optional_hash->{carrier} if $optional_hash->{carrier};
+		%carrierHash = (uc($optional_hash->{carrier}) => 1) if $optional_hash->{carrier};
+
+		my @records = $c->model('MyDBI::Unittype')->search($filter, {order_by => 'unittypename'});
 		foreach my $UnitType (@records)
 			{
-			push(@$list, { name => $UnitType->unittypename, value => $UnitType->unittypeid });
+			#$c->log->debug("UnitType->carrier: " . $UnitType->carrier);
+
+			next if $UnitType->carrier && keys %carrierHash && !$carrierHash{uc($UnitType->carrier)};
+
+			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
+			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });
 			}
 		}
 	elsif ($list_name eq 'WEIGHT_TYPE')
@@ -553,15 +573,50 @@ sub get_select_list
 			push(@$list, { name => $WeightType->weighttypename, value => $WeightType->weighttypeid });
 			}
 		}
-	elsif ($list_name eq 'CUSTOMER_SHIPMENT_CARRIER')
+	elsif ($list_name eq 'CUSTOMER_CARRIERS')
 		{
-		my $myDBI = $c->model('MyDBI');
-		my $sql = "SELECT DISTINCT carrier FROM shipment INNER JOIN co ON shipment.coid = co.coid WHERE co.customerid = '" . $self->customer->customerid . "' AND shipment.carrier <> '' ORDER BY 1";
-		my $sth = $myDBI->select($sql);
-		for (my $row=0; $row < $sth->numrows; $row++)
+		my $customer_ids = (ref $optional_hash->{'customers'} eq 'ARRAY' ? $optional_hash->{'customers'} : [$optional_hash->{'customers'}]) if $optional_hash->{'customers'};
+
+		unless ($customer_ids)
 			{
-			my $data = $sth->fetchrow($row);
-			push(@$list, { name => $data->{'carrier'}, value => $data->{'carrier'} });
+			my $my_customers = $self->get_select_list('MY_CUSTOMERS');
+			$customer_ids = [ map { $_->{value} } @$my_customers ];
+			}
+
+		my $carriers = $self->API->get_customers_carriers($customer_ids);
+
+		foreach (@$carriers)
+			{
+			push(@$list, { name => $_, value => $_ });
+			}
+		}
+	elsif ($list_name eq 'SOP')
+		{
+		if($self->contact->is_superuser)
+			{
+			$list = $self->get_select_list('MY_CUSTOMERS');
+			}
+		else
+			{
+			my $myDBI = $self->context->model('MyDBI');
+			my $Customer = $self->customer;
+			my $sql = "SELECT 
+							customerid, customername
+						FROM 
+							customer 
+						WHERE 
+							customerid IN (
+									(SELECT customerid FROM customer WHERE createdby = '" . $Customer->customerid . "')
+								UNION
+									(SELECT value FROM custcondata WHERE ownerid IN (SELECT customerid FROM customer WHERE createdby = '" . $Customer->customerid . "') AND datatypename= 'sopid'))
+						OR customerid='" . $Customer->customerid . "'";
+
+			my $sth = $myDBI->select($sql);
+			for (my $row=0; $row < $sth->numrows; $row++)
+				{
+				push(@$list, { name => $sth->fetchrow($row)->{'customername'}, value => $sth->fetchrow($row)->{'customerid'} }) if $sth->numrows;
+				}
+			#$c->log->debug('list is' . Dumper($list));
 			}
 		}
 	elsif ($list_name eq 'PRODUCT_DESCRIPTION')
@@ -689,6 +744,7 @@ sub get_select_list
 		for (my $row = 0; $row < scalar @ass_names; $row++)
 			{
 			next if $ass_names[$row] =~ /dryice/i;
+			$ass_displays[$row] = 'Pickup Request (today avail before 1pm, for Express)' if $ass_displays[$row] eq 'Pickup Request';
 			push(@$list, { name => $ass_displays[$row], value => $ass_names[$row] });
 			}
 		}
@@ -698,6 +754,34 @@ sub get_select_list
 		foreach my $Loginlevel (@records)
 			{
 			push(@$list, { name => $Loginlevel->loginlevelname, value => $Loginlevel->loginlevelid});
+			}
+		}
+	elsif ($list_name eq 'MY_CUSTOMERS')
+		{
+		my $myDBI = $c->model('MyDBI');
+
+		my $CustomerID = $self->customer->customerid;
+
+		my ($sql_1,$sql_2) = ('','');
+		unless ($self->contact->is_superuser)
+			{
+			$sql_1 = "SELECT customerid, customername FROM customer WHERE createdby = '$CustomerID' AND customername <> ''" if $self->contact->is_administrator;
+			$sql_2 = "SELECT customerid, customername FROM customer WHERE customerid = '$CustomerID'";
+			}
+
+		my $SQL = $sql_1;
+		$SQL = ($sql_1 ? "($sql_1) UNION ($sql_2)" : $sql_2) if $sql_2;
+		$SQL .= " ORDER BY 2";
+
+		$SQL = "SELECT customerid, customername FROM customer WHERE customername <> '' ORDER BY 2" if $self->contact->is_superuser;
+
+		warn "\n SQL: " . $SQL;
+		my $sth = $myDBI->select($SQL);
+
+		for (my $row=0; $row < $sth->numrows; $row++)
+			{
+			my $data = $sth->fetchrow($row);
+			push(@$list, { name => $data->{'customername'}, value => $data->{'customerid'} });
 			}
 		}
 	elsif ($list_name eq 'ACTIVE_INACTIVE')
@@ -1071,12 +1155,12 @@ sub get_select_list
 			{ name => 'EXW',      value => '4' },
 			{ name => 'DDP',      value => '5' },
 			];
-		if ($self->customer->username =~ /qamf/)
-			{	
-				foreach my $Terms_Name(@$list)
+		if ($self->contact->customer->username =~ /qamf/)
+			{
+			foreach my $Terms_Name(@$list)
 				{
-				 $Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
-				 $Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);	
+				$Terms_Name->{'name'} ='DAP' if ($Terms_Name->{'name'} =~ /FOB\/FCA/);
+				$Terms_Name->{'name'} =''	if ($Terms_Name->{'name'} =~ /DUU/);
 				}
 			}
 		}
@@ -1120,6 +1204,14 @@ sub get_select_list
 			{ name => 'Mini',      value => '2' },
 			{ name => 'Micro',     value => '3' },
 			{ name => 'Enchanced', value => '4' },
+			];
+		}
+	elsif ($list_name eq 'ADDRESS_VALIDATION_LIST')
+		{
+		$list = [
+			{ name => 'Select One', value => '0' },
+			{ name => 'Available', value => '1' },
+			{ name => 'Required', value => '2' }
 			];
 		}
 
@@ -1203,6 +1295,12 @@ sub set_header_section
 	my $user_profile = $Customer->username . '-' . $Contact->username . '.png';
 	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/engage/images/profile/' . $user_profile;
 	$c->stash->{user_profile} = $user_profile if -e $fullpath;
+
+	my $halousername = $Contact->get_only_contact_data_value("halousername");
+	my $halopassword = $Contact->get_only_contact_data_value("halopassword");
+	my $halourl = $Contact->get_only_contact_data_value("halourl");
+
+	$c->stash->{'HALO_URL'} = $halourl if $halousername && $halopassword && $halourl;
 	}
 
 sub set_navigation_rules

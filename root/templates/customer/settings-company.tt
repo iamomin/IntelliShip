@@ -62,7 +62,7 @@
 		</tr>
 		[% FOREACH item IN customerlist %]
 			<tr>
-				<td class="center"><a href="javascript:editCustomer('[% item.customerid %]');" class="center track">EDIT</a></td>
+				<td class="center"><a class="green" href="javascript:editCustomer('[% item.customerid %]');" class="center track"></a></td>
 				<td>[% item.customername %]</td>
 				<td>[% item.contact %]</td>
 				<td>[% item.phone %]</td>
@@ -323,7 +323,7 @@
 						<td><label class="float-right" for="cust_sopid">SOP:</label></td>
 						<td>
 						<label>
-							<select name="cust_sopid" id="cust_sopid">
+							<select name="cust_sopid" id="cust_sopid" style="width:218px;">
 								[% FOREACH item IN customerlist_loop %]
 									<option value="[% item.value %]" [% (item.value == cust_sopid) ? 'SELECTED' : '' %]>[% item.name %]</option>
 								[% END %]
@@ -679,9 +679,18 @@
 						</td>
 						[% END %]
 					</tr>
-
-					[% IF SHOW_CREATEDBY %]
 					<tr>
+						<td><label class="float-right" for="cust_validateaddress">Address Validation:</label></td>
+						<td>
+						<label>
+							<select name="cust_addressvalidation" id="cust_addressvalidation">
+							[% FOREACH item IN addressvalidation_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_addressvalidation) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+						[% IF SHOW_CREATEDBY %]
 						<td><label class="float-right" for="createdby">Created By:</label></td>
 						<td>
 						<label>
@@ -692,11 +701,12 @@
 							</select>
 						</label>
 						</td>
-						
+						[% ELSE %]
 						<td></td>
 						<td></td>
+						[% END %]
 					</tr>
-					[% END %]
+					
 					[% IF SSO_CUSTOMER %]
 					<tr>
 						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>
@@ -901,7 +911,7 @@
 		</tr>
 		[% FOREACH item IN contactlist %]
 			<tr>
-				<td class="center"><a href="javascript:editContact('[% item.contactid %]');" class="track">EDIT</a></td>
+				<td class="center"><a class="green" href="javascript:editContact('[% item.contactid %]');" class="track"></a></td>
 				<td>[% item.firstname %]</td>
 				<td>[% item.lastname %]</td>
 				<td>[% item.phonemobile %]</td>

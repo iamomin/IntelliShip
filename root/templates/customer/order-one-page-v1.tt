@@ -38,6 +38,7 @@
 	<input type="hidden" id="pkg_detail_row_count" name="pkg_detail_row_count" value="1"/>
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
+	<input type="hidden" id="skipaddressvalidation" name="skipaddressvalidation" />
 	<input type="hidden" id="do" name="do" value="save"/>
 	[% IF AUTO_PROCESS %]
 	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
@@ -48,7 +49,7 @@
 
 	[% ADDRESS_SECTION %]
 
-	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %] SELECTED [% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
+	<h1>SHIPMENT TYPE: <select id="unittype" name="unittype">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == default_package_type %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>
 		<table class="float-right">
 		<tr>
 		[% IF print_return_shipment == 1 %]
@@ -58,7 +59,7 @@
 		[% END %]
 		[% IF default_packing_list == 1 %]
 		<td class="css3-checkboxes">
-		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% UNLESS default_package_type_text == 'ENVELOPE'%] CHECKED [% END %]/><span><label for="printpackinglist">Print Packing List</label></span></label>
+		<label><input type="checkbox" id="printpackinglist" name="printpackinglist" value="1" [% UNLESS default_package_type_text == 'ENVELOPE'%]CHECKED[% END %]/><span><label for="printpackinglist">Print Packing List</label></span></label>
 		</td>
 		[% END %]
 		</tr>
@@ -71,7 +72,7 @@
 	[% PACKAGE_DETAIL_SECTION %]
 	</div>
 
-	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PALLET</button>
+	<button type="button" class="long-rounded-button" id="add-package-btn" onclick="addNewPackageProduct(1,'package');"><span class="round-green-button">+</span>&nbsp;&nbsp;ADD PACKAGE</button>
 
 	<div id="clear">&nbsp;</div>
 
@@ -139,7 +140,8 @@
 		<tr>
 		<td><input type="button" class="green" id="save" value="SAVE"/></td>
 		[% IF quickship %]<td><input type="button" class="green" id="ship_now" value="SHIP"/></td>[% END %]
-		<td><input type="button" class="gray" id="cancel" value="CANCEL"/></td>
+		<!--<td><input type="button" class="gray" id="cancel" value="CANCEL" onclick="javascript:history.back();"/></td> -->
+		<td><input type="button" class="gray" value="CANCEL" onclick="javascript:history.back();"/></td>
 		[% IF SUPER_USER %]<td><input type="button" class="red" id="deleted" value="DELETE"/></td>[% END %]
 		</tr>
 		</table>
@@ -185,16 +187,16 @@
 		var type = arr[0];
 		var ID = arr[1];
 
-		$(this).addClass("green",1000);
+		$(this).addClass("green",100);
 
 		if (type == 'weightperpackage')
 			{
-			$('#totalweight-'+ID).removeClass("green",1000);
+			$('#totalweight-'+ID).removeClass("green",100);
 			$('#quantityxweight-'+ID).val(0);
 			}
 		else
 			{
-			$('#weightperpackage-'+ID).removeClass("green",1000);
+			$('#weightperpackage-'+ID).removeClass("green",100);
 			$('#quantityxweight-'+ID).val(1);
 			}
 
@@ -202,7 +204,6 @@
 		});
 
 	$('#unittype').change(function() {
-		populatePackageDefaultDetials();
 		$("#add-package-btn").html('<span class="round-green-button">+</span>&nbsp;&nbsp;ADD ' + $("#unittype option:selected").text().toUpperCase());
 		});
 
@@ -256,6 +257,16 @@
 
 		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_order").serialize(), function () {
 
+			if(JSON_data.CONFIRM_ADDRESS)
+				{
+				showConfirmBox(JSON_data.message, 'Address Validate Confirmation', function(){
+					$('#dialog-message').dialog( "close" );
+					$("#skipaddressvalidation").val(1);
+					$("#ship_now").click();
+					return;
+					});
+				}
+
 			if ( JSON_data.SUCCESS == 0 ) {
 				$("#ship_now").val("SHIP");
 				return;
@@ -270,17 +281,20 @@
 			$("#frm_order").submit();
 			});
 		});
-
+/*
 	$('#cancel').click(function() {
 		requiredFieldHash = {};
 		$("#do").val("cancel");
 		$("#frm_order").submit();
 		});
-
+*/
 	$('#deleted').click(function() {
-		requiredFieldHash = {};
-		$("#do").val("delete");
-		$('#frm_order').submit();
+		showConfirmBox('Are you sure you want to delete Order?', 'Delete Order Confirmation', function(){
+			requiredFieldHash = {};
+			$("#do").val("delete");
+			$('#frm_order').submit();
+			return;
+			});
 		});
 
 	$("#frm_order").submit(function() {

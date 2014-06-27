@@ -333,6 +333,7 @@ img { border: none; vertical-align: middle }
     cursor: pointer;
 }
 
+#legal, #privacy { margin: 10px; padding: 10px }
 #legal, #privacy ul { margin: 20px; list-style: disc; list-style-type: disc }
 #legal, #privacy ol { margin: 20px; list-style: decimal; list-style-type: decimal }
 #legal, #privacy li { margin: 10px }
@@ -779,7 +780,7 @@ label.void {font-size: 13px; font-weight: bold; white-space: nowrap; color: #A25
 #myShipments table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
 #myShipments table tr:nth-child(even) {color: #000; background: #E4E5E7 }
 #myShipments table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
-#myShipments table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap;}
+#myShipments table td {padding: 3px;}
 #myShipments table td.center {text-align: center;}
 
 #myShipments a.red {
@@ -1119,4 +1120,14 @@ table.dialog-header {
 #carrier-service-list-3 {
     max-height: 300px;
     overflow-y: scroll;
+}
+
+#fromsearch, #tosearch {
+    background: url("/static/branding/engage/images/search-find.png") no-repeat center center;
+    width: 24px;
+    border: 1px;
+    color: transparent;
+    cursor: pointer;
+    position: relative;
+    margin-left: -24px;
 }

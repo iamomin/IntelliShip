@@ -645,6 +645,12 @@ __PACKAGE__->has_many(
 		{ "foreign.customerid" => "self.customerid" },
 	);
 
+__PACKAGE__->has_many(
+	mycustomers =>
+		'IntelliShip::SchemaClass::Result::Customer',
+		{ "foreign.createdby" => "self.customerid" },
+	);
+
 sub settings
 	{
 	my $self = shift;

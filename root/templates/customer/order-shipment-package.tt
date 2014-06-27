@@ -4,14 +4,14 @@
 [% IF PACKAGE_DETAIL_ROW %]
 <table class="package" id="package-[% ROW_COUNT %]">
 	<tr>
-		<td id="package_type_[% ROW_COUNT %]" style="text-align: right;">[% IF PACKAGE_INDEX > 1 %]<a href="javascript:void(0);" onclick="removePackageDetails('[% ROW_COUNT %]');" class="round-black-button">X</a>&nbsp;[% END %][% PACKAGE_TYPE %] QUANTITY:</td>
-		<td><input type="text" class="small-text shipment-details" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
+		<td id="package_type_[% ROW_COUNT %]" style="text-align: right;">[% IF PACKAGE_INDEX > 1 %]<a href="javascript:void(0);" onclick="removePackageDetails('[% ROW_COUNT %]');" class="round-black-button">X</a>&nbsp;[% END %]<select id="unittype_[% ROW_COUNT %]" name="unittype_[% ROW_COUNT %]" style="width: 80px;" onchange="$('#unittype').val($(this).val());populatePackageDefaultDetials([% ROW_COUNT %]);">[% FOREACH item IN packageunittype_loop %]<option [% IF item.value == unittypeid %]SELECTED[% END %] value="[% item.value %]">[% item.name %]</option>[% END %]</select>&nbsp;QUANTITY:</td>
+		<td><input type="text" class="small-text shipment-details" style="width: 30px" name="quantity_[% ROW_COUNT %]" id="quantity_[% ROW_COUNT %]" value="[% quantity ? quantity : 1 %]"/></td>
 		<th colspan="10">
 			[% IF SHIPPER_NUMBER %]
 				<input type="hidden" id="originalcoid_[% ROW_COUNT%]" name="originalcoid_[% ROW_COUNT%]" value="[% SHIPPER_NUMBER %]"/>
 				<div class="float-left" style="color:#1875BA">Original Shipper # : [% SHIPPER_NUMBER %]</div>
 			[% END %]
-			<div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div>
+			<div class="float-right">Dim Weight: <input type="text" class="small-text" name="dimweight_[% ROW_COUNT %]" id="dimweight_[% ROW_COUNT %]" value="[% dimweight %]" onchange="calculateTotalWeight();"/>&nbsp;&nbsp;Density: <input type="text" class="small-text" name="density_[% ROW_COUNT %]" id="density_[% ROW_COUNT %]" value="[% density %]"/></div>
 		</th>
 	</tr>
 	<tr>
@@ -34,18 +34,17 @@
 		<td colspan="2">
 			<input type="hidden" id="type_[% ROW_COUNT %]" name="type_[% ROW_COUNT %]" value="package"/>
 			<input type="hidden" id="rownum_id_[% ROW_COUNT %]" name="rownum_id_[% ROW_COUNT %]" value="[% ROW_COUNT %]"/>
-			<input type="hidden" id="unittype_[% ROW_COUNT %]" name="unittype_[% ROW_COUNT %]" value="[% unittypeid %]"/>
 
 			<div id="weight-with-unit">
 			<input type="text" style="width: 150px;" name="weight_[% ROW_COUNT %]" id="weight_[% ROW_COUNT %]" value="[% weight ? weight : 0.00 %]" onchange="calculateTotalWeight([% ROW_COUNT %]);"/>
 			<label>[% WEIGHT_TYPE %]</label>
 			</div>
 		</td>
-		<td class="spacer"><input type="text" class="small-text" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" value="[% dimlength %]"/></td>
+		<td class="spacer"><input type="text" class="small-text" name="dimlength_[% ROW_COUNT %]" id="dimlength_[% ROW_COUNT %]" value="[% dimlength %]" onchange="CalculateDimentionalWeight();"/></td>
 		<td style="padding: 0;">X</td>
-		<td><input type="text" class="small-text" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" value="[% dimwidth %]"/></td>
+		<td><input type="text" class="small-text" name="dimwidth_[% ROW_COUNT %]" id="dimwidth_[% ROW_COUNT %]" value="[% dimwidth %]" onchange="CalculateDimentionalWeight();"/></td>
 		<td style="padding: 0;">X</td>
-		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]"/></td>
+		<td><input type="text" class="small-text" name="dimheight_[% ROW_COUNT %]" id="dimheight_[% ROW_COUNT %]" value="[% dimheight %]" onchange="CalculateDimentionalWeight();"/></td>
 		<td><select class="small-text" name="unitofmeasure_[% ROW_COUNT %]" id="unitofmeasure_[% ROW_COUNT %]">[% FOREACH item IN measureunit_loop %]<option [% item.value == unitofmeasure ? 'SELECTED' : '' %] value="[% item.value %]">[% item.name %]</option>[% END %]</select></td>
 		<td class="spacer"><input type="text" class="small-text" name="nmfc_[% ROW_COUNT %]" id="nmfc_[% ROW_COUNT %]" value="[% nmfc %]"/></td>
 		<td><select class="small-text shipment-details" name="class_[% ROW_COUNT %]" id="class_[% ROW_COUNT %]">[% FOREACH item IN classlist_loop %]<option value="[% item.value %]" [% item.value == class ? 'SELECTED' : '' %]>[% item.name %]</option>[% END %]</select></td>
@@ -57,7 +56,7 @@
 		<div class="float-left full-width"><table><tr><td><a href="javascript:void(0);" onclick="addNewPackageProduct([% ROW_COUNT %],'product');" class="round-green-button">+</a></td><td><green>Add Product Details</green></td></tr></table>
 
 			<table id="product-list-[% ROW_COUNT %]" class="app">
-				<tr>
+				<tr id="product-list-header-[% ROW_COUNT %]"[% IF HIDE_PRODUCT %]style="display: none"[% END %]>
 					<th>&nbsp;</th><th>Quantity</th><th>SKU Number</th><th>Description</th><th>NMFC</th><th>Class</th><th>Total Weight</th><th>Product Value</th>
 				</tr>
 				[% IF RODUCT_DETAILS %]
@@ -87,6 +86,14 @@
 </table>
 <script>
 	$(document).ready(function() { $("#shipment-summary-list").append("<tr id='ss-row-[% ROW_COUNT %]'><td id='ss-class-[% ROW_COUNT %]'>NA</td><td id='ss-quantity-[% ROW_COUNT %]'>1</td><td id='ss-weight-[% ROW_COUNT %]'>0.00</td><td id='ss-decval-[% ROW_COUNT %]'>0.00</td></tr>") });
+
+	[% ## Override default and first package unit type list to updated unit type list ## %]
+	[% IF ROW_COUNT == 2 %]
+	$('#unittype').find('option').remove();
+	$('#unittype_1').find('option').remove();
+	$('#unittype').append($('#unittype_[% ROW_COUNT %] > option').clone());
+	$('#unittype_1').append($('#unittype_[% ROW_COUNT %] > option').clone());
+	[% END %]
 </script>
 [% END %]
 [% #---------------------------------------------------------- %]

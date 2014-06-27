@@ -25,7 +25,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td><label for="dutyaccount">Duties Payer Account Number:</label><br/>
+			<td><label for="dutyaccount">Duties Payer Account Number (optional):</label><br/>
 			<input type="text" name="dutyaccount" id="dutyaccount" value ="[% dutyaccount %]" />
 			</td>
 			<td><label for="destinationcountry">Ultimate Destination Country:</label><br/>
@@ -278,7 +278,7 @@
 		[% FOREACH item IN CARRIER_SERVICE_LIST_LOOP %]
 		<tr class="sc-sortable" id="[% item.customerserviceid %]">
 			<td valign="top">
-				<label><input type="radio" name="customerserviceid" id="[% TAB %]-[% item.customerserviceid %]" value="[% item.customerserviceid %]" onclick="javascript:setCarrierServiceDetails('[% item.carrier %]','[% item.customerserviceid %]'); CalculateDimentionalWeight('[% item.customerserviceid %]');" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
+				<label><input type="radio" name="customerserviceid" id="[% TAB %]-[% item.customerserviceid %]" value="[% item.customerserviceid %]" onclick="javascript:setCarrierServiceDetails('[% item.carrier %]','[% item.customerserviceid %]'); CalculateDimentionalWeight();" [% item.checked ? 'CHECKED' : '' %]/><span></span></label>
 			[% IF item.checked %]<script>$("#carrier").val('[% item.carrier %]');</script>[% END %]
 			</td>
 			<td valign="top">[% item.carrier %]</td>
@@ -308,6 +308,9 @@
 
 	<input type="hidden" id="carrier" name="carrier"/>
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
+	[% IF DefaultCSID %]<input type="hidden" name="defaultcsid" value="[% DefaultCSID %]"/>[% END %]
+	[% IF DefaultTotalCost %]<input type="hidden" name="defaultcsidtotalcost" value="[% DefaultTotalCost %]"/>[% END %]
+
 	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
 			<li><a href="#carrier-service-list-1">RECOMMENDED</a></li>
@@ -445,4 +448,27 @@
 	[% IF combine %]<input type="hidden" id="combine" name="combine" value="[% combine %]"/>[% END %]
 	<input type="hidden" id="consolidationtype" name="consolidationtype" value="2"/>
 	[% CONSOLIDATED_PACKAGE %]
+[% END %]
+
+[% IF CONFIRM_NOTIFICATION_EMAILS %]
+	<table>
+		[% IF FROM_EMAIL %]
+		<tr>
+			<td>FROM</td>
+			<td>:</td>
+			<td><input type="text" class="broad-text" name="from_email" id="from_email" value ="[% FROM_EMAIL %]"/></td>
+		</tr>
+		[% END %]
+		<tr>
+			<td>TO</td>
+			<td>:</td>
+			<td><input type="text" class="broad-text" name="to_email" id="to_email" value ="[% TO_EMAIL %]"/></td>
+		</tr>
+	</table>
+[% END %]
+
+[% IF PACKAGE_UNIT_TYPES %]
+	[% FOREACH item IN packageunittype_loop %]
+		<option value="[% item.value %]">[% item.name %]</option>
+	[% END %]
 [% END %]

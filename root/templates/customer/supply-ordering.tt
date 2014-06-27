@@ -74,7 +74,7 @@
 					<td><label for="tophone" class="float-right require">Phone:</label></td><td><input type="text" class="broad-text" name="tophone" id="tophone" value="[% tophone %]"></td>
 				</tr>
 				<tr>
-					<td><label for="todepartment" class="float-right require">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% todepartment %]"></td>
+					<td><label for="todepartment" class="float-right require">Department:</label></td><td><input type="text" class="broad-text" name="todepartment" id="todepartment" value="[% todepartment %]" onchange="validateDepartment('todepartment');"></td>
 				</tr>
 				<tr>
 					<td><label for="toemail" class="float-right require">Delivery Email:</label></td><td><input type="text" class="broad-text" name="toemail" id="toemail" value="[% toemail %]"/></td>
@@ -163,7 +163,7 @@
 		</tr>
 	</table>
 
-	[% IF carrier_loop %]<center><input type="button" class="green" value="SAVE" onclick="Validate();"/></center>[% END %]
+	[% IF carrier_loop %]<center><input type="button" class="green" value="Place Order" onclick="Validate();"/></center>[% END %]
 
 </form>
 

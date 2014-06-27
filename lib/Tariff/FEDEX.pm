@@ -139,6 +139,7 @@ warn "CUSTOMERID: $CustomerID";
 		my $Days = 0;
 		my $cost = -1;
 		my $ErrorCode;
+		my $yyyymmdd = $dateshipped;
 		warn "FEDEX: FILE=$File";
 =b
 		if ( $File && -r $File )
@@ -203,7 +204,9 @@ warn "dateshipped: $dateshipped";
 
 		my %ShipData = (
 			 1    => "$fileid",     # unique id sent and also returned in response
+			 9    => "$oazip",              # Sender Postal Code
 			 20   => "$acctnum",    # Recipient Postal Code
+			 24	  => "$yyyymmdd",	# Ship Date
 			 17   => "$dazip",      # Recipient Postal Code
 			 23   => "1",           # Pay Type
 			 50   => "$tocountry",  # Recipient Country Code
@@ -337,6 +340,37 @@ warn "RECEIVE: ".$ShipmentReturn;
 			my ($NetCharge) = $ShipmentReturn =~ /"37,"(\d+?)"/;
 			my ($TotalSurcharges) = $ShipmentReturn =~ /"35,"(\d+?)"/;
 			#$cost = sprintf("%.2f", ($NetCharge - $TotalSurcharges));
+			($Days) = $ShipmentReturn =~ /"3058,"(\d+?)"/;
+			if(!$Days || $Days eq '')
+			{
+				$Days = 0;
+				my ($shipByDate) = $ShipmentReturn =~ /"409,"(\w+?)"/;
+				warn "########## shipByDate: $shipByDate";
+				if($shipByDate && $shipByDate ne '')
+				{
+					my $mm =  substr($dateshipped, 0,2);
+					my $dd =  substr($dateshipped, 2,2);
+					my $yyyy =  substr($dateshipped, 4,4);
+					my $fds = "$yyyy/$mm/$dd";
+					my $fds2 = "$yyyy-$mm-$dd";
+					
+					my %map = ( 'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
+								'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
+								'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
+					
+					$dd = substr($shipByDate, 0,2);
+					$mm = substr($shipByDate, 2,3);
+					$yyyy = "20".substr($shipByDate, 5,2);
+					
+					$mm = $map{$mm};
+					
+					my $fshipBy = "$yyyy-$mm-$dd";
+					warn "########## formatted dateshipped: $fds2 , formatted shipByDate: $fshipBy";
+					$Days = IntelliShip::DateUtils->get_business_days_between_two_dates($fds2, $fshipBy);
+					warn "########## Days: $Days";
+				}
+			}
+
 			$cost = ($NetCharge - $TotalSurcharges);
 			$cost =~ s/(\d+)(\d{2})/$1\.$2/;
 
@@ -384,6 +418,7 @@ warn "RECEIVE: ".$ShipmentReturn;
 	  #warn "Match-$Match";
 	  #warn "Pre-$Pre";
 
+	  #Response = 0,"125"1,"8EY94LY9FXMV9"10,"494036924"33,"A1"34,"19545"35,"393"36,"14948"37,"4990"60,"49"194,"THU"409,"26Jun14"431,"N"498,"253301"574,"A1"1086,"43"1090,"USD"1092,"7"1133,"1"1273,"01"1274,"03"1393,"393"1507,"1951"1519,"20540"1525,"17501"1528,"22491"1690,"N"1981,"4:30 PM"1992,"00"3076,""4565,""4568,"0"4912,""4913,""4915,""99,""
 	  return $Pre.$Match."\n";
 	}
 

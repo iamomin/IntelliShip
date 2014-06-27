@@ -217,7 +217,7 @@ sub get_search_by_term_sql
 		shipdate     => 'to_char(s.dateshipped ,\'mm/dd/yy\')',
 		duedate      => 'to_char(s.datedue,\'mm/dd/yy\')',
 		carrier      => 's.carrier',
-		mode         => 's.mode'
+		contactname  => 's.contactname'
 		};
 
 	my @arrSearchByTerm;
@@ -287,7 +287,7 @@ sub get_shipped_sql :Private
 			s.service,
 			s.cost,
 			s.carrier,
-			s.mode,
+			s.contactname,
 			CASE
 			WHEN s.statusid = 7 THEN 6
 			ELSE 4

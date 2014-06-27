@@ -9,49 +9,30 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 
 <div class="notice">***This is an automated message, do not reply to this email.***</div>
 
-<h2>PICKUP-NOTIFICATION</h2>
+<h2>CHARGE-THRESHOLD-NOTIFICATION</h2>
 
 <div id="notification">
-
-	<div class="notice">Your shipment pick-up dispatch has been scheduled</div>
-
+	
 	<table class="content-wrap" border="0">
-		[% FOREACH item IN Shipment_list %]
 		<tr>
-			<th>Weight</th><td>[% item.total_weight %]</td>
+			<th>Order Number</th><td>[% ordernumber %]</td>
 		</tr>
 		<tr>
-			<th>DIM Weight</th><td>[% item.dimweight %]</td>
+			<th>User The Overrided</th><td>[% username %]</td>
 		</tr>
 		<tr>
-			<th>Pickup Date</th><td>[% item.datepacked %]</td>
+			<th>Recommanded Carrier, Service and Cost</th><td>[% origcarrier %],[%  origservice %], [% defaultcsidtotalcost %]</td>
 		</tr>
 		<tr>
-			<th>Origin</th><td>[% item.addressidorigin %]</td>
+			<th>Chossed Carrier, Service and Cost</th><td>[% carrier %], [% service %], [% totalshipmentcharges %]</td>
 		</tr>
 		<tr>
-			<th>Tracking</th><td>[% item.tracking1 %]</td>
+			<th>Expected Ship date</th><td>[% datecreated %]</td>
 		</tr>
-		[% END %]
-		<tr>
-			<th>Message</th><td>[% Message %]</td>
-		</tr>
-		<tr>
-			<th>Code</th><td>[% ResponseCode %]</td>
-		</tr>
-		[% IF CustomerTransactionId %]
-		<tr>
-			<th>Customer-Transaction-Id</th><td>[% CustomerTransactionId %]</td>
-		</tr>
-		[% END %]
-		[% IF ConfirmationNumber %]
-		<tr>
-			<th>PickUP Confirmation Number</th><td>[% ConfirmationNumber %]</td>
-		</tr>
-		[% END %]
 	</table>
 	
 	<div class="notice">If you have any questions about your shipment, please contact<br>the shipping carrier or your company representative.</div>
+	
 	<div id="logo">
 		<table width="100%">
 		<tr>

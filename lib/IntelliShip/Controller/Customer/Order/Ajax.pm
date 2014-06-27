@@ -105,10 +105,6 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->adjust_due_date;
 		}
-	elsif ($action eq 'add_pkg_detail_row')
-		{
-		$dataHash = $self->add_pkg_detail_row;
-		}
 	elsif ($action eq 'add_package_product_row')
 		{
 		$dataHash = $self->add_package_product_row;
@@ -176,6 +172,10 @@ sub get_JSON_DATA :Private
 	elsif ($action eq 'populate_package_default_detials')
 		{
 		$dataHash = $self->populate_package_default_detials;
+		}
+	elsif ($action eq 'confirm_notification_emails')
+		{
+		$dataHash = $self->confirm_notification_emails;
 		}
 	else
 		{
@@ -260,8 +260,18 @@ sub get_carrier_service_list
 	my $ToAddress = $CO->destination_address;
 	my $addresscode = $ToAddress->addresscode;
 
-	my $carrier_Details = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
+	my ($carrier_Details,$DefaultCSID,$DefaultTotalCost) = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
 	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
+
+	my @packages = $CO->packages;
+	my $shipmentCarriers = {};
+	foreach my $Package (@packages)
+		{
+		my $carrier = uc $Package->unittype->carrier if $Package->unittype;
+		$shipmentCarriers->{$carrier} = 1 if $carrier;
+		}
+
+	#$c->log->debug("***** shipmentCarriers: " . Dumper($shipmentCarriers));
 
 	my ($CS_list_1, $CS_list_2, $CS_charge_details) = ([], [], {});
 	foreach my $customerserviceid (keys %$carrier_Details)
@@ -276,6 +286,13 @@ sub get_carrier_service_list
 			#$c->log->debug("CSData: " . Dumper($CSData));
 			$carrier =~ s/^\*+\s//;
 			$no_on_time = 1;
+			}
+
+		#$c->log->debug("***** CARRIER: " . $carrier);
+		if (scalar keys %$shipmentCarriers && !$shipmentCarriers->{uc($carrier)})
+			{
+			#$c->log->debug("***** SKIP carrier");
+			next;
 			}
 
 		my ($service, $estimated_date, $shipment_charge);
@@ -367,6 +384,8 @@ sub get_carrier_service_list
 		$detail_hash->{'shipment_charge'} = sprintf("%.2f",($detail_hash->{'freight_charge'} + $detail_hash->{'other_charge'}));
 		}
 
+	$c->stash->{DefaultCSID} = $DefaultCSID;
+	$c->stash->{DefaultTotalCost} = $DefaultTotalCost;
 	$c->stash->{CARRIER_SERVICE_LIST} = 1;
 	$c->stash->{ONLY_TABLE} = 1;
 
@@ -675,27 +694,6 @@ sub adjust_due_date
 	return { dateneeded => $adjusted_datetime };
 	}
 
-sub add_pkg_detail_row :Private
-	{
-	my $self = shift;
-	my $c = $self->context;
-	my $params = $c->req->params;
-
-	$c->stash->{one_page} = 1;
-	$c->stash->{PKG_DETAIL_ROW} = 1;
-	$c->stash->{ROW_COUNT} = $params->{'row_ID'};
-	$c->stash->{DETAIL_TYPE} = $params->{'detail_type'};
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-
-	$c->stash->{unittype} = ($params->{'detail_type'} eq 'package' ? $self->contact->default_package_type : $self->contact->default_product_type);
-
-	my $row_HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-	#$c->log->debug("add_pkg_detail_row : " . $row_HTML);
-	$c->stash->{PKG_DETAIL_ROW} = 0;
-
-	return { rowHTML => $row_HTML };
-	}
-
 sub add_package_product_row :Private
 	{
 	my $self = shift;
@@ -705,13 +703,21 @@ sub add_package_product_row :Private
 	my $flag = uc($params->{'detail_type'}) . '_DETAIL_ROW';
 
 	$c->stash($params);
+	$c->stash->{HIDE_PRODUCT} = 1 if $self->contact->get_contact_data_value('packageproductlevel') == 2;
+
+	my $filter = { customerid => $self->contact->customerid };
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		$c->stash->{dimlength} = $UnitType->dimlength;
 		$c->stash->{dimwidth}  = $UnitType->dimwidth;
 		$c->stash->{dimheight} = $UnitType->dimheight;
+
+		$filter->{carrier} = $UnitType->carrier if $UnitType->carrier;
 		}
+
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',$filter) unless $c->stash->{packageunittype_loop};
+	$c->stash->{default_package_type} = $params->{'unittypeid'};
 
 	$c->stash->{WEIGHT_TYPE} = $self->contact->customer->weighttype if $params->{'detail_type'} eq 'package';
 	$c->stash->{measureunit_loop} = $self->get_select_list('DIMENTION') unless $c->stash->{measureunit_loop};
@@ -734,22 +740,39 @@ sub populate_package_default_detials :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my $response_hash = {};
+	my ($unittypename,$dimlength,$dimwidth,$dimheight);
+	my $filter = {};
 	if (my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $params->{'unittypeid'} }))
 		{
-		$response_hash->{'PACKAGE_TYPE'} = uc $UnitType->unittypename;
-		$response_hash->{'unittypeid'} = uc $UnitType->unittypeid;
-		$response_hash->{'dimlength'} = $UnitType->dimlength;
-		$response_hash->{'dimwidth'}  = $UnitType->dimwidth;
-		$response_hash->{'dimheight'} = $UnitType->dimheight;
-		}
-	else
-		{
-		$response_hash->{'error'} = "Package default details not found";
+		$dimlength = $UnitType->dimlength;
+		$dimwidth  = $UnitType->dimwidth;
+		$dimheight = $UnitType->dimheight;
+		$unittypename = uc $UnitType->unittypename;
+		$filter->{'carrier'} = $UnitType->carrier;
 		}
 
-	return $response_hash;
+	$c->stash->{PACKAGE_UNIT_TYPES} = 1;
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',$filter);
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	return {PACKAGE_TYPE => $unittypename, dimlength => $dimlength, dimwidth => $dimwidth, dimheight => $dimheight, optionHTML => $HTML };
 	}
+
+sub confirm_notification_emails
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $Shipment =($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }));
+
+	$c->stash->{CONFIRM_NOTIFICATION_EMAILS} = 1;
+	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification && $self->contact->get_contact_data_value('combineemail');
+
+	return { HTML => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]) };
+	}
+
 sub set_third_party_delivery
 	{
 	my $self = shift;
@@ -793,7 +816,7 @@ sub send_email_notification
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{shipmentid} }));
+	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }),$params->{'from_email'},$params->{'to_email'});
 
 	return { EMAIL_SENT => 1};
 	}
@@ -820,8 +843,6 @@ sub mark_shipment_as_printed
 
 		$c->log->debug("... Marked shipment $shipmentid as 'Printed'");
 		}
-
-	#$self->SendShipNotification($Shipment);
 
 	my $response = { UPDATED => 1};
 
@@ -869,6 +890,8 @@ sub get_dim_weight
 
 	my $dimWeight = $self->API->get_dim_weight($csid, $dimlength, $dimwidth, $dimheight) || 0;
 
+	#$dimWeight = $dimWeight * $params->{quantity};
+
 	$c->log->debug("... DIM WEIGHT: " . $dimWeight);
 
 	return { dimweight => $dimWeight, row => $params->{'row'} };
@@ -894,7 +917,7 @@ sub prepare_commercial_invoice
 	{
 	my $self = shift;
 	my $HTML = $self->generate_commercial_invoice;
-	$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
+	#$self->context->log->debug("Ajax.pm generate_commercial_invoice : " . $HTML);
 	return { ComInv => $HTML };
 	}
 
@@ -904,9 +927,38 @@ sub ship_to_carrier
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	my @shipmentids;
-
 	$self->save_order;
+
+	my @shipmentids;
+	my $response = { SUCCESS => 0 };
+
+	unless ($params->{'skipaddressvalidation'})
+		{
+		my $ADDRESS_VALIDATE = $self->contact->get_contact_data_value('addressvalidation');
+		if ($ADDRESS_VALIDATE)
+			{
+			$c->log->debug("... validating Address");
+
+			## Validate address through UPS API
+			my $XML_RESPOSE = $self->validate_address;
+
+			if ($self->has_errors)
+				{
+				if ($ADDRESS_VALIDATE == 1)
+					{
+					$response->{CONFIRM_ADDRESS} = 1;
+					$response->{message} = $self->errors->[0] . '<br/><br/>Continue processing with this unvalidated address?';
+					}
+				else{
+					$response->{error} = $self->errors->[0];
+					}
+
+				$self->errors([]);
+
+				return $response;
+				}
+			}
+		}
 
 	my $CO = $self->get_order;
 	if ($CO->total_quantity > 1)
@@ -1003,7 +1055,6 @@ sub ship_to_carrier
 		push @shipmentids, $self->SHIP_ORDER;
 		}
 
-	my $response = { SUCCESS => 0 };
 	$response->{shipmentid} = join('_',@shipmentids);
 	$c->log->debug("... shipmentid: " . $response->{'shipmentid'});
 

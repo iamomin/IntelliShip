@@ -46,6 +46,10 @@ sub quickship :Local
 		{
 		$self->setup_label_to_print;
 		}
+	elsif ($do_value eq 'download')
+		{
+		$self->export_label;
+		}
 	elsif ($do_value eq 'cancel')
 		{
 		$self->cancel_order;
@@ -127,7 +131,7 @@ sub setup_address :Private
 		}
 
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
-	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress};
+	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid;
 
 	$self->set_company_address;
 
@@ -183,8 +187,6 @@ sub setup_shipment_information :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE');
-
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
@@ -220,11 +222,14 @@ sub setup_shipment_information :Private
 
 	if (my $unit_type_id = $Contact->default_package_type)
 		{
-		$c->stash->{default_package_type} = $unit_type_id;
-		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
 		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
+
+		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
+		$c->stash->{default_package_type} = $unit_type_id;
 		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
 		}
+
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
 
 	if ($c->stash->{default_package_type_text} eq 'ENVELOPE' and $c->stash->{default_packing_list} == 2)
 		{
@@ -244,8 +249,6 @@ sub setup_shipment_information :Private
 		{
 		unless ($c->stash->{PACKAGE_DETAIL_SECTION})
 			{
-			$c->stash->{HIDE_PRODUCT} = 1 if $Contact->get_contact_data_value('packageproductlevel') == 2;
-			$c->log->debug("... setup new package shipment details");
 			$params->{'unittypeid'} = $c->stash->{default_package_type};
 			$params->{'detail_type'} = 'package';
 			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
@@ -593,14 +596,14 @@ sub save_address :Private
 	if (defined $params->{'toaddress1'})
 		{
 		my $toAddressData = {
-				addressname => $params->{'toname'},
-				address1    => $params->{'toaddress1'},
-				address2    => $params->{'toaddress2'},
-				city        => $params->{'tocity'},
-				state       => $params->{'tostate'},
-				zip         => $params->{'tozip'},
-				country     => $params->{'tocountry'},
-				};
+			addressname => $params->{'toname'},
+			address1    => $params->{'toaddress1'},
+			address2    => $params->{'toaddress2'},
+			city        => $params->{'tocity'},
+			state       => $params->{'tostate'},
+			zip         => $params->{'tozip'},
+			country     => $params->{'tocountry'},
+			};
 
 		IntelliShip::Utils->trim_hash_ref_values($toAddressData);
 
@@ -1491,52 +1494,62 @@ sub get_tooltips :Private
 sub SendChargeThresholdEmail :Private
 	{
 	my $self = shift;
-	#my ($ToEmail,$ShipmentRef) = @_;
-    #
-	#my $CustomerName = $self->{'customer'}->GetValueHashRef()->{'customername'};
-    #
-	#my $Addressid = $self->{'customer'}->GetValueHashRef()->{'addressid'};
-	#my $Address = new ADDRESS($self->{'dbref'}->{'aos'}, $self->{'customer'});
-	#$Address->Load($Addressid);
-	#my $AddressCity = $Address->GetValueHashRef()->{'city'};
-	#$CustomerName = $CustomerName . " - " . $AddressCity;
-    #
-	#my $OrderNumAlias = $ShipmentRef->{'ordernumberaka'};
-    #
-	#if ( !defined($OrderNumAlias) or $OrderNumAlias eq '' )
-	#	{
-	#	$OrderNumAlias = 'Order #';
-	#	}
-    #
-	#my $DateCreated = $self->{'dbref'}->{'aos'}->gettimestamp();
-	#$DateCreated =~ s/^(\d{4})-(\d{2})-(\d{2}).*/$2\/$3\/$1/;
-    #
-	#my ($OrigCarrier,$OrigService) = &GetCarrierServiceName($ShipmentRef->{'defaultcsid'});
-	#my ($Carrier,$Service) = &GetCarrierServiceName($ShipmentRef->{'customerserviceid'});
-    #
-	#my $DISPLAY = new DISPLAY($TEMPLATE_DIR);
-    #
-	#my $EmailInfo = {};
-	#$EmailInfo->{'fromemail'} = "intelliship\@intelliship.$config->{BASE_DOMAIN}";
-	#$EmailInfo->{'fromname'} = 'NOC';
-	#$EmailInfo->{'toemail'} = $ToEmail;
-	#$EmailInfo->{'toname'} = '';
-	#$EmailInfo->{'subject'} =  "ALERT: " . $CustomerName . ", Carrier Change Exceeds Threshold (" . $OrderNumAlias . " " . $ShipmentRef->{'ordernumber'} . ")";
-	##$EmailInfo->{'cc'} = 'noc@engagetechnology.com';
-    #
-	#my $BodyHash = {};
-	#$BodyHash->{'ordernumberaka'} = $OrderNumAlias;
-	#$BodyHash->{'ordernumber'} = $ShipmentRef->{'ordernumber'};
-	#$BodyHash->{'datecreated'} = $DateCreated;
-	#$BodyHash->{'username'} = $ShipmentRef->{'active_username'};
-	#$BodyHash->{'origcarrier'} = $OrigCarrier;
-	#$BodyHash->{'origservice'} = $OrigService;
-	#$BodyHash->{'carrier'} = $Carrier;
-	#$BodyHash->{'service'} = $Service;
-	#$BodyHash->{'totalshipmentcharges'} = sprintf("%.2f", $ShipmentRef->{'totalshipmentcharges'});
-	#$BodyHash->{'defaultcsidtotalcost'} = sprintf("%.2f", $ShipmentRef->{'defaultcsidtotalcost'});
-    #
-	#$DISPLAY->sendemail($EmailInfo,$BodyHash,"changed_shipment.email");
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	$self->context->log->debug("_____IN SendChargeThresholdEmail____");
+
+	my $CustomerName = $self->customer->customername;
+	my $Addressid = $self->customer->addressid;
+
+	my $Address = $c->model('MyDBI::ADDRESS')->find({ addressid => $Addressid });
+
+	my $AddressCity = $Address->city;
+	$CustomerName = $CustomerName . " - " . $AddressCity;
+	$self->context->log->debug("CustomerName :" . $CustomerName);
+	my $OrderNumAlias = $params->{'ordernumberaka'};
+	if ( !defined($OrderNumAlias) or $OrderNumAlias eq '' )
+		{
+		$OrderNumAlias = 'Order #';
+		}
+
+	$self->context->log->debug("OrderNumAlias :" . $OrderNumAlias);
+
+	my $DateCreated = IntelliShip::DateUtils->american_date(IntelliShip::DateUtils->current_date);
+	$self->context->log->debug("DateCreated :" . $DateCreated);
+
+	my ($OrigCarrier,$OrigService) = $self->API->get_carrier_service_name($params->{'defaultcsid'});
+	my ($Carrier,$Service) = $self->API->get_carrier_service_name($params->{'customerserviceid'});
+	$self->context->log->debug("OrigCarrier :" . $OrigCarrier."OrigService :".$OrigService."Carrier : ".$Carrier."Service : ".$Service);
+
+	my $subject = "ALERT: " . $CustomerName . ", Carrier Change Exceeds Threshold (" . $OrderNumAlias . " " . $params->{'ordernumber'} . ")";
+	my $Email = IntelliShip::Email->new;
+
+	$Email->content_type('text/html');
+	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+	$Email->from_name('IntelliShip2');
+	$Email->subject($subject);
+	$Email->add_to($self->customer->losspreventemail);
+	$Email->add_cc('noc@engagetechnology.com');
+
+	$self->set_header_section;
+	$c->stash->{ordernumberaka} = $OrderNumAlias;
+	$c->stash->{ordernumber} = $params->{'ordernumber'};
+	$c->stash->{datecreated} = $DateCreated;
+	$c->stash->{username} = $self->contact->full_name;
+	$c->stash->{origcarrier} = $OrigCarrier;
+	$c->stash->{origservice} = $OrigService;
+	$c->stash->{carrier} = $Carrier;
+	$c->stash->{service} = $Service;
+	$c->stash->{totalshipmentcharges} = sprintf("%.2f", $params->{'totalshipmentcharges'});
+	$c->stash->{defaultcsidtotalcost} = sprintf("%.2f", $params->{'defaultcsidtotalcost'});
+
+	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/chargethreshold-notification.tt' ]));
+
+	if ($Email->send)
+		{
+		$self->context->log->debug("Charge Threshold email successfully sent");
+		}
 	}
 
 sub CheckChargeThreshold :Private
@@ -1545,36 +1558,49 @@ sub CheckChargeThreshold :Private
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	$c->log->debug("____ IN CheckChargeThreshold ____");
 	my $Customer = $self->customer;
 
 	my $OverThreshold = 0;
 
-	# Check for flat threshold amount
-	#if ( my $Threshold = $Customer->chargediffflat') )
-	#	{
-	#	my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
+	my $shipment = $c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} });
 
-	#	if ( $difference > $Threshold )
-	#		{
-	#		$OverThreshold = 1;
-	#		}
-	#	}
+	# Check for flat threshold amount
+	if ( my $Threshold = $Customer->get_contact_data_value('chargediffflat') )
+		{
+		my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
+
+		if ( $difference > $Threshold )
+			{
+			$OverThreshold = 1;
+			}
+
+		$c->log->debug("Threshold : " . $Threshold);
+		$c->log->debug("OverThreshold : " . $OverThreshold);
+		}
 
 	# Check for percentage threshold amount (but there's no point if we're already over from the flat)
-	#if (!$OverThreshold and (my $Threshold = $Customer->chargediffpct))
-	#	{
-	#	my $DollarAmt = $params->{'defaultcsidtotalcost'} * ($Threshold / 100);
-	#	my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
+	if (!$OverThreshold and (my $Threshold = $Customer->get_contact_data_value('chargediffpct')))
+		{
+		my $DollarAmt = $params->{'defaultcsidtotalcost'} * ($Threshold / 100);
+		my $difference = ($params->{'totalshipmentcharges'} - $params->{'defaultcsidtotalcost'});
 
-	#	if ( $difference > $DollarAmt and $difference > $self->{'customer'}->GetCustomerValue('chargediffmin') )
-	#		{
-	#		$OverThreshold = 1;
-	#		}
-	#	}
+		$c->log->debug("Threshold : " . $Threshold);
+		$c->log->debug("DollarAmt : " . $DollarAmt);
+		$c->log->debug("difference : " . $difference);
+		$c->log->debug("chargediffmin : " . $Customer->get_contact_data_value('chargediffmin'));
+
+		if ( $difference > $DollarAmt and $difference > $Customer->get_contact_data_value('chargediffmin') )
+			{
+			$OverThreshold = 1;
+			}
+
+		$c->log->debug("OverThreshold : " . $OverThreshold);
+		}
 
 	if ($OverThreshold and $Customer->losspreventemail)
 		{
-		$self->SendChargeThresholdEmail($Customer->losspreventemail,$params);
+		$self->SendChargeThresholdEmail();
 		}
 	}
 
@@ -1621,8 +1647,9 @@ sub ProcessFCOverride :Private
 	elsif ($params->{'aggregateweight'} == 0)
 		{
 		my $TotalQuantity = 0;
-		foreach my $Quantity (@Quantities) { $TotalQuantity += $Quantity };
-		my $PackageRatio = 1/$TotalQuantity;
+		$TotalQuantity += $_ foreach @Quantities;
+
+		my $PackageRatio = 1 / $TotalQuantity if $TotalQuantity;
 
 		my $PackageCost = sprintf("%02.2f",($params->{'freightcharge'} * $PackageRatio));
 		my $PackageFSCCost = sprintf("%02.2f",($params->{'fuelsurcharge'} * $PackageRatio));
@@ -1673,6 +1700,32 @@ sub BuildDryIceWt :Private
 	return ($DryIceWt,$DryIceWtList);
 	}
 
+sub NoteCSIDOverride
+	{
+	my $self = shift;
+	my $Shipment = shift;
+
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my ($OrigCarrier,$OrigService) = $self->API->get_carrier_service_name($params->{'defaultcsid'});
+	my ($Carrier,$Service) = $self->API->get_carrier_service_name($params->{'customerserviceid'});
+
+	my $defaultcost = $params->{'defaultcsidtotalcost'};
+
+	my $noteData = {
+		ownerid => $Shipment->shipmentid,
+		note => 'Default Carrier/Service Changed From ' . $OrigCarrier . '/' . $OrigService . ' to ' . $Carrier . '/' . $Service . ' by ' . $self->contact->username . ':$' . $defaultcost,
+		contactid => $self->contact->contactid,
+		notestypeid => '1000',
+		datehappened => IntelliShip::DateUtils->get_timestamp_with_time_zone
+		};
+
+	my $Notes = $c->model('MyDBI::Note')->new($noteData);
+	$Notes->notesid($self->get_token_id);
+	$Notes->insert;
+	}
+
 sub SHIP_ORDER :Private
 	{
 	my $self = shift;
@@ -1700,11 +1753,6 @@ sub SHIP_ORDER :Private
 		}
 
 	my $Customer = $self->customer;
-
-	if ($params->{'defaultcsid'} and $params->{'defaultcsidtotalcost'} > 0 and $params->{'defaultcsid'} ne $params->{'customerserviceid'})
-		{
-		$self->CheckChargeThreshold;
-		}
 
 	## Create or Update the thirdpartyacct table with address info if this is 3rd party
 	if ($CO->freightcharges == 2) # Third Party
@@ -1840,6 +1888,7 @@ sub SHIP_ORDER :Private
 
 					$ShipmentCharge->insert;
 					push(@$laundryArr, $ShipmentCharge);
+					$params->{'totalshipmentcharges'} += $chargeamount;
 					}
 				}
 
@@ -1855,6 +1904,11 @@ sub SHIP_ORDER :Private
 			$params->{'dimweight'} = $CO->total_dimweight;
 			$params->{'quantity'} = $CO->total_quantity;
 			}
+		}
+
+	if ($params->{'defaultcsid'} && $params->{'defaultcsidtotalcost'} > 0 && $params->{'defaultcsid'} ne $params->{'customerserviceid'})
+		{
+		$self->CheckChargeThreshold;
 		}
 
 	# Kludge to get dry ice weight list built up for propagation
@@ -1998,19 +2052,19 @@ sub SHIP_ORDER :Private
 
 	$ShipmentData->{'freightinsurance'} = $SaveFreightInsurance;
 
-	# Process good shipment
+	## Process good shipment
 
-	# If the customer has an email address, check to see if the shipment address is different
-	# from the co address (and send an email, if it is)
+	## If the customer has an email address, check to see if the shipment address is different
+	## from the co address (and send an email, if it is)
 	if ($Customer->losspreventemail)
 		{
 		$self->CheckIfShipmentModified($ShipmentData);
 		}
 
-	# If the csid was changed from the defaultcsid log the activity in the notes table
-	if ($params->{'defaultcsid'} > 0 and $params->{'customerserviceid'} > 0 and $params->{'defaultcsid'} != $params->{'customerserviceid'})
+	## If the CSID was changed from the defaultcsid log the activity in the notes table
+	if ($params->{'defaultcsid'} && $params->{'defaultcsid'} ne $params->{'customerserviceid'})
 		{
-		$self->NoteCSIDOverride($params);
+		$self->NoteCSIDOverride($Shipment);
 		}
 
 	#Now that we have everything pushed into our params...
@@ -2136,7 +2190,7 @@ sub generate_label :Private
 		}
 	}
 
-sub setup_label_to_print
+sub setup_label_to_print :Private
 	{
 	my $self = shift;
 	my $c = $self->context;
@@ -2156,6 +2210,46 @@ sub setup_label_to_print
 		}
 
 	$c->stash(template => "templates/customer/order-label.tt");
+	}
+
+sub export_label :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my @shipmentids = split('_',$params->{'shipmentid'});
+
+	my $file = $params->{'shipmentid'} . '.zip';
+	my $file_path = '/tmp/' . $file;
+
+	my $zipCommand = 'zip -j ' . $file_path;
+
+	foreach my $shipmentid (@shipmentids)
+		{
+		$zipCommand .= ' ' . IntelliShip::MyConfig->label_file_directory . '/' . $shipmentid . '.jpg';
+		}
+
+	$c->log->debug("zipCommand: " . $zipCommand);
+	system($zipCommand);
+
+	my $FH = new IO::File;
+
+	unless (open($FH, $file_path))
+		{
+		return 1;
+		}
+
+	my $BUFFER;
+	$BUFFER .= $_ while (<$FH>);
+
+	close($FH);
+
+	my $content_type = (split(/\./, $file))[-1];
+
+	$c->res->header('Content-disposition' => "attachment; filename=" . $file);
+	$c->res->content_type('text/' . $content_type);
+	$c->res->body($BUFFER);
 	}
 
 sub setup_label
@@ -2302,6 +2396,8 @@ sub SendShipNotification :Private
 	{
 	my $self = shift;
 	my $Shipment = shift;
+	my $email_from = shift;
+	my $email_to = shift;
 
 	return unless $self->contact->get_contact_data_value('aosnotifications');
 
@@ -2309,36 +2405,42 @@ sub SendShipNotification :Private
 
 	my $c = $self->context;
 	my $Customer = $self->customer;
-	my $Contact=$self->contact;
+	my $Contact = $self->contact;
 	my $Email = IntelliShip::Email->new;
 
 	$Email->content_type('text/html');
 	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 	$Email->from_name('IntelliShip2');
-
-	$Email->add_to($Shipment->shipmentnotification) if $Shipment->shipmentnotification;
-	$Email->add_to($Shipment->deliverynotification) if $Shipment->deliverynotification;
-
-	#if ($Shipment->deliverynotification and $self->contact->get_contact_data_value('combineemail'))
-	#	{
-	#	$Email->add_to($Shipment->deliverynotification);
-	#	}
-
-	#$Email->add_line('<br>');
-	#$Email->add_line('<p>Shipment notification</p>');
-	#$Email->add_line('<br>');
+	my $email;
+	$email_to = $Shipment->shipmentnotification unless $email_to;
+	foreach $email (split(',',$email_to))
+		{
+		$email =~ s/^\s+|\s+$//g;
+		$Email->add_to($email) if $email;
+		}
+	$email_from = $Shipment->deliverynotification unless $email_from;
+	if ($Contact->get_contact_data_value('combineemail') && $email_from)
+		{
+		foreach $email (split(',',$email_from))
+			{
+			$email =~ s/^\s+|\s+$//g;
+			$Email->add_to($email) if $email;
+			}
+		}
 
 	$self->set_header_section;
 
 	$c->stash->{SHIPMENT_ID} = $Shipment->shipmentid;
 	$c->stash->{COID} = $Shipment->coid;
 	$c->stash->{packinglist} = $Contact->default_packing_list;
+
 	my $LabelImageFile = IntelliShip::MyConfig->label_file_directory . '/' . $Shipment->shipmentid . '.jpg';
 	if (-e $LabelImageFile)
 		{
 		$c->stash->{LABEL_IMG} = 1;
 		$Email->attach($LabelImageFile);
 		}
+
 	my $shipment_information_hash = $self->GetNotificationShipments($Shipment);
 	$c->stash->{notification_list} = $shipment_information_hash;
 
@@ -2392,6 +2494,8 @@ sub VOID_SHIPMENT :Private
 	$Handler->token($self->get_login_token);
 	$Handler->context($self->context);
 	$Handler->contact($self->contact);
+	$Handler->service($Service);
+	$Handler->customerservice($CustomerService);
 	$Handler->carrier($carrier);
 	$Handler->CO($CO);
 	$Handler->SHIPMENT($Shipment);
@@ -3466,7 +3570,10 @@ sub generate_packing_list
 			{
 			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
 			$c->stash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
-			$self->setup_label_to_print ;
+			my $original_param_shipmentid = $params->{'shipmentid'};
+			$params->{'shipmentid'} = $shipmentid;
+			$self->setup_label_to_print;
+			$params->{'shipmentid'} = $original_param_shipmentid;
 			}
 
 		my $template = 'order-packing-list-' . $list_type . '.tt';
@@ -3723,6 +3830,7 @@ sub generate_bill_of_lading
 				$dataHash->{'billingcity'}     = uc $BillingAddressInfo->{'city'};
 				$dataHash->{'billingstate'}    = uc $BillingAddressInfo->{'state'};
 				$dataHash->{'billingzip'}      = uc $BillingAddressInfo->{'zip'};
+				$dataHash->{'billingcountry'}  = uc $BillingAddressInfo->{'country'};
 				}
 
 			my $CSRef = $self->API->get_hashref('CUSTOMERSERVICE',$Shipment->customerserviceid);
@@ -4202,6 +4310,37 @@ sub send_pickup_request
 			});
 
 	$c->log->debug("....Response: " . $Response);
+	}
+
+sub validate_address
+	{
+	my $self = shift;
+	my $Address = shift;
+
+	my $c = $self->context;
+	my $CO = $self->get_order;
+
+	my $Handler = IntelliShip::Carrier::Handler->new;
+	$Handler->request_type(&REQUEST_TYPE_ADDRESS_VALIDATE);
+	$Handler->token($self->get_login_token);
+	$Handler->context($self->context);
+	$Handler->carrier('UPS');
+	$Handler->destination_address($CO->destination_address);
+
+	my $Response = $Handler->process_request({
+			NO_TOKEN_OPTION => 1
+			});
+	
+	# Process errors
+	unless ($Response->is_success)
+		{
+		$c->log->debug("ADDRESS VALIDATION FAILED: " . $Response->message);
+		$c->log->debug("RESPONSE CODE: " . $Response->response_code);
+		$self->add_error($Response->message);
+		return 0;
+		}
+
+	return $Response;
 	}
 
 sub create_return_shipment

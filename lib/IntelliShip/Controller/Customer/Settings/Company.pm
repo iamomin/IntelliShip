@@ -155,14 +155,14 @@ sub setup :Local
 	$c->stash->{weighttype_loop}         = [{ name => 'LB', value => 'LBS'},{ name => 'KG', value => 'KGS'}];
 	$c->stash->{countrylist_loop}        = $self->get_select_list('COUNTRY');
 	$c->stash->{statelist_loop}          = $self->get_select_list('US_STATES');
-	$c->stash->{customerlist_loop}       = $self->get_select_list('CUSTOMER');
+	$c->stash->{customerlist_loop}       = $self->get_select_list('SOP');
 	$c->stash->{boltype_loop}            = $self->get_select_list('BOL_TYPE');
 	$c->stash->{boldetail_loop}          = $self->get_select_list('BOL_DETAIL');
 	$c->stash->{capability_loop}         = $self->get_select_list('CAPABILITY_LIST');
 	$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
 	$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
 	$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
-	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE');
+	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE',{ customerid => $Customer->customerid });
 	$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
 	$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
 	$c->stash->{companytype_loop}        = $self->get_select_list('COMPANY_TYPE');
@@ -178,6 +178,7 @@ sub setup :Local
 	$c->stash->{labeltype_loop}          = $self->get_select_list('LABEL_TYPE');
 	$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 	$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
+	$c->stash->{addressvalidation_loop}  = $self->get_select_list('ADDRESS_VALIDATION_LIST');
 
 	$c->stash->{CURRENT_COMPANY} = ($params->{'customerid'} eq $self->customer->customerid);
 
@@ -539,7 +540,7 @@ sub validate_contact_username :Private
 	my $params = $c->req->params;
 
 	my $WHERE = {
-		contactid => { '!=' => $params->{'contactid'}},
+		#contactid => { '!=' => $params->{'contactid'}},
 		username => $params->{'username'}
 		};
 

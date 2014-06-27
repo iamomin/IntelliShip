@@ -1,8 +1,9 @@
 package IntelliShip::Carrier::Driver::FedEx::VoidShipment;
 
 use Moose;
-use Data::Dumper;
 use Net::Telnet;
+use Data::Dumper;
+use LWP::UserAgent;
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
 
@@ -88,6 +89,7 @@ sub process_request
 		}
 	else
 		{
+		$self->cancel_pickup_request if $Shipment->has_pickup_request;
 		$self->void_shipment;
 		}
 
@@ -137,6 +139,115 @@ sub ProcessRemoteRequest
 	{
 	my $self = shift;
 	my ($ShipmentRef,$Action) = @_;
+	}
+
+sub cancel_pickup_request
+	{
+	my $self = shift;
+
+	my $c = $self->context;
+	my $Shipment = $self->SHIPMENT;
+
+	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
+
+	unless ($Note)
+		{
+		$self->add_error("FedEx Cancel pickup request: Confirmation number not found.");
+		return undef;
+		}
+
+	my $ConfirmationNumber = (split(/\ /,$Note->note))[-1];
+	my $location = (split(/\ /,$Note->note))[-3];
+
+	$self->log("... Cancel Pickup REQUEST Location" . $location . " ConfirmationNumber: " . $ConfirmationNumber);
+
+	my $CustomerService = $self->customerservice;
+
+	my $CarrierCode = ($Shipment->service =~ /Ground/i ? 'FDXE' : 'FDXG');
+	my $ScheduledDate = substr($Shipment->datepacked,0,10);
+
+	my $XML_request = <<END;
+	<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:q0="http://fedex.com/ws/pickup/v6">
+	<SOAP-ENV:Body>
+		<q0:CancelPickupRequest>
+			<q0:WebAuthenticationDetail>
+				<q0:UserCredential>
+					<q0:Key>I4nV8IlyPI3TkOA8</q0:Key>
+					<q0:Password>yZatPfw3ZNBe7ucOGjKqIzevt</q0:Password>
+				</q0:UserCredential>
+			</q0:WebAuthenticationDetail>
+			<q0:ClientDetail>
+				<q0:AccountNumber>$CustomerService->{'webaccount'}</q0:AccountNumber>
+				<q0:MeterNumber>$CustomerService->{'meternumber'}</q0:MeterNumber>
+			</q0:ClientDetail>
+			<q0:Version>
+				<q0:ServiceId>disp</q0:ServiceId>
+				<q0:Major>6</q0:Major>
+				<q0:Intermediate>0</q0:Intermediate>
+				<q0:Minor>0</q0:Minor>
+			</q0:Version>
+			<q0:CarrierCode>$CarrierCode</q0:CarrierCode>
+			<q0:PickupConfirmationNumber>$ConfirmationNumber</q0:PickupConfirmationNumber>
+			<q0:ScheduledDate>$ScheduledDate</q0:ScheduledDate>
+			<q0:Location>$location</q0:Location>
+			<q0:Remarks>TEST REMARKS</q0:Remarks>
+			<q0:Reason>NO LONGER NEEDED</q0:Reason>
+		</q0:CancelPickupRequest>
+	</SOAP-ENV:Body>
+	</SOAP-ENV:Envelope>
+END
+
+	$self->log("... Cancel Pickup REQUEST: " . $XML_request);
+
+	$XML_request =~ s/\n+//g;
+	$XML_request =~ s/\t+//g;
+
+	my $URL = 'https://ws.fedex.com:443/web-services';
+
+	my $UA = LWP::UserAgent->new;
+	my $Response = $UA->post($URL, Content_Type => 'text/xml', Content => $XML_request);
+
+	unless ($Response)
+		{
+		$self->add_error("FedEx Cancel pickup request: Unable to access FedEx site");
+		return undef;
+		}
+
+	unless ($Response->is_success)
+		{
+		$self->add_error("FedEx.Cancel pickup request. Error: " . $Response->status_line);
+		return undef;
+		}
+
+	$self->log("Cancel pickup response: " . $Response->content);
+
+	my $responseDS = IntelliShip::Utils->parse_XML($Response->content);
+
+	$self->log("responseDS: " . Dumper $responseDS);
+
+	my $NotificationRef = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CancelPickupReply'}{'v6:Notifications'};
+
+	my ($Message,$ResponseCode) = ("","");
+
+	if (ref $NotificationRef eq 'ARRAY')
+		{
+		foreach my $msg (@$NotificationRef)
+			{
+			$Message      = $Message . "<br>" . $msg->{'v6:Message'};
+			$ResponseCode = $ResponseCode  . "<br>" . $msg->{'v6:Code'};
+			}
+
+		$Message      = $Message . "<br>";
+		$ResponseCode = $ResponseCode  . "<br>";
+		}
+	else
+		{
+		$Message      = $NotificationRef->{'v6:Message'};
+		$ResponseCode = $NotificationRef->{'v6:Code'};
+		}
+
+	#$self->SendCancelPickupNotification($ResponseCode,$Message,$ConfirmationNumber);
+	$self->SendDispatchNotification('Cancellation');
 	}
 
 __PACKAGE__->meta()->make_immutable();

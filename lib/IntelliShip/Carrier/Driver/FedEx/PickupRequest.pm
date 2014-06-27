@@ -60,7 +60,7 @@ sub process_request
 	#	'FES' => 'FXSP',
 	#	};
 
-	my ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber,$next_day_pickup_reqeust);
+	my ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber,$next_day_pickup_reqeust,$Location);
 
 	if ($Shipment->service =~ /Ground/i)
 		{
@@ -88,14 +88,17 @@ sub process_request
 
 		$PickupRequest->{ReadyTimestamp} = $datepacked;
 
-		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber) = $self->send_pickup_dispatch_reqeust($PickupRequest);
+		($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber,$Location) = $self->send_pickup_dispatch_reqeust($PickupRequest);
 		}
+
+	$self->note_confirmation_number($Shipment,$ConfirmationNumber,$Location) if $ConfirmationNumber;
 
 	$CustomerTransactionId = $PickupRequest->{CustomerTransactionId} unless $CustomerTransactionId;
 
 	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
 
-	$self->SendPickUpEmail($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
+	$self->SendDispatchNotification('Pickup');
+	#$self->SendPickUpNotification($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
 	}
 
 sub send_same_day_pickup_request
@@ -249,9 +252,9 @@ sub send_pickup_dispatch_reqeust
 		}
 
 	my $CustomerTransactionId = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'ns1:TransactionDetail'}{'ns1:CustomerTransactionId'}. "<br>";
-	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'}. "<br>";
-
-	return ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber);
+	my $ConfirmationNumber    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:PickupConfirmationNumber'}{'content'};
+	my $Location    = $responseDS->{'soapenv:Envelope'}{'soapenv:Body'}{'v6:CreatePickupReply'}{'v6:Location'}{'content'};
+	return ($ResponseCode,$Message,$CustomerTransactionId,$ConfirmationNumber,$Location);
 	}
 
 sub get_XML_v6

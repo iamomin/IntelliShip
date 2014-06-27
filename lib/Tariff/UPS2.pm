@@ -275,8 +275,72 @@ sub GetTransit
 
 	if ( $ShipmentReturn->{Response}->{ResponseStatusDescription} =~ /Success/i )
 		{
-		$cost = $ShipmentReturn->{RatedShipment}->{TotalCharges}->{MonetaryValue};
-		$Days = $1 if $ShipmentReturn->{'RatedShipment'}->{'GuaranteedDaysToDelivery'} =~ m/(\d+)\-Day/i;
+		my $RatedShipment = $ShipmentReturn->{RatedShipment};
+		$cost = $RatedShipment->{TotalCharges}->{MonetaryValue};
+		$cost = $RatedShipment->{NegotiatedRates}->{NetSummaryCharges}->{GrandTotal}->{MonetaryValue} if $RatedShipment->{NegotiatedRates};
+		$Days = $1 if $RatedShipment->{GuaranteedDaysToDelivery} =~ m/(\d+)/;
+		warn "######### GuaranteedDaysToDelivery: $Days" ;
+		if(!$Days || $Days eq '' || $Days eq '{}')
+		{
+			my $TransitXml = "<?xml version=\"1.0\" ?>
+					<AccessRequest xml:lang='en-US'>
+						<AccessLicenseNumber>7CD03B13C7D39706</AccessLicenseNumber>
+						<UserId>$UserId</UserId>
+						<Password>$Password</Password>
+					</AccessRequest>
+					<?xml version=\"1.0\" ?>
+					<TimeInTransitRequest xml:lang='en-US'>
+						<Request>
+							<TransactionReference>
+								<CustomerContext>TNT_D Origin Country Code</CustomerContext>
+								<XpciVersion>1.0002</XpciVersion>
+							</TransactionReference>
+							<RequestAction>TimeInTransit</RequestAction>
+						</Request>
+						<TransitFrom>
+							<AddressArtifactFormat>
+								<PoliticalDivision2>$fromcity</PoliticalDivision2>
+								<PoliticalDivision1>$fromstate</PoliticalDivision1>
+								<CountryCode>$fromcountry</CountryCode>
+								<PostcodePrimaryLow>$oazip</PostcodePrimaryLow>
+							</AddressArtifactFormat>
+						</TransitFrom>
+						<TransitTo>
+							<AddressArtifactFormat>
+								<PoliticalDivision2>$tocity</PoliticalDivision2>
+								<PoliticalDivision1>$tostate</PoliticalDivision1>
+								<CountryCode>$tocountry</CountryCode>
+								<PostcodePrimaryLow>$dazip</PostcodePrimaryLow>
+							</AddressArtifactFormat>
+						</TransitTo>
+						<ShipmentWeight>
+							<UnitOfMeasurement>
+								<Code>LBS</Code>
+								<Description>Pounds</Description>
+							</UnitOfMeasurement>
+							<Weight>$weight</Weight>
+						</ShipmentWeight>						
+						<PickupDate>$dateshipped</PickupDate>
+						<DocumentsOnlyIndicator />
+					</TimeInTransitRequest>";
+			
+			#warn "########## TransitXml: $TransitXml";
+			
+			my $TransitReturn = $self->ProcessTransitRequest($TransitXml);			
+			#warn "########### TRANSIT : ". Dumper($TransitReturn); 
+			my $ServiceSummary = $TransitReturn->{TransitResponse}->{ServiceSummary};			
+			#warn "########### \$ServiceSummary: " . Dumper($ServiceSummary);
+			
+			foreach my $summary (@$ServiceSummary)
+			{
+				#warn "############ \$servicename = $servicename";				
+				if($summary->{Service}->{Description} eq 'UPS '.$servicename){
+					$Days = $summary->{EstimatedArrival}->{BusinessTransitDays};
+					warn "########## Estimated Days: $Days";
+				}
+			}
+		}
+			
 		}
 	else
 		{
@@ -293,7 +357,7 @@ sub ProcessLocalRequest
 	my $self = shift;
 	my $XML_request = shift;
 
-	warn "\n XML_request: " . $XML_request;
+	#warn "\n XML_request: " . $XML_request;
 
 	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/Rate' : 'https://wwwcie.ups.com/ups.app/xml/Rate';
 
@@ -312,12 +376,44 @@ sub ProcessLocalRequest
 
 	my $parser = new XML::Simple;
 	my $XML_response = $response->content;
-	warn "XML_response: " . $XML_response;
+	#warn "XML_response: " . $XML_response;
 	my $responseDS= $parser->XMLin($XML_response);
 
 	#warn "Response DS: " . Dumper $responseDS;
 	return $responseDS;
 	}
+	
+sub ProcessTransitRequest
+	{
+	my $self = shift;
+	my $XML_request = shift;
+
+	#warn "\n XML_request: " . $XML_request;
+
+	my $url = IntelliShip::MyConfig->getDomain eq 'PRODUCTION' ? 'https://onlinetools.ups.com/ups.app/xml/TimeInTransit' : 'https://wwwcie.ups.com/ups.app/xml/TimeInTransit';
+
+	#Send HTTP Request
+	my $browser = LWP::UserAgent->new();
+	my $req = HTTP::Request->new(POST => $url);
+	$req->content("$XML_request");
+
+	#Get HTTP Response Status
+	my $response = $browser->request($req);
+	unless ($response)
+		{
+		warn "USPS: Unable to access UPS site";
+		return;
+		}
+
+	my $parser = new XML::Simple;
+	my $XML_response = $response->content;
+	#warn "XML_response: " . $XML_response;
+	my $responseDS= $parser->XMLin($XML_response);
+
+	#warn "Response DS: " . Dumper $responseDS;
+	return $responseDS;
+	}
+
 
 1
 

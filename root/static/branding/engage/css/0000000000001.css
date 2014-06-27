@@ -98,7 +98,7 @@ table.app input{
     font-size: 12px;
     height: 25px;
     padding: 4px 7px;
-    width: 245px;
+    width: 200px;
     display: block;
     float: left;
     clear: none;
@@ -338,7 +338,7 @@ td.threecolumns{
     float: left;
 }
 table.package{
-    margin-bottom:40px;
+    margin-bottom: 10px;
 }
 #frm_order h1 table #ordernumber {
     height: 21px;

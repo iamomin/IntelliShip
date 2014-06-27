@@ -65,7 +65,7 @@
 			</tr>
 		</table>
 	</div>
-	<div id="myShipments" style="height: 300px; overflow-y: scroll;">
+	<div id="myShipments" style="max-height: 300px; overflow-y: scroll;">
 		<table id="uploaded-files" style="margin-top: 0;">
 			[% FOREACH file IN directory_file_list %]
 			<tr><td width=50%>[% file.name %]</td><td width=30%>[% file.datecreated %]</td><td width=20%>[% file.size %]</td></tr>

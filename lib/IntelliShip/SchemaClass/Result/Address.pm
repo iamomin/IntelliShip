@@ -102,6 +102,11 @@ __PACKAGE__->table("address");
   is_nullable: 1
   size: 2
 
+=head2 lastvalidatedon
+
+  data_type: 'timestamp with time zone'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -125,6 +130,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 1, size => 35 },
   "country",
   { data_type => "char", is_nullable => 1, size => 2 },
+  "lastvalidatedon",
+  { data_type => "timestamp with time zone", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -166,6 +173,12 @@ sub update
 	$self->set_address_code_details;
 	$self->next::method(@args);
 	return $self;
+	}
+
+sub is_valid
+	{
+	my $self = shift;
+	return ($self->address1 && $self->city && $self->state && $self->zip & $self->country);
 	}
 
 sub set_address_code_details

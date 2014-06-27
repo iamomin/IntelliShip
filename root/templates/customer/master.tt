@@ -100,8 +100,13 @@
 							<ul>
 								<li><a href="/customer/settings">ACCOUNT SETTINGS</a></li>
 								<li><hr></li>
-								<li><a href="/customer/help">HELP</a></li>
+								<li><a href=[% IF contactObj.customerid == '8ETKCWZXZC0UY' %]"https://converge.motorolasolutions.com/groups/global-procurement-intelliship-support-group
+"[% ELSE %]"/customer/help"[% END %]>HELP</a></li>
 								<li><hr></li>
+								[% IF HALO_URL %]
+								<li><a href="http://[% HALO_URL %]">HALO</a></li>
+								<li><hr></li>
+								[% END %]
 								<li><a href="/customer/logout">LOG OFF</a></li>
 							</ul>
 						</li>
@@ -180,7 +185,8 @@
 					<li><a href="javascript:void(0);" onclick="ShowLegal();">Legal</a></li>
 				</ul>
 				<ul class="links">
-					<li><a href="/customer/help" id="help"><img src="/static/branding/engage/images/footer/help.png"/><span>HELP</span></a></li>
+					<li><a href=[% IF contactObj.customerid == '8ETKCWZXZC0UY' %]"https://converge.motorolasolutions.com/groups/global-procurement-intelliship-support-group
+"[% ELSE %]"/customer/help"[% END %] id="help"><img src="/static/branding/engage/images/footer/help.png"/><span>HELP</span></a></li>
 					<li><a href="/customer/logout" id="logout"><img src="/static/branding/engage/images/footer/signout.png"/><span>SIGN OUT</span></a></li>
 				</ul>
 			</div>
