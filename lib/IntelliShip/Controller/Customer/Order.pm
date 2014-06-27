@@ -4333,13 +4333,13 @@ sub SendDispatchNotification
 	my $subject;
 	if ( $Type eq 'CANCEL' )
 		{
-		$notetypeid ='1600'
-		$subject = "ALERT:  Shipment Dispatched " .$Type . "(" $Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
+		$notetypeid ='1600';
+		$subject = "ALERT:  Shipment Dispatched " .$Type ."(".$Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
 		}
 	else
 		{
 		$notetypeid = '1500';
-		$subject = "ALERT:  Shipment Dispatched (" $Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
+		$subject = "ALERT:  Shipment Dispatched (". $Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
 		}
 
 	my $noteData = {
