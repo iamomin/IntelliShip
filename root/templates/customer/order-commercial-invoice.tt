@@ -196,7 +196,7 @@
 						<table cellpadding=0 cellspacing=0 width="100%">
 							<tr>
 								<td><![endif]>
-									<img id="logo" src="/static/branding/[% branding_id %]/images/header/report-logo.png" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top>
+									<img id="logo" src="[% logo_path %]" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top style="max-height: 50px; max-width: 450px;">
 									<![if !mso]></td>
 							</tr>
 						</table>

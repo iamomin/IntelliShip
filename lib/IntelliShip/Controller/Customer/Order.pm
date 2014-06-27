@@ -4259,6 +4259,11 @@ sub generate_commercial_invoice
 	$c->stash($dataHash);
 	$self->get_branding_id;
 
+	my $logo_path = '/static/branding/engage/images/header/' . $Customer->username . '-dark-logo.png';
+	my $image_file_path = IntelliShip::MyConfig->application_root . '/root'. $logo_path;
+	$logo_path = '/static/branding/engage/images/header/report-logo.png' unless -e $image_file_path;
+	$c->stash->{logo_path} = $logo_path;
+	
 	## Render Commercial Invoice HTML
 	my $ComInvHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-commercial-invoice.tt" ]);
 
