@@ -2552,7 +2552,7 @@ sub VOID_SHIPMENT :Private
 	if ($ToEmail)
 		{
 		$self->SendShipmentVoidEmail($Shipment);
-		$self->SendDispatchNotification('CANCEL');
+		$self->SendDispatchNotification($Shipment,'CANCEL');
 		}
 
 	## Add note to notes table
