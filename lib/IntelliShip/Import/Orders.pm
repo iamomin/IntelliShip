@@ -130,7 +130,6 @@ sub import
 		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
 
 		my $import_base_file = fileparse($file);
-
 		unless (move($file,"$imported_path/$import_base_file"))
 			{
 			print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
@@ -942,7 +941,7 @@ sub ImportOrders
 					$Error_File = "unknowncustomer_".$Error_File;
 					#open(OUT, ">" . $config->{BASE_PATH} . "/var/processing/$Error_File") or warn "unable to open error file";
 					}
-				$self->log("___ Unknown line: $Line");
+				$self->log("___ 945 Unknown line: $Line");
 				#print OUT "$Line\n\n";
 				#close (OUT);
 				}
@@ -980,7 +979,7 @@ sub ImportProducts
 
 	unless (open($FILE, $import_file))
 		{
-		print STDERR "\n... Error: " . $!;
+		$self->log("... Error: " . $!);
 		return;
 		}
 
@@ -1324,7 +1323,7 @@ sub ImportProducts
 
 					#open(OUT,">$config->{BASE_PATH}/var/processing/$Error_File") or warn "unable to open error file";
 					}
-				print STDERR "\n___ Unknown line: $Line\n\n";
+				$self->log("___ 1327 Unknown line: $Line\n\n");
 				#print OUT "$Line\n\n";
 				}
 			}
@@ -1332,7 +1331,7 @@ sub ImportProducts
 
 	if ( $UnknownCustCount > 0 )
 		{
-		print STDERR"\n  ###UnknownCustCount ".$UnknownCustCount;
+		$self->log("###UnknownCustCount ".$UnknownCustCount);
 		#close (OUT);
 		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
 		##   or &TraceBack("Could not move $Error_File: $!");
@@ -1378,46 +1377,11 @@ sub EmailImportFailures
 		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
 
 		if ($Email->send)
-		{
-		$self->context->log->debug("import failure order notification email successfully sent to " . join(',',@{$Email->to}));
+			{
+			$self->context->log->debug("import failure order notification email successfully sent to " . join(',',@{$Email->to}));
+			}
 		}
 	}
-	#foreach my $customerid (keys(%$ImportFailures))
-	#	{
-	#	my $Display = new DISPLAY($TEMPLATE_DIR);
-	#
-	#	my ($Day,$Month,$Year,$Hour,$Minute) = (localtime)[3,4,5,2,1];
-	#	$Month = $Month + 1;
-	#	$Year = $Year + 1900;
-	#	if ( length($Minute) == 1 ) { $Minute = "0".$Minute; }
-	#	my $Timestamp = $Month."/".$Day."/".$Year." ".$Hour.":".$Minute;
-	#
-	#	my $Customer = new CUSTOMER($DBRef->{'aos'}, $Customer);
-	#	$Customer->Load($customerid);
-	#	my $CustomerName = $Customer->GetValueHashRef()->{'customername'};
-	#
-	#	my $toemail;
-	#	if ( $Customer->GetValueHashRef()->{'email'} )
-	#		{
-	#		$toemail = $Customer->GetValueHashRef()->{'email'};
-	#		}
-	#
-	#	my $fromemail = "intelliship\@intelliship.$config->{BASE_DOMAIN}";
-	#	my $fromname = 'NOC';
-	#	my $subject = "ALERT: " . $CustomerName . " " . $OrderTypeRef->{'ordertype'} ." Import Failures "  . "(".$Timestamp.", ".$filename.")";
-	#	my $cc = 'noc@engagetechnology.com';
-	#
-	#	my $BodyHash = {};
-	#	$BodyHash->{'failures'} = $ImportFailures->{$customerid};
-	#	$BodyHash->{'ordertype'} = $OrderTypeRef->{'ordertype'};
-	#	$BodyHash->{'ordertype_lc'} = $OrderTypeRef->{'ordertype_lc'};
-	#	#warn $BodyHash->{'failures'};
-	#	my $body = $Display->TranslateTemplate('import_failures.email', $BodyHash);
-	#
-	#	#SendFileAsEmailAttachment($fromemail,$toemail,$cc,undef,$subject,$body,$filepath."/".$filename,$filename,$fromname);
-	#	}
-	}
-
 sub SaveAssessorial
 	{
 	my $self = shift;
@@ -1455,7 +1419,7 @@ sub AuthenticateContact
 
 	my $c = $self->context;
 
-	my ($ContactID, $CustomerID);
+	my ($ContactID, $CustomerID) = ('','');
 
 	$self->log("... Authenticate Contact, USERNAME: " . $Username);
 
@@ -1468,7 +1432,20 @@ sub AuthenticateContact
 	my $myDBI = $self->myDBI;
 	my $SQL;
 	## New contact user
-	if ($Username =~ /\//)
+	if ($Username =~ /\@/)
+		{
+		$SQL = "
+			SELECT
+				contactid, 
+				customerid
+			FROM
+				contact
+			WHERE
+				username = '$Username'
+				AND datedeactivated is null
+		";
+		}
+	elsif ($Username =~ /\//)
 		{
 		my ($Domain, $Contact) = $Username =~ m/^(.*)\/(.*)$/;
 
@@ -1501,7 +1478,7 @@ sub AuthenticateContact
 				AND c.datedeactivated is null
 		";
 		}
-	#print STDERR "\n... SQL: " . $SQL;
+	#$self->log("... SQL: " . $SQL);
 	my $STHC = $myDBI->select($SQL);
 
 	return ($ContactID,$CustomerID) unless $STHC->numrows;
@@ -1646,6 +1623,8 @@ sub printImports
 
 	my $c = $self->context;
 
+	my $authorized_user = ($self->contact->username =~ /\@/ ? $self->contact->username : $self->customer->username . "/" . $self->contact->username);
+
 	my $return1 = '';
 	my $return2 = '';
 	#Product Information Printing
@@ -1682,7 +1661,7 @@ sub printImports
 		{
 		$EquipName = '';
 		$EquipQtyName = '';
-		#$return1 = "sprint/user\t$fields->[0]\t\t\t\t\t\t\t\n";
+		#$return1 = $authorized_user . "\t$fields->[0]\t\t\t\t\t\t\t\n";
 		#print PRODFILE "$return1";
 		}
 	elsif ($EquipName ne '' && $EquipQtyName ne '')
@@ -1721,7 +1700,7 @@ sub printImports
 		for (my $k = 0; $k < @EquipArray2; $k++)
 			{
 			$EquipArray2[$k] =~  s/\s+$//;
-			$return1 = "sprint/user\t$fields->[0]\t$EquipQtyArray2[$k]\t\t\t\t$EquipArray2[$k]\t\t$EquipArray2[$k]\n";
+			$return1 = $authorized_user . "\t$fields->[0]\t$EquipQtyArray2[$k]\t\t\t\t$EquipArray2[$k]\t\t$EquipArray2[$k]\n";
 			print $PRODFILE "$return1";
 			}
 		}
@@ -1737,7 +1716,7 @@ sub printImports
 	my $State = '';
 	my $Zip = '';
 	my $EquipmentConf = '';
-	my $constant = 'sprint/user';
+	my $constant = $authorized_user;
 	my $MailStop = '';
 	my $endUserPhone = '';
 	my $CustomerWantDate = '';
