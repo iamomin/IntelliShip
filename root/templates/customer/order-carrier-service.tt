@@ -38,15 +38,15 @@
 					<td class="float-right bold-text">SHIP TO </th><td>[% toAddress.addressname %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td>[% customerAddress.address1 %][% IF customerAddress.address2 %], [% customerAddress.address2 %][% END %]</td>
+					<td>&nbsp;</td><td>[% fromAddress.address1 %][% IF fromAddress.address2 %], [% fromAddress.address2 %][% END %]</td>
 					<td>&nbsp;</td><td>[% toAddress.address1 %][% IF toAddress.address2 %], [% toAddress.address2 %][% END %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td>[% customerAddress.city %], [% customerAddress.state %], [% customerAddress.zip %]</td>
+					<td>&nbsp;</td><td>[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]</td>
 					<td>&nbsp;</td><td>[% toAddress.city %], [% toAddress.state %], [% toAddress.zip %]</td>
 				</tr>
 				<tr>
-					<td>&nbsp;</td><td>[% customerAddress.country_description %]</td>
+					<td>&nbsp;</td><td>[% fromAddress.country_description %]</td>
 					<td>&nbsp;</td><td>[% toAddress.country_description %]</td>
 				</tr>
 				</tr>
