@@ -768,7 +768,7 @@ sub confirm_notification_emails
 
 	$c->stash->{CONFIRM_NOTIFICATION_EMAILS} = 1;
 	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
-	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification && $self->contact->get_contact_data_value('combineemail');
+	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification;
 
 	return { HTML => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]) };
 	}
@@ -839,6 +839,7 @@ sub mark_shipment_as_printed
 		if ($Shipment->has_pickup_request)
 			{
 			$self->send_pickup_request($Shipment);
+			$self->SendDispatchNotification($Shipment,'PICKUP');
 			}
 
 		$c->log->debug("... Marked shipment $shipmentid as 'Printed'");

@@ -204,9 +204,9 @@ warn "dateshipped: $dateshipped";
 
 		my %ShipData = (
 			 1    => "$fileid",     # unique id sent and also returned in response
-			 9    => "$oazip",              # Sender Postal Code
+			 9    => "$oazip",      # Sender Postal Code
 			 20   => "$acctnum",    # Recipient Postal Code
-			 24	  => "$yyyymmdd",	# Ship Date
+			 24	  => "$yyyymmdd",   # Ship Date
 			 17   => "$dazip",      # Recipient Postal Code
 			 23   => "1",           # Pay Type
 			 50   => "$tocountry",  # Recipient Country Code
@@ -220,9 +220,9 @@ warn "dateshipped: $dateshipped";
 			 #DIMs
 			if ( $height )
 			{
-			$ShipData{'57'} = $height; #Required for heavyweight
-			$ShipData{'58'} = $width; #Required for heavyweight
-			$ShipData{'59'} = $length; #Required for heavyweight
+			$ShipData{'57'} = $height; # Required for heavyweight
+			$ShipData{'58'} = $width;  # Required for heavyweight
+			$ShipData{'59'} = $length; # Required for heavyweight
 			# round up for api acceptance
 			$ShipData{'57'} = ceil($ShipData{'57'});
 			$ShipData{'58'} = ceil($ShipData{'58'});
@@ -232,26 +232,25 @@ warn "dateshipped: $dateshipped";
 			if ( $tocountry ne 'US' )
 			{
 			# add intl fields
-			#$ShipData{'15'} = "Madrid";
-			#$ShipData{'18'} = "555-555-5555";
-			#$ShipData{'80'} = "$CgiRef->{'manufacturecountry'}";
-			#$ShipData{'80'} = "US";
-			#$ShipData{'70'} = "$CgiRef->{'dutypaytype'}";
-			#$ShipData{'70'} = "1";
-			#$ShipData{'70'} = "1";
+			#$ShipData{'15'}   = "Madrid";
+			#$ShipData{'18'}   = "555-555-5555";
+			#$ShipData{'80'}   = "$CgiRef->{'manufacturecountry'}";
+			#$ShipData{'80'}   = "US";
+			#$ShipData{'70'}   = "$CgiRef->{'dutypaytype'}";
+			#$ShipData{'70'}   = "1";
+			#$ShipData{'70'}   = "1";
 			#$ShipData{'1958'} = "Box";
 			#$ShipData{'74'}   = "IT";
 			#$ShipData{'73'}   = "$CgiRef->{'partiestotransaction'}";
 			#$ShipData{'79'}   = "$CgiRef->{'extcd'}";
-			#$ShipData{'413'} = "$CgiRef->{'naftaflag'}";
+			#$ShipData{'413'}  = "$CgiRef->{'naftaflag'}";
 			#$ShipData{'73'}   = "";
 			#$ShipData{'79'}   = "";
-			#$ShipData{'413'} = "";
+			#$ShipData{'413'}  = "";
 			#$ShipData{'1271'} = ""; # SLAC
 			#$ShipData{'1272'} = ""; # Booking number
-
-
 			}
+
 		 #3062  => "4", #ratetype
 		 #24	=> "$dateshipped", # Ship date
 			if ( $serviceid eq '0000000000004' )
@@ -353,17 +352,17 @@ warn "RECEIVE: ".$ShipmentReturn;
 					my $yyyy =  substr($dateshipped, 4,4);
 					my $fds = "$yyyy/$mm/$dd";
 					my $fds2 = "$yyyy-$mm-$dd";
-					
+
 					my %map = ( 'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
 								'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
 								'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12');
-					
+
 					$dd = substr($shipByDate, 0,2);
 					$mm = substr($shipByDate, 2,3);
 					$yyyy = "20".substr($shipByDate, 5,2);
-					
+
 					$mm = $map{$mm};
-					
+
 					my $fshipBy = "$yyyy-$mm-$dd";
 					warn "########## formatted dateshipped: $fds2 , formatted shipByDate: $fshipBy";
 					$Days = IntelliShip::DateUtils->get_business_days_between_two_dates($fds2, $fshipBy);
@@ -408,7 +407,8 @@ warn "RECEIVE: ".$ShipmentReturn;
 	  #$Request = '0,"025"1,"Rate All Services"15,"collierville"16,"tn"17,"38017"18,"9015551212"23,"1"50,"US"117,"US"498,""1090,"USD"1234,"1"1273,"01"1274,""1670,"100"3062,""99,""';
 		#warn $Request;
 
-		my $Host = '216.198.214.5';
+	  #my $Host = '216.198.214.5';
+	  my $Host = '192.168.1.5';
 	  my $Port = "2000";
 	  use Net::Telnet;
 	  my $telnet = Net::Telnet->new(Host=>$Host,Port=>$Port,Timeout=>"10");

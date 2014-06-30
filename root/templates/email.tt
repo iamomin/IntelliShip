@@ -14,7 +14,6 @@
 		<!-- BODY -->
 		<table class="body-wrap" border=0>
 			<tr>
-				<td></td>
 				<td class="container" bgcolor="#FFFFFF">
 
 					<div class="content">
@@ -31,9 +30,8 @@
 						</tr>
 					</table>
 					</div>
-
 				</td>
-				<td></td>
+
 			</tr>
 		</table><!-- /BODY -->
 		<!-- FOOTER -->

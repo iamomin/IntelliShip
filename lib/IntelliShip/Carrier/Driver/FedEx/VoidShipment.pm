@@ -108,7 +108,8 @@ sub ProcessLocalRequest
 	#my $Host = "160.209.84.51";
 	#my $Host = "192.168.1.84";
 	#my $Host = '192.168.1.76';
-	my $Host = '216.198.214.5';
+	#my $Host = '216.198.214.5';
+	my $Host = '192.168.1.5';
 	my $Port = "2000";
 
 	my ($NetTelnet, $Pre, $Match);
@@ -247,7 +248,6 @@ END
 		}
 
 	#$self->SendCancelPickupNotification($ResponseCode,$Message,$ConfirmationNumber);
-	$self->SendDispatchNotification('Cancellation');
 	}
 
 __PACKAGE__->meta()->make_immutable();
