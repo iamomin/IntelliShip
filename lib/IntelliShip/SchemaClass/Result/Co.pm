@@ -943,7 +943,7 @@ sub total_weight
 	foreach (@packages)
 		{
 		my $weight = ($_->dimweight > $_->weight ? $_->dimweight : $_->weight);
-		$total_weight += ($_->quantity > 1 ? $_->quantity * $weight : $weight);
+		$total_weight += ($_->quantityxweight ? $weight : ($_->quantity * $weight));
 		}
 	return $total_weight;
 	}
@@ -953,7 +953,7 @@ sub total_dimweight
 	my $self = shift;
 	my @packages = $self->packages;
 	my $total_dimweight = 0;
-	$total_dimweight += $_->dimweight foreach @packages;
+	$total_dimweight += ($_->quantityxweight ? $_->dimweight : ($_->quantity * $_->dimweight)) foreach @packages;
 	return $total_dimweight;
 	}
 
