@@ -371,7 +371,7 @@
 			ul.attr("id", "myShipments");
 		  var self = this;
 		  //table definitions 
-		  ul.append("<table style='cursor:pointer;margin:0px 0px 0px 0px;'><thead><tr><th>Company&nbsp; Name</th><th>City</th><th>State</th><th>Zip</th><th>Contact&nbsp;Name</th><th>Address1</th></tr></thead><tbody></tbody></table>");
+		  ul.append("<table style='cursor:pointer;margin:0px 0px 0px 0px;'><thead><tr><th>Company&nbsp; Name</th><th>City</th><th>State</th><th>Zip</th><th>Address1</th><th>Contact&nbsp;Name</th></tr></thead><tbody></tbody></table>");
 		  $.each( items, function( index, item ) {
 			self._renderItemData(ul, ul.find("table tbody"), item );
 		  });
