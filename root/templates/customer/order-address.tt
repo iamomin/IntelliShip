@@ -266,7 +266,7 @@
 <script>
 
 	$("#tosearch").click(function() { $("#toname").autocomplete("search", "|") });
-	$("#tosearch").focusout(function() { $("#toname").autocomplete("search", "") })
+	$("#tosearch").focusout(function() { $("#toname").autocomplete("search", "") });
 
 	$("#fromsearch").click(function() { $("#fromname").autocomplete("search", "|") });
 	$("#fromsearch").focusout(function() { $("#fromname").autocomplete("search", "") });
@@ -360,35 +360,4 @@
 		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
 		});
 	[% END %]
-
-	/*	Customised Autocomplete feture to show the data in tabular form 
-		Reference Link : http://stackoverflow.com/questions/8432204/displaying-jquery-ui-autocomplete-as-a-table
-	*/
-	$(function() {
-
-		//overriding jquery-ui.autocomplete .js functions
-		$.ui.autocomplete.prototype._renderMenu = function(ul, items) {
-			ul.attr("id", "myShipments");
-		  var self = this;
-		  //table definitions 
-		  ul.append("<table style='cursor:pointer;margin:0px 0px 0px 0px;'><thead><tr><th>Company&nbsp; Name</th><th>City</th><th>State</th><th>Zip</th><th>Address1</th><th>Contact&nbsp;Name</th></tr></thead><tbody></tbody></table>");
-		  $.each( items, function( index, item ) {
-			self._renderItemData(ul, ul.find("table tbody"), item );
-		  });
-		};
-
-		$.ui.autocomplete.prototype._renderItemData = function(ul,table, item) {
-		  return this._renderItem( table, item ).data( "ui-autocomplete-item", item );
-		};
-
-		$.ui.autocomplete.prototype._renderItem = function(table, item) {
-		  return $( "<tr class='ui-menu-item' onclick=\"selectAddress()\"></tr>" ).data( "item.autocomplete", item ).append( "<td >"+item.company_name+"</td>"+"<td>"+item.city+"</td>"+"<td>"+item.state+"</td>"+"<td>"+item.zip+"</td>"+"<td>"+item.address1+"</td>"+"<td>"+item.contactname ).appendTo( table );
-		};
-	});
-
-	function selectAddress()
-		{
-		$(".ui-autocomplete").hide();
-		populateShipAddress(Direction,ReferenceId);
-		}
 	</script>
