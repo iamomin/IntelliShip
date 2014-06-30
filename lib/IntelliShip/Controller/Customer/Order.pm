@@ -2401,8 +2401,8 @@ sub SendShipNotification :Private
 	{
 	my $self = shift;
 	my $Shipment = shift;
-	my $email_from = shift;
 	my $email_to = shift;
+	my $email_from;
 
 	return unless $self->contact->get_contact_data_value('aosnotifications');
 
@@ -2418,21 +2418,24 @@ sub SendShipNotification :Private
 	$Email->from_name('IntelliShip2');
 	my $email;
 	$email_to = $Shipment->shipmentnotification unless $email_to;
+	my $emails = {};
 	foreach $email (split(',',$email_to))
 		{
 		$email =~ s/^\s+|\s+$//g;
-		$Email->add_to($email) if $email;
+		$emails->{$email} = 1;
 		}
+	
 	$email_from = $Shipment->deliverynotification unless $email_from;
 	if ($Contact->get_contact_data_value('combineemail') && $email_from)
 		{
-		foreach $email (split(',',$email_from))
-			{
-			$email =~ s/^\s+|\s+$//g;
-			$Email->add_to($email) if $email;
-			}
+		$emails->{$email_from} = 1;
 		}
-
+	
+	foreach my $key (keys %$emails)
+		{
+		$Email->add_to($key) if $key;
+		}
+	
 	$self->set_header_section;
 
 	$c->stash->{SHIPMENT_ID} = $Shipment->shipmentid;

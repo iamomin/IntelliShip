@@ -763,13 +763,20 @@ sub confirm_notification_emails
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+	my @emails;
 
 	my $Shipment =($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }));
 
 	$c->stash->{CONFIRM_NOTIFICATION_EMAILS} = 1;
-	$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
-	$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification;
-
+	#$c->stash->{TO_EMAIL} = $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+	#$c->stash->{FROM_EMAIL} = $Shipment->deliverynotification if $Shipment->deliverynotification;
+	
+	push @emails, $Shipment->deliverynotification if $Shipment->deliverynotification;
+	push @emails, $Shipment->shipmentnotification if $Shipment->shipmentnotification;
+	
+	$c->stash->{EMAILS} = join(',',@emails);
+	$self->context->log->debug("...EMAILS : " . $c->stash->{EMAILS});
+	
 	return { HTML => $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]) };
 	}
 
@@ -816,7 +823,7 @@ sub send_email_notification
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }),$params->{'from_email'},$params->{'to_email'});
+	$self->SendShipNotification($c->model('MyDBI::Shipment')->find({ shipmentid => $params->{'shipmentid'} }),$params->{'to_email'});
 
 	return { EMAIL_SENT => 1};
 	}
