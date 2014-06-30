@@ -50,7 +50,6 @@ function SendEmailNotification(coid,shipmentid)
 				if (validateForm(requireNoficationHash))
 					{
 					query_param += '&to_email=' + $("#to_email").val();
-					if ($("#from_email").length) query_param += '&from_email=' + $("#from_email").val();
 					send_ajax_request('', 'JSON', 'order', 'send_email_notification', query_param, function() {
 						if (arr.length == (index+1)) CheckAfterLabelPrintActivities(coid,shipmentid);
 						});

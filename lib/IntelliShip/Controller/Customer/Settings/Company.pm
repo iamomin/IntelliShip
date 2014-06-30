@@ -148,6 +148,9 @@ sub setup :Local
 			}
 		}
 
+	my $unit_type_option = {};
+	$unit_type_option->{customerid}     = ($Customer ? $Customer->customerid : $self->customer->customerid);
+
 	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
 	$c->stash->{CONTACT_LIST}            = 0;
 	$c->stash->{CONTACT_MANAGEMENT}      = 0;
@@ -162,7 +165,7 @@ sub setup :Local
 	$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
 	$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
 	$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
-	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE',{ customerid => $Customer->customerid });
+	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE', $unit_type_option);
 	$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
 	$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
 	$c->stash->{companytype_loop}        = $self->get_select_list('COMPANY_TYPE');

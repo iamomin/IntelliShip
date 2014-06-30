@@ -129,14 +129,14 @@ sub import
 		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
 		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
 
-		#my $import_base_file = fileparse($file);
+		my $import_base_file = fileparse($file);
 
-		#unless (move($file,"$imported_path/$import_base_file"))
-		#	{
-		#	print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
-		#	}
+		unless (move($file,"$imported_path/$import_base_file"))
+			{
+			print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+			}
 
-		#$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
+		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
 		#system("$config->{BASE_PATH}/html/unknowncust_order_email.pl");
 		}
 	}
@@ -942,7 +942,7 @@ sub ImportOrders
 					$Error_File = "unknowncustomer_".$Error_File;
 					#open(OUT, ">" . $config->{BASE_PATH} . "/var/processing/$Error_File") or warn "unable to open error file";
 					}
-				$self->log("___ 945 Unknown line: $Line");
+				$self->log("___ Unknown line: $Line");
 				#print OUT "$Line\n\n";
 				#close (OUT);
 				}
@@ -980,7 +980,7 @@ sub ImportProducts
 
 	unless (open($FILE, $import_file))
 		{
-		$self->log("... Error: " . $!);
+		print STDERR "\n... Error: " . $!;
 		return;
 		}
 
@@ -1324,7 +1324,7 @@ sub ImportProducts
 
 					#open(OUT,">$config->{BASE_PATH}/var/processing/$Error_File") or warn "unable to open error file";
 					}
-				$self->log("___ 1327 Unknown line: $Line\n\n");
+				print STDERR "\n___ Unknown line: $Line\n\n";
 				#print OUT "$Line\n\n";
 				}
 			}
@@ -1332,7 +1332,7 @@ sub ImportProducts
 
 	if ( $UnknownCustCount > 0 )
 		{
-		$self->log("###UnknownCustCount ".$UnknownCustCount);
+		print STDERR"\n  ###UnknownCustCount ".$UnknownCustCount;
 		#close (OUT);
 		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
 		##   or &TraceBack("Could not move $Error_File: $!");
@@ -1345,11 +1345,43 @@ sub ImportProducts
 sub EmailImportFailures
 	{
 	my $self = shift;
+	my $c = $self->context;
 	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
+	
+	return unless ($ImportFailures);
 
-	return;
-	##$self->log(".... Skip EmailImportFailures: $ImportFailures, $filepath, $filename, $OrderTypeRef");
+	print STDERR "\n..... Skip EmailImportFailures: $ImportFailures, $filepath, $filename, $OrderTypeRef";
+	
+	foreach my $customerid (keys(%$ImportFailures))
+		{
+		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
+			
+		my $Customer	 = $c->model('MyDBI::Customer')->find({ customerid => $customerid});
+		my $CustomerName = $Customer->username;
+		my $toEmail      = $Customer->email;
+		my $subject      = "NOTICE: " . $CustomerName . " " . $OrderTypeRef->{'ordertype'} ." Import Failures "  . "(".$Timestamp.", ".$filename.")";
+		my $Email        = IntelliShip::Email->new;
 
+		$Email->content_type('text/html');
+		$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+		$Email->from_name('IntelliShip2');
+
+		$Email->subject($subject);
+		$Email->add_to($toEmail);
+		$Email->add_to('aloha.sourceconsulting.com');
+		$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
+	
+		$c->stash->{failures}		= $ImportFailures->{$customerid};
+		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+		
+		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+
+		if ($Email->send)
+		{
+		$self->context->log->debug("import failure order notification email successfully sent to " . join(',',@{$Email->to}));
+		}
+	}
 	#foreach my $customerid (keys(%$ImportFailures))
 	#	{
 	#	my $Display = new DISPLAY($TEMPLATE_DIR);
@@ -1423,7 +1455,7 @@ sub AuthenticateContact
 
 	my $c = $self->context;
 
-	my ($ContactID, $CustomerID) = ('','');
+	my ($ContactID, $CustomerID);
 
 	$self->log("... Authenticate Contact, USERNAME: " . $Username);
 
@@ -1436,20 +1468,7 @@ sub AuthenticateContact
 	my $myDBI = $self->myDBI;
 	my $SQL;
 	## New contact user
-	if ($Username =~ /\@/)
-		{
-		$SQL = "
-			SELECT
-				contactid, 
-				customerid
-			FROM
-				contact
-			WHERE
-				username = '$Username'
-				AND datedeactivated is null
-		";
-		}
-	elsif ($Username =~ /\//)
+	if ($Username =~ /\//)
 		{
 		my ($Domain, $Contact) = $Username =~ m/^(.*)\/(.*)$/;
 
@@ -1482,7 +1501,7 @@ sub AuthenticateContact
 				AND c.datedeactivated is null
 		";
 		}
-	#$self->log("... SQL: " . $SQL);
+	#print STDERR "\n... SQL: " . $SQL;
 	my $STHC = $myDBI->select($SQL);
 
 	return ($ContactID,$CustomerID) unless $STHC->numrows;
@@ -1627,8 +1646,6 @@ sub printImports
 
 	my $c = $self->context;
 
-	my $authorized_user = ($self->contact->username =~ /\@/ ? $self->contact->username : $self->customer->username . "/" . $self->contact->username);
-
 	my $return1 = '';
 	my $return2 = '';
 	#Product Information Printing
@@ -1665,7 +1682,7 @@ sub printImports
 		{
 		$EquipName = '';
 		$EquipQtyName = '';
-		#$return1 = $authorized_user . "\t$fields->[0]\t\t\t\t\t\t\t\n";
+		#$return1 = "sprint/user\t$fields->[0]\t\t\t\t\t\t\t\n";
 		#print PRODFILE "$return1";
 		}
 	elsif ($EquipName ne '' && $EquipQtyName ne '')
@@ -1704,7 +1721,7 @@ sub printImports
 		for (my $k = 0; $k < @EquipArray2; $k++)
 			{
 			$EquipArray2[$k] =~  s/\s+$//;
-			$return1 = $authorized_user . "\t$fields->[0]\t$EquipQtyArray2[$k]\t\t\t\t$EquipArray2[$k]\t\t$EquipArray2[$k]\n";
+			$return1 = "sprint/user\t$fields->[0]\t$EquipQtyArray2[$k]\t\t\t\t$EquipArray2[$k]\t\t$EquipArray2[$k]\n";
 			print $PRODFILE "$return1";
 			}
 		}
@@ -1720,7 +1737,7 @@ sub printImports
 	my $State = '';
 	my $Zip = '';
 	my $EquipmentConf = '';
-	my $constant = $authorized_user;
+	my $constant = 'sprint/user';
 	my $MailStop = '';
 	my $endUserPhone = '';
 	my $CustomerWantDate = '';
