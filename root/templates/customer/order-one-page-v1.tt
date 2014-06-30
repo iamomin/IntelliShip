@@ -40,6 +40,7 @@
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
 	<input type="hidden" id="skipaddressvalidation" name="skipaddressvalidation" />
 	<input type="hidden" id="do" name="do" value="save"/>
+	<input type="hidden" id="showmessage" name="showmessage" value="[% SHOW_MESSAGE %]"/>
 	[% IF AUTO_PROCESS %]
 	<input type="hidden" id="autoprocess" name="autoprocess" value="1"/>
 	[% END %]
@@ -232,7 +233,18 @@
 		});
 
 	$("#ship_now").click(function() {
-
+		if($("#showmessage").val().length > 0 && ($("#fromcountry").val() == 'US' && $("#tocountry").val() != 'US'))
+			{
+			var message = "If you are shipping MSI owned product OUTSIDE of the <br/> United States, you must complete a 'Z Order' PRIOR to <br/> creating a airway bill.  For more information visit: <br/> http://schmfg.corp.mot.com/globallogistics/zorder/index.html";
+			showConfirmBox(message, "Ship Confirmation",shipcontinue);
+			}
+		else{
+			shipcontinue();
+			}
+		});
+		
+	function shipcontinue()
+		{
 		updatePackageProductSequence();
 
 		if (validateForm(requiredFieldHash) == false) return;
@@ -280,7 +292,7 @@
 			$("#do").val("print");
 			$("#frm_order").submit();
 			});
-		});
+		}
 /*
 	$('#cancel').click(function() {
 		requiredFieldHash = {};

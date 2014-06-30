@@ -97,6 +97,7 @@ sub setup_one_page :Private
 	$c->stash->{SUPER_USER} = ($Contact->is_superuser or $Contact->is_administrator);
 	$c->stash->{ROUTE_CAPTION} = ($Customer->is_single_sign_on_customer and $Customer->get_contact_data_value('routebuttonname')) ? uc($Customer->get_contact_data_value('routebuttonname')) : 'ROUTE NOW';
 
+	$c->stash->{SHOW_MESSAGE} = 1 if $Contact->customerid eq '8ETKCWZXZC0UY';
 	$c->stash(template => "templates/customer/order-one-page-v1.tt");
 	}
 
