@@ -596,6 +596,10 @@ $(document).ready(function(){
 [% END %]
 
 [% IF CONTACT_INFO %]
+	<!-- File Upload jQuery Plugin http://www.uploadify.com -->
+	<script type="text/javascript" src="/static/jquery/uploadify/jquery.uploadify.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/jquery/uploadify/uploadify.css">
+	<p class="validateTips"></p>
 	[% #---------------------------------------------------------- %]
 	[% # CONTACT INFO START %]
 	[% #---------------------------------------------------------- %]
@@ -728,9 +732,9 @@ $(document).ready(function(){
 			<td>[% sourcedate %]</td>
 		</tr>
 		<tr>
-
-			<td></td>
-			<td></td>
+			<td>Profile Image</td>
+			<td><div id="show-profile-image" class="profile-image"><img id="profile-image" src='/static/branding/[%branding_id%]/images/header/[%contactInfo.username%]-profile-image.png' height='50px' width='50px'/></div> <input id="profile-image-input" type="file" multiple="true"/></td>
+			
 			<td><label class="float-right" for="disabledate">Disable Date:</label></td>
 			<td>[% disabledate %]</td>
 		</tr>
@@ -876,6 +880,30 @@ $(document).ready(function(){
 	$(document).ready(function(){
 		$("#update_contact").attr("disabled", false);
 		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
+		$('#profile-image-input').uploadify({
+				'formData'   : {
+				'timestamp'  : jQuery.now(),
+				'type'       : 'profile-image',
+				'contactid' : '[% contactInfo.contactid %]'
+				},
+			'swf'      : '/static/jquery/uploadify/uploadify.swf',
+			'uploader' : '/customer/settings/company/upload',
+			'fileDesc': 'Image Files',
+			'fileExt': '*.jpg;*.jpeg;*.gif;*.png',
+			'multi': false,
+			'auto': true,
+			'onUploadSuccess': function(file, data, response){
+				$('#profile-image').attr('src', $('#profile-image').attr('src') + '?' + Math.random());
+				//$('.clip-circle').css({"background":url("/static/branding/engage/images/header/[% contactInfo.username %]-profile-image.png"+ '?' + Math.random())});
+				[% IF CURRENT_CONTACT %]
+				$('.profile-image').each(function(index){
+					$(this).css("background-image", 
+					   "url('/static/branding/engage/images/header/[% contactInfo.username %]-profile-image.png')");
+				});
+				[% END %]
+				//$('#style').attr('href','/static/branding/engage/css/style.css?v='+jQuery.now());
+				},
+			});
 		});
 	</script>
 	[% #---------------------------------------------------------- %]

@@ -72,6 +72,13 @@
 				//link.removeAttr('href');
 				var src = $("#[% selected_mnu %] > img").attr('src');
 				if (src != undefined) $("#[% selected_mnu %] > img").attr('src', src.replace(/grayed/,"white"));
+				
+				
+		/* Load profile image */
+			$('.profile-image').each(function(index){
+				$(this).css("background-image", 
+				"url('/static/branding/engage/images/header/[% contactObj.username %]-profile-image.png')");
+				});
 				});
 		</script>
 	</head>
@@ -96,7 +103,7 @@
 				<a href="[% landing_page %]"><img src="/static/branding/engage/images/header/[% logo %]"/></a>
 				<nav>
 					<ul>
-					<li><a href="#" id="settings"><img src="/static/branding/engage/images/header/settings.png"/><span>[% contactObj.full_name %]</span></a>
+					<li><a href="#" id="settings"><img src="/static/branding/engage/images/header/settings.png"/><span>[% contactObj.full_name %]</span><span  class="profile-image"></span></a>
 							<ul>
 								<li><a href="/customer/settings">ACCOUNT SETTINGS</a></li>
 								<li><hr></li>

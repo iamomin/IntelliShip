@@ -352,8 +352,8 @@ sub get_status_ui_info
 	}
 
 my $CUSTOMER_CONTACT_RULES = [
-	{ name => 'Super User',                                    value => 'superuser',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Administrator',                                 value => 'administrator',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
+	{ name => 'Super User',                                    value => 'superuser',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']},
+	{ name => 'Administrator',                                 value => 'administrator',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']},
 	{ name => 'Third Party Billing',                           value => 'thirdpartybill',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Auto Print',                                    value => 'autoprint',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Has Rates',                                     value => 'hasrates',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},

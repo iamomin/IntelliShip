@@ -40,7 +40,7 @@ sub index :Path :Args(0) {
 	push (@$settings, { name => 'Change Password', url => '/customer/settings/changepassword' }) if $Customer->customerid ne '8ETKCWZXZC0UY';
 	#push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'}) if $Customer->customerid eq '8ETKCWZXZC0UY';
 	push (@$settings, { name => 'Contact Information', url => '/customer/settings/contactinformation'});
-	push (@$settings, { name => 'Company Management', url => '/customer/settings/company'}) if $Contact->is_superuser;
+	push (@$settings, { name => 'Company Management', url => '/customer/settings/company'}) if $Contact->is_administrator;
 	push (@$settings, { name => 'Sku Management', url => '/customer/settings/skumanagement'}) if $Contact->login_level != 25 and $Contact->get_contact_data_value('skumanager');
 	push (@$settings, { name => 'Extid Management', url => '/customer/settings/extidmanagement'}) if $Customer->has_extid_data($c->model('MyDBI'));
 
@@ -674,9 +674,11 @@ sub contactinformation :Local
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
-
+		$c->log->debug("SUPER_USER" . $c->stash->{SUPER_USER});
+		$c->stash->{CURRENT_CONTACT} = ($Contact->contactid eq $self->contact->contactid);
+		$c->log->debug("Contact->contactid : " . $Contact->contactid);
+		$c->log->debug("contactid : " . $self->contact->contactid);
 		$self->set_required_fields;
-
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
 		}
