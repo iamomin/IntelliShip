@@ -596,16 +596,16 @@ $(document).ready(function(){
 [% END %]
 
 [% IF CONTACT_INFO %]
-	<!-- File Upload jQuery Plugin http://www.uploadify.com -->
-	<script type="text/javascript" src="/static/jquery/uploadify/jquery.uploadify.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="/static/jquery/uploadify/uploadify.css">
-	<p class="validateTips"></p>
 	[% #---------------------------------------------------------- %]
 	[% # CONTACT INFO START %]
 	[% #---------------------------------------------------------- %]
 	[% IF ajax %]
 		<h3>Contact Information</h3>
 	[% ELSE %]
+		<!-- File Upload jQuery Plugin http://www.uploadify.com -->
+		<script type="text/javascript" src="/static/jquery/uploadify/jquery.uploadify.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="/static/jquery/uploadify/uploadify.css">
+		<p class="validateTips"></p>
 		<h2>Contact Information</h2>
 	[% END %]
 
