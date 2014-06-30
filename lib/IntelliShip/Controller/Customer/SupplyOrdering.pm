@@ -100,12 +100,15 @@ sub setup_supply_ordering :Private
 	my $tophone = $Contact->phonebusiness;
 	$tophone = $Customer->phone if !$tophone && !$my_only;
 
+	my $toemail = $Contact->email;
+	$toemail = $Customer->email if !$toemail && !$my_only;
+
 	$c->stash(carrier_loop => $carrier_loop);
 	$c->stash(toAddress => $ToAddress);
 	$c->stash(tocontact => $tocontact);
 	$c->stash(tophone => $tophone);
 	$c->stash(todepartment => $Contact->department);
-	$c->stash(toemail => $Contact->email);
+	$c->stash(toemail => $toemail);
 	$c->stash(ordernumber => $self->get_auto_order_number);
 	$c->stash(datetoship => IntelliShip::DateUtils->current_date('/'));
 	$c->stash(countrylist_loop => $self->get_select_list('COUNTRY'));
