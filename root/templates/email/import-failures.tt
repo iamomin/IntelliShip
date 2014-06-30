@@ -1,0 +1,45 @@
+<style>
+div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid #97C1DA;color: #264C72;background-color: #D0E3EF;text-align: left;}
+#notification > table {width: 100% ; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+#notification > table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+#notification > table tr:nth-child(even) {color: #000; background: #E4E5E7 }
+#notification > table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
+#notification > table td {padding: 3px; border: 1px solid #A2A1A6; white-space: pre-wrap;}
+</style>
+
+<div class="notice">***This is an automated message, do not reply to this email.***</div>
+
+<div id="notification">
+<div class="notice">The following [% ordertype_lc %] s were not successfully imported into IntelliShip for the reason listed (legend below):</div>
+<div > <p>[% failures %]</p></div>  
+  <table class="content-wrap" border="0">
+	<tr><td>* Legend:</td><td></td></tr>
+	<tr><td>1 </td><td> [% ordertype %] must have an [% ordertype_lc %] number</td></tr>
+	<tr><td>2 </td><td> [% ordertype %] must have a destination address (either an address line 1, or 2)</td></tr>
+	<tr><td>3 </td><td> [% ordertype %] must have a destination city, state/province, and zip/postalcode</td></tr>
+	<tr><td>4 </td><td> Destination US Zip code must be 5 digit, or 5-4 digit</td></tr>
+	<tr><td>5 </td><td> Unable to determine destination country</td></tr>
+	<tr><td>6 </td><td> [% ordertype %] must have a destination address name</td></tr>
+	<tr><td>7 </td><td> Invalid Date in 'datetoship' field</td></tr>
+	<tr><td>8 </td><td> Invalid Date in 'dateneeded' field</td></tr>
+	<tr><td>9 </td><td> Invalid customer username</td></tr>
+	<tr><td>10 </td><td> Invalid Carrier/Service</td></tr>
+	<tr><td>11 </td><td> Requested Delivery Date is in the past.</td></tr>
+	<tr><td>12 </td><td> Requested Ship Date is in the past</td></tr>
+	<tr><td>13 </td><td> Invalid destination Countr</td></tr>
+	<tr><td>14 </td><td> Invalid Shipment Notification Email</td></tr>
+	<tr><td>15 </td><td> Invalid Delivery Notification Email</td></tr>
+	<tr><td>16 </td><td> [% ordertype %] must have an origin address (either an address line 1, or 2)</td></tr>
+	<tr><td>17 </td><td> US [% ordertype %] must have an origin city, state, and zip</td></tr>
+	<tr><td>18 </td><td> Origin US Zip code must be 5 digit, or 5-4 digit</td></tr>
+	<tr><td>19 </td><td> [% ordertype %] must have an origin address name</td></tr>
+	<tr><td>20 </td><td> Invalid origin Country</td></tr>
+  </table>
+<div class="notice">
+<p>
+	* More than one error may apply to any [% ordertype_lc %].<br>
+	  Only the last error code encountered is displayed. 
+	  See the actual [% ordertype_lc %] for further information on the reason for the import failure.
+</p>
+</div>
+</div>
