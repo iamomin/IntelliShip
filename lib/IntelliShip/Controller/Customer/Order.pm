@@ -129,9 +129,9 @@ sub setup_address :Private
 		$c->stash->{populate} = 'address';
 		$self->populate_order;
 		}
-
+	my $my_only = $Contact->get_contact_data_value('myonly');
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
-	$c->stash->{fromAddress} = $Customer->address unless $c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid;
+	$c->stash->{fromAddress} = $Customer->address unless ($c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid) || $my_only;
 
 	$self->set_company_address;
 
@@ -166,10 +166,14 @@ sub setup_address :Private
 	$self->set_required_fields('address');
 
 	$c->stash->{tocountry}  = "US" unless $c->stash->{toAddress};
-	$c->stash->{fromemail}  = $Contact->email unless $c->stash->{fromemail};
 	$c->stash->{fromdepartment} = $Contact->department unless $c->stash->{fromdepartment};
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
-	$c->stash->{fromphone}  = $Contact->phonebusiness unless $c->stash->{fromphone};
+
+	my $fromphone = $Contact->phonebusiness;
+	$c->stash->{fromphone}  = $Customer->phone if !$fromphone && !$my_only;
+
+	my $fromemail = $Contact->email;
+	$c->stash->{fromemail}  = $Customer->email if !$fromemail && !$my_only;
 
 	if ($c->action =~ /multipage/)
 		{
