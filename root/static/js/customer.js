@@ -152,7 +152,7 @@ function showConfirmBox( dialogMessage, dialogTitle, ok_button_callback, cancel_
 
 	$('#dialog-message').dialog( {
 		title: dialogTitle,
-		width: '400px',
+		width: '500px',
 		buttons: {
 			Ok: ok_button_callback,
 			Cancel: cancel_button_callback
