@@ -6,8 +6,6 @@
 <form id="supplyOrder" action="/customer/supplyordering" method="post">
 	<input type="hidden" name="do" value="send"/>
 
-	<div class="notice">Please click "Order" to place your supply order.</div>
-
 	<table width="100%">
 		<tr>
 			<td>Order Number:</td>
