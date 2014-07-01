@@ -88,7 +88,7 @@
 			<td class="total" colspan="5">
 			<table class="float-right">
 				<tr>
-				<td><green><strong>TOTAL SHIPMENT BILLABLE WEIGHT:</strong></green><strong>&nbsp;<input type="text" class="small-text" name="totalweight" id="totalweight" value="[% totalweight ? totalweight : 0.00 %]"/> [% WEIGHT_TYPE %]</strong></td>
+				<td><green><strong>TOTAL SHIPMENT BILLABLE WEIGHT:</strong></green><strong>&nbsp;<input type="text" class="small-text reset-cs-onchange" name="totalweight" id="totalweight" value="[% totalweight ? totalweight : 0.00 %]"/> [% WEIGHT_TYPE %]</strong></td>
 				<td style="width: 30px">&nbsp;</td>
 				<td><green><strong>TOTAL SHIPMENT VALUE:</strong></green><strong>&nbsp;$</strong><input type="text" class="small-text" name="insurance" id="insurance" value="[% insurance ? insurance : 0.00 %]"/></td>
 				</tr>
