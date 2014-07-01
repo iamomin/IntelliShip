@@ -1434,7 +1434,7 @@ sub add_package_detail_row :Private
 
 	$c->stash->{ROW_COUNT}++;
 	$c->stash->{RODUCT_DETAILS} = $product_HTML;
-	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',$filter) unless $c->stash->{packageunittype_loop};
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE') unless $c->stash->{packageunittype_loop};
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
