@@ -789,6 +789,11 @@ sub ImportOrders
 			#$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
 
 			###########################
+			my $termsofsale = $CustRef->{'termsofsale'};
+			if ($termsofsale && $termsofsale !~ /^\d+$/)
+				{
+				$termsofsale = IntelliShip::Utils->get_terms_of_sale($termsofsale);
+				}
 
 			$CO->{'ordernumber'}           = $CustRef->{'ordernumber'};
 			$CO->{'ponumber'}              = $CustRef->{'ponumber'};
@@ -820,7 +825,7 @@ sub ImportOrders
 			$CO->{'deliverynotification'}  = $CustRef->{'deliverynotification'} if $CustRef->{'deliverynotification'};
 			$CO->{'importfile'}            = fileparse($import_file) if $import_file;
 			$CO->{'securitytype'}          = $CustRef->{'securitytype'} if $CustRef->{'securitytype'};
-			$CO->{'termsofsale'}           = $CustRef->{'termsofsale'} if $CustRef->{'termsofsale'};
+			$CO->{'termsofsale'}           = $termsofsale if $termsofsale;
 			$CO->{'dutypaytype'}           = $CustRef->{'dutypaytype'} if $CustRef->{'dutypaytype'};
 			$CO->{'dutyaccount'}           = $CustRef->{'dutyaccount'} if $CustRef->{'dutyaccount'};
 			$CO->{'commodityunits'}        = $CustRef->{'commodityunits'} if $CustRef->{'commodityunits'};

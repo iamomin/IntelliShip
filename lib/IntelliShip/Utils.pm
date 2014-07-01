@@ -384,6 +384,33 @@ sub get_status_ui_info
 	return ($dataHash->{'conditioncolor'},$dataHash->{'conditiontext'});
 	}
 
+my $TERMS_OF_SALE = {
+	1 => 'FOB/FCA',
+	2 => 'CIF/CIP',
+	3 => 'C&F/CPT',
+	4 => 'EXW',
+	5 => 'DDU',
+	6 => 'DDP',
+	};
+
+sub get_terms_of_sale
+	{
+	my $self = shift;
+	my $term = shift;
+
+	return $TERMS_OF_SALE unless $term;
+
+	if ($term =~ /^\d$/)
+		{
+		return $TERMS_OF_SALE->{$term};
+		}
+	else
+		{
+		my %reversedTOS = reverse %$TERMS_OF_SALE;
+		return $reversedTOS{$term};
+		}
+	}
+
 my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Administrator',                                 value => 'administrator',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CONTACT']},
 	{ name => 'Third Party Billing',                           value => 'thirdpartybill',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
