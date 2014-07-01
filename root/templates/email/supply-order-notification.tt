@@ -13,7 +13,7 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 
 <div id="notification">
 	[% IF UserEmail %]
-	<div class="notice">Your order for supplies has been sent to [% carrier FILTER upper %] on <strong>[% datetoship %]</strong> Thank You.</div>
+	<div class="notice">Your order for supplies has been sent to [% carrier FILTER upper %] on <strong>[% datetoship %]</strong><br/>(Takes 3 to 4 business days)<br/>Thank You.</div>
 	[% ELSIF CompanyEmail %]
 	<div class="notice">Below is an order for [% carrier %] supplies, requested on <strong>[% datetoship %]</strong> Thank You.</div>
 	[% END %]
