@@ -134,6 +134,12 @@ sub setup_address :Private
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
 	$c->stash->{fromAddress} = $Customer->address unless ($c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid) || $my_only;
 
+	$c->stash->{fromphone} = $Contact->phonebusiness unless $c->stash->{fromphone};
+	$c->stash->{fromphone} = $Customer->phone if !$c->stash->{fromphone} && !$my_only;
+
+	$c->stash->{fromemail} = $Contact->email unless $c->stash->{fromemail};
+	$c->stash->{fromemail} = $Customer->email if !$c->stash->{fromemail} && !$my_only;
+
 	$self->set_company_address;
 
 	$c->stash->{AMDELIVERY} = 1 if $Customer->amdelivery;
@@ -169,12 +175,6 @@ sub setup_address :Private
 	$c->stash->{tocountry}  = "US" unless $c->stash->{toAddress};
 	$c->stash->{fromdepartment} = $Contact->department unless $c->stash->{fromdepartment};
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
-
-	my $fromphone = $Contact->phonebusiness;
-	$c->stash->{fromphone}  = $Customer->phone if !$fromphone && !$my_only;
-
-	my $fromemail = $Contact->email;
-	$c->stash->{fromemail}  = $Customer->email if !$fromemail && !$my_only;
 
 	if ($c->action =~ /multipage/)
 		{
