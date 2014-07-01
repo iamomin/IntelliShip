@@ -147,10 +147,10 @@
 	$("#instant-filter-columns").click(function() {
 		var linkObject = $(this);
 		if (linkObject.text() == "+") {
-			$("#filter-checkbox").slideDown('slow');
+			$("#filter-checkbox").show();
 			linkObject.html("&#8211");
 			} else {
-			$("#filter-checkbox").slideUp('slow');
+			$("#filter-checkbox").hide();
 			linkObject.text("+");
 			}
 		});

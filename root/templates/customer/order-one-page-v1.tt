@@ -78,7 +78,7 @@
 	<div id="clear">&nbsp;</div>
 
 	<div style="border: 4px solid #9BA7AF">
-		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd">+</a></td><td><green>Add Special Services</green></td></tr></table>
+		<table><tr><td><a href="javascript:void(0);" id="special-services-cmd" class="round-green-button" style="text-decoration:none">[% IF SPECIAL_SERVICE %]&#8211[% ELSE %]+[% END %]</a></td><td><green>Add Special Services</green></td></tr></table>
 		<div id="special-services" style="display: [% SPECIAL_SERVICE ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICE %]</div>
 	</div>
 
@@ -212,15 +212,27 @@
 		var linkObject = $(this);
 		if ($('#special-services').html().length > 0)
 			{
-			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
-			$("#special-services").slideToggle("slow");
+			if (linkObject.text() == "+" ){
+				linkObject.html("&#8211");
+				$("#special-services").css("display","block");
+				}
+			else{
+				linkObject.text("+");
+				$("#special-services").css("display","none");
+				}
 			return;
 			}
 
 		var params = 'coid=' + $("#coid").val();
 		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
-			$( "#special-services" ).slideToggle( "slow" );
-			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211")
+				$("#special-services").css("display","block");
+				}
+			else{
+				linkObject.text("+");
+				$("#special-services").css("display","none");
+				}
 			});
 		});
 

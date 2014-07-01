@@ -102,7 +102,7 @@
 					<td><label for="carrier" class="float-right">Carrier:</label></td>
 					<td class="css3-radios">
 						<label>
-							<input type="radio" name="carrier" id="none" value="" checked="checked"/>
+							<input type="radio" name="carrier" id="none" value="none" checked="checked"/>
 							<span><label for="none">None</label></span>
 						</label>
 						[% FOREACH item IN carrier_loop %]
@@ -185,13 +185,19 @@ $("input[name=carrier]").click(function () {
 
 	$('#supplytypes').val(0);
 	$('#supplyquantity').val(0);
-
-	$("#carrier-product-sku").fadeOut("slow", function () {
-		var params = 'carrier=' + $("input:radio[name=carrier]:checked").val();
-		send_ajax_request('carrier-product-sku', 'HTML', 'supplyordering', 'get_carrier_productsku', params, function() {
-			$("#carrier-product-sku").fadeIn("slow");
+	if($(this).val() == 'none' )
+		{
+		$("#carrier-product-sku").html("");
+		}
+	else
+		{
+		$("#carrier-product-sku").hide(0,function () {
+			var params = 'carrier=' + $("input:radio[name=carrier]:checked").val();
+			send_ajax_request('carrier-product-sku', 'HTML', 'supplyordering', 'get_carrier_productsku', params, function() {
+				$("#carrier-product-sku").show();
+				});
 			});
-		});
+		}
 	});
 
 function Validate()

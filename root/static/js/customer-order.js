@@ -484,7 +484,7 @@ function getCarrierServiceList(form_name)
 	$('#loading-1').css('background', 'url(/static/branding/engage/images/route-preload-white.GIF) no-repeat center center');
 	$('#loading-2').css('background', 'url(/static/branding/engage/images/route-preload-white.GIF) no-repeat center center');
 
-	$("#carrier-service-list").slideUp(1000, function() {
+	$("#carrier-service-list").hide(0, function() {
 
 		updatePackageProductSequence();
 		$('#carrier-service-list').empty();
@@ -507,7 +507,7 @@ function getCarrierServiceList(form_name)
 					}
 				});
 
-			$("#carrier-service-list").slideDown(1000);
+			$("#carrier-service-list").show();
 			});
 		});
 	}
@@ -517,7 +517,7 @@ function resetCSList()
 	$("#customerserviceid").val('');
 	$("#carrier").val('');
 
-	if (has_FC) $("#carrier-service-list").slideUp(1000);
+	if (has_FC) $("#carrier-service-list").hide();
 	}
 
 function addCheckBox(container_ID, control_ID, control_Value, control_Label)
