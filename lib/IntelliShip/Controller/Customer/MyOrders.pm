@@ -148,6 +148,8 @@ sub invalid_match_pattern
 	my $c = $self->context;
 	my $params = $c->req->params;
 
+	IntelliShip::Utils->hash_decode($params);
+
 	return 0 unless $params->{'filter'};
 	my @filterData = split(' ',$params->{'filter'});
 
