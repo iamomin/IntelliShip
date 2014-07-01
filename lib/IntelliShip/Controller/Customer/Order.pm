@@ -133,7 +133,7 @@ sub setup_address :Private
 	my $my_only = $Contact->get_contact_data_value('myonly');
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
 	$c->stash->{fromAddress} = $Customer->address unless ($c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid) || $my_only;
-
+	
 	$c->stash->{fromphone} = $Contact->phonebusiness unless $c->stash->{fromphone};
 	$c->stash->{fromphone} = $Customer->phone if !$c->stash->{fromphone} && !$my_only;
 
@@ -1327,10 +1327,10 @@ sub set_company_address
 	$c->stash->{customercountry}	= $fromAddress->country;
 	$c->stash->{customerzip}		= $fromAddress->zip;
 	$c->stash->{customerstate}		= $fromAddress->state;
-	$c->stash->{customeremail}		= $Contact->email;
+	$c->stash->{customeremail}		= $c->stash->{fromemail};
 	$c->stash->{customerdepartment} = $Contact->department ;
 	$c->stash->{customercontact}	= $Contact->full_name;
-	$c->stash->{customerphone}		= $Contact->phonebusiness;
+	$c->stash->{customerphone}		= $c->stash->{fromphone};
 
 	unless ($fromAddress->addressname)
 		{
