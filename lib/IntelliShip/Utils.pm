@@ -406,8 +406,8 @@ sub get_terms_of_sale
 		}
 	else
 		{
-		my %reversedTOS = reverse %$TERMS_OF_SALE;
-		return $reversedTOS{$term};
+		my $reversedTOS = { 'FOB' => 1, 'FCA' => 1, 'CIF' => 2, 'CIP' => 2, 'C&F' => 3, 'CPT' => 3, 'EXW' => 4, 'DDU' => 5, 'DDP' => 6 };
+		return $reversedTOS->{$term};
 		}
 	}
 
