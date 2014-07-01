@@ -549,11 +549,7 @@ sub contactinformation :Local
 			};
 
 		my $Address;
-		if ($Contact->addressid)
-			{
-			$Address = $Contact->address;
-			}
-		else
+		unless ($Address = $Contact->address;)
 			{
 			my @addresses = $c->model('MyDBI::Address')->search($addressData);
 
