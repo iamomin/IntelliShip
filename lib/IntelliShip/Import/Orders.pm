@@ -878,7 +878,7 @@ sub ImportOrders
 						}
 					}
 
-			#$self->log("... CO DATA DETAILS:  " . Dumper $CO);
+			#$self->log("... CO DATA DETAILS: " . Dumper $CO);
 
 			my $CO_Obj = $self->model('Co')->new($CO);
 			$CO_Obj->coid($self->myDBI->get_token_id);
@@ -886,7 +886,7 @@ sub ImportOrders
 
 			my $COID = $CO_Obj->coid;
 
-			$self->log("... NEW CO INSERTED, COID:  " . $COID);
+			$self->log("... NEW CO INSERTED, COID: " . $COID);
 
 			## Create package data
 			my $packageData = {
@@ -906,7 +906,7 @@ sub ImportOrders
 			$PackProData->packprodataid($self->myDBI->get_token_id);
 			$PackProData->insert;
 
-			$self->log("... NEW Package INSERTED, packprodataid:  " . $PackProData->packprodataid);
+			$self->log("... NEW Package INSERTED, packprodataid: " . $PackProData->packprodataid);
 
 			## set assessorials
 			if ( $CustRef->{'saturdayflag'} and $CustRef->{'saturdayflag'} == 1 )
@@ -1013,6 +1013,8 @@ sub ImportProducts
 
 		next unless $Line;
 
+		$self->log("");
+
 		($CustRef->{'extloginid'},
 		$CustRef->{'ordernumber'},
 		$CustRef->{'productquantity'},
@@ -1035,7 +1037,7 @@ sub ImportProducts
 
 		IntelliShip::Utils->trim_hash_ref_values($CustRef);
 
-		#$self->log("...CustRef:  " . Dumper $CustRef);
+		#$self->log("...CustRef: " . Dumper $CustRef);
 
 		## set cotypeid
 		if ( defined($CustRef->{'cotype'}) && $CustRef->{'cotype'} =~ /PO/i )
@@ -1081,8 +1083,8 @@ sub ImportProducts
 		my $Contact = $self->model('Contact')->find({ contactid => $ContactID }) if $ContactID;
 		my $Customer = $self->model('Customer')->find({ customerid => $CustomerID }) if $CustomerID;
 
-		#$self->log("... Contact DATA DETAILS:  " . Dumper $Contact);
-		#$self->log("... Customer DATA DETAILS:  " . Dumper $Customer);
+		#$self->log("... Contact DATA DETAILS: " . Dumper $Contact);
+		#$self->log("... Customer DATA DETAILS: " . Dumper $Customer);
 
 		my $ProductStatus = 200;
 
@@ -1110,7 +1112,7 @@ sub ImportProducts
 
 		if (defined($CustRef->{'ordernumber'}) && $CustRef->{'ordernumber'} ne '' && $export_flag ne '-1')
 			{
-			$self->log("... search for CO by ordernumber:  " . $CustRef->{'ordernumber'});
+			$self->log("... search for CO by ordernumber: " . $CustRef->{'ordernumber'});
 			 my $sth = $self->myDBI->select("
 				SELECT
 					coid
@@ -1128,7 +1130,7 @@ sub ImportProducts
 			my $coid = $sth->fetchrow(0)->{'coid'} if $sth->numrows;
 			$CustRef->{'coid'} = $coid;
 
-			$self->log("... CO found, ID:  " . $coid);
+			$self->log("... CO found, ID: " . $coid);
 
 			if (!defined($CustRef->{'coid'}) || $CustRef->{'coid'} eq '')
 				{
@@ -1190,7 +1192,7 @@ sub ImportProducts
 			$CustRef->{'weighttypeid'} = 1;
 			}
 
-		$self->log("... unittypeid:  " . $CustRef->{'unittypeid'});
+		$self->log("... unittypeid: " . $CustRef->{'unittypeid'});
 
 		if ( $export_flag == 0 )
 			{
@@ -1242,7 +1244,7 @@ sub ImportProducts
 				{
 				$CO = $self->model('Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
 
-				#$self->log("... CO DATA DETAILS:  " . Dumper $CO);
+				#$self->log("... CO DATA DETAILS: " . Dumper $CO);
 				}
 
 			## use this to issue delete of products for an order only once.
@@ -1264,7 +1266,7 @@ sub ImportProducts
 			my @packages = $CO->packages if $CO;
 			if (@packages)
 				{
-				$self->log("... package '" . $packages[0]->packprodataid . "'found for order, insert product into package");
+				$self->log("... package '" . $packages[0]->packprodataid . "' found for order, insert product into package");
 				$productData->{'ownerid'}     = $packages[0]->packprodataid;
 				$productData->{'ownertypeid'} = '3000';
 				}
@@ -1306,7 +1308,7 @@ sub ImportProducts
 			$Product->packprodataid($self->myDBI->get_token_id);
 			$Product->insert;
 
-			$self->log("... NEW Product INSERTED, packprodataid:  " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
+			$self->log("... NEW Product INSERTED, packprodataid: " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
 			}
 		elsif ( $export_flag < 0 )
 			{
@@ -1414,7 +1416,7 @@ sub SaveAssessorial
 	#}
 	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
-	$self->context->log->debug("... NEW AssData INSERTED, assdataid:  " . $AssData->assdataid);
+	$self->context->log->debug("... NEW AssData INSERTED, assdataid: " . $AssData->assdataid);
 	}
 
 sub AuthenticateContact
