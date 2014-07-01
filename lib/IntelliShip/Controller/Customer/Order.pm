@@ -90,7 +90,7 @@ sub setup_one_page :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields;
 
-	$self->setup_address;;
+	$self->setup_address;
 	$self->setup_shipment_information;
 	$self->setup_carrier_service;
 
@@ -1434,6 +1434,7 @@ sub add_package_detail_row :Private
 
 	$c->stash->{ROW_COUNT}++;
 	$c->stash->{RODUCT_DETAILS} = $product_HTML;
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',$filter) unless $c->stash->{packageunittype_loop};
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
