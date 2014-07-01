@@ -34,9 +34,10 @@ button { cursor: pointer }
 
 a {
     /* Gives Nice And Fast Transition Effect Typically For Flat Designs */
-    -webkit-transition: all 0.3s ease-in; 
+/*    -webkit-transition: all 0.3s ease-in;
     -moz-transition: all 0.3s ease-in;
-    -o-transition: all 0.3s ease-in; 
+    -o-transition: all 0.3s ease-in;
+*/
     text-decoration: none;
     color: #1875BA;
 }
