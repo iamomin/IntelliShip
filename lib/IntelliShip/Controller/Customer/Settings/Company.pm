@@ -75,6 +75,7 @@ sub setup :Local
 	my $Customer = $self->get_customer;
 	$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 
+	my $unit_type_option = {};
 	if ($Customer)
 		{
 		$params->{'customerid'} = $Customer->customerid unless $params->{'customerid'};
@@ -138,6 +139,8 @@ sub setup :Local
 				$c->stash->{assmarkuptype} = 'percent';
 				}
 			}
+
+		$unit_type_option->{customerid} = $Customer->customerid;
 		}
 	else
 		{
@@ -147,9 +150,6 @@ sub setup :Local
 			$c->detach("index",$params);
 			}
 		}
-
-	my $unit_type_option = {};
-	$unit_type_option->{customerid}     = ($Customer ? $Customer->customerid : $self->customer->customerid);
 
 	$c->stash->{password}                = $self->get_token_id unless $c->stash->{password};
 	$c->stash->{CONTACT_LIST}            = 0;
@@ -165,7 +165,7 @@ sub setup :Local
 	$c->stash->{loginlevel_loop}         = $self->get_select_list('LOGIN_LEVEL');
 	$c->stash->{quotemarkup_loop}        = $self->get_select_list('YES_NO_NUMERIC');
 	$c->stash->{quotemarkupdefault_loop} = $self->get_select_list('QUOTE_MARKUP');
-	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE', $unit_type_option);
+	$c->stash->{unittype_loop}           = $self->get_select_list('UNIT_TYPE',$unit_type_option);
 	$c->stash->{poinstructions_loop}     = $self->get_select_list('POINT_INSTRUCTION');
 	$c->stash->{poauthtype_loop}         = $self->get_select_list('PO_AUTH_TYPE');
 	$c->stash->{companytype_loop}        = $self->get_select_list('COMPANY_TYPE');
