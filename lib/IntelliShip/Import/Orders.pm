@@ -750,39 +750,44 @@ sub ImportOrders
 			#########################################################
 			## Store Drop Address
 			#########################################################
-			$self->log("... checking for Drop address availability");
-
-			my $dropAddressData = {
-				addressname => $CustRef->{'dropname'},
-				address1    => $CustRef->{'dropaddress1'},
-				address2    => $CustRef->{'dropaddress2'},
-				city        => $CustRef->{'dropcity'},
-				state       => $CustRef->{'dropstate'},
-				zip         => $CustRef->{'dropzip'},
-				country     => $CustRef->{'dropcountry'},
-				};
-
-			IntelliShip::Utils->trim_hash_ref_values($dropAddressData);
-
-			## Fetch return address
-			@addresses = $self->model('Address')->search($dropAddressData) if length $dropAddressData->{'address1'};
-
-			my $DropAddress;
-			if (@addresses)
+			if ($CustRef->{'dropname'} && $CustRef->{'dropaddress1'})
 				{
-				$DropAddress = $addresses[0];
-				$self->log("... Existing Drop Address Found, ID: " . $DropAddress->addressid);
-				}
-			elsif (length $dropAddressData->{'address1'})
-				{
-				$DropAddress = $c->model("MyDBI::Address")->new($dropAddressData);
-				$DropAddress->addressid($self->myDBI->get_token_id);
-				$DropAddress->insert;
-				$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
+				$self->log("... checking for Drop address availability");
+
+				my $dropAddressData = {
+					addressname => $CustRef->{'dropname'},
+					address1    => $CustRef->{'dropaddress1'},
+					address2    => $CustRef->{'dropaddress2'},
+					city        => $CustRef->{'dropcity'},
+					state       => $CustRef->{'dropstate'},
+					zip         => $CustRef->{'dropzip'},
+					country     => $CustRef->{'dropcountry'},
+					};
+
+				IntelliShip::Utils->trim_hash_ref_values($dropAddressData);
+
+				## Fetch return address
+				@addresses = $self->model('Address')->search($dropAddressData) if length $dropAddressData->{'address1'};
+
+				my $DropAddress;
+				if (@addresses)
+					{
+					$DropAddress = $addresses[0];
+					$self->log("... Existing Drop Address Found, ID: " . $DropAddress->addressid);
+					}
+				elsif (length $dropAddressData->{'address1'})
+					{
+					$DropAddress = $c->model("MyDBI::Address")->new($dropAddressData);
+					$DropAddress->addressid($self->myDBI->get_token_id);
+					$DropAddress->insert;
+					$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
+					}
+
+				$CO->{'dropaddressid'} = $DropAddress->id if $DropAddress;
 				}
 
-			$CO->{'dropaddressid'} = $DropAddress->id if $DropAddress;
-			$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
+			#$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
+
 			###########################
 
 			$CO->{'ordernumber'}           = $CustRef->{'ordernumber'};
