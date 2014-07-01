@@ -125,7 +125,7 @@ function doAddSelectedServices(){
 	my_ajax_request('settings/tariff/add_services', params, function () {
 		if (JSON_data.status == "success") {
 			var msg = JSON_data.message;
-			$('#div_add_service').hide();
+			$('#div_add_service').slideUp('slow');
 			reloadUI();
 			showMessage(msg);
 		} else {
@@ -135,7 +135,7 @@ function doAddSelectedServices(){
 }
 
 function reloadUI() {
-	$('#div_add_service').hide();
+	$('#div_add_service').slideUp('slow');
 	$('#services_tree').jstree('destroy');
 	$('#services_tree').html("");
 	$('#operations').hide();
@@ -437,7 +437,7 @@ function addCustomerService() {
 		var params = "carrierid=" + carrierNode.original.id + "&customerid="+ $("#customerid").val();
 		my_ajax_request('settings/tariff/get_carrier_services', params, function () {
 			loadCSGrid();
-			$("#div_add_service").show();
+			$("#div_add_service").slideDown("slow");
 		});
 	}else{
 		showMessage("Please select a carrier");

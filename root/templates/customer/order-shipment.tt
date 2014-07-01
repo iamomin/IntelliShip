@@ -144,26 +144,14 @@
 		if ($('#special-services').html().length > 0)
 			{
 			if (linkObject.text() == "+" ){
-				linkObject.html("&#8211");
-				$("#special-services").css("display","block");
-				}
-			else{
-				linkObject.text("+");
-				$("#special-services").css("display","none");
-				}
+			$("#special-services").slideToggle("slow");
 			return;
 			}
 
 		var params = 'coid=' + $("#coid").val();
 		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
-			if (linkObject.text() == "+"){
-				linkObject.html("&#8211")
-				$("#special-services").css("display","block");
-				}
-			else{
-				linkObject.text("+");
-				$("#special-services").css("display","none");
-				}
+			$( "#special-services" ).slideToggle( "slow" );
+			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
 			});
 		}
 

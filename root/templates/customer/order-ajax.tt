@@ -342,14 +342,12 @@
 
 		$(".show-hide-link").click(function showDetails(){
 			var linkObject = $(this);
-			if (linkObject.text() == "+"){
-				linkObject.html("&#8211");
-				linkObject.closest('tr').find('div.charge-details').css("display","block");
-				}
-			else{
-				linkObject.text("+");
-				linkObject.closest('tr').find('div.charge-details').css("display","none");
-				}
+			linkObject.closest('tr').find('div.charge-details').slideToggle("slow", function(){
+					if (linkObject.text() == "+")
+						linkObject.html("&#8211");
+					else
+						linkObject.text("+");
+				});
 			});
 
 		$(document).ready(function() {

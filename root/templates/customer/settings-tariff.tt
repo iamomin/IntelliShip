@@ -31,7 +31,7 @@
                            <tr>
                               <td>
                                  <input type="button" value="Add Selected Services" onclick="doAddSelectedServices();"/>
-                                 <input type="button" value="Cancel" onclick="$('#div_add_service').hide();"/>
+                                 <input type="button" value="Cancel" onclick="$('#div_add_service').slideUp('slow');"/>
                               </td>
                               <td style="text-align: right; padding-right: 27px">
                                  <h3>Select and add services</h3>

@@ -191,10 +191,10 @@ $("input[name=carrier]").click(function () {
 		}
 	else
 		{
-		$("#carrier-product-sku").hide(0,function () {
+		$("#carrier-product-sku").fadeOut("slow", function () {
 			var params = 'carrier=' + $("input:radio[name=carrier]:checked").val();
 			send_ajax_request('carrier-product-sku', 'HTML', 'supplyordering', 'get_carrier_productsku', params, function() {
-				$("#carrier-product-sku").show();
+				$("#carrier-product-sku").fadeIn("slow");
 				});
 			});
 		}
