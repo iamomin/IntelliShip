@@ -146,16 +146,27 @@
 		var linkObject = $('#special-services-cmd');
 		if ($('#special-services').html().length > 0)
 			{
-			if (linkObject.text() == "+" ){
-				$("#special-services").slideToggle("slow");
-				return;
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211");
+				$("#special-services").show();
 				}
+			else{
+				linkObject.text("+");
+				$("#special-services").hide();
+				}
+			return;
 			}
 
 		var params = 'coid=' + $("#coid").val();
 		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
-			$( "#special-services" ).slideToggle( "slow" );
-			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211");
+				$("#special-services").show();
+				}
+			else{
+				linkObject.text("+");
+				$("#special-services").hide();
+				}
 			});
 		}
 

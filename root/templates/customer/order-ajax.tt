@@ -345,12 +345,14 @@
 
 		$(".show-hide-link").click(function showDetails(){
 			var linkObject = $(this);
-			linkObject.closest('tr').find('div.charge-details').slideToggle("slow", function(){
-					if (linkObject.text() == "+")
-						linkObject.html("&#8211");
-					else
-						linkObject.text("+");
-				});
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211");
+				linkObject.closest('tr').find('div.charge-details').show();
+				}
+			else{
+				linkObject.text("+");
+				linkObject.closest('tr').find('div.charge-details').hide();
+				}
 			});
 
 		$(document).ready(function() {
