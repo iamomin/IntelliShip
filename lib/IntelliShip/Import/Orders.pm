@@ -129,6 +129,9 @@ sub import
 		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
 		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
 
+		$ImportFailures = {} unless $ImportFailures;
+		$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
+
 		my $import_base_file = fileparse($file);
 		unless (move($file,"$imported_path/$import_base_file"))
 			{
@@ -887,7 +890,16 @@ sub ImportOrders
 
 			my $CO_Obj = $self->model('Co')->new($CO);
 			$CO_Obj->coid($self->myDBI->get_token_id);
+
+			eval {
 			$CO_Obj->insert;
+			};
+
+			if ($@)
+				{
+				$self->log("... DB Exception: " . $@);
+				$self->log("... Line: " . $Line);
+				}
 
 			my $COID = $CO_Obj->coid;
 
@@ -1170,16 +1182,8 @@ sub ImportProducts
 
 		if ($CustRef->{'unittype'})
 			{
-			my $STH = $self->myDBI->select("
-				SELECT
-					unittypeid
-				FROM
-					unittype
-				WHERE
-					upper(unittypename) = upper('$CustRef->{'unittype'}')
-				LIMIT 1
-				");
-
+			my $unittype = uc $CustRef->{'unittype'};
+			my $STH = $self->myDBI->select("SELECT unittypeid FROM unittype WHERE (upper(unittypecode) = '$unittype' OR upper(unittypename) = '$unittype') LIMIT 1");
 			my $unittypeid = $STH->fetchrow(0)->{'unittypeid'} if $STH->numrows;
 			$CustRef->{'unittypeid'} = $unittypeid;
 			}
@@ -1236,6 +1240,7 @@ sub ImportProducts
 						my $d = $STH->fetchrow(0);
 						($weight, $length, $width, $height, $value) = ($d->{wt},$d->{ln},$d->{wd},$d->{ht}, $d->{value});
 						}
+
 					$CustRef->{'productweight'} = $weight * $CustRef->{'productquantity'} if $weight;
 					$CustRef->{'dimlength'} = $length if $length;
 					$CustRef->{'dimwidth'} = $width if $width;
@@ -1311,11 +1316,24 @@ sub ImportProducts
 
 			my $Product = $self->model('Packprodata')->new($productData);
 			$Product->packprodataid($self->myDBI->get_token_id);
-			$Product->insert;
 
-			$self->log("... NEW Product INSERTED, packprodataid: " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
+			eval {
+			$Product->insert;
+			};
+
+			if ($@)
+				{
+				$self->log("... DB Exception: " . $@);
+				$self->log("... Line: " . $Line);
+				$export_flag = -6;
+				}
+			else
+				{
+				$self->log("... NEW Product INSERTED, packprodataid: " . $Product->packprodataid . " for COID: " . $CustRef->{'coid'});
+				}
 			}
-		elsif ( $export_flag < 0 )
+
+		if ( $export_flag < 0 )
 			{
 			## We need a valid customerid for the failure to do any good...it's likely a header line
 			 if ( defined($CustomerID) && $CustomerID ne '' )
@@ -1358,15 +1376,15 @@ sub EmailImportFailures
 	my $self = shift;
 	my $c = $self->context;
 	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
-	
+
 	return unless ($ImportFailures);
 
-	print STDERR "\n..... Skip EmailImportFailures: $ImportFailures, $filepath, $filename, $OrderTypeRef";
-	
+	$self->log("... EmailImportFailures, file: $filepath/$filename, $OrderTypeRef");
+
 	foreach my $customerid (keys(%$ImportFailures))
 		{
 		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
-			
+
 		my $Customer	 = $c->model('MyDBI::Customer')->find({ customerid => $customerid});
 		my $CustomerName = $Customer->username;
 		my $toEmail      = $Customer->email;
@@ -1381,11 +1399,11 @@ sub EmailImportFailures
 		$Email->add_to($toEmail);
 		$Email->add_to('aloha.sourceconsulting.com');
 		$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
-	
+
 		$c->stash->{failures}		= $ImportFailures->{$customerid};
 		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
 		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
-		
+
 		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
 
 		if ($Email->send)
@@ -1394,6 +1412,7 @@ sub EmailImportFailures
 			}
 		}
 	}
+
 sub SaveAssessorial
 	{
 	my $self = shift;
@@ -1448,7 +1467,7 @@ sub AuthenticateContact
 		{
 		$SQL = "
 			SELECT
-				contactid, 
+				contactid,
 				customerid
 			FROM
 				contact
