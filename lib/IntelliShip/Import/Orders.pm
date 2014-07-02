@@ -85,20 +85,20 @@ sub import
 	my @files;
 	my $import_file = $self->import_file;
 
-	my $imported_path = IntelliShip::MyConfig->base_path . "/var/imported/co";
-
 	if ($import_file)
 		{
 		push(@files, $import_file);
 		}
 	else
 		{
-		my $import_path = $self->get_directory;
+		my $import_path = $self->get_import_directory;
 		$self->log("... import_path: " . $import_path);
 		push(@files, <$import_path/*>);
 		}
 
 	$self->log("... Total Files: " . @files);
+
+	my $imported_path = $self->get_imported_directory;
 
 	#################################
 	### Check for Files to Import
@@ -139,11 +139,11 @@ sub import
 			}
 
 		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
-		#system("$config->{BASE_PATH}/html/unknowncust_order_email.pl");
+		$self->EmailUnknownCustomer;
 		}
 	}
 
-sub get_directory
+sub get_import_directory
 	{
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->import_directory;
@@ -152,11 +152,55 @@ sub get_directory
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
-		$self->context->log->debug("Unable to create target directory, " . $!);
+		$self->log("Unable to create target directory, " . $!);
 		return;
 		}
 
 	return $TARGET_dir;
+	}
+
+sub get_imported_directory
+	{
+	my $self = shift;
+	my $TARGET_dir = IntelliShip::MyConfig->imported_directory;
+	$TARGET_dir .= '/' . 'co';
+	$TARGET_dir .= '/' . $self->customer->username;
+
+	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
+		{
+		$self->log("Unable to create target directory, " . $!);
+		return;
+		}
+
+	return $TARGET_dir;
+	}
+
+sub get_processing_directory
+	{
+	my $self = shift;
+
+	my $processpath = IntelliShip::MyConfig->process_directory;
+	unless (IntelliShip::Utils->check_for_directory($processpath))
+		{
+		$self->log("Unable to create processing directory, " . $!);
+		return;
+		}
+
+	return $processpath;
+	}
+
+sub get_unknown_customer_directory
+	{
+	my $self = shift;
+
+	my $export = IntelliShip::MyConfig->export_directory . '/unknowncust';
+	unless (IntelliShip::Utils->check_for_directory($export))
+		{
+		$self->log("Unable to create export directory, " . $!);
+		return;
+		}
+
+	return $export;
 	}
 
 sub ImportOrders
@@ -168,9 +212,10 @@ sub ImportOrders
 
 	my $c = $self->context;
 
-	my $UnknownCustCount = 0;
+	my $OUT_FILE;
 	my $Error_File = '';
 	my $OrderTypeRef = {};
+	my $UnknownCustCount = 0;
 
 	my $FILE = new IO::File;
 
@@ -951,30 +996,46 @@ sub ImportOrders
 					}
 				$ImportFailureRef->{$CustomerID} .= ": $export_flag\n";
 				}
-			## Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
-			## code for them explicitly
+			## Otherwise, just put out a warning for cron to pick up...
+			## Once we see enough headers, we can probably code for them explicitly
 			else
 				{
 				$UnknownCustCount++;
 
+				$self->log("... Unknown order line: $Line");
+
 				if ( $UnknownCustCount == 1 )
 					{
 					$Error_File = fileparse($import_file);
-					$Error_File = "unknowncustomer_".$Error_File;
-					#open(OUT, ">" . $config->{BASE_PATH} . "/var/processing/$Error_File") or warn "unable to open error file";
+					$Error_File = "unknowncustomer_" . $Error_File;
+
+					$OUT_FILE = new IO::File;
+					my $processpath = $self->get_processing_directory . '/' . $Error_File;
+
+					unless (open($OUT_FILE, ">" . $processpath))
+						{
+						$self->log("unable to open error file $processpath");
+						}
 					}
-				$self->log("___ 945 Unknown line: $Line");
-				#print OUT "$Line\n\n";
-				#close (OUT);
+
+				print $OUT_FILE "$Line\n\n";
 				}
 			}
 		}
 
+	close $OUT_FILE if $OUT_FILE;
+
 	if ( $UnknownCustCount > 0 )
 		{
+		my $processpath = $self->get_processing_directory;
+		my $exportpath = $self->get_unknown_customer_directory;
+
 		$self->log("*** UnknownCustCount ".$UnknownCustCount);
-		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
-		#or &TraceBack("Could not move $Error_File: $!");
+
+		unless (move("$processpath/$Error_File","$exportpath/$Error_File"))
+			{
+			$self->log("... Error: Could not move $Error_File: $!");
+			}
 		}
 
 	return ($ImportFailureRef,$OrderTypeRef);
@@ -989,10 +1050,10 @@ sub ImportProducts
 
 	my $c = $self->context;
 
-	my $UnknownCustCount = 0;
 	my $Error_File = '';
 	my $OrderTypeRef = {};
-	my $ordertype;
+	my $UnknownCustCount = 0;
+	my ($ordertype,$OUT_FILE);
 
 	my $FILE = new IO::File;
 
@@ -1340,31 +1401,45 @@ sub ImportProducts
 				{
 				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'}: $export_flag\n";
 				}
-			 ## Otherwise, just put out a warning for cron to pick up...Once we see enough headers, we can probably
-			 ## code for them explicitly
+			 ## Otherwise, just put out a warning for cron to pick up...
+			 ## Once we see enough headers, we can probably code for them explicitly
 			 else
 				{
 				$UnknownCustCount++;
+
+				$self->log("... Unknown product line: $Line");
 
 				if ( $UnknownCustCount == 1 )
 					{
 					$Error_File = fileparse($import_file);
 					$Error_File = "product_unknowncustomer_".$Error_File;
 
-					#open(OUT,">$config->{BASE_PATH}/var/processing/$Error_File") or warn "unable to open error file";
+					$OUT_FILE = new IO::File;
+					my $processpath = $self->get_processing_directory . '/' . $Error_File;
+					unless (open($OUT_FILE, ">" . $processpath))
+						{
+						$self->log("unable to open error file $processpath");
+						}
 					}
-				$self->log("___ 1327 Unknown line: $Line\n\n");
-				#print OUT "$Line\n\n";
+
+				print $OUT_FILE "$Line\n\n";
 				}
 			}
 		}
 
+	close $OUT_FILE if $OUT_FILE;
+
 	if ( $UnknownCustCount > 0 )
 		{
-		$self->log("###UnknownCustCount ".$UnknownCustCount);
-		#close (OUT);
-		#move("$config->{BASE_PATH}/var/processing/$Error_File","$config->{BASE_PATH}/var/export/unknowncust/$Error_File")
-		##   or &TraceBack("Could not move $Error_File: $!");
+		my $processpath = $self->get_processing_directory;
+		my $exportpath = $self->get_unknown_customer_directory;
+
+		$self->log("*** UnknownCustCount ".$UnknownCustCount);
+
+		unless (move("$processpath/$Error_File","$exportpath/$Error_File"))
+			{
+			$self->log("... Error: Could not move $Error_File: $!");
+			}
 		}
 
 	return ($ImportFailureRef,$ordertype);
@@ -1379,7 +1454,9 @@ sub EmailImportFailures
 
 	return unless ($ImportFailures);
 
-	$self->log("... EmailImportFailures, file: $filepath/$filename, $OrderTypeRef");
+	my $attach_file = $filepath . '/' . $filename;
+
+	$self->log("... EmailImportFailures, file: $attach_file, $OrderTypeRef");
 
 	foreach my $customerid (keys(%$ImportFailures))
 		{
@@ -1406,9 +1483,67 @@ sub EmailImportFailures
 
 		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
 
+		$Email->attach($attach_file);
+
 		if ($Email->send)
 			{
-			$self->context->log->debug("import failure order notification email successfully sent to " . join(',',@{$Email->to}));
+			$self->log("import failure order notification email successfully sent to " . join(',',@{$Email->to}));
+			}
+		}
+	}
+
+sub EmailUnknownCustomer
+	{
+	my $self = shift;
+
+	$self->log("... EmailUnknownCustomer");
+
+	my $base_path = $self->get_unknown_customer_directory;
+
+	foreach my $file (<$base_path/*>)
+		{
+		$self->log("... file: " . $file);
+
+		my $FILE = new IO::File;
+
+		unless (open($FILE,$file))
+			{
+			$self->log("Could not open $file", 1);
+			next;
+			}
+
+		my $Body = '';
+		while (<$FILE>)
+			{
+			$Body .= $_;
+			}
+
+		close $FILE;
+
+		my ($filename,$filepath) = fileparse($file);
+		my $type = ($filename =~ /^product_/ ? 'Product' : 'Order');
+
+		my $subject = 'ALERT: Unknown Customer ' . $type . ' Import Failures (' . $filename . ')';
+
+		my $Email = IntelliShip::Email->new;
+		$Email->content_type('text/html');
+		$Email->from_name('IntelliShip2');
+		$Email->from_address(IntelliShip::MyConfig->no_reply_email);
+		$Email->subject($subject);
+		$Email->add_to('noc@engagetechnology.com');
+		$Email->body($Body);
+
+		my $new_file = "$filepath/$filename";
+		$Email->attach($new_file);
+
+		if ($Email->send)
+			{
+			$self->context->log->debug("import failure order for unkown user notification email successfully sent to " . join(',',@{$Email->to}));
+			}
+
+		unless (move($file, $new_file))
+			{
+			$self->log("Could not move $file to $new_file");
 			}
 		}
 	}
@@ -1418,29 +1553,22 @@ sub SaveAssessorial
 	my $self = shift;
 	my ($OwnerID,$AssName,$AssDisplay,$AssValue) = @_;
 
-	my $AssData = $self->context->model('MyDBI::ASSDATA')->new({
-						ownertypeid => '1000',
-						ownerid     => $OwnerID,
-						assname     => $AssName,
-						assdisplay  => $AssDisplay,
-						assvalue    => $AssValue,
-						});
-
 	## Delete old assessorial for order
-	#if
-	#(
-	#$AssData->LowLevelLoadAdvanced(undef,{
-	#	ownertypeid => '1000',
-	#	 ownerid	  => $OwnerID,
-	#	 assname	  => $AssName,
-	#  })
-	#)
-	#{
-	#	$AssData->Delete();
-	#}
+	##
+
+	my $addData = {
+		ownertypeid => '1000',
+		ownerid     => $OwnerID,
+		assname     => $AssName,
+		assdisplay  => $AssDisplay,
+		assvalue    => $AssValue,
+		};
+
+	my $AssData = $self->context->model('MyDBI::ASSDATA')->new($addData);
 	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
-	$self->context->log->debug("... NEW AssData INSERTED, assdataid: " . $AssData->assdataid);
+
+	$self->log("... NEW AssData INSERTED, assdataid: " . $AssData->assdataid);
 	}
 
 sub AuthenticateContact
