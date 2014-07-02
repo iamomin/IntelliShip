@@ -47,12 +47,9 @@ sub index :Path :Args(0)
 	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
 		{
 		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
-		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password'), };
+		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
 
-		# set up a REST session
-		my $rest = REST::Client->new( { host => "http://$ssohost", } );
-
-		if ($ENV{QUERY_STRING} !~ /^ID=/)
+		unless ($params->{'ID'})
 			{
 			# initialize SSO
 			# redirect to sso server which will send a request to motorola
@@ -61,18 +58,22 @@ sub index :Path :Args(0)
 			$c->log->debug("Location: $params->{'mymotossourl'}");
 			$c->response->redirect($params->{'mymotossourl'});
 			}
-
-		if ($ENV{QUERY_STRING} =~ /^ID=/)
+		else
 			{
-			# get the username
+			$c->log->debug('***** Set up a REST session *****');
+			## Set up a REST session
+			my $REST = REST::Client->new( { host => "http://$ssohost", } );
+
+			## Get the username
 			$params->{'myssoid'} = $ENV{QUERY_STRING};
 			$params->{'myssoid'} =~ s/ID=//i;
 
-			$rest->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'myssoid'}, $headers );
+			$REST->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'myssoid'}, $headers );
 
-			my $SSORespCode = $rest->responseCode();
-			my $SSOResponse = $rest->responseContent();
+			my $SSORespCode = $REST->responseCode();
+			my $SSOResponse = $REST->responseContent();
 
+			$c->log->debug('***** SSORespCode: ' . $SSORespCode);
 			if ($SSORespCode eq '200')
 				{
 				$params->{'ssoauth'} = $params->{'myssoid'};
