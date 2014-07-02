@@ -661,7 +661,6 @@ function populatePackageDefaultDetials(row_ID)
 		$("#dimlength_"+row_ID).val(JSON_data.dimlength);
 		$("#dimwidth_"+row_ID).val(JSON_data.dimwidth);
 		$("#dimheight_"+row_ID).val(JSON_data.dimheight);
-		$("#dimweight_"+row_ID).val(0);
 		$("#weightperpackage-"+row_ID).html("Weight Per " + JSON_data.PACKAGE_TYPE);
 
 		var unittype_val = $('#unittype').val();
@@ -678,6 +677,8 @@ function populatePackageDefaultDetials(row_ID)
 			$('#unittype_'+ID).append(JSON_data.optionHTML);
 			$('#unittype_'+ID).val(val);
 			});
+
+		CalculateDimentionalWeight();
 		});
 	}
 
