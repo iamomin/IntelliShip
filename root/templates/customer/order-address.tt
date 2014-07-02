@@ -79,7 +79,7 @@
 				</tr>
 				[% ELSE %]
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>
+					<td><label class="float-right">City, State, Zip:</label></td><td><input readonly type="text" class="labellike" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>
 					<input type="hidden" name="fromcity"  id="fromcity" value='[% fromAddress.city %]'/>
 					<input type="hidden" name="fromstate" id="fromstate" value='[% fromAddress.state %]'/>
 					<input type="hidden" name="fromzip"   id="fromzip" value='[% fromAddress.zip %]'/>
