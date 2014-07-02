@@ -260,8 +260,8 @@ sub get_carrier_service_list
 	my $ToAddress = $CO->destination_address;
 	my $addresscode = $ToAddress->addresscode;
 
-	my ($carrier_Details,$DefaultCSID,$DefaultTotalCost) = $self->API->get_carrrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
-	#$c->log->debug("API get_carrrier_service_rate_list: " . Dumper($carrier_Details));
+	my ($carrier_Details,$DefaultCSID,$DefaultTotalCost) = $self->API->get_carrier_service_rate_list($CO, $Contact, $Customer, $addresscode);
+	#$c->log->debug("API get_carrier_service_rate_list: " . Dumper($carrier_Details));
 
 	my @packages = $CO->packages;
 	my $shipmentCarriers = {};

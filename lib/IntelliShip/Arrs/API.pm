@@ -269,7 +269,7 @@ sub import_tariff
 	return $self->APIRequest($http_request);
 	}
 
-sub get_carrrier_service_rate_list
+sub get_carrier_service_rate_list
 	{
 	my $self             = shift;
 	my $CO               = shift;
