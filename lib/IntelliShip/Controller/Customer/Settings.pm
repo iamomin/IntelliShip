@@ -539,7 +539,7 @@ sub contactinformation :Local
 			}
 
 		my $addressData = {
-			addressname => $self->customer->customername,
+			addressname => $Contact->customer->address->addressname,
 			address1	=> $params->{'contact_address1'},
 			address2	=> $params->{'contact_address2'},
 			city		=> $params->{'contact_city'},
@@ -548,9 +548,10 @@ sub contactinformation :Local
 			country		=> $params->{'contact_country'},
 			};
 
-		my $Address;
-		unless ($Address = $Contact->address)
+		my $Address = $Contact->address if $Contact->addressid;
+		unless ($Address)
 			{
+			$c->log->debug("Address Not Found: ");
 			my @addresses = $c->model('MyDBI::Address')->search($addressData);
 
 			$Address = (@addresses ? $addresses[0] : $c->model('MyDBI::Address')->new($addressData));
@@ -561,11 +562,9 @@ sub contactinformation :Local
 				$Address->insert;
 				$c->log->debug("New Address Inserted: " . $Address->addressid);
 				}
-
 			$Contact->addressid($Address->addressid);
 			}
 
-		$addressData->{addressname} = $Contact->customer->address->addressname unless $addressData->{addressname};
 		$Address->update($addressData);
 
 		$Contact->username($params->{'contact_username'}) if $params->{'contact_username'};
