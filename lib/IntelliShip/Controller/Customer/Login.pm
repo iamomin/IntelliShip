@@ -59,6 +59,7 @@ sub index :Path :Args(0)
 			$params->{'mymotossourl'} = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com';
 			$c->log->debug("Status: 302 Moved");
 			$c->log->debug("Location: $params->{'mymotossourl'}");
+			$c->response->redirect($params->{'mymotossourl'});
 			}
 
 		if ($ENV{QUERY_STRING} =~ /^ID=/)
