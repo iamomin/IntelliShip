@@ -117,6 +117,17 @@ sub send
 	#print STDERR "\n Body   : \n" . $self->body;
 	#return;
 
+	if (IntelliShip::MyConfig->getHostname eq 'RT-XML')
+		{
+		print STDERR "\n From   : " . $from;
+		print STDERR "\n To     : " . $to_list;
+		print STDERR "\n CC     : " . $cc_list if $cc_list;
+		print STDERR "\n BCC    : " . $bcc_list if $bcc_list;
+		print STDERR "\n Subject: " . $self->subject;
+		print STDERR "\n Body   : \n" . $self->body;
+		return;
+		}
+
 	if (IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT')
 		{
 		if ($self->allow_send_from_dev)

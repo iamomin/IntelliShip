@@ -24,6 +24,7 @@ has 'myDBI_obj'    => ( is => 'rw' );
 has 'context'      => ( is => 'rw' );
 has 'API'          => ( is => 'rw' );
 has 'AuthContacts' => ( is => 'rw' );
+has 'error_files'  => ( is => 'rw' );
 
 my $config;
 $Data::Dumper::Sortkeys = 1;
@@ -31,6 +32,7 @@ $Data::Dumper::Sortkeys = 1;
 sub BUILD
 	{
 	my $self = shift;
+	$self->error_files([]);
 	$self->AuthContacts({});
 	$config = IntelliShip::MyConfig->get_ARRS_configuration;
 	}
@@ -1009,6 +1011,8 @@ sub ImportOrders
 					$Error_File = fileparse($import_file);
 					$Error_File = "unknowncustomer_" . $Error_File;
 
+					push(@{$self->error_files},$Error_File);
+
 					$OUT_FILE = new IO::File;
 					my $processpath = $self->get_processing_directory . '/' . $Error_File;
 
@@ -1414,6 +1418,8 @@ sub ImportProducts
 					$Error_File = fileparse($import_file);
 					$Error_File = "product_unknowncustomer_".$Error_File;
 
+					push(@{$self->error_files},$Error_File);
+
 					$OUT_FILE = new IO::File;
 					my $processpath = $self->get_processing_directory . '/' . $Error_File;
 					unless (open($OUT_FILE, ">" . $processpath))
@@ -1496,12 +1502,19 @@ sub EmailUnknownCustomer
 	{
 	my $self = shift;
 
+	return unless scalar @{$self->error_files};
+
 	$self->log("... EmailUnknownCustomer");
+	#$self->log("... Error Files: " . Dumper($self->error_files));
 
 	my $base_path = $self->get_unknown_customer_directory;
 
 	foreach my $file (<$base_path/*>)
 		{
+		my ($filename,$filepath) = fileparse($file);
+
+		next unless grep(/$filename/i, @{$self->error_files});
+
 		$self->log("... file: " . $file);
 
 		my $FILE = new IO::File;
@@ -1520,7 +1533,6 @@ sub EmailUnknownCustomer
 
 		close $FILE;
 
-		my ($filename,$filepath) = fileparse($file);
 		my $type = ($filename =~ /^product_/ ? 'Product' : 'Order');
 
 		my $subject = 'ALERT: Unknown Customer ' . $type . ' Import Failures (' . $filename . ')';
@@ -1538,7 +1550,7 @@ sub EmailUnknownCustomer
 
 		if ($Email->send)
 			{
-			$self->context->log->debug("import failure order for unkown user notification email successfully sent to " . join(',',@{$Email->to}));
+			$self->context->log->debug("*** import failure order for unkown user notification email successfully sent to " . join(',',@{$Email->to}));
 			}
 
 		unless (move($file, $new_file))
