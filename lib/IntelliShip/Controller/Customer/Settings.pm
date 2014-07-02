@@ -646,6 +646,7 @@ sub contactinformation :Local
 			$c->stash->{sourcedate}			= $Contact->get_contact_data_value('sourcedate');
 			$c->stash->{disabledate}		= $Contact->get_contact_data_value('disabledate');
 			$c->stash->{SSO_CUSTOMER}		= 1 if $Contact->customer->is_single_sign_on_customer;
+			$c->stash->{CURRENT_CONTACT} = ($Contact->contactid eq $self->contact->contactid);
 			}
 
 		$c->stash->{contact_password}        = $self->get_token_id unless $c->stash->{contact_password};
@@ -671,9 +672,6 @@ sub contactinformation :Local
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
 		$c->log->debug("SUPER_USER" . $c->stash->{SUPER_USER});
-		$c->stash->{CURRENT_CONTACT} = ($Contact->contactid eq $self->contact->contactid);
-		$c->log->debug("Contact->contactid : " . $Contact->contactid);
-		$c->log->debug("contactid : " . $self->contact->contactid);
 		$self->set_required_fields;
 		$c->stash->{CONTACT_INFO}  = 1;
 		$c->stash(template => "templates/customer/settings.tt");
