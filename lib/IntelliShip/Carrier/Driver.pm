@@ -398,13 +398,13 @@ sub SendDispatchNotification
 	if ( $Type eq 'Cancellation' )
 		{
 		$notetypeid ='1600';
-		$subject = "ALERT:  Shipment Dispatched " .$Type ."(".$Customer->customername .",". $Shipment->service ."Pickup on ".IntelliShip::DateUtils->current_date .")";
+		$subject = "ALERT:  Shipment Dispatched " .$Type ."(".$Customer->customername .",". $Shipment->service ." Pickup on ".IntelliShip::DateUtils->current_date .")";
 		$c->stash->{type} = 'CANCEL';
 		}
 	else
 		{
 		$notetypeid = '1500';
-		$subject = "ALERT:  Shipment Dispatched (". $Customer->customername .",". $Shipment->service ."Pickup on ".IntelliShip::DateUtils->current_date .")";
+		$subject = "ALERT:  Shipment Dispatched (". $Customer->customername .",". $Shipment->service ." Pickup on ".IntelliShip::DateUtils->current_date .")";
 		}
 
 	my $noteData = {
@@ -428,6 +428,7 @@ sub SendDispatchNotification
 
 	$Email->subject($subject);
 	$Email->add_to('noc@engagetechnology.com');
+	$Email->add_to($PickupRequestEmail);
 	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
 	$c->stash->{dispatchtitle} = "Dispatch " . $Type;
