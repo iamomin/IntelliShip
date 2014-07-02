@@ -53,7 +53,7 @@ sub index :Path :Args(0)
 			{
 			# initialize SSO
 			# redirect to sso server which will send a request to motorola
-			$params->{'mymotossourl'} = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com';
+			$params->{'mymotossourl'} = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com/customer/login';
 			$c->log->debug("Status: 302 Moved");
 			$c->log->debug("Location: $params->{'mymotossourl'}");
 			$c->response->redirect($params->{'mymotossourl'});
