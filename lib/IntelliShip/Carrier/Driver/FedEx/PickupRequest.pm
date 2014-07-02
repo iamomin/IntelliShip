@@ -96,7 +96,7 @@ sub process_request
 	$CustomerTransactionId = $PickupRequest->{CustomerTransactionId} unless $CustomerTransactionId;
 
 	$self->log("... ResponseCode   :   " . $ResponseCode . " CustomerTransactionId : " . $CustomerTransactionId);
-
+	$self->SendDispatchNotification('Pickup');
 	#$self->SendPickUpNotification($ResponseCode, $Message, $CustomerTransactionId, $ConfirmationNumber);
 	}
 
