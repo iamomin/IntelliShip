@@ -77,6 +77,8 @@ sub index :Path :Args(0)
 				{
 				$params->{'ssoauth'} = $params->{'myssoid'};
 				my @ssodata = split(/\n/, $SSOResponse);
+
+				my $SSO_username = '';
 				foreach my $ssodata ( @ssodata )
 					{
 					$ssodata =~ s/\r//;
@@ -84,16 +86,16 @@ sub index :Path :Args(0)
 
 					if ( $ssodata =~ /UserName/i )
 						{
-						$params->{'ssousername'} = $ssodata;
-						$params->{'ssousername'} =~ s/#UserName=//i;
-						$c->log->debug("TOKEN UserName=$params->{'ssousername'}");
+						$SSO_username = $ssodata;
+						$SSO_username =~ s/#UserName=//i;
+						$c->log->debug("TOKEN UserName=$SSO_username");
 						}
 					}
 
-				$params->{'username'} = 'motorola';
-				$params->{'password'} = 'ssologin';
-				$params->{'username'} = 'FCJ016@motorolasolutions.com';
-				$params->{'password'} = '8ETNA05SCWSM2';
+				$params->{'username'} = $SSO_username . '@motorolasolutions.com';
+				$params->{'password'} = 'SSOLOGIN';
+				#$params->{'username'} = 'FCJ016@motorolasolutions.com';
+				#$params->{'password'} = '8ETNA05SCWSM2';
 				}
 			else
 				{
