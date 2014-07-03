@@ -1,8 +1,6 @@
 package IntelliShip::Controller::Root;
 use Moose;
 use Data::Dumper;
-use REST::Client;
-use MIME::Base64;
 use IntelliShip::Utils;
 use IntelliShip::DateUtils;
 use namespace::autoclean;
@@ -39,58 +37,6 @@ sub index :Path :Args(0) {
     # Hello World
     #$c->response->body( $c->welcome_message );
 	$c->log->debug('IN ROOT index');
-
-	my $params = $c->req->params;
-	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i && $params->{'ID'})
-		{
-		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
-		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
-
-		$c->log->debug('***** Set up a REST session *****');
-
-		## Set up a REST session
-		my $REST = REST::Client->new( { host => "http://$ssohost", } );
-
-		## Get the username
-		$params->{'myssoid'} = $ENV{QUERY_STRING};
-		$params->{'myssoid'} =~ s/ID=//i;
-
-		$REST->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'myssoid'}, $headers );
-
-		my $SSORespCode = $REST->responseCode();
-		my $SSOResponse = $REST->responseContent();
-
-		$c->log->debug('***** SSORespCode: ' . $SSORespCode);
-		$c->log->debug('***** SSOResponse: ' . $SSOResponse);
-
-		if ($SSORespCode eq '200')
-			{
-			$params->{'ssoauth'} = $params->{'myssoid'};
-			my @ssodata = split(/\n/, $SSOResponse);
-			foreach my $ssodata ( @ssodata )
-				{
-				$ssodata =~ s/\r//;
-				$ssodata =~ s/\n//;
-
-				if ( $ssodata =~ /UserName/i )
-					{
-					$params->{'ssousername'} = $ssodata;
-					$params->{'ssousername'} =~ s/#UserName=//i;
-					$c->log->debug("TOKEN UserName=$params->{'ssousername'}");
-					}
-				}
-
-			$params->{'username'} = 'motorola';
-			$params->{'password'} = 'ssologin';
-			}
-		else
-			{
-			$c->stash(error => 'Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
-			$c->log->debug('Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
-			return;
-			}
-		}
-
 	$c->response->redirect($c->uri_for('/customer/login'));
 }
 
