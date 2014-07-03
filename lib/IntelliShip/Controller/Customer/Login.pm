@@ -2,6 +2,7 @@ package IntelliShip::Controller::Customer::Login;
 use Moose;
 use MIME::Base64;
 use REST::Client;
+use Data::Dumper;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
@@ -44,7 +45,9 @@ sub index :Path :Args(0)
 		return;
 		}
 
-	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
+	$c->log->debug('Login.pm - PARAMS: ' . Dumper $params);
+
+	if ($c->request->hostname =~ /motorolasolutions/i)
 		{
 		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
 		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
