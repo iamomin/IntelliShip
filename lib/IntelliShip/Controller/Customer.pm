@@ -1297,12 +1297,12 @@ sub set_header_section
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 	my $company_logo = $Customer->username . '-light-logo.png';
-	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/images/header/' . $company_logo;
+	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $company_logo;
 	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
 	$c->stash->{logo} = $company_logo;
 
 	my $user_profile = $Customer->username . '-' . $Contact->username . '.png';
-	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/images/profile/' . $user_profile;
+	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $user_profile;
 	$c->stash->{user_profile} = $user_profile if -e $fullpath;
 
 	my $halousername = $Contact->get_only_contact_data_value("halousername");
