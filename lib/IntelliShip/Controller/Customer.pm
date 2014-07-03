@@ -570,7 +570,7 @@ sub get_select_list
 
 			next if $UnitType->carrier && keys %carrierHash && !$carrierHash{uc($UnitType->carrier)};
 
-			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
+			my $unittypename = $UnitType->unittypename . ( $UnitType->carrier ? ' ' . $UnitType->carrier : '' );
 			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });
 			}
 		}
