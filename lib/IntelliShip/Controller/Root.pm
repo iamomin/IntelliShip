@@ -186,8 +186,10 @@ sub check_css_overrides :Private
 	return if $c->stash->{BRANDING_DEMO_CSS};
 	return unless $Controller->contact;
 
-	my $CustomerCss = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->customerid . '.css';
-	my $ContactCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->contactid . '.css';
+	#my $CustomerCss = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->customerid . '.css';
+	#my $ContactCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $Controller->get_branding_id . '/css/' . $Controller->contact->contactid . '.css';
+	my $CustomerCss = IntelliShip::MyConfig->branding_file_directory . '/engage/css/' . $Controller->contact->customerid . '.css';
+	my $ContactCss  = IntelliShip::MyConfig->branding_file_directory . '/engage/css/' . $Controller->contact->contactid . '.css';
 	$c->stash->{CUSTOMER_OVERRIDE} = (-e $CustomerCss);
 	$c->stash->{CONTACT_OVERRIDE}  = (-e $ContactCss);
 	}

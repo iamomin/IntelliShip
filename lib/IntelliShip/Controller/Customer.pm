@@ -1297,7 +1297,7 @@ sub set_header_section
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
 	my $company_logo = $Customer->username . '-light-logo.png';
-	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/header/' . $company_logo;
+	my $fullpath = IntelliShip::MyConfig->branding_file_directory . '/engage/images/header/' . $company_logo;
 	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
 	$c->stash->{logo} = $company_logo;
 
