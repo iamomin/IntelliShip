@@ -49,29 +49,23 @@ sub index :Path :Args(0)
 
 	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
 		{
-		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
-		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
-
 		unless ($params->{'ID'})
 			{
 			# initialize SSO
 			# redirect to sso server which will send a request to motorola
-			$params->{'mymotossourl'} = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com/customer/login';
-			$c->log->debug("Status: 302 Moved");
-			$c->log->debug("Location: $params->{'mymotossourl'}");
-			$c->response->redirect($params->{'mymotossourl'});
+			my $moto_sso_url = $self->get_sso_URL;
+			$c->log->debug("Status: 302 Moved, Location: $moto_sso_url");
+			$c->response->redirect($moto_sso_url);
 			}
 		else
 			{
+			my $SSO_host = 'sso.engagetechnology.com/EasyConnect';
+			my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
+
 			$c->log->debug('***** Set up a REST session *****');
 			## Set up a REST session
-			my $REST = REST::Client->new( { host => "http://$ssohost", } );
-
-			## Get the username
-			$params->{'myssoid'} = $ENV{QUERY_STRING};
-			$params->{'myssoid'} =~ s/ID=//i;
-
-			$REST->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'myssoid'}, $headers );
+			my $REST = REST::Client->new( { host => "http://$SSO_host" } );
+			$REST->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'ID'}, $headers );
 
 			my $SSORespCode = $REST->responseCode();
 			my $SSOResponse = $REST->responseContent();
@@ -96,11 +90,13 @@ sub index :Path :Args(0)
 
 				$params->{'username'} = 'motorola';
 				$params->{'password'} = 'ssologin';
+				$params->{'username'} = 'FCJ016@motorolasolutions.com';
+				$params->{'password'} = '8ETNA05SCWSM2';
 				}
 			else
 				{
-				$c->stash(error => 'Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
-				$c->log->debug('Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
+				$c->stash(error => 'Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $SSO_host);
+				$c->log->debug('Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $SSO_host);
 				return;
 				}
 			}
@@ -190,6 +186,13 @@ sub authenticate_user :Private
 		}
 
 	return $TokenID;
+	}
+
+sub get_sso_URL :Private
+	{
+	my $self = shift;
+	my $URL = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com';
+	return $URL;
 	}
 
 =encoding utf8
