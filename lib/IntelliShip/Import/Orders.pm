@@ -141,7 +141,7 @@ sub import
 			}
 
 		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
-		$self->EmailUnknownCustomer;
+		$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
 		}
 	}
 
@@ -1003,7 +1003,7 @@ sub ImportOrders
 			else
 				{
 				$UnknownCustCount++;
-
+				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'} : $export_flag\n";
 				$self->log("... Unknown order line: $Line");
 
 				if ( $UnknownCustCount == 1 )
@@ -1410,6 +1410,7 @@ sub ImportProducts
 			 else
 				{
 				$UnknownCustCount++;
+				$ImportFailureRef->{$CustomerID} .= "$CustRef->{'ordernumber'} : $export_flag\n";
 
 				$self->log("... Unknown product line: $Line");
 
@@ -1458,8 +1459,6 @@ sub EmailImportFailures
 	my $c = $self->context;
 	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
 
-	return unless ($ImportFailures);
-
 	my $attach_file = $filepath . '/' . $filename;
 
 	$self->log("... EmailImportFailures, file: $attach_file, $OrderTypeRef");
@@ -1467,10 +1466,10 @@ sub EmailImportFailures
 	foreach my $customerid (keys(%$ImportFailures))
 		{
 		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
-
-		my $Customer	 = $c->model('MyDBI::Customer')->find({ customerid => $customerid});
-		my $CustomerName = $Customer->username;
-		my $toEmail      = $Customer->email;
+		my $Customer	 = $self->model('Customer')->find({ customerid => $customerid});
+        return unless  $Customer;
+		my $CustomerName = $Customer->customername if ($Customer);
+		my $toEmail      = $Customer->email if ($Customer);
 		my $subject      = "NOTICE: " . $CustomerName . " " . $OrderTypeRef->{'ordertype'} ." Import Failures "  . "(".$Timestamp.", ".$filename.")";
 		my $Email        = IntelliShip::Email->new;
 
@@ -1501,6 +1500,9 @@ sub EmailImportFailures
 sub EmailUnknownCustomer
 	{
 	my $self = shift;
+	my $ImportFailures =shift;
+	my $OrderTypeRef =shift;
+	my $c = $self->context;
 
 	return unless scalar @{$self->error_files};
 
@@ -1512,39 +1514,40 @@ sub EmailUnknownCustomer
 	foreach my $file (<$base_path/*>)
 		{
 		my ($filename,$filepath) = fileparse($file);
-
 		next unless grep(/$filename/i, @{$self->error_files});
 
 		$self->log("... file: " . $file);
 
 		my $FILE = new IO::File;
-
 		unless (open($FILE,$file))
 			{
 			$self->log("Could not open $file", 1);
 			next;
 			}
-
 		my $Body = '';
 		while (<$FILE>)
 			{
-			$Body .= $_;
+			$Body .= $_."<br>";
 			}
-
 		close $FILE;
 
 		my $type = ($filename =~ /^product_/ ? 'Product' : 'Order');
-
 		my $subject = 'ALERT: Unknown Customer ' . $type . ' Import Failures (' . $filename . ')';
-
 		my $Email = IntelliShip::Email->new;
 		$Email->content_type('text/html');
 		$Email->from_name('IntelliShip2');
 		$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 		$Email->subject($subject);
 		$Email->add_to('noc@engagetechnology.com');
-		$Email->body($Body);
+		foreach my $customerid (keys(%$ImportFailures))
+			{
+			$c->stash->{failures}		= $ImportFailures->{$customerid};
+			}
+		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+		$c->stash->{failure_order}  = $Body;
 
+		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
 		my $new_file = "$filepath/$filename";
 		$Email->attach($new_file);
 

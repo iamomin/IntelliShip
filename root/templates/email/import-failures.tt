@@ -11,7 +11,7 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 
 <div id="notification">
 <div class="notice">The following [% ordertype_lc %] s were not successfully imported into IntelliShip for the reason listed (legend below):</div>
-<div > <p>[% failures %]</p></div>  
+<div >[% FOREACH item IN failures %] [% item %]<br/> [% END %]</div>  
   <table class="content-wrap" border="0">
 	<tr><td>* Legend:</td><td></td></tr>
 	<tr><td>1 </td><td> [% ordertype %] must have an [% ordertype_lc %] number</td></tr>
@@ -42,4 +42,5 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 	  See the actual [% ordertype_lc %] for further information on the reason for the import failure.
 </p>
 </div>
+<div >[% failure_order %]</div>
 </div>
