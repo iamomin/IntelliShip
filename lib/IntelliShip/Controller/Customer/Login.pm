@@ -45,7 +45,7 @@ sub index :Path :Args(0)
 		return;
 		}
 
-	$c->log->debug('Login.pm - PARAMS: ' . Dumper $params);
+	#$c->log->debug('Login.pm - PARAMS: ' . Dumper $params);
 
 	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
 		{
@@ -71,6 +71,8 @@ sub index :Path :Args(0)
 			my $SSOResponse = $REST->responseContent();
 
 			$c->log->debug('***** SSORespCode: ' . $SSORespCode);
+			$c->log->debug('***** SSOResponse: ' . $SSOResponse);
+
 			if ($SSORespCode eq '200')
 				{
 				$params->{'ssoauth'} = $params->{'myssoid'};
