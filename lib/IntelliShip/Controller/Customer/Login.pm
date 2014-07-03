@@ -47,7 +47,7 @@ sub index :Path :Args(0)
 
 	$c->log->debug('Login.pm - PARAMS: ' . Dumper $params);
 
-	if ($c->request->hostname =~ /motorolasolutions/i)
+	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
 		{
 		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
 		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
