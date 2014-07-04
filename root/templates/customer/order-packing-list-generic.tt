@@ -76,6 +76,35 @@
 	</head>
 
 	<body>
+		<p class=MsoNormal>
+		<![if !vml]>
+		<span style='mso-ignore:vglayout;position:relative;z-index:1;' >
+		<span style='position: absolute;left:11px;top:-1px;width:102px;height:54px'>
+		
+		<table cellpadding=0 cellspacing=0 style="border: 0px;">
+			<tr>
+				<td width=102 height=54 bgcolor=white style="vertical-align:top;background:white;border: 0px;text-align: left;">
+					<![endif]><![if !mso]>
+					<span style='position:absolute;mso-ignore:vglayout;z-index:1;'>
+						<table cellpadding=0 cellspacing=0 width="100%" style="border: 0px;">
+							<tr>
+								<td style="border: 0px;float:left;"><![endif]>
+									<img id="logo" src="[% logo_path %]" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top style="max-height: 50px; max-width: 450px;">
+									<![if !mso]></td>
+							</tr>
+						</table>
+					</span><![endif]><![if !mso & !vml]>&nbsp;<![endif]><![if !vml]>
+				</td>
+			</tr>
+		</table>
+		</span>
+		</span>
+		<![endif]><o:p>&nbsp;</o:p></p>
+		
+		<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+		<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
 		<div id="print-content">
 			<!-- Vendor Data -->
 			<div class="addressfieldname" style="top: .25in; left: .25in; width: 1.5in; height: .20in;">

@@ -3588,6 +3588,11 @@ sub generate_packing_list
 			$params->{'shipmentid'} = $original_param_shipmentid;
 			}
 
+		my $logo_path = '/static/branding/engage/images/header/' . $Customer->username . '-dark-logo.png';
+		my $image_file_path = IntelliShip::MyConfig->application_root . '/root'. $logo_path;
+		$logo_path = '/static/branding/engage/images/header/report-logo.png' unless -e $image_file_path;
+		$c->stash->{logo_path} = $logo_path;
+		
 		my $template = 'order-packing-list-' . $list_type . '.tt';
 
 		## Render Packing List HTML
