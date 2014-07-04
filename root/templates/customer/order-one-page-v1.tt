@@ -114,7 +114,7 @@
 		</tr>
 	</table>
 
-	<div id="intlCommoditySec" style="border: 4px solid #9BA7AF"></div>
+	<div id="intlCommoditySec" style="border: 4px solid #9BA7AF;overflow:hidden;"></div>
 
 	<div id="clear">&nbsp;</div>
 
