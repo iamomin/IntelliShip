@@ -1545,7 +1545,6 @@ sub EmailUnknownCustomer
 			}
 		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
 		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
-		$c->stash->{failure_order}  = $Body;
 
 		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
 		my $new_file = "$filepath/$filename";

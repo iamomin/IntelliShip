@@ -42,5 +42,4 @@ div.notice {position: relative;margin: 10px 0px;padding: 15px;border: 1px solid 
 	  See the actual [% ordertype_lc %] for further information on the reason for the import failure.
 </p>
 </div>
-<div >[% failure_order %]</div>
 </div>
