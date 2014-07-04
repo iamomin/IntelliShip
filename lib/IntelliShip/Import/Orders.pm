@@ -834,9 +834,8 @@ sub ImportOrders
 					}
 
 				$CO->{'dropaddressid'} = $DropAddress->id if $DropAddress;
+				$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
 				}
-
-			#$CO->{'oaaddressid'}   = $DropAddress->id if $DropAddress && !$CO->{'oaaddressid'};
 
 			###########################
 			my $termsofsale = $CustRef->{'termsofsale'};
