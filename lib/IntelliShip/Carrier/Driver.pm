@@ -205,6 +205,8 @@ sub insert_shipment
 
 	my $date_shipped = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetoship'});
 	my $date_packed = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datepacked'});
+	my $date_due = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'dateneeded'});
+	my $date_to_deliver = IntelliShip::DateUtils->get_db_format_date_time_with_timezone($shipmentData->{'datetodeliver'});
 
 	my $shipmentObj = {
 			'shipmentid' => $shipmentData->{'new_shipmentid'},
@@ -274,6 +276,8 @@ sub insert_shipment
 			'ipaddress' => $shipmentData->{'ipaddress'},
 			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'},
 			'contactid' =>	$shipmentData->{'contactid'},
+			'datedue' =>	$date_due,
+			'datetodeliver' =>	$date_to_deliver,
 		};
 
 	my $orignAddress = {
@@ -288,9 +292,7 @@ sub insert_shipment
 
 	my @arr1 = $self->model('MyDBI::Address')->search($orignAddress);
 	$shipmentObj->{'addressidorigin'} = $arr1[0]->addressid if @arr1;
-	$shipmentObj->{'datedue'} => $shipmentData->{'dateneeded'} if $shipmentData->{'dateneeded'};
-	$shipmentObj->{'datetodeliver'} => $shipmentData->{'datetodeliver'} if $shipmentData->{'datetodeliver'};
-
+	
 	my $destinAddress = {
 			addressname	=> $shipmentData->{'addressname'},
 			address1	=> $shipmentData->{'address1'},
