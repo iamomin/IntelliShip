@@ -288,6 +288,8 @@ sub insert_shipment
 
 	my @arr1 = $self->model('MyDBI::Address')->search($orignAddress);
 	$shipmentObj->{'addressidorigin'} = $arr1[0]->addressid if @arr1;
+	$shipmentObj->{'datedue'} => $shipmentData->{'dateneeded'} if $shipmentData->{'dateneeded'};
+	$shipmentObj->{'datetodeliver'} => $shipmentData->{'datetodeliver'} if $shipmentData->{'datetodeliver'};
 
 	my $destinAddress = {
 			addressname	=> $shipmentData->{'addressname'},

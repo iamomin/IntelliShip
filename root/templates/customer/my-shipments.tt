@@ -105,7 +105,7 @@
 				<td>[% item.origin %]</td>
 				<td>[% item.destin %]</td>
 				<td>[% item.dateshipped %]</td>
-				<td>[% item.duedate %]</td>
+				<td>[% item.duedate ? item.duedate : item.datetodeliver%]</td>
 				<td>[% item.carrier %]</td>
 				<td class="center">
 					[% IF item.condition == 6 %]
