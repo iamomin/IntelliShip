@@ -809,7 +809,7 @@
 			}
 
 		function updateCompanyBranding(){
-			var params = 'customerid='+$("#customerid").val() + '&' + $("#custom-style-sheet").serialize() + '&' + $("#color-picker :input").serialize();
+			var params = 'customerid='+$("#customerid").val() + '&webaddress=' +$("#webaddress").val()+ '&' + $("#custom-style-sheet").serialize() + '&' + $("#color-picker :input").serialize();
 			send_ajax_request('company-branding', 'JSON', 'settings/company', 'update_branding_settings', params, function() {
 			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
 			[% IF CURRENT_COMPANY %]

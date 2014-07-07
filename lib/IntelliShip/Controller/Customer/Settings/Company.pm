@@ -664,6 +664,13 @@ sub update_branding_settings :Private
 	my $CSS_CONTENT = $params->{'custom-style-sheet'};
 	my $CustomerCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/css/' . $params->{'customerid'} . '.css';
 
+	if ($params->{'webaddress'})
+		{
+		$Customer->webaddress($params->{'webaddress'});
+		$Customer->update;
+		$c->log->debug("Customer UPDATED, ID: ".$Customer->customerid);
+		}
+
 	my $FILE = new IO::File;
 	unless (open ($FILE,">$CustomerCss"))
 		{

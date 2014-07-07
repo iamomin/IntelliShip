@@ -405,6 +405,12 @@ __PACKAGE__->table("customer");
   is_nullable: 1
   size: 13
 
+=head2 webaddress
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 100
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -542,6 +548,8 @@ __PACKAGE__->add_columns(
   { data_type => "char", is_nullable => 1, size => 13 },
   "createdby",
   { data_type => "varchar", is_nullable => 1, size => 13 },
+  "webaddress",
+  { data_type => "varchar", is_nullable => 1, size => 100 },
 );
 
 =head1 PRIMARY KEY
