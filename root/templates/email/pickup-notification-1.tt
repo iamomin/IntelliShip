@@ -8,11 +8,7 @@
 	<body>
 	<table width=45% cellpadding=1 cellspacing=0 border="0">
 	<tr>
-		<td><div class="notice">***This is an automated message, do not reply to this email.***</div></td></tr>
-	<tr>
-		<td><h2>[% type %]-PICKUP-NOTIFICATION</h2></td></tr>
-	<tr>
-		<td><div class="notice">Your shipment pick-up dispatch has been scheduled</div></td></tr>
+		<td><h2>[% type %] PICKUP-NOTIFICATION</h2></td></tr>
 	<tr>
 		<td><table width="450" border="1" cellspacing="0" cellpadding="0" align="left" bordercolor="#000000" bgcolor="#FFFFFF">
 			<tr>

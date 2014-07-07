@@ -39,6 +39,7 @@ sub get_branding_id
 
 	my $branding_id = 'engage';
 
+	return $branding_id; ##**
 	my $http_host = $ENV{HTTP_HOST} || '';
 
 	#override brandingid based on url
@@ -382,6 +383,33 @@ sub get_status_ui_info
 
 	$dataHash->{'conditiontext'} = '';
 	return ($dataHash->{'conditioncolor'},$dataHash->{'conditiontext'});
+	}
+
+my $TERMS_OF_SALE = {
+	1 => 'FOB/FCA',
+	2 => 'CIF/CIP',
+	3 => 'C&F/CPT',
+	4 => 'EXW',
+	5 => 'DDU',
+	6 => 'DDP',
+	};
+
+sub get_terms_of_sale
+	{
+	my $self = shift;
+	my $term = shift;
+
+	return $TERMS_OF_SALE unless $term;
+
+	if ($term =~ /^\d$/)
+		{
+		return $TERMS_OF_SALE->{$term};
+		}
+	else
+		{
+		my $reversedTOS = { 'FOB' => 1, 'FCA' => 1, 'CIF' => 2, 'CIP' => 2, 'C&F' => 3, 'CPT' => 3, 'EXW' => 4, 'DDU' => 5, 'DDP' => 6 };
+		return $reversedTOS->{$term};
+		}
 	}
 
 my $CUSTOMER_CONTACT_RULES = [

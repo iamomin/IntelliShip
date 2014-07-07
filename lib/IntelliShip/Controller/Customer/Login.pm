@@ -2,6 +2,7 @@ package IntelliShip::Controller::Customer::Login;
 use Moose;
 use MIME::Base64;
 use REST::Client;
+use Data::Dumper;
 use namespace::autoclean;
 
 BEGIN { extends 'IntelliShip::Controller::Customer'; }
@@ -44,38 +45,40 @@ sub index :Path :Args(0)
 		return;
 		}
 
+	#$c->log->debug('Login.pm - PARAMS: ' . Dumper $params);
+
 	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
 		{
-		my $ssohost = 'sso.engagetechnology.com/EasyConnect';
-		my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password'), };
-
-		# set up a REST session
-		my $rest = REST::Client->new( { host => "http://$ssohost", } );
-
-		if ($ENV{QUERY_STRING} !~ /^ID=/)
+		unless ($params->{'ID'})
 			{
 			# initialize SSO
 			# redirect to sso server which will send a request to motorola
-			$params->{'mymotossourl'} = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com';
-			$c->log->debug("Status: 302 Moved");
-			$c->log->debug("Location: $params->{'mymotossourl'}");
+			my $moto_sso_url = $self->get_sso_URL;
+			$c->log->debug("Status: 302 Moved, Location: $moto_sso_url");
+			$c->response->redirect($moto_sso_url);
 			}
-
-		if ($ENV{QUERY_STRING} =~ /^ID=/)
+		else
 			{
-			# get the username
-			$params->{'myssoid'} = $ENV{QUERY_STRING};
-			$params->{'myssoid'} =~ s/ID=//i;
+			my $SSO_host = 'sso.engagetechnology.com/EasyConnect';
+			my $headers = { 'Authorization' => 'Basic ' . encode_base64('intelliship:password') };
 
-			$rest->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'myssoid'}, $headers );
+			$c->log->debug('***** Set up a REST session *****');
+			## Set up a REST session
+			my $REST = REST::Client->new( { host => "http://$SSO_host" } );
+			$REST->GET( "/REST/IntegrationToken/Default.aspx?ID=".$params->{'ID'}, $headers );
 
-			my $SSORespCode = $rest->responseCode();
-			my $SSOResponse = $rest->responseContent();
+			my $SSORespCode = $REST->responseCode();
+			my $SSOResponse = $REST->responseContent();
+
+			$c->log->debug('***** SSORespCode: ' . $SSORespCode);
+			$c->log->debug('***** SSOResponse: ' . $SSOResponse);
 
 			if ($SSORespCode eq '200')
 				{
 				$params->{'ssoauth'} = $params->{'myssoid'};
 				my @ssodata = split(/\n/, $SSOResponse);
+
+				my $SSO_username = '';
 				foreach my $ssodata ( @ssodata )
 					{
 					$ssodata =~ s/\r//;
@@ -83,19 +86,21 @@ sub index :Path :Args(0)
 
 					if ( $ssodata =~ /UserName/i )
 						{
-						$params->{'ssousername'} = $ssodata;
-						$params->{'ssousername'} =~ s/#UserName=//i;
-						$c->log->debug("TOKEN UserName=$params->{'ssousername'}");
+						$SSO_username = $ssodata;
+						$SSO_username =~ s/#UserName=//i;
+						$c->log->debug("TOKEN UserName=$SSO_username");
 						}
 					}
 
-				$params->{'username'} = 'motorola';
-				$params->{'password'} = 'ssologin';
+				$params->{'username'} = $SSO_username . '@motorolasolutions.com';
+				$params->{'password'} = 'SSOLOGIN';
+				#$params->{'username'} = 'FCJ016@motorolasolutions.com';
+				#$params->{'password'} = '8ETNA05SCWSM2';
 				}
 			else
 				{
-				$c->stash(error => 'Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
-				$c->log->debug('Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $ssohost);
+				$c->stash(error => 'Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $SSO_host);
+				$c->log->debug('Unable to authenticate ID ' . $params->{'ID'} . ' against ' . $SSO_host);
 				return;
 				}
 			}
@@ -185,6 +190,13 @@ sub authenticate_user :Private
 		}
 
 	return $TokenID;
+	}
+
+sub get_sso_URL :Private
+	{
+	my $self = shift;
+	my $URL = 'https://ct11redwebappl.motorolasolutions.com/fed/idp/initiatesso?providerid=EngageTechnologySP&returnurl=https://shipping-test.motorolasolutions.com';
+	return $URL;
 	}
 
 =encoding utf8

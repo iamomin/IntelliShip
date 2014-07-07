@@ -155,7 +155,7 @@ function ConfigureAddressSection(address, direction, type)
 				{
 				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
 				var inputCtrl = '<input type="hidden" name="' + targetCtrl + '" id="' + targetCtrl + '" value="' + $('#'+targetCtrl).val() + '"/>';
-				$('#'+targetDiv).html(inputCtrl + '<span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
+				$('#'+targetDiv).html(inputCtrl + '<b><span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
 				}
 			}
 		else if (val == 'state')
@@ -652,7 +652,7 @@ function addNewPackageProduct(package_id,type)
 			});
 	}
 
-function populatePackageDefaultDetials(row_ID)
+function populatePackageDefaultDetials(row_ID,SkipPackageTypeList)
 	{
 	var query_param = '&unittypeid=' + $('#unittype_'+row_ID).val();
 
@@ -661,23 +661,26 @@ function populatePackageDefaultDetials(row_ID)
 		$("#dimlength_"+row_ID).val(JSON_data.dimlength);
 		$("#dimwidth_"+row_ID).val(JSON_data.dimwidth);
 		$("#dimheight_"+row_ID).val(JSON_data.dimheight);
-		$("#dimweight_"+row_ID).val(0);
 		$("#weightperpackage-"+row_ID).html("Weight Per " + JSON_data.PACKAGE_TYPE);
 
-		var unittype_val = $('#unittype').val();
-		$('#unittype').find('option').remove();
-		$('#unittype').append(JSON_data.optionHTML);
-		$('#unittype').val(unittype_val);
-		$('input[id^=rownum_id_]').each(function() {
+		if (SkipPackageTypeList == undefined)
+			{
+			var unittype_val = $('#unittype').val();
+			$('#unittype').find('option').remove();
+			$('#unittype').append(JSON_data.optionHTML);
+			$('#unittype').val(unittype_val);
+			$('input[id^=rownum_id_]').each(function() {
 
-			var res = this.id.split('_');
-			var ID = res[2];
+				var res = this.id.split('_');
+				var ID = res[2];
 
-			var val = $('#unittype_'+ID).val();
-			$('#unittype_'+ID).find('option').remove();
-			$('#unittype_'+ID).append(JSON_data.optionHTML);
-			$('#unittype_'+ID).val(val);
-			});
+				var val = $('#unittype_'+ID).val();
+				$('#unittype_'+ID).find('option').remove();
+				$('#unittype_'+ID).append(JSON_data.optionHTML);
+				$('#unittype_'+ID).val(val);
+				});
+			}
+		CalculateDimentionalWeight();
 		});
 	}
 

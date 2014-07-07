@@ -90,7 +90,7 @@ sub setup_one_page :Private
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields;
 
-	$self->setup_address;;
+	$self->setup_address;
 	$self->setup_shipment_information;
 	$self->setup_carrier_service;
 
@@ -133,6 +133,12 @@ sub setup_address :Private
 	my $my_only = $Contact->get_contact_data_value('myonly');
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
 	$c->stash->{fromAddress} = $Customer->address unless ($c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid) || $my_only;
+	
+	$c->stash->{fromphone} = $Contact->phonebusiness unless $c->stash->{fromphone};
+	$c->stash->{fromphone} = $Customer->phone if !$c->stash->{fromphone} && !$my_only;
+
+	$c->stash->{fromemail} = $Contact->email unless $c->stash->{fromemail};
+	$c->stash->{fromemail} = $Customer->email if !$c->stash->{fromemail} && !$my_only;
 
 	$self->set_company_address;
 
@@ -170,12 +176,6 @@ sub setup_address :Private
 	$c->stash->{fromdepartment} = $Contact->department unless $c->stash->{fromdepartment};
 	$c->stash->{fromcontact}= $Contact->full_name unless $c->stash->{fromcontact};
 
-	my $fromphone = $Contact->phonebusiness;
-	$c->stash->{fromphone}  = $Customer->phone if !$fromphone && !$my_only;
-
-	my $fromemail = $Contact->email;
-	$c->stash->{fromemail}  = $Customer->email if !$fromemail && !$my_only;
-
 	if ($c->action =~ /multipage/)
 		{
 		$c->stash(template => "templates/customer/order-address.tt");
@@ -195,6 +195,22 @@ sub setup_shipment_information :Private
 	my $CO = $self->get_order;
 	my $Contact = $self->contact;
 	my $Customer = $self->customer;
+
+	$c->stash->{default_packing_list} = $Contact->default_packing_list;
+	$c->stash->{print_return_shipment} = $Contact->print_return_shipment unless $CO->ordernumber =~ /\-RTN$/;
+
+	if (my $unit_type_id = $Contact->default_package_type)
+		{
+		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
+
+		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
+		$c->stash->{default_package_type} = $unit_type_id;
+
+		if ($UnitType->unittypename =~ /ENVELOPE/i && $c->stash->{default_packing_list} == 2)
+			{
+			$c->stash->{default_packing_list} = 1;
+			}
+		}
 
 	my $do = $c->req->param('do') || '';
 	if (!$do or $do eq 'shipment' or $do eq 'step1')
@@ -222,24 +238,7 @@ sub setup_shipment_information :Private
 			}
 		}
 
-	$c->stash->{default_packing_list} = $Contact->default_packing_list;
-	$c->stash->{print_return_shipment} = $Contact->print_return_shipment unless $CO->ordernumber =~ /\-RTN$/;
-
-	if (my $unit_type_id = $Contact->default_package_type)
-		{
-		my $UnitType = $c->model('MyDBI::UnitType')->find({ unittypeid => $unit_type_id });
-
-		$c->stash->{unittypeid} = $unit_type_id unless $c->stash->{unittypeid}; ## Only for multipage order
-		$c->stash->{default_package_type} = $unit_type_id;
-		$c->stash->{default_package_type_text} = uc $UnitType->unittypename if $UnitType;
-		}
-
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE',{ customerid => $self->contact->customerid }) unless $c->stash->{packageunittype_loop};
-
-	if ($c->stash->{default_package_type_text} eq 'ENVELOPE' and $c->stash->{default_packing_list} == 2)
-		{
-		$c->stash->{default_packing_list} = 1;
-		}
 
 	#DYNAMIC FIELD VALIDATIONS
 	$self->set_required_fields('shipment');
@@ -1327,10 +1326,10 @@ sub set_company_address
 	$c->stash->{customercountry}	= $fromAddress->country;
 	$c->stash->{customerzip}		= $fromAddress->zip;
 	$c->stash->{customerstate}		= $fromAddress->state;
-	$c->stash->{customeremail}		= $Contact->email;
+	$c->stash->{customeremail}		= $c->stash->{fromemail};
 	$c->stash->{customerdepartment} = $Contact->department ;
 	$c->stash->{customercontact}	= $Contact->full_name;
-	$c->stash->{customerphone}		= $Contact->phonebusiness;
+	$c->stash->{customerphone}		= $c->stash->{fromphone};
 
 	unless ($fromAddress->addressname)
 		{
@@ -1431,9 +1430,14 @@ sub add_package_detail_row :Private
 		my $UnitType = $Package->unittype;
 		$c->stash->{PACKAGE_TYPE} = uc $UnitType->unittypename;
 		}
+	else
+		{
+		$c->stash->{unittypeid} = $c->stash->{default_package_type};
+		}
 
 	$c->stash->{ROW_COUNT}++;
 	$c->stash->{RODUCT_DETAILS} = $product_HTML;
+	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE') unless $c->stash->{packageunittype_loop};
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
 	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-shipment-package.tt" ]);
@@ -2560,7 +2564,6 @@ sub VOID_SHIPMENT :Private
 	if ($ToEmail)
 		{
 		$self->SendShipmentVoidEmail($Shipment);
-		$self->SendDispatchNotification($Shipment,'CANCEL');
 		}
 
 	## Add note to notes table
@@ -3585,6 +3588,11 @@ sub generate_packing_list
 			$params->{'shipmentid'} = $original_param_shipmentid;
 			}
 
+		my $logo_path = '/static/branding/engage/images/header/' . $Customer->username . '-dark-logo.png';
+		my $image_file_path = IntelliShip::MyConfig->application_root . '/root'. $logo_path;
+		$logo_path = '/static/branding/engage/images/header/report-logo.png' unless -e $image_file_path;
+		$c->stash->{logo_path} = $logo_path;
+		
 		my $template = 'order-packing-list-' . $list_type . '.tt';
 
 		## Render Packing List HTML
@@ -4325,144 +4333,7 @@ sub send_pickup_request
 
 	$c->log->debug("....Response: " . $Response);
 	}
-	
-sub SendDispatchNotification
-	{
-	my $self = shift;
-	my $Shipment = shift;
-	my $Type = shift;
 
-	my $c = $self->context;
-	my $CO = $Shipment->CO;
-	my $Customer = $CO->customer;
-
-	my $notetypeid;
-	my $Note = $c->model('MyDBI::Note')->find({ ownerid => $Shipment->shipmentid, note => { like => 'Pick-Up Location%' } });
-	my $subject;
-	if ( $Type eq 'CANCEL' )
-		{
-		$notetypeid ='1600';
-		$subject = "ALERT:  Shipment Dispatched " .$Type ."(".$Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
-		}
-	else
-		{
-		$notetypeid = '1500';
-		$subject = "ALERT:  Shipment Dispatched (". $Customer->username ."-". $Shipment->service ." ".IntelliShip::DateUtils->current_date .")";
-		}
-
-	my $noteData = {
-		'ownerid'      => $Shipment->shipmentid,
-		'note'         => $Type,
-		'contactid'    => $Shipment->contactid,
-		'notestypeid'  => $notetypeid,
-		'datecreated'  => IntelliShip::DateUtils->get_timestamp_with_time_zone,
-		'datehappened' => $Shipment->datepacked,
-		};
-
-	my $Notes = $c->model('MyDBI::Note')->new($noteData);
-	$Notes->notesid($self->get_token_id);
-	$Notes->insert;
-
-	my $Email = IntelliShip::Email->new;
-
-	$Email->content_type('text/html');
-	$Email->from_address(IntelliShip::MyConfig->no_reply_email);
-	$Email->from_name('IntelliShip2');
-
-	$Email->subject($subject);
-	$Email->add_to('noc@engagetechnology.com');
-	$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
-
-	$c->stash->{dispatchtitle} = "Dispatch " . $Type;
-	$c->stash->{type} = $Type if ( $Type eq 'CANCEL' );
-	if (my $OAAddress = $Shipment->origin_address)
-		{
-		my $shipper_address = $OAAddress->addressname;
-		$shipper_address   .= "<br>" . $OAAddress->address1 if $OAAddress->address1;
-		$shipper_address   .= " " . $OAAddress->address2    if $OAAddress->address2;
-		$shipper_address   .= "<br>" . $OAAddress->city     if $OAAddress->city;
-		$shipper_address   .= ", " . $OAAddress->state      if $OAAddress->state;
-		$shipper_address   .= "  " . $OAAddress->zip        if $OAAddress->zip;
-		$shipper_address   .= "<br>" . $OAAddress->country  if $OAAddress->country;
-
-		$c->stash->{'fullfrom'} = $shipper_address;
-		}
-
-	$c->stash->{branchcontact} =$Shipment->oacontactname;
-	$c->stash->{branchphone} = $Shipment->oacontactphone;
-	$c->stash->{refnumber} = $CO->ordernumber;
-	$c->stash->{shipdate} =$Shipment->dateshipped;
-	$c->stash->{branchairportcode} ='';
-
-	if (my $DAAddress = $Shipment->destination_address)
-		{
-		my $destination_address = $DAAddress->addressname;
-		$destination_address   .= "<br>" . $DAAddress->address1 if $DAAddress->address1;
-		$destination_address   .= " " . $DAAddress->address2    if $DAAddress->address2;
-		$destination_address   .= "<br>" . $DAAddress->city     if $DAAddress->city;
-		$destination_address   .= ", " . $DAAddress->state      if $DAAddress->state;
-		$destination_address   .= "  " . $DAAddress->zip        if $DAAddress->zip;
-		$destination_address   .= "<br>" . $DAAddress->country  if $DAAddress->country;
-		$c->stash->{fullto} = $destination_address;
-		}
-
-	$c->stash->{contactname}  = $CO->contactname;
-	$c->stash->{contactphone} = $CO->contactphone;
-	$c->stash->{ponumber}     = $Shipment->ponumber;
-	$c->stash->{etadate}      = $Shipment->datedelivered;
-	#$c->stash->{airportcode} = '';
-	
-	my $CSValueRef = $self->API->get_CS_shipping_values($Shipment->customerserviceid,$Customer->customerid);
-		my $BillingAddressInfo = $self->GetBillingAddressInfo(
-			$Shipment->customerserviceid,
-			undef,
-			undef,
-			$Customer->customerid,
-			$Shipment->billingaccount,
-			$Shipment->freightcharges,
-			$Shipment->addressiddestin,
-			undef,
-			$CSValueRef->{'baaddressid'}
-			);
-		if ( $BillingAddressInfo )
-			{
-			my $billingaddress = $BillingAddressInfo->{'addressname'};
-			$billingaddress   .= "<br>" . $BillingAddressInfo->{'address1'} if $BillingAddressInfo->{'address1'};
-			$billingaddress   .= " " . $BillingAddressInfo->{'address2'} if $BillingAddressInfo->{'address2'};
-			$billingaddress   .= "<br>" . $BillingAddressInfo->{'city'} if $BillingAddressInfo->{'city'};
-			$billingaddress   .= ", " . $BillingAddressInfo->{'state'} if $BillingAddressInfo->{'state'};
-			$billingaddress   .= "  " . $BillingAddressInfo->{'zip'} if $BillingAddressInfo->{'zip'};
-			$billingaddress   .= "<br>" . $BillingAddressInfo->{'country'} if $BillingAddressInfo->{'country'};
-
-			$c->stash->{'fullbilling'} = $billingaddress;
-			$c->stash->{'addressname'}   .= " ($BillingAddressInfo->{'billingaccount'})" if $BillingAddressInfo->{'billingaccount'};
-			}
-	$c->stash->{pickupweight}   = $Shipment->weight;
-	$c->stash->{pickupdimweight}= $Shipment->dimweight;
-	$c->stash->{dims}           = $Shipment->dimlength . "x" . $Shipment->dimwidth . "x" . $Shipment->dimheight;;
-	$c->stash->{density}        = $Shipment->density;
-	$c->stash->{totalquantity}  = $Shipment->total_quantity;
-	$c->stash->{zonenumber}     = $Shipment->zonenumber;
-
-	$c->stash->{tracking1}          = $Shipment->tracking1;
-	$c->stash->{customsdescription} = $Shipment->customsdescription;
-	$c->stash->{description}        = $CO->description;
-	$c->stash->{carrier}            = $Shipment->carrier;
-	$c->stash->{service}            = $Shipment->service;
-
-	my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
-	$c->stash->{barcode} = 'http://dintelliship2.engagetechnology.com/print/barcode/'. $Shipment->tracking1 . '.png' if -e $barcode_image;
-
-	$c->stash->{labelbanner} = 'Freight Charge';
-	$c->stash->{commentstring} = 'Fuel Surcharge';
-
-	$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/pickup-notification-1.tt' ]));
-
-	if ($Email->send)
-		{
-		$self->context->log->debug("Shipment Pick-Up notification email successfully sent to " . join(',',@{$Email->to}));
-		}
-	}
 sub validate_address
 	{
 	my $self = shift;

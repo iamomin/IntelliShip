@@ -282,6 +282,7 @@ sub get_shipped_sql :Private
 			oa.city || ', ' || oa.state as origin,
 			da.city || ', ' || da.state as destin,
 			to_char(s.dateshipped,'mm/dd/yy') as dateshipped,
+			to_char(s.datetodeliver,'mm/dd/yy') as datetodeliver,
 			to_char(s.datedue,'mm/dd/yy') as duedate,
 			s.tracking1 as tracking,
 			s.service,

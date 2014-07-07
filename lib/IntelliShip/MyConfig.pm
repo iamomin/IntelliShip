@@ -301,6 +301,24 @@ sub import_directory
 	return $self->base_path . '/var/import';
 	}
 
+sub imported_directory
+	{
+	my $self = shift;
+	return $self->base_path . '/var/imported';
+	}
+
+sub process_directory
+	{
+	my $self = shift;
+	return $self->base_path . '/var/processing';
+	}
+
+sub export_directory
+	{
+	my $self = shift;
+	return $self->base_path . '/var/export';
+	}
+
 sub file_directory
 	{
 	my $self = shift;

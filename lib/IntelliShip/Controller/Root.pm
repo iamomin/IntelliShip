@@ -37,7 +37,18 @@ sub index :Path :Args(0) {
     # Hello World
     #$c->response->body( $c->welcome_message );
 	$c->log->debug('IN ROOT index');
-	$c->response->redirect($c->uri_for('/customer/login'));
+
+	## Stuff the path into the current request:
+	$c->request->path('/customer/login');
+
+	## Tell the dispatcher to create a new action.
+	##
+	## It will use $c->request->path to update
+	## both $c->action and $c->request->args.
+	##
+	$c->dispatcher->prepare_action($c);
+
+	$c->go($c->action, $c->request->args);
 }
 
 =head2 default

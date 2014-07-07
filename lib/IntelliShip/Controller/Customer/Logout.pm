@@ -35,13 +35,18 @@ sub index :Path :Args(0) {
 		$c->response->cookies->{'TokenID'} = { value => '', expires => '-20M' };
 		}
 
+	my $URI;
 	## SSO logout for Motorola
 	if ($ENV{HTTP_HOST} =~ /motorolasolutions/i)
 		{
-		return $c->response->redirect($c->uri_for('https://converge.motorolasolutions.com/groups/global-procurement-intelliship-support-group'));
+		$URI = 'https://converge.motorolasolutions.com/groups/global-procurement-intelliship-support-group';
+		}
+	else
+		{
+		$URI = $c->uri_for('/customer/login');
 		}
 
-	return $c->response->redirect($c->uri_for('/customer/login'));
+	return $c->response->redirect($URI);
 }
 
 

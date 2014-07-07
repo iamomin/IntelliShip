@@ -5,7 +5,7 @@
 	<input type="hidden" name="international" value="1"/>
 	<table class="single-row">
 	<tr>
-	<td style="height: 150px; padding-right: 10px">
+	<td style="height: 185px; padding-right: 10px">
 		<table class="app">
 		<caption>INTERNATIONAL</caption>
 		<tr>
@@ -285,7 +285,7 @@
 			<td valign="top">[% item.service %]</td>
 			[% IF IS_PREPAID %]
 			<td valign="top">[% item.days %]</td>
-			<td valign="top" [% IF item.no_on_time %]"[% END %]>[% item.delivery %]</td>
+			<td id="[% item.customerserviceid _ '_' _ 'datetodeliver'%]" valign="top" [% IF item.no_on_time %]"[% END %]>[% item.delivery %]</td>
 			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.freight_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 20px;">[% item.other_charge %]</td>
 			<td valign="top" style="text-align: right; padding-right: 10px;"><green>[% item.shipment_charge %]&nbsp;&nbsp;</green>
@@ -308,6 +308,7 @@
 
 	<input type="hidden" id="carrier" name="carrier"/>
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
+	<input type="hidden" id="datetodeliver" name="datetodeliver"/>
 	[% IF DefaultCSID %]<input type="hidden" name="defaultcsid" value="[% DefaultCSID %]"/>[% END %]
 	[% IF DefaultTotalCost %]<input type="hidden" name="defaultcsidtotalcost" value="[% DefaultTotalCost %]"/>[% END %]
 
@@ -332,6 +333,7 @@
 			{
 			$("#carrier").val(carrier);
 			$("#packagecosts").val(carrierServiceChargeDetails[customerserviceid]);
+			$("#datetodeliver").val($("#" + customerserviceid + "_" + "datetodeliver").text());
 			}
 
 		var shipmentChargeDlg = $("#SC-DLG").dialog({
@@ -345,12 +347,14 @@
 
 		$(".show-hide-link").click(function showDetails(){
 			var linkObject = $(this);
-			linkObject.closest('tr').find('div.charge-details').slideToggle("slow", function(){
-					if (linkObject.text() == "+")
-						linkObject.html("&#8211");
-					else
-						linkObject.text("+");
-				});
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211");
+				linkObject.closest('tr').find('div.charge-details').show();
+				}
+			else{
+				linkObject.text("+");
+				linkObject.closest('tr').find('div.charge-details').hide();
+				}
 			});
 
 		$(document).ready(function() {

@@ -79,7 +79,7 @@
 				</tr>
 				[% ELSE %]
 				<tr>
-					<td><label class="float-right">City, State, Zip:</label></td><td><b><input readonly type="text" class="labellike" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>
+					<td><label class="float-right">City, State, Zip:</label></td><td><input readonly type="text" class="labellike" value='[% fromAddress.city %], [% fromAddress.state %], [% fromAddress.zip %]' /></td>
 					<input type="hidden" name="fromcity"  id="fromcity" value='[% fromAddress.city %]'/>
 					<input type="hidden" name="fromstate" id="fromstate" value='[% fromAddress.state %]'/>
 					<input type="hidden" name="fromzip"   id="fromzip" value='[% fromAddress.zip %]'/>
@@ -281,14 +281,23 @@
 		$("#dateneeded").datepicker({ minDate: '-0d' });
 	[% END %]
 
-	//var availableCustomers = [[% FOREACH item IN customerlist_loop %]'[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]',[% END %]];
-	//var hashCompanyRef = {[% FOREACH item IN customerlist_loop %]'[% item.company_name %]-[% item.city %]-[% item.state %]-[% item.zip %]-[% item.address1 %]': '[% item.reference_id %]',[% END %]};
-
-	var availableCustomers = [
-								[% FOREACH item IN customerlist_loop %]
-									{value:"'[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]'",company_name:"[% item.company_name %]",city:"[% item.city %]",state:"[% item.state %]",zip:"[% item.zip %]",country:"[% item.country %]",address1:"[% item.address1 %]",address2:"[% item.address2 %]",contactname:"[% item.contactname %]",contactphone:"[% item.contactphone %]",customernumber:"[% item.customernumber %]",email:"[% item.email %]",referenceid:"[% item.reference_id %]"},
-								[% END %]
-							];
+	var availableCustomers = [[% FOREACH item IN customerlist_loop %]
+		{
+		value: "'[% item.company_name _ ' | ' _ item.city _ ' | ' _ item.state _ ' | ' _ item.zip _ ' | ' _  item.address1 _ ' | ' _ item.contactname %]'",
+		company_name: "[% item.company_name %]",
+		city: "[% item.city %]",
+		state: "[% item.state %]",
+		zip: "[% item.zip %]",
+		country: "[% item.country %]",
+		address1: "[% item.address1 %]",
+		address2: "[% item.address2 %]",
+		contactname: "[% item.contactname %]",
+		contactphone: "[% item.contactphone %]",
+		customernumber: "[% item.customernumber %]",
+		email: "[% item.email %]",
+		referenceid: "[% item.reference_id %]"
+		},[% END %]
+		];
 
 	BindCompanyAutoComplete('to',availableCustomers);
 

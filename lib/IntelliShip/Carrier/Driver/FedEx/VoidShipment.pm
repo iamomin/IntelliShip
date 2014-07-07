@@ -246,7 +246,7 @@ END
 		$Message      = $NotificationRef->{'v6:Message'};
 		$ResponseCode = $NotificationRef->{'v6:Code'};
 		}
-
+	$self->SendDispatchNotification('Cancellation');
 	#$self->SendCancelPickupNotification($ResponseCode,$Message,$ConfirmationNumber);
 	}
 

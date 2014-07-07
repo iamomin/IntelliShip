@@ -209,8 +209,8 @@ sub get_customer_contact :Private
 
 		my $Customer  = $self->token->customer if $self->token;
 
-		my $contact_search = { username => $username };
-		$contact_search->{password} = $password unless $self->token;
+		my $contact_search = { 'upper(username)' => uc($username) };
+		$contact_search->{password} = $password if !$self->token && $password !~ /SSOLOGIN/;
 		$contact_search->{customerid} = $Customer->customerid if $Customer;
 
 		my @contactArr = $c->model('MyDBI::Contact')->search($contact_search);
@@ -459,8 +459,8 @@ sub get_select_list
 		}
 	elsif ($list_name eq 'ADDRESS_BOOK_CUSTOMERS')
 		{
-		my $CustomerID = $self->customer->customerid;
 		my $Contact = $self->contact;
+		my $CustomerID = $Contact->customerid;
 		my $smart_address_book = $self->customer->smartaddressbook || 0; # 0 = keep only 1,2,3 etc is interval
 
 		my $smart_address_book_sql = '( keep = 1 )';
@@ -507,22 +507,22 @@ sub get_select_list
 			my $contact_phone = $address_data->{contactphone} || '';
 			my $customer_number = $address_data->{custnum} || '';
 			my $email = $address_data->{shipmentnotification} || '';
-			my $address_name = $Address->addressname;
-			my $address1 = $Address->address1;
-			my $address2 = $Address->address2;
+			my $address_name = $Address->addressname || '';
+			my $address1 = $Address->address1 || '';
+			my $address2 = $Address->address2 || '';
 			push(@$list, {
-					company_name => "\Q$address_name\E",
-					reference_id => $data->{'coid'},
-					address1     => "\Q$address1\E",
-					address2     => "\Q$address2\E",
-					city         => $Address->city,
-					state        => $Address->state,
-					zip          => $Address->zip,
-					country          => $Address->country,
-					contactname  => "\Q$contact_name\E",
-					contactphone  => "\Q$contact_phone\E",
-					customernumber  => "\Q$customer_number\E",
-					email  => "\Q$email\E",
+					company_name   => "\Q$address_name\E",
+					reference_id   => $data->{'coid'},
+					address1       => "\Q$address1\E",
+					address2       => "\Q$address2\E",
+					city           => $Address->city,
+					state          => $Address->state,
+					zip            => $Address->zip,
+					country        => $Address->country,
+					contactname    => "\Q$contact_name\E",
+					contactphone   => "\Q$contact_phone\E",
+					customernumber => "\Q$customer_number\E",
+					email          => "\Q$email\E",
 				});
 			}
 		}
@@ -570,7 +570,7 @@ sub get_select_list
 
 			next if $UnitType->carrier && keys %carrierHash && !$carrierHash{uc($UnitType->carrier)};
 
-			my $unittypename = ($UnitType->carrier ? $UnitType->carrier . ' ' : '' ) . $UnitType->unittypename;
+			my $unittypename = $UnitType->unittypename . ( $UnitType->carrier ? ' ' . $UnitType->carrier : '' );
 			push(@$list, { name => $unittypename, value => $UnitType->unittypeid });
 			}
 		}
@@ -1302,7 +1302,7 @@ sub set_header_section
 	$c->stash->{logo} = $company_logo;
 
 	my $user_profile = $Customer->username . '-' . $Contact->username . '.png';
-	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/engage/images/profile/' . $user_profile;
+	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $user_profile;
 	$c->stash->{user_profile} = $user_profile if -e $fullpath;
 
 	my $halousername = $Contact->get_only_contact_data_value("halousername");

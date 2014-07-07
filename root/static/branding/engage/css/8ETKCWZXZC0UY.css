@@ -1,0 +1,43 @@
+/*custom_css_start*/
+#header{
+        background: #d8d8d8;
+        color: #000000;
+}
+
+#header nav a span{
+        background: #d8d8d8;
+        color: #000000;
+}
+
+#menu{
+        background: #;
+        color: #;
+}
+
+#menu a{
+        background: #;
+        color: #;
+}
+
+h1{
+        background: #;
+        color: #;
+}
+
+h2{
+        background: #;
+        color: #;
+}
+
+table.summary-app caption{
+        background: #;
+        color: #;
+}
+
+table.app caption{
+        background: #;
+        color: #;
+}
+
+
+/*custom_css_end*/

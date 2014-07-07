@@ -84,7 +84,7 @@
 		<tr>
 			<td><input  type="text" class="package-details float-right" name="quantity_1" id="quantity_1" style="width: 50px;" value="[% quantity ? quantity : 1 %]"/></td>
 			<td><input  type="text" style="width: 150px;" name="description_1" id="description_1" value="[% description %]"/></td>
-			<td><select class="package-details" name="unittype_1" id="unittype_1" style="width: 100px;" onchange="populatePackageDefaultDetials(1);">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittypeid %]SELECTED[% END %]>[% item.name %]</option>[% END %]</select></td>
+			<td><select class="package-details" name="unittype_1" id="unittype_1" style="width: 100px;" onchange="populatePackageDefaultDetials(1,true);">[% FOREACH item IN packageunittype_loop %]<option value="[% item.value %]" [% IF item.value == unittypeid %]SELECTED[% END %]>[% item.name %]</option>[% END %]</select></td>
 			<td><input  type="text" class="package-details" name="weight_1" id="weight_1" style="width: 100px;" value="[% weight %]"/></td>
 			<td><input  type="text" class="package-details" name="dimweight_1" id="dimweight_1" style="width: 100px;" value="[% dimweight %]"/></td>
 			<td><input  type="text" class="package-details" name="dimlength_1" id="dimlength_1" style="width: 50px;" value="[% dimlength %]" onchange="CalculateDimentionalWeight();" /></td>
@@ -146,16 +146,27 @@
 		var linkObject = $('#special-services-cmd');
 		if ($('#special-services').html().length > 0)
 			{
-			if (linkObject.text() == "+" ){
-				$("#special-services").slideToggle("slow");
-				return;
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211");
+				$("#special-services").show();
 				}
+			else{
+				linkObject.text("+");
+				$("#special-services").hide();
+				}
+			return;
 			}
 
 		var params = 'coid=' + $("#coid").val();
 		send_ajax_request('special-services', 'HTML', 'order', 'get_special_service_list', params, function() {
-			$( "#special-services" ).slideToggle( "slow" );
-			(linkObject.text() == "+" ? linkObject.html("&#8211") : linkObject.text("+"));
+			if (linkObject.text() == "+"){
+				linkObject.html("&#8211");
+				$("#special-services").show();
+				}
+			else{
+				linkObject.text("+");
+				$("#special-services").hide();
+				}
 			});
 		}
 

@@ -269,7 +269,7 @@ sub import_tariff
 	return $self->APIRequest($http_request);
 	}
 
-sub get_carrrier_service_rate_list
+sub get_carrier_service_rate_list
 	{
 	my $self             = shift;
 	my $CO               = shift;
@@ -562,7 +562,7 @@ sub get_customers_carriers
 				customerservice.customerid IN ($ids_IN)
 			ORDER BY
 				1";
-	warn $SQL;
+	#warn $SQL;
 	my $sth = $self->context->model('MyArrs')->select($SQL);
 
 	my $carriers = [];
