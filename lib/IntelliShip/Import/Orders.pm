@@ -1351,11 +1351,18 @@ sub ImportProducts
 				$productData->{'ownertypeid'} = '1000';
 				}
 
+			my $productprice = 0;
+			if (my @productpriceparts = split(/\./,$CustRef->{'productprice'}))
+				{
+				$productpriceparts[0] =~ s/\D//;
+				$productprice = $productpriceparts[0] . '.' . $productpriceparts[1];
+				}
+
 			$productData->{'quantity'}         = $CustRef->{'productquantity'};
 			$productData->{'reqqty'}           = $CustRef->{'productquantity'};
 			$productData->{'unittypeid'}       = $CustRef->{'unittypeid'};
 			$productData->{'weighttypeid'}     = $CustRef->{'weighttypeid'} || 0;
-			$productData->{'decval'}           = $CustRef->{'productprice'};
+			$productData->{'decval'}           = $productprice;
 			$productData->{'description'}      = $CustRef->{'productdescr'};
 			$productData->{'weight'}           = $CustRef->{'productweight'};
 			$productData->{'partnumber'}       = $CustRef->{'partnumber'};
