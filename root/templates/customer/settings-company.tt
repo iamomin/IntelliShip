@@ -808,8 +808,15 @@
 			send_ajax_request('company-branding', 'HTML', 'settings/company', 'get_branding_settings', params);
 			}
 
-		function updateCompanyBranding(){
-			var params = 'customerid='+$("#customerid").val() + '&webaddress=' +$("#webaddress").val()+ '&' + $("#custom-style-sheet").serialize() + '&' + $("#color-picker :input").serialize();
+		function updateCompanyBranding(skip_color_tab_update)
+			{
+			var params = 'customerid='+$("#customerid").val() + '&webaddress=' + $("#webaddress").val() + '&' + $("#custom-style-sheet").serialize();
+
+			if(!skip_color_tab_update)
+				{
+				params += '&' + $("#color-picker :input").serialize();
+				}
+
 			send_ajax_request('company-branding', 'JSON', 'settings/company', 'update_branding_settings', params, function() {
 			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
 			[% IF CURRENT_COMPANY %]

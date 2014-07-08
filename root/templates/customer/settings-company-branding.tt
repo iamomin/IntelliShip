@@ -167,13 +167,13 @@
 		});
 
 		$("#color-picker-tab").click(function() {
-			updateBranding();
+			updateBranding(1);
 		});
 
-		function updateBranding() {
+		function updateBranding(skip_color_tab_update) {
 			var iframe = document.getElementById('branding-demo-iframe');
 			iframe.src = iframe.src;
-			updateCompanyBranding();
+			updateCompanyBranding(skip_color_tab_update);
 			}
 
 	/**** DISABLE IFRAME CONTENTS ****/
