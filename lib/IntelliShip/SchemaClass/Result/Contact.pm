@@ -384,6 +384,12 @@ sub my_customers
 	return \@arr;
 	}
 
+sub show_cheapest_carriers
+	{
+	my $self = shift;
+	return $self->get_contact_data_value('carrierrates');
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

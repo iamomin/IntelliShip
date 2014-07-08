@@ -390,6 +390,30 @@ sub get_carrier_service_list
 	$c->stash->{ONLY_TABLE} = 1;
 
 	#$c->log->debug("CS_list_1: ". Dumper($CS_list_1));
+
+	if ($Contact->show_cheapest_carriers)
+		{
+		my $SORTED_CS_LIST = {};
+		foreach my $CS (@$CS_list_1)
+			{
+			my $carrier_service = $CS->{carrier} . '-' . $CS->{service};
+
+			my $arr = $SORTED_CS_LIST->{$carrier_service} || [];
+			push(@$arr, $CS);
+			$SORTED_CS_LIST->{$carrier_service} = $arr;
+			}
+
+		$CS_list_1 = [];
+		foreach my $key (keys %$SORTED_CS_LIST)
+			{
+			my $arr = $SORTED_CS_LIST->{$key};
+			my @sarr = sort { $a->{shipment_charge} <=> $b->{shipment_charge} } @$arr;
+			push(@$CS_list_1,$sarr[0]);
+			}
+
+		$c->log->debug("SORTED_CS_LIST: ". Dumper $SORTED_CS_LIST);
+		}
+
 	if ($CO->has_carrier_service_details and $params->{'action'} ne 'get_carrier_service_list')
 		{
 		my @selected_carrier_service = grep { uc($_->{carrier}) eq uc($CO->extcarrier) and uc($_->{service}) eq uc($CO->extservice) } @$CS_list_1;
