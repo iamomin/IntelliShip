@@ -722,7 +722,7 @@ sub GetShipmentCosts
 			{
 			#warn "\nCS useaggregate=$UseAggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
-				($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays) = $self->GetPackageCosts(\@Weights,\@Quantities,\@DimLengths,\@DimWidths,\@DimHeights,\@DataTypes,$ShipmentRef);
+				($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays) = $self->GetPackageCosts(\@Weights,\@Quantities,\@DimLengths,\@DimWidths,\@DimHeights,\@DataTypes,$ShipmentRef,\@QuantityxWeight);
 
 			#warn "\nCS GetPackageCosts returned cost=$Cost";
 
@@ -766,7 +766,7 @@ sub GetShipmentCosts
 						$Weight = $DimWeights[$i];
 					}
 
-					if ( $ShipmentRef->{'quantityxweight'} || ( $UseAggregateWeight == 2 && scalar(@Quantities) > 1 ) )
+					if ( $QuantityxWeight[$i] || ( $UseAggregateWeight == 2 && scalar(@Quantities) > 1 ) )
 					{
 						for ( my $j = 1; $j <= $Quantities[$i]; $j ++ )
 						{
@@ -1190,13 +1190,14 @@ sub GetPackageCosts
 		warn "######### GetPackageCosts";
 		my $self = shift;
 
-		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName) = @_;
+		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName,$QuantityxWeight) = @_;
 		my @Weights = @$Weights;
 		my @Quantities = @$Quantities;
 		my @DimLengths = @$DimLengths;
 		my @DimWidths = @$DimWidths;
 		my @DimHeights = @$DimHeights;
 		my @DataTypes = @$DataTypes;
+		my @QuantityxWeight = @$QuantityxWeight;
 
 		my $Cost;
 		my $Zone = 0;
@@ -1225,7 +1226,7 @@ sub GetPackageCosts
 			my $PackageCostWeight = 0;
 			#warn "\nGetPackageCosts() each weight: $Weights[$i]" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
-			if ( $ShipmentRef->{'quantityxweight'} )
+			if ( $QuantityxWeight[$i] )
 			{
 				$PackageWeight = $Weights[$i];
 			}
