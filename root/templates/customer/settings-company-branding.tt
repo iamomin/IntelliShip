@@ -51,7 +51,7 @@
 					<label class="float-right">URL : </label>
 				</td>
 				<td colspan="2">
-					<input id="webaddress" type="text" class="broad-text"/>
+					<input id="webaddress" type="text" class="broad-text" value="[%webaddress%]"/>
 				</td>
 			</tr>
 		</table>

@@ -85,7 +85,7 @@ sub setup :Local
 		$c->stash->{customerAuxFormAddress} = $Customer->auxilary_address;
 		$c->stash->{cust_defaulttoquickship} = 1 if ($Customer->quickship eq '2');
 		$c->stash->{SSO_CUSTOMER}            = 1 if $Customer->is_single_sign_on_customer;
-
+		$c->stash->{webaddress} = $Customer->webaddress;
 		$self->get_branding_settings;
 		$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);
 

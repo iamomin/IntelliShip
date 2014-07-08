@@ -30,10 +30,10 @@ function send_ajax_request(result_div, type_value, section_value, action_value, 
 	if (type_value == "JSON") {
 		JSON_data = null;
 		$.ajax({
-			type: "GET",
+			type: "POST",
 			url: request_url,
-			data: data_string,
-			contentType: "application/json; charset=utf-8",
+			data: encodeURI(data_string),
+			//contentType: "application/json; charset=utf-8",
 			dataType: 'json',
 			success: function(data) {
 				waiting_COUNT--;
