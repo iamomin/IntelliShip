@@ -1190,7 +1190,7 @@ sub GetPackageCosts
 		warn "######### GetPackageCosts";
 		my $self = shift;
 
-		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName,$QuantityxWeight) = @_;
+		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$QuantityxWeight) = @_;
 		my @Weights = @$Weights;
 		my @Quantities = @$Quantities;
 		my @DimLengths = @$DimLengths;

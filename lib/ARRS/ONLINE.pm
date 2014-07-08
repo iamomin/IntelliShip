@@ -246,7 +246,12 @@
 			)
 			{
 				my $S3 = &Benchmark() if $Benchmark;
+				eval {
 				($Cost,$ZoneNumber,$PackageCosts,$CostWeight,$TransitDays) = $CS->GetShipmentCosts($CgiRef);
+				};
+
+				warn "\nISE Error: " . $@ . "\n" if $@;
+
 				warn "Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 
 				$CostTotal += &Benchmark($S3,"Calculate Cost - $CSID, $CSName") if $Benchmark;
