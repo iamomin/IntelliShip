@@ -2423,6 +2423,8 @@ sub GetAssValue
 	{
 		my $self = shift;
 		my ($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid) = @_;
+		#warn "########## GetAssValue($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid)";
+						 
 	#warn "\nGetAssValue name=$ass_name freight=$freight_cost";
 	#warn "\nGetAssValue name=$ass_name freight=$freight_cost customerid=$customerid" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
 
@@ -2431,6 +2433,8 @@ sub GetAssValue
 		my ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent) =
 			$self->GetAssData($type,$ass_name,$date_shipped,$ownertypeid,$markupamt,$markuppercent);
 
+		#warn "########## ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent)";
+			
 		# override "cost" with csoveride value if one exists
 	my $CSOverride = new ARRS::CSOVERRIDE($self->{'object_dbref'}, $self->{'object_contact'});
 	if
@@ -2455,7 +2459,7 @@ sub GetAssValue
 
 	#warn "\nGetAssValue name=$ass_name cost=$cost costpercent=$costpercent";
 
-		my $ass_cost = $cost if $cost;
+		my $ass_cost = $cost ? $cost : 0;
 		$ass_cost += $costperwt * $weight if $costperwt;
 		$ass_cost += $costperunit * $quantity if $costperunit;
 
@@ -2468,9 +2472,9 @@ sub GetAssValue
 		# flat markup and markup percent set in custcondata
 		else
 		{
-			if ( defined($ass_cost) && $ass_cost ne '0' && $ass_cost ne '' && defined($markupamt) && $markupamt > 0 )
+			if ( defined($ass_cost) && $ass_cost ne '' && defined($markupamt) && $markupamt > 0 )
 			{
-				#warn "\nAdd flat markup";
+				warn "\n########## Add flat markup \$ass_cost=$ass_cost, \$markupamt=$markupamt";
 				$ass_cost += $markupamt;
 			}
 
