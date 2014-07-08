@@ -461,7 +461,7 @@ sub GetCost
 				stopdate DESC
 			LIMIT 1
 		";
-	warn "########## $SQLString";
+	#warn "########## $SQLString";
 	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
@@ -581,9 +581,9 @@ sub GetCost
 			$Cost = $Cost * $TruckCount;
 		}
 
-	#warn "\nGetCost returning: $Cost";
+	warn "\n***___GetCost returning: $Cost";
 
-		return ($Cost, $ZoneNumber);
+	return ($Cost, $ZoneNumber);
 	}
 
 sub GetShipmentCosts
