@@ -1613,7 +1613,7 @@ sub GetSuperCost
 
 			$Cost = sprintf("%02.2f",$Cost);
 		}
-		#warn "\nGetSuperCost: |$Cost|$Zone|$CostWeight|$TransitDays|";
+		warn "\n..... GetSuperCost: |$Cost|$Zone|$CostWeight|$TransitDays|";
 
 		return ($Cost,$Zone,$CostWeight,$TransitDays);
 	}
