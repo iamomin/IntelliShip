@@ -438,8 +438,7 @@ sub total_weight
 	my $self = shift;
 	my $weight = $self->weight || 0;
 	my $dimweight = $self->dimweight || 0;
-	my $pkg_weight = ( $weight > $dimweight ? $weight : $dimweight );
-	my $ttl_weight = ($self->quantityxweight ? $pkg_weight : $self->quantity * $pkg_weight);
+	my $ttl_weight = ( $weight > $dimweight ? $weight : $dimweight );
 	return $ttl_weight;
 	}
 
