@@ -507,7 +507,7 @@ sub get_allowed_ext_cust_num_sql :Private
 	my $self = shift;
 	my $Contact = $self->contact;
 	my $arr = $Contact->get_restricted_values('extcustnum') if $Contact->is_restricted;
-	return ($arr ? "AND upper(co.extcustnum) IN (" . join(',', @$arr) . ")" : '');
+	return ($arr ? "AND upper(co.extcustnum) IN ('" . join("','", @$arr) . "')" : '');
 	}
 
 sub load_order :Private
