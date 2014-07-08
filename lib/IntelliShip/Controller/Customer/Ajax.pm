@@ -146,7 +146,7 @@ sub get_city_state :Private
 		{
 		my $geocodeResponse = $responseDS->{'GeocodeResponse'}->{'result'};
 		my $GeoCodes     = (ref $geocodeResponse eq 'ARRAY' ? $geocodeResponse : [$geocodeResponse]);
-		foreach my $GeoCode (@$GeoCodes)
+		foreach my $GeoCode (@$GeoCodes[0])
 			{
 			my $formatted_address = $GeoCode->{'formatted_address'};
 			my $address_components = $GeoCode->{'address_component'};
