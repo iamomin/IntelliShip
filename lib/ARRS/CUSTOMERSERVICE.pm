@@ -1228,10 +1228,6 @@ sub GetPackageCosts
 
 			if ( $QuantityxWeight[$i] )
 			{
-				$PackageWeight = $Weights[$i];
-			}
-			else
-			{
 				if ( defined($Quantities[$i]) && $Quantities[$i] > 0 )
 				{
 					$PackageWeight = ceil($Weights[$i]/$Quantities[$i]);
@@ -1240,6 +1236,10 @@ sub GetPackageCosts
 				{
 					$PackageWeight = ceil($Weights[$i]);
 				}
+			}
+			else
+			{
+				$PackageWeight = $Weights[$i];
 			}
 
 			($PackageCost,$Zone,$PackageCostWeight,$TransitDays) = $self->GetSuperCost($PackageWeight,$DimLengths[$i],$DimWidths[$i],$DimHeights[$i],$ShipmentRef);
