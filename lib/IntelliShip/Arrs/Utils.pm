@@ -118,7 +118,7 @@ sub populate_package_detail_section
 	$request->{'productcount'} = @packages;
 
 	my ($quantity,$weight) = (0,0);
-	my (@weight,@quantity,@unittype,@dimlength,@dimwidth,@dimheight,@datatype);
+	my (@weight,@quantity,@unittype,@dimlength,@dimwidth,@dimheight,@datatype,@quantityxweight);
 
 	foreach my $Package (@packages)
 		{
@@ -131,6 +131,7 @@ sub populate_package_detail_section
 		push(@dimwidth, $Package->dimwidth);
 		push(@dimheight,$Package->dimheight);
 		push(@datatype, $Package->datatypeid);
+		push(@quantityxweight, $Package->quantityxweight);
 
 		$quantity += $Package->quantity;
 		$weight   += $Package->weight;
@@ -143,6 +144,7 @@ sub populate_package_detail_section
 	$request->{'dimwidthlist'}   = join(',',@dimwidth);
 	$request->{'dimheightlist'}  = join(',',@dimheight);
 	$request->{'datatypeidlist'} = join(',',@datatype);
+	$request->{'quantityxweight'}= join(',',@quantityxweight);
 
 	$request->{'totalquantity'}   = $quantity;
 	$request->{'aggregateweight'} = $weight;
