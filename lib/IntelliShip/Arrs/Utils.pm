@@ -134,7 +134,7 @@ sub populate_package_detail_section
 		push(@quantityxweight, $Package->quantityxweight);
 
 		$quantity += $Package->quantity;
-		$weight   += $Package->weight;
+		$weight   += $pkg_weight;
 		}
 
 	$request->{'weightlist'}     = join(',',@weight);
