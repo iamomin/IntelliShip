@@ -614,6 +614,7 @@ sub GetShipmentCosts
 		my @Quantities = $self->BuildArrayFromJSString($ShipmentRef->{'quantitylist'});
 		my @UnitTypes = $self->BuildArrayFromJSString($ShipmentRef->{'unittypelist'});
 		my @DataTypes = $self->BuildArrayFromJSString($ShipmentRef->{'datatypeidlist'});
+		my @QuantityxWeight = $self->BuildArrayFromJSString($ShipmentRef->{'quantityxweight'});
 
 		my @DimWeights = ();
 		#warn $ShipmentRef->{'useaggweight'} if exists($ShipmentRef->{'useaggweight'});
@@ -672,7 +673,7 @@ sub GetShipmentCosts
 					$DimWeights[$i] = $self->GetDimWeight($DimLengths[$i],$DimWidths[$i],$DimHeights[$i]);
 				}
 
-				$AggregateWeight = $self->GetAggregateWeight(\@Weights,\@DimWeights,\@Quantities,\@DataTypes,$ShipmentRef->{'productcount'},$ShipmentRef->{'quantityxweight'});
+				$AggregateWeight = $self->GetAggregateWeight(\@Weights,\@DimWeights,\@Quantities,\@DataTypes,$ShipmentRef->{'productcount'},\@QuantityxWeight);
 			}
 
 			# If any single package is > max package weight or < min package weight, return undef
@@ -1148,6 +1149,7 @@ sub GetAggregateWeight
 		my @DimWeights = @$DimWeights;
 		my @Quantities = @$Quantities;
 		my @DataTypes = @$DataTypes;
+		my @QuantityXWeight = @$QuantityXWeight;
 
 		my $AggregateWeight = 0;
 
@@ -1161,7 +1163,7 @@ sub GetAggregateWeight
 			if ( !defined($Weight) || $Weight eq '' ) { return undef }
 
 			local $^W=0;
-			if ( $QuantityXWeight )
+			if ( $QuantityXWeight[$i] )
 			{
 				$Weight = $Weight * $Quantities[$i];
 			}

@@ -165,8 +165,10 @@
 				next;
 			}
 
-			warn "-" x 50;
+			print STDERR "#" x 100;
 			warn "\nONLINE, CSID: $CSID, CustomerService Name: $CSName ";
+			print STDERR "=" x 100;
+			warn "\n";
 			#warn "ONLINE: $CSName " if $CSID eq 'TOTALTRANSPO1';
 
 			my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
