@@ -182,6 +182,7 @@ sub setup :Local
 	$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 	$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 	$c->stash->{addressvalidation_loop}  = $self->get_select_list('ADDRESS_VALIDATION_LIST');
+	$c->stash->{carrierrates_loop}  = $self->get_select_list('CARRIERRATES_LIST');
 
 	$c->stash->{CURRENT_COMPANY} = ($params->{'customerid'} eq $self->customer->customerid);
 

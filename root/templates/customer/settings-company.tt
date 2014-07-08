@@ -706,17 +706,26 @@
 						<td></td>
 						[% END %]
 					</tr>
-					
-					[% IF SSO_CUSTOMER %]
 					<tr>
+						<td><label class="float-right" for="cust_carrierrates">Carrier Rates:</label></td>
+						<td>
+						<label>
+							<select name="cust_carrierrates" id="cust_carrierrates">
+							[% FOREACH item IN carrierrates_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_carrierrates) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+						[% IF SSO_CUSTOMER %]
 						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>
 						<td><input type="text" class="broad-text" name="cust_routebuttonname" id="cust_routebuttonname" value="[% cust_routebuttonname %]">
 						</td>
-
-						<td><label class="float-right" for=""></label></td>
-						<td class="css3-radios"></td>
+						[% ELSE %]
+						<td></td>
+						<td></td>
+						[% END %]
 					</tr>
-					[% END %]
 				</table>
 
 				<center>

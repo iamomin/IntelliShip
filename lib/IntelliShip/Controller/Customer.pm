@@ -1223,6 +1223,13 @@ sub get_select_list
 			{ name => 'Required', value => '2' }
 			];
 		}
+	elsif ($list_name eq 'CARRIERRATES_LIST')
+		{
+		$list = [
+			{ name => 'Show All', value => '0' },
+			{ name => 'Show Cheapest', value => '1' },
+			];
+		}
 
 	return $list;
 	}
