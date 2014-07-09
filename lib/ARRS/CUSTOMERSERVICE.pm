@@ -362,6 +362,7 @@ sub GetCost
 			SELECT
 				arcost,
 				arcostmin,
+				arcostmax,
 				arcostperwt,
 				arcostpermile,
 				arcostperunit,
@@ -564,6 +565,12 @@ sub GetCost
 			if ( defined($CostRef->{'arcostmin'}) && $CostRef->{'arcostmin'} > 0 && $CostRef->{'arcostmin'} > $Cost )
 			{
 				$Cost = $CostRef->{'arcostmin'};
+			}
+
+		# Use max cost if less than cost
+		if ( defined($CostRef->{'arcostmax'}) && $CostRef->{'arcostmax'} > 0 && $CostRef->{'arcostmax'} < $Cost )
+			{
+				$Cost = $CostRef->{'arcostmax'};
 			}
 
 			$Cost = sprintf("%02.2f", $Cost);
