@@ -161,10 +161,6 @@
 	[% FOREACH item IN requiredfield_list %]
 		requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
-
-	$("#route").click(function() {
-		getCarrierServiceList('frm_shipment');
-		});
 [% END %]
 
 [% UNLESS one_page %]
