@@ -53,24 +53,12 @@
 			border: 1px solid black;
 			text-align: center;
 		}
-		#packing-list table{
-			position: absolute;
-			padding: 0;
-			border-spacing:collapse;
-		}
-		#packing-list th{
-			background-color: lightgrey;
-			font: bold;
-			vertical-align: middle;
-			text-align: center;
-			font-size: 9pt;
-		}
-		#packing-list td{
-			vertical-align: middle;
-			font-size: 9pt;
-			padding: 0px 0px 0px 3px;
-			text-align: center;
-		}
+		#packing-list table table  {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+		#packing-list table table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+		#packing-list table table tr:nth-child(even) {color: #000; background: #E4E5E7 }
+		#packing-list table table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
+		#packing-list table table td {padding: 3px;}
+		#packing-list table table td.center {text-align: center;}
 	</style>
 
 	<script>
@@ -161,18 +149,59 @@
 			</table>
 			</center>
 
-			[% FOREACH item IN packinglist_loop %]
+			[% IF SPRINT %]
+				<table>
+				[% FOREACH page IN packinglist_loop %]
+					<tr[% IF loop.count > 1 %] style="page-break-before: always;"[% END %]>
+					<td>
+					<table>
+						<tr style="height: .3125in;">
+							<th style="width: .25in;">QTY</th>
+							<th style="width: .6875in;">REFERED EQUIPMENT</th>
+							<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
+						</tr>
+						[% FOREACH item IN page.packinglist_1_loop %]
+						<tr style="height: .1875in;">
+							<td>[% item.shippedqty %]</td>
+							<td>[% item.partnumber %]</td>
+							<td>[% item.productdescription %]</td>
+						</tr>
+						[% END %]
+					</table>
+					</td>
+					<td>
+					<table>
+						<tr style="height: .3125in;">
+							<th style="width: .25in;">QTY</th>
+							<th style="width: .6875in;">REFERED EQUIPMENT</th>
+							<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
+						</tr>
+						[% FOREACH item IN page.packinglist_2_loop %]
+						<tr style="height: .1875in;">
+							<td>[% item.shippedqty %]</td>
+							<td>[% item.partnumber %]</td>
+							<td>[% item.productdescription %]</td>
+						</tr>
+						[% END %]
+					</table>
+					</td>
+					</tr>
+				[% END %]
+				</table>
+			[% ELSE %]
 			<table>
 				<tr style="height: .3125in;">
 					<th style="width: .25in;">QTY</th>
 					<th style="width: .6875in;">REFERED EQUIPMENT</th>
 					<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
 				</tr>
+				[% FOREACH item IN packinglist_loop %]
 				<tr style="height: .1875in;">
 					<td>[% item.shippedqty %]</td>
 					<td>[% item.partnumber %]</td>
 					<td>[% item.productdescription %]</td>
 				</tr>
+				[% END %]
 			</table>
 			[% END %]
 		</div>

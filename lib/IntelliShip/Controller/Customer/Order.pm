@@ -133,7 +133,7 @@ sub setup_address :Private
 	my $my_only = $Contact->get_contact_data_value('myonly');
 	$c->stash->{fromAddress} = $Contact->address unless $c->stash->{fromAddress};
 	$c->stash->{fromAddress} = $Customer->address unless ($c->stash->{fromAddress} && $c->stash->{fromAddress}->is_valid) || $my_only;
-	
+
 	$c->stash->{fromphone} = $Contact->phonebusiness unless $c->stash->{fromphone};
 	$c->stash->{fromphone} = $Customer->phone if !$c->stash->{fromphone} && !$my_only;
 
@@ -2428,18 +2428,18 @@ sub SendShipNotification :Private
 		$email =~ s/^\s+|\s+$//g;
 		$emails->{$email} = 1;
 		}
-	
+
 	$email_from = $Shipment->deliverynotification unless $email_from;
 	if ($Contact->get_contact_data_value('combineemail') && $email_from)
 		{
 		$emails->{$email_from} = 1;
 		}
-	
+
 	foreach my $key (keys %$emails)
 		{
 		$Email->add_to($key) if $key;
 		}
-	
+
 	$self->set_header_section;
 
 	$c->stash->{SHIPMENT_ID} = $Shipment->shipmentid;
@@ -3550,6 +3550,13 @@ sub generate_packing_list
 
 		if ($list_type =~ /sprint/i)
 			{
+			## uncomment this part for sprint packing list testing
+			#$packinglist_loop = [];
+			#foreach (1..500)
+			#	{
+			#	push(@$packinglist_loop, { shippedqty => $_, partnumber => 'Part Number - ' . $_, productdescription => 'My Part ' . $_ . ' Description' });
+			#	}
+
 			my @arr = (25,60,60);
 			my $packinglist_pages = [];
 			foreach my $count (@arr)
@@ -3562,12 +3569,14 @@ sub generate_packing_list
 					last unless @$packinglist_loop;
 
 					my $key = 'packinglist_'.$_.'_loop';
-					my @list = splice(@$packinglist_loop,0,$count)
+					my @list = splice(@$packinglist_loop,0,$count);
 					$tableHash->{$key} = \@list;
-					push(@$packinglist_pages,$tableHash);
 					}
+
+				push(@$packinglist_pages,$tableHash);
 				}
 
+			$c->stash->{SPRINT} = 1;
 			$c->stash->{packinglist_loop} = $packinglist_pages;
 			}
 		else
@@ -3618,7 +3627,7 @@ sub generate_packing_list
 		my $image_file_path = IntelliShip::MyConfig->application_root . '/root'. $logo_path;
 		$logo_path = '/static/branding/engage/images/header/report-logo.png' unless -e $image_file_path;
 		$c->stash->{logo_path} = $logo_path;
-		
+
 		my $template = 'order-packing-list-' . $list_type . '.tt';
 
 		## Render Packing List HTML
@@ -4306,7 +4315,7 @@ sub generate_commercial_invoice
 	my $image_file_path = IntelliShip::MyConfig->application_root . '/root'. $logo_path;
 	$logo_path = '/static/branding/engage/images/header/report-logo.png' unless -e $image_file_path;
 	$c->stash->{logo_path} = $logo_path;
-	
+
 	## Render Commercial Invoice HTML
 	my $ComInvHTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-commercial-invoice.tt" ]);
 
@@ -4378,7 +4387,7 @@ sub validate_address
 	my $Response = $Handler->process_request({
 			NO_TOKEN_OPTION => 1
 			});
-	
+
 	# Process errors
 	unless ($Response->is_success)
 		{
