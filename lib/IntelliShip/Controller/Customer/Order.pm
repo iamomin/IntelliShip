@@ -3545,7 +3545,36 @@ sub generate_packing_list
 			push(@$packinglist_loop, {}) while $items--;
 			}
 
-		$c->stash->{packinglist_loop} = $packinglist_loop;
+		my $list_type = $self->contact->get_contact_data_value('packinglist');
+		$list_type = 'generic' unless $list_type =~ /sprint/i;
+
+		if ($list_type =~ /sprint/i)
+			{
+			my @arr = (25,60,60);
+			my $packinglist_pages = [];
+			foreach my $count (@arr)
+				{
+				last unless @$packinglist_loop;
+
+				my $tableHash = {};
+				foreach (1..2)
+					{
+					last unless @$packinglist_loop;
+
+					my $key = 'packinglist_'.$_.'_loop';
+					my @list = splice(@$packinglist_loop,0,$count)
+					$tableHash->{$key} = \@list;
+					push(@$packinglist_pages,$tableHash);
+					}
+				}
+
+			$c->stash->{packinglist_loop} = $packinglist_pages;
+			}
+		else
+			{
+			$c->stash->{packinglist_loop} = $packinglist_loop;
+			}
+
 		$c->stash->{grossweight}      = $gross_weight;
 		$c->stash->{quantity}         = $quantity;
 
@@ -3574,9 +3603,6 @@ sub generate_packing_list
 			{
 			$c->stash->{billoflading} = $self->contact->get_contact_data_value('print8_5x11bol');
 			}
-
-		my $list_type = $self->contact->get_contact_data_value('packinglist');
-		$list_type = 'generic' unless $list_type =~ /sprint/i;
 
 		if ($list_type =~ /sprint/i)
 			{

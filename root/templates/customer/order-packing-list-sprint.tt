@@ -18,11 +18,7 @@
 
 			float: left;
 			position: absolute;
-			margin-top: 300px;
-
-			-moz-transform: rotate(270deg);  /* FF3.5+ */
-			-o-transform: rotate(270deg);  /* Opera 10.5 */
-			-webkit-transform: rotate(270deg);  /* Saf3.1+, Chrome */
+			margin-top: 50px;
 		}
 		#packing-list table {
 			filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
@@ -147,6 +143,7 @@
 			<o:p><br/><br/><br/></o:p>
 			</p>
 
+			<center>
 			<table>
 				<tr>
 					<td colspan="3">
@@ -161,19 +158,23 @@
 				<tr>
 					<td>WANT DATE:</td><td>[% dateshipped %]</td><td>&nbsp;</td>
 				</tr>
+			</table>
+			</center>
+
+			[% FOREACH item IN packinglist_loop %]
+			<table>
 				<tr style="height: .3125in;">
 					<th style="width: .25in;">QTY</th>
 					<th style="width: .6875in;">REFERED EQUIPMENT</th>
 					<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
 				</tr>
-				[% FOREACH item IN packinglist_loop %]
 				<tr style="height: .1875in;">
 					<td>[% item.shippedqty %]</td>
 					<td>[% item.partnumber %]</td>
 					<td>[% item.productdescription %]</td>
 				</tr>
-				[% END %]
 			</table>
+			[% END %]
 		</div>
 
 		<form id="frm_next" action="/customer/order/ajax">
