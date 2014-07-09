@@ -144,7 +144,7 @@ sub get_city_state :Private
 	my ($address1, $address2, $city, $state, $zip, $country);
 	if ($responseDS->{'GeocodeResponse'}->{'status'} eq 'OK')
 		{
-		my $geocodeResponse = $responseDS->{'GeocodeResponse'}->{'result'}[0];
+		my $geocodeResponse = $responseDS->{'GeocodeResponse'}->{'result'};
 		my $GeoCodes     = (ref $geocodeResponse eq 'ARRAY' ? $geocodeResponse : [$geocodeResponse]);
 		foreach my $GeoCode (@$GeoCodes)
 			{
