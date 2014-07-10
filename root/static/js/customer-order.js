@@ -155,7 +155,7 @@ function ConfigureAddressSection(address, direction, type)
 				{
 				from_to_Hash[targetCtrl] = $('#'+targetDiv).html();
 				var inputCtrl = '<input type="hidden" name="' + targetCtrl + '" id="' + targetCtrl + '" value="' + $('#'+targetCtrl).val() + '"/>';
-				$('#'+targetDiv).html(inputCtrl + '<b><span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
+				$('#'+targetDiv).html(inputCtrl + '&nbsp<span class="labellike">' + $('#'+targetCtrl).val() + "</span>,");
 				}
 			}
 		else if (val == 'state')
