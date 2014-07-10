@@ -292,7 +292,7 @@
 				<div class="charge-details" style="display: none;" id="SC-[% item.customerserviceid %]">
 					<table style="font-size: 11px; float:right;">
 					[% FOREACH scd IN item.SHIPMENT_CHARGE_DETAILS %]
-						<tr style="background: transparent;">[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><i>[% scd.text %]</i></td><td style="text-align: right"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
+						<tr style="background-color: transparent;">[% IF scd.hr %]<td colspan="2"><hr></td>[% ELSE %]<td><i>[% scd.text %]</i></td><td style="text-align: right"><b><i>[% scd.value %]</i></b></td>[% END %]</tr>
 					[% END %]
 					</table>
 				</div>
