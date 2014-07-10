@@ -2229,7 +2229,7 @@ sub export_label :Private
 
 	my @shipmentids = split('_',$params->{'shipmentid'});
 
-	my $file = $params->{'shipmentid'} . '.zip';
+	my $file = $self->get_token_id . '.zip';
 	my $file_path = '/tmp/' . $file;
 
 	my $zipCommand = 'zip -j ' . $file_path;
