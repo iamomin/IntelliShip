@@ -662,6 +662,9 @@ sub update_branding_settings :Private
 	my $params = $c->req->params;
 	my $Customer = $self->get_customer;
 
+	IntelliShip::Utils->hash_decode($params);
+	#$c->log->debug("PARAMS: " . Dumper($params));
+
 	my $CSS_CONTENT = $params->{'custom-style-sheet'};
 	my $CustomerCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/css/' . $params->{'customerid'} . '.css';
 
@@ -688,13 +691,16 @@ sub update_branding_settings :Private
 		{
 		foreach my $style (@{ $style_list->{section }})
 			{
+			$params->{$style_list->{'bgcolor'}} =~ s/^#$//;
+			$params->{$style_list->{'font'}} =~ s/^#$//;
+
 			$css_contents = $style . "{";
-			$css_contents .= "$_\n" . "\tbackground: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
-			$css_contents .= "$_\n" . "\tcolor: " . $params->{"$style_list->{font}"} . ";" if $params->{"$style_list->{font}"};
-			$css_contents .= "$_\n" . "\tfont-size: " . $params->{"$style_list->{size}"} . "px;" if $params->{"$style_list->{size}"};
+			$css_contents .= "$_\n" . "\tbackground: " . $params->{$style_list->{bgcolor}} . ";" if $params->{$style_list->{bgcolor}};
+			$css_contents .= "$_\n" . "\tcolor: " . $params->{$style_list->{font}} . ";" if $params->{$style_list->{font}};
+			$css_contents .= "$_\n" . "\tfont-size: " . $params->{$style_list->{size}} . "px;" if $params->{$style_list->{size}};
 			if($style eq 'input[type=button].active')
 				{
-				$css_contents .= "$_\n" . "\tborder-color: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
+				$css_contents .= "$_\n" . "\tborder-color: " . $params->{$style_list->{bgcolor}} . ";" if $params->{$style_list->{bgcolor}};
 				}
 
 			unless ($css_contents eq $style . "{")
@@ -732,7 +738,7 @@ sub check_customer_contacts
 		return { CONTACTS => 0};
 		}
 	}
-	
+
 sub brandingdemo :Local
 	{
 	my $self = shift;
