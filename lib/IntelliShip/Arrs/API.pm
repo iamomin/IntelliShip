@@ -166,8 +166,7 @@ sub get_carrier_services
 	my ($carrierid, $customerid) = @_;
 
 	my $http_request = {
-		action => 'GetCarrierServices',
-		carrierid => $carrierid,
+		action => 'GetCarrierServices',		
 		customerid => $customerid
 	};
 
