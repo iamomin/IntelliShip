@@ -1,6 +1,21 @@
 var GRID, CSGRID, TREE, COLWIDTH;
 var ISGRIDLOADED = false, ISTREELOADED = false, ISADDMODE = false;
 
+/*
+	ENTRY POINT ! KEEP THIS FUNCTION AT THE TOP
+*/
+function entryPoint(event){
+	console.log("entryPoint");
+	if($("#tbl_tariff").is(":visible")){
+		return;
+	}
+	if (!$('#services_tree').html()) {
+		console.log("Loading....");
+		initToolbar();
+		getAllServices();
+	}
+}
+
 function loadServicesTree() {
 	//alert("loadServicesTree");
 	TREE = $('#services_tree').on("changed.jstree", function (e, data) {
@@ -97,21 +112,6 @@ function toggleToolbarButtons() {
 	} else {
 		$("#btn_update_tariff").prop("disabled", true);
 		$("#btn_delete_all_rows").prop("disabled", true);
-	}
-}
-
-/*
-	ENTRY POINT !
-*/
-function entryPoint(event){
-	console.log("entryPoint");
-	if($("#tbl_tariff").is(":visible")){
-		return;
-	}
-	if (!$('#services_tree').html()) {
-		console.log("Loading....");
-		initToolbar();
-		getAllServices();
 	}
 }
 
