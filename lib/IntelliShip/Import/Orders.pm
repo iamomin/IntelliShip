@@ -791,7 +791,7 @@ sub ImportOrders
 				}
 			else
 				{
-				$ToAddress = $self->model("MyDBI::Address")->new($toAddressData);
+				$ToAddress = $self->model("Address")->new($toAddressData);
 				$ToAddress->addressid($self->myDBI->get_token_id);
 				$ToAddress->insert;
 				$self->log("... New Address Inserted, ID: " . $ToAddress->addressid);
@@ -829,7 +829,7 @@ sub ImportOrders
 					}
 				elsif (length $dropAddressData->{'address1'})
 					{
-					$DropAddress = $self->model("MyDBI::Address")->new($dropAddressData);
+					$DropAddress = $self->model("Address")->new($dropAddressData);
 					$DropAddress->addressid($self->myDBI->get_token_id);
 					$DropAddress->insert;
 					$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
@@ -1613,7 +1613,7 @@ sub SaveAssessorial
 		assvalue    => $AssValue,
 		};
 
-	my $AssData = $self->context->model('MyDBI::ASSDATA')->new($addData);
+	my $AssData = $self->model('ASSDATA')->new($addData);
 	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
 
