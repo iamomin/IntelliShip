@@ -128,22 +128,32 @@ sub import
 				}
 			}
 
-		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
-		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
-
-		$ImportFailures = {} unless $ImportFailures;
-		$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
-
-		$self->log("\n--- move processed file to " . $imported_path);
-
 		my $import_base_file = fileparse($file);
-		unless (move($file,"$imported_path/$import_base_file"))
+
+		eval
 			{
-			print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+			my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
+			my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
+
+			$ImportFailures = {} unless $ImportFailures;
+			$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
+
+			$self->log("\n--- move processed file to " . $imported_path);
+
+			unless (move($file,"$imported_path/$import_base_file"))
+				{
+				print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+				}
+
+			$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
+			$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
+			};
+
+		if ($@)
+			{
+			$self->EmailImportFailures({ ISE_Error => $@ }, $imported_path,$import_base_file,{});
 			}
 
-		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
-		$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
 		}
 	}
 
@@ -250,6 +260,8 @@ sub ImportOrders
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
+		## Remove all non ASCII character
+		$Line =~ s/[^[:ascii:]]//g;
 
 		## skip blank lines
 		next unless $Line;
@@ -1088,15 +1100,17 @@ sub ImportProducts
 
 	foreach my $Line (@FileLines)
 		{
-		my $CustRef = {};
-
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
+		## Remove all non ASCII character
+		$Line =~ s/[^[:ascii:]]//g;
 
 		next unless $Line;
 
 		$self->log("");
+
+		my $CustRef = {};
 
 		($CustRef->{'extloginid'},
 		$CustRef->{'ordernumber'},
