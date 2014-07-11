@@ -310,6 +310,8 @@
 
 	$("input[name='deliverymethod']").click(checkDeliveryMethodSection);
 
+	[% UNLESS one_page %]requiredFieldHash = {};[% END %]
+
 	[% IF quickship %]
 
 		addressArray['COMPANY_ADDRESS'] = {
