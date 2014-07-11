@@ -6,6 +6,7 @@ use Switch;
 use IO::File;
 use XML::Simple;
 use Email::Valid;
+use File::Basename;
 use IntelliShip::MyConfig;
 use IntelliShip::Carrier::Constants;
 
@@ -666,6 +667,38 @@ sub generate_barcode
 	return $BarcodeFile;
 	}
 =cut
+
+
+sub i_am_running
+	{
+	my ($filename,$filepath) = fileparse($0);
+
+	if ( !(my @pid_files = <${filepath}/run/$filename.*>) )
+		{
+		system("/bin/touch $filepath/run/$filename.$$");
+		return 0;
+		}
+	else
+		{
+		foreach my $pid_file (@pid_files)
+			{
+			my ($check_pid) = $pid_file =~ /.*\.pl\.(\d+)$/;
+			my ($trunc_filename) = $filename =~ /^(\w{1,15})/;
+
+			if ( my $found_pid = `ps -eo pid,comm | grep -s '$check_pid $trunc_filename'` )
+				{
+				return 1;
+				}
+			else
+				{
+				unlink($pid_file) || warn "Cannot unlink $pid_file: $!";
+				}
+			}
+		}
+
+	system("/bin/touch $filepath/run/$filename.$$");
+	return 0;
+	}
 
 1;
 
