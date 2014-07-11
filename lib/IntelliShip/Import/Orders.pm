@@ -789,7 +789,7 @@ sub ImportOrders
 				}
 			else
 				{
-				$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
+				$ToAddress = $self->model("MyDBI::Address")->new($toAddressData);
 				$ToAddress->addressid($self->myDBI->get_token_id);
 				$ToAddress->insert;
 				$self->log("... New Address Inserted, ID: " . $ToAddress->addressid);
@@ -827,7 +827,7 @@ sub ImportOrders
 					}
 				elsif (length $dropAddressData->{'address1'})
 					{
-					$DropAddress = $c->model("MyDBI::Address")->new($dropAddressData);
+					$DropAddress = $self->model("MyDBI::Address")->new($dropAddressData);
 					$DropAddress->addressid($self->myDBI->get_token_id);
 					$DropAddress->insert;
 					$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
