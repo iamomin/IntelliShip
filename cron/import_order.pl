@@ -5,10 +5,16 @@ use lib '/opt/engage/intelliship2/IntelliShip/lib';
 use IO::File;
 use Data::Dumper;
 use Getopt::Long;
+use IntelliShip::Utils;
 use IntelliShip::MyConfig;
 use IntelliShip::Model::MyDBI;
 
 require IntelliShip::Import::Orders;
+
+if (IntelliShip::Utils->i_am_running)
+	{
+	exit;
+	}
 
 my $options = {
 	'username' => 'tsharp@engagetechnology.com',
