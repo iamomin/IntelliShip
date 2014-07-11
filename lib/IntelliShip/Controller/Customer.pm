@@ -1223,6 +1223,14 @@ sub get_select_list
 			{ name => 'Required', value => '2' }
 			];
 		}
+	elsif ($list_name eq 'CUST_REF_VALIDATION_LIST')
+		{
+		$list = [
+			{ name => 'Select One', value => '0' },
+			{ name => 'Available', value => '1' },
+			{ name => 'Required', value => '2' }
+			];
+		}
 	elsif ($list_name eq 'CARRIERRATES_LIST')
 		{
 		$list = [

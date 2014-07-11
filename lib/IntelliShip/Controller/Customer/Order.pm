@@ -3340,8 +3340,8 @@ sub set_required_fields :Private
 				push(@$requiredList, { name => 'ponumber',    details => "{ minlength: 2 }"}) if $customerRules{'reqponum'};
 				push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqordernumber'};
 				push(@$requiredList, { name => 'extid',    details => "{ minlength: 2 }"})    if $customerRules{'reqextid'};
-				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref2'};
-				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref3'};
+				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"})    if ($customerRules{'reqcustref2'} == 2);
+				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"})    if ($customerRules{'reqcustref3'} == 2);
 				}
 
 			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqcustnum'};
