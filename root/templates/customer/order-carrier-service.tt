@@ -158,6 +158,7 @@
 <script>
 
 [% UNLESS one_page %]
+		requiredFieldHash = {};
 	[% FOREACH item IN requiredfield_list %]
 		requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
