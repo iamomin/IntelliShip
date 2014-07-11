@@ -134,6 +134,8 @@ sub import
 		$ImportFailures = {} unless $ImportFailures;
 		$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
 
+		$self->log("\n--- move processed file to " . $imported_path);
+
 		my $import_base_file = fileparse($file);
 		unless (move($file,"$imported_path/$import_base_file"))
 			{
@@ -165,7 +167,7 @@ sub get_imported_directory
 	{
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->imported_directory;
-	$TARGET_dir .= '/' . 'co';
+	$TARGET_dir .= '/' . ($self->import_type eq 'product' ? 'product' : 'co');
 	$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
@@ -1352,10 +1354,15 @@ sub ImportProducts
 				}
 
 			my $productprice = 0;
-			if (my @productpriceparts = split(/\./,$CustRef->{'productprice'}))
+			if ($CustRef->{'productprice'} =~ /\./)
 				{
+				my @productpriceparts = split(/\./,$CustRef->{'productprice'});
 				$productpriceparts[0] =~ s/\D//;
 				$productprice = $productpriceparts[0] . '.' . $productpriceparts[1];
+				}
+			else
+				{
+				$productprice = $CustRef->{'productprice'} || 0;
 				}
 
 			$productData->{'quantity'}         = $CustRef->{'productquantity'};
@@ -1462,18 +1469,28 @@ sub ImportProducts
 sub EmailImportFailures
 	{
 	my $self = shift;
+	my $ImportFailures = shift;
+	my $filepath = shift;
+	my $filename = shift || '';
+	my $OrderTypeRef = shift;
+
 	my $c = $self->context;
-	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
 
 	my $attach_file = $filepath . '/' . $filename;
 
+	my @failureKeys = keys(%$ImportFailures);
+
+	return unless @failureKeys;
+
 	$self->log("... EmailImportFailures, file: $attach_file, $OrderTypeRef");
 
-	foreach my $customerid (keys(%$ImportFailures))
+	foreach my $customerid (@failureKeys)
 		{
 		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
 		my $Customer	 = $self->model('Customer')->find({ customerid => $customerid});
-        return unless  $Customer;
+
+		return unless  $Customer;
+
 		my $CustomerName = $Customer->customername if ($Customer);
 		my $toEmail      = $Customer->email if ($Customer);
 		my $subject      = "NOTICE: " . $CustomerName . " " . $OrderTypeRef->{'ordertype'} ." Import Failures "  . "(".$Timestamp.", ".$filename.")";
@@ -1488,13 +1505,25 @@ sub EmailImportFailures
 		$Email->add_to('aloha.sourceconsulting.com');
 		$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
-		$c->stash->{failures}		= $ImportFailures->{$customerid};
-		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
-		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+		if ($c)
+			{
+			$c->stash->{failures}		= $ImportFailures->{$customerid};
+			$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+			$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
 
-		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			}
+		else
+			{
+			$Email->add_line("ORDERTYPE  : " . $OrderTypeRef->{'ordertype'});
+			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
+			my $arr = $ImportFailures->{$customerid};
+			$Email->add_line($_) foreach @$arr;
+			}
 
 		$Email->attach($attach_file);
+
+		#$Email->to_string;
 
 		if ($Email->send)
 			{
