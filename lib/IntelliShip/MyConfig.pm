@@ -292,7 +292,7 @@ sub no_reply_email
 sub base_path
 	{
 	my $self = shift;
-	return $self->application_root . '/root/var';
+	return $self->application_root . '/var';
 	}
 
 sub import_directory
