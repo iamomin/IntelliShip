@@ -261,6 +261,7 @@
 [% IF CARRIER_SERVICE_LIST %]
 
 	[% IF ONLY_TABLE %]
+	[% IF NO_RECOMMENDED_LIST %]<input type="hidden" id="norecommendedlist" value="[% NO_RECOMMENDED_LIST %]"/>[% END %]
 	<table class="app css3-radios">
 		<tr>
 			<th>&nbsp;</th>
@@ -310,8 +311,7 @@
 	<input type="hidden" id="packagecosts" name="packagecosts"/>
 	<input type="hidden" id="datetodeliver" name="datetodeliver"/>
 	[% IF DefaultCSID %]<input type="hidden" name="defaultcsid" value="[% DefaultCSID %]"/>[% END %]
-	[% IF DefaultTotalCost %]<input type="hidden" name="defaultcsidtotalcost" value="[% DefaultTotalCost %]"/>[% END %]
-
+	[% IF DefaultTotalCost %]<input type="hidden" name="defaultcsidtotalcost" value="[% DefaultTotalCost %]"/>[% END %]	
 	<div id="carrier-service-list-tabs">
 		<ul style="padding: 0;">
 			<li><a href="#carrier-service-list-1">RECOMMENDED</a></li>
@@ -367,6 +367,10 @@
 						});
 					}
 				});
+			
+			if($("#norecommendedlist").val() == 1){
+				$("#carrier-service-list-tabs").tabs({active: 2});
+			}
 
 			$('input:radio[name=customerserviceid]:checked').click();
 			if ($('#autoprocess').val() == 1 && $('#carrier').val().length > 0) $("#ship_now").click();

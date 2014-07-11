@@ -434,9 +434,14 @@ sub get_carrier_service_list
 		my @sortByCharge = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
 
 		$c->stash->{TAB} = 'r';
-		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
+		my $recommendedList = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
+		warn "########## Recommended: " . Dumper($recommendedList);
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $recommendedList;
+		$c->stash->{NO_RECOMMENDED_LIST} = 1 if ($recommendedList->[0]->{notdefined});
+		warn "########## No recommended list" if $c->stash->{NO_RECOMMENDED_LIST};
 		$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP}->[0]->{checked} = 0;
+		$c->stash->{NO_RECOMMENDED_LIST} = undef;
 
 		$c->stash->{TAB} = 't';
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
@@ -473,11 +478,14 @@ sub get_recommened_carrier_service :Private
 
 	my @price_asc = sort { $a->{shipment_charge} <=> $b->{shipment_charge} } @withindays;
 
-	push(@$recommended, $price_asc[0]) if @price_asc;
-	push(@$recommended, $sortByCharge->[0]) unless (@$recommended);
+	push(@$recommended, $price_asc[0]) if @price_asc;	
+	push(@$recommended, $sortByCharge->[0]) unless (@$recommended);	
 	push(@$recommended, $otherCarriers->[0]) unless (@$recommended);
-
-	$recommended->[0]->{checked} = 1;
+	
+	$recommended->[0]->{checked} = 1 if $recommended->[0];
+	if(!$recommended->[0]){
+		$recommended->[0]->{notdefined} = 1;
+	}
 	#$c->log->debug("recommended: ". Dumper($recommended));
 	return $recommended;
 	}
