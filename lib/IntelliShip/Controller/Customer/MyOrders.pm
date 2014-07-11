@@ -217,7 +217,7 @@ sub get_not_shipped_sql :Private
 	 FROM
 		co
 		INNER JOIN customer cu ON cu.customerid = co.customerid AND cu.customerid = '$CustomerID'
-		INNER JOIN address oa ON cu.addressid = oa.addressid
+		INNER JOIN address oa ON co.oaaddressid = oa.addressid
 		INNER JOIN address da ON co.addressid = da.addressid
 	 WHERE
 		co.statusid in (1,50,300,999,100)
@@ -261,7 +261,7 @@ sub get_not_shipped_sql :Private
 	 FROM
 		co
 		INNER JOIN customer cu ON cu.customerid = co.customerid AND cu.customerid = '$CustomerID'
-		INNER JOIN address oa ON cu.addressid = oa.addressid
+		INNER JOIN address oa ON co.oaaddressid = oa.addressid
 		INNER JOIN address da ON co.addressid = da.addressid
 	 WHERE
 		co.statusid in (1,50,300,999,100)
