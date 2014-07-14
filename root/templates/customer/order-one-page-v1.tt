@@ -346,9 +346,7 @@
 		checkInternationalSection();
 		calculateTotalDeclaredValueInsurance();
 
-		if(requiredFieldHash) {
-			markRequiredFields(requiredFieldHash);
-			}
+		if(requiredFieldHash) markRequiredFields(requiredFieldHash);
 
 		if ($('#autoprocess').val() == 1) {
 			$("#ship_now").click();

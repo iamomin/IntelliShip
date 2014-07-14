@@ -179,6 +179,8 @@
 		setToolTip();
 		[% END %]
 
+		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
+
 		setCustomsCommodityValue();
 		});
 
