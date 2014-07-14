@@ -177,7 +177,7 @@
 		<div id="footer">
 			<div class="content">
 				<ul>
-					<li><img src="/static/branding/engage/images/footer/logo.gif" class="logo"/></li>
+					<!--<li><img src="/static/branding/engage/images/footer/logo.gif" class="logo"/></li>-->
 					<li>Copyright &copy; 2000-2014 Engage Technology, LLC.</li>
 					<li>|</li>
 					<li><a href="javascript:void(0);" onclick="ShowPrivacy();">Privacy</a></li>
