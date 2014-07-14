@@ -219,7 +219,7 @@ sub setup_shipment_information :Private
 		$self->populate_order;
 		}
 
-	$c->stash->{SPECIAL_SERVICE} = $self->get_special_services if $Contact->get_contact_data_value('specialserviceexpanded') and !$c->stash->{SPECIAL_SERVICE};
+	$c->stash->{SPECIAL_SERVICES} = $self->get_special_services if $Contact->get_contact_data_value('specialserviceexpanded') and !$c->stash->{SPECIAL_SERVICES};
 
 	unless ($c->stash->{one_page})
 		{
@@ -229,12 +229,7 @@ sub setup_shipment_information :Private
 		if ($Customer->address->country ne $CO->to_address->country)
 			{
 			$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
-			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-			$CA->context($c);
-			$CA->contact($self->contact);
-			$CA->set_international_details;
-			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-			$c->stash->{INTERNATIONAL} = 0;
+			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $self->get_international_section;
 			}
 		}
 
@@ -1279,7 +1274,7 @@ sub populate_order :Private
 		## SELECTED SPECIAL SERVICES
 		if ($CO->assessorials->count)
 			{
-			$c->stash->{SPECIAL_SERVICE} = $self->get_special_services;
+			$c->stash->{SPECIAL_SERVICES} = $self->get_special_services;
 			}
 		}
 
@@ -1457,7 +1452,30 @@ sub get_special_services :Private
 	$CA->contact($self->contact);
 	$CA->customer($self->customer);
 	$CA->get_special_service_list;
-	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	$c->stash->{SPECIAL_SERVICE} = 0;
+	$c->stash->{specialservice_loop} = undef;
+
+	return $HTML;
+	}
+
+sub get_international_section :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+	$CA->context($c);
+	$CA->contact($self->contact);
+	$CA->customer($self->customer);
+	$CA->set_international_details;
+
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{INTERNATIONAL} = 0;
+
+	return $HTML;
 	}
 
 sub get_tooltips :Private
