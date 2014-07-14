@@ -275,9 +275,9 @@ sub insert_shipment
 			'unitquantity' => $shipmentData->{'unitquantity'},
 			'ipaddress' => $shipmentData->{'ipaddress'},
 			'commodityunitvalue' => $shipmentData->{'commodityunitvalue'},
-			'contactid' =>	$shipmentData->{'contactid'},
-			'datedue' =>	$date_due,
-			'datetodeliver' =>	$date_to_deliver,
+			'contactid' => $shipmentData->{'contactid'},
+			'datedue' => $date_due,
+			'datetodeliver' => $date_to_deliver,
 		};
 
 	my $orignAddress = {
