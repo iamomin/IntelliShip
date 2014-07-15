@@ -1507,7 +1507,7 @@ sub get_package
 				datatypeid => 1000,
 				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone
 				};
-			$Package = $self->model('PackProData')->new($packageData);
+			$Package = $self->model('Packprodata')->new($packageData);
 			$Package->packprodataid($self->myDBI->get_token_id);
 			$Package->insert;
 			}
