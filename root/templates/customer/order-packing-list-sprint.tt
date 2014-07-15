@@ -62,7 +62,7 @@
 
 		#packing-list table table.summary {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
 		#packing-list table table.summary td {padding: 0 5px;}
-		#packing-list table table.summary th {padding: 5px; font: bold 14px Arial, sans-serif, Helvetica; text-align: center;}
+		#packing-list table table.summary th {padding: 5px; font: bold 22px Arial, sans-serif, Helvetica; text-align: center;}
 	</style>
 
 	<script>
