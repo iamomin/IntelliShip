@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>Intelliship Sign In</title>
-		<link rel="stylesheet" type="text/css" href="/static/css/login.css" />
+		<link rel="stylesheet" type="text/css" href="/static/branding/[% branding_id %]/css/login.css" />
 	</head>
 	<body>
 		<form id="login" name="login" method="post" action="/customer/login">
