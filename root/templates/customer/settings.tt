@@ -728,7 +728,7 @@ $(document).ready(function(){
 			<td></td>
 			[% ELSE %]
 			<td>Profile Image</td>
-			<td><img class="profile-image" [% IF user_profile %]style="background-image: url('/static/branding/engage/images/profile/[% user_profile %]')"[% END %]></span><input id="profile-image-input" type="file"/></td>
+			<td><table><tr><td><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></td><td valign=middle><input id="profile-image-input" type="file"/></td>[% IF user_profile%]<td><a class="round-black-button" onclick="deleteProfileImage('[% user_profile %]');" href="javascript:void(0);">X</a> </td> [% END %]</tr></table></td>
 			[% END %]
 
 			<td><label class="float-right" for="disabledate">Disable Date:</label></td>
@@ -821,6 +821,18 @@ $(document).ready(function(){
 	</form>
 
 	<script>
+	function deleteProfileImage(image){
+		var param = "image="+image;
+		send_ajax_request(null, 'JSON', null, 'delete_profile_image', param, deleteProfileImageCallback);
+	}
+	
+	function deleteProfileImageCallback(){
+		console.log("deleteProfileImageCallback");
+		if(JSON_data.status == "SUCCESS"){
+			$(".profile-image").attr("src","/static/branding/engage/images/profile/user-default.png");
+		}
+	}
+	
 	function updateStateList(type,call_back_fn){
 			$("#"+type+"city").val('');
 			$("#"+type+"state").val('');
