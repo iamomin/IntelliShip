@@ -27,7 +27,7 @@ my $ImportFilePath = IntelliShip::MyConfig->import_directory;
 ##############################
 
 # Build SQL to get list of FTP sites
-my $FTP_SQL = "SELECT * FROM ftpinfo WHERE ftpinfotypeid=1 AND active=1 AND ftpinfoid='3001' ORDER BY ftpinfoid DESC";
+my $FTP_SQL = "SELECT * FROM ftpinfo WHERE ftpinfotypeid=1 AND active=1 ORDER BY ftpinfoid DESC";
 my $FTP_STH = $myDBI->select($FTP_SQL);
 
 print "\n... total " . $FTP_STH->numrows . " FTP servers found";
@@ -107,6 +107,22 @@ for (my $row=0; $row < $FTP_STH->numrows; $row++)
 						$LocalFile = "$ImportFilePath/co/$file_unique";
 						}
 					elsif ( $file_unique =~ /_QP/ )
+						{
+						$LocalFile = "$ImportFilePath/product/$file_unique";
+						}
+					else
+						{
+						$LocalFile = "$ImportFilePath/co/$file_unique";
+						}
+					}
+				# Ernie Ball
+				elsif ( $FTPRef->{'address'} eq '66.209.109.195' )
+					{
+					if ( $file_unique =~ /_orders/ )
+						{
+						$LocalFile = "$ImportFilePath/co/$file_unique";
+						}
+					elsif ( $file_unique =~ /_lineitem/ )
 						{
 						$LocalFile = "$ImportFilePath/product/$file_unique";
 						}
