@@ -148,6 +148,12 @@ for (my $row=0; $row < $FTP_STH->numrows; $row++)
 					SendEmailNotification($from_email,$to_email,undef,undef,$subject,$subject,$LocalFile);
 					}
 				}
+
+			if (IntelliShip::MyConfig->getDomain eq 'PRODUCTION')
+				{
+				print "\n... deleting file $file from remote ftp server";
+				$ftp->delete($file);
+				}
 			}
 
 		$ftp->quit();
