@@ -161,8 +161,8 @@ sub get_import_directory
 	{
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->import_directory;
-	$TARGET_dir .= '/' . 'co';
-	$TARGET_dir .= '/' . $self->customer->username;
+	$TARGET_dir .= '/' . ($self->import_type eq 'product' ? 'product' : 'co');
+	#$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
@@ -178,7 +178,7 @@ sub get_imported_directory
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->imported_directory;
 	$TARGET_dir .= '/' . ($self->import_type eq 'product' ? 'product' : 'co');
-	$TARGET_dir .= '/' . $self->customer->username;
+	#$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
