@@ -1105,14 +1105,15 @@ table.dialog-header {
 
 /* To show profile picture circular */
 .profile-image {
-    background:url("/static/branding/engage/images/profile/user-default.png") no-repeat;
-    background-size:48px 48px;
-    background-position:0px 0px;
-    height:48px;
-    width:48px;
-    border-radius:50%;
-    overflow:hidden;
-    margin:auto;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: auto;
+    height: 48px;
+    width: 48px;
+}
+.uploadify-button {
+    margin: 15px auto;
 }
 
 #carrier-service-list-1,

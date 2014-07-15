@@ -728,7 +728,7 @@ $(document).ready(function(){
 			<td></td>
 			[% ELSE %]
 			<td>Profile Image</td>
-			<td><img class="profile-image" [% IF user_profile %]style="background-image: url('/static/branding/engage/images/profile/[% user_profile %]')"[% END %]></span><input id="profile-image-input" type="file"/></td>
+			<td><table><tr><td><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></td><td valign=middle><input id="profile-image-input" type="file"/></td></tr></table></td>
 			[% END %]
 
 			<td><label class="float-right" for="disabledate">Disable Date:</label></td>
