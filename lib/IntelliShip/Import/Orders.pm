@@ -25,6 +25,8 @@ has 'context'      => ( is => 'rw' );
 has 'API'          => ( is => 'rw' );
 has 'AuthContacts' => ( is => 'rw' );
 has 'error_files'  => ( is => 'rw' );
+has 'co_cache'     => ( is => 'rw' );
+has 'package_cache'=> ( is => 'rw' );
 
 my $config;
 $Data::Dumper::Sortkeys = 1;
@@ -34,6 +36,8 @@ sub BUILD
 	my $self = shift;
 	$self->error_files([]);
 	$self->AuthContacts({});
+	$self->co_cache({});
+	$self->package_cache({});
 	$config = IntelliShip::MyConfig->get_ARRS_configuration;
 	}
 
@@ -1210,26 +1214,11 @@ sub ImportProducts
 		if (defined($CustRef->{'ordernumber'}) && $CustRef->{'ordernumber'} ne '' && $export_flag ne '-1')
 			{
 			$self->log("... search for CO by ordernumber: " . $CustRef->{'ordernumber'});
-			 my $sth = $self->myDBI->select("
-				SELECT
-					coid
-				FROM
-					co
-				WHERE
-					customerid = '$CustomerID'
-					AND ordernumber = '$CustRef->{'ordernumber'}'
-					AND cotypeid = '$CustRef->{'cotypeid'}'
-				ORDER BY
-					datecreated DESC
-				LIMIT 1
-			 ");
+			$CO = $self->get_order($CustomerID,$CustRef->{'ordernumber'},$CustRef->{'cotypeid'});
 
-			my $coid = $sth->fetchrow(0)->{'coid'} if $sth->numrows;
-			$CustRef->{'coid'} = $coid;
+			$CustRef->{'coid'} = $CO->coid if $CO;
 
-			$self->log("... CO found, ID: " . $coid);
-
-			if (!defined($CustRef->{'coid'}) || $CustRef->{'coid'} eq '')
+			unless ($CustRef->{'coid'})
 				{
 				$export_flag = -2;
 				}
@@ -1332,8 +1321,6 @@ sub ImportProducts
 			## if it's the 1st hit on a particular order then delete any existing product records
 			if ($LastCOID ne $CustRef->{'coid'})
 				{
-				$CO = $self->model('Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
-
 				#$self->log("... CO DATA DETAILS: " . Dumper $CO);
 				}
 
@@ -1353,19 +1340,10 @@ sub ImportProducts
 			## DataTypeId
 			## 1000 = Package
 			## 2000 = Product
-			my @packages = $CO->packages if $CO;
-			if (@packages)
-				{
-				$self->log("... package '" . $packages[0]->packprodataid . "' found for order, insert product into package");
-				$productData->{'ownerid'}     = $packages[0]->packprodataid;
-				$productData->{'ownertypeid'} = '3000';
-				}
-			else
-				{
-				$self->log("... package not found");
-				$productData->{'ownerid'}     = $CustRef->{'coid'};
-				$productData->{'ownertypeid'} = '1000';
-				}
+			my $Package = $self->get_package($CO);
+			$self->log("... package '" . $Package->packprodataid . "' found for order, insert product into package");
+			$productData->{'ownerid'}     = $Package->packprodataid;
+			$productData->{'ownertypeid'} = '3000';
 
 			my $productprice = 0;
 			if ($CustRef->{'productprice'} =~ /\./)
@@ -1477,6 +1455,66 @@ sub ImportProducts
 		}
 
 	return ($ImportFailureRef,$ordertype);
+	}
+
+sub get_order
+	{
+	my $self = shift;
+	my $CustomerID = shift;
+	my $OrderNumber = shift;
+	my $COTypeID = shift;
+
+	my $CO = $self->co_cache->{$OrderNumber};
+
+	unless ($CO)
+		{
+		my $sql = "SELECT coid FROM co WHERE customerid='$CustomerID' AND ordernumber='$OrderNumber' AND cotypeid='$COTypeID' ORDER BY datecreated DESC LIMIT 1";
+		my $sth = $self->myDBI->select($sql);
+
+		if ($sth->numrows)
+			{
+			my $coid = $sth->fetchrow(0)->{'coid'};
+			$CO = $self->model('Co')->find({coid => $coid});
+			$self->log("... CO found, ID: " . $CO->coid);
+			$CO->delete_all_package_details;
+			$self->co_cache->{$OrderNumber} = $CO;
+			}
+		}
+
+	return $CO;
+	}
+
+sub get_package
+	{
+	my $self = shift;
+	my $CO = shift;
+
+	my $Package = $self->package_cache->{$CO->coid};
+
+	unless ($Package)
+		{
+		my @packages = $CO->packages;
+		if (@packages)
+			{
+			$Package = $packages[0];
+			}
+		else
+			{
+			my $packageData = {
+				ownerid => $CO->coid,
+				ownertypeid => 1000,
+				datatypeid => 1000,
+				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone
+				};
+			$Package = $self->model('PackProData')->new($packageData);
+			$Package->packprodataid($self->myDBI->get_token_id);
+			$Package->insert;
+			}
+
+		$self->package_cache->{$CO->coid} = $Package;
+		}
+
+	return $Package;
 	}
 
 ## Send email with list of failed imports
