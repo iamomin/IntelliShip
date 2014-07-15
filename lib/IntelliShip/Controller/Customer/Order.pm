@@ -3640,7 +3640,7 @@ sub generate_packing_list
 
 		if ($list_type =~ /sprint/i)
 			{
-			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
+			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($CO->ordernumber);
 			$c->stash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
 			my $original_param_shipmentid = $params->{'shipmentid'};
 			$params->{'shipmentid'} = $shipmentid;
