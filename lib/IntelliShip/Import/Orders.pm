@@ -1270,7 +1270,7 @@ sub ImportProducts
 			$CustRef->{'weighttypeid'} = 1;
 			}
 
-		$self->log("... unittypeid: " . $CustRef->{'unittypeid'});
+		#$self->log("... unittypeid: " . $CustRef->{'unittypeid'});
 
 		if ( $export_flag == 0 )
 			{
