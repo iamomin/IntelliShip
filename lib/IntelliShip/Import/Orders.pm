@@ -10,6 +10,7 @@ use POSIX qw (ceil strftime);
 use Date::Calc qw(Delta_Days);
 use Scalar::Util qw(looks_like_number);
 
+use IntelliShip::Email;
 use IntelliShip::Utils;
 use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
