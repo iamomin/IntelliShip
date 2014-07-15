@@ -1535,12 +1535,13 @@ sub EmailImportFailures
 
 	return unless @failureKeys;
 
-	$self->log("... EmailImportFailures, file: $attach_file, $OrderTypeRef");
+	$self->log("... EmailImportFailures, file: $attach_file");
+	$self->log("... Errors: " . Dumper($ImportFailures));
 
 	foreach my $customerid (@failureKeys)
 		{
 		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
-		my $Customer	 = $self->model('Customer')->find({ customerid => $customerid});
+		my $Customer = $self->model('Customer')->find({ customerid => $customerid});
 
 		return unless  $Customer;
 
