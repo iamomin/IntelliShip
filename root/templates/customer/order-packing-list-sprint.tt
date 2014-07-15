@@ -53,12 +53,15 @@
 			border: 1px solid black;
 			text-align: center;
 		}
-		#packing-list table table  {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
-		#packing-list table table tr:nth-child(odd) {color: #000; background: #F6F6F8 }
-		#packing-list table table tr:nth-child(even) {color: #000; background: #E4E5E7 }
-		#packing-list table table th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
-		#packing-list table table td {padding: 3px;}
-		#packing-list table table td.center {text-align: center;}
+		#packing-list table table.list {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+		#packing-list table table.list tr:nth-child(odd) {color: #000; background: #F6F6F8 }
+		#packing-list table table.list tr:nth-child(even) {color: #000; background: #E4E5E7 }
+		#packing-list table table.list th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
+		#packing-list table table.list td {padding: 3px;}
+		#packing-list table table.list td.center {text-align: center;}
+
+		#packing-list table table.summary {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+		#packing-list table table.summary td {padding: 0 5px;}
 	</style>
 
 	<script>
@@ -110,6 +113,7 @@
 			<span style='mso-ignore:vglayout;position:relative;z-index:1'>
 			<span style='position: absolute;left:11px;top:-1px;width:102px;height:54px'>
 
+			[% UNLESS SPRINT %]
 			<table cellpadding=0 cellspacing=0>
 				<tr>
 					<td width=102 height=54 bgcolor=white style='vertical-align:top;background:white'>
@@ -148,13 +152,15 @@
 				</tr>
 			</table>
 			</center>
+			[% END %]
 
 			[% IF SPRINT %]
 				<table>
 				[% FOREACH page IN packinglist_loop %]
 					<tr[% IF loop.count > 1 %] style="page-break-before: always;"[% END %]>
-					<td>
-					<table>
+					<td valign="bottom">
+					[% IF page.packinglist_1_loop %]
+					<table class="list">
 						<tr style="height: .3125in;">
 							<th style="width: .25in;">QTY</th>
 							<th style="width: .6875in;">REFERED EQUIPMENT</th>
@@ -168,9 +174,11 @@
 						</tr>
 						[% END %]
 					</table>
+					[% END %]
 					</td>
-					<td>
-					<table>
+					<td valign="bottom">
+					[% IF page.packinglist_2_loop %]
+					<table class="list">
 						<tr style="height: .3125in;">
 							<th style="width: .25in;">QTY</th>
 							<th style="width: .6875in;">REFERED EQUIPMENT</th>
@@ -183,6 +191,14 @@
 							<td>[% item.productdescription %]</td>
 						</tr>
 						[% END %]
+					</table>
+					[% END %]
+
+					<table class="summary">
+						<tr><td colspan=6><center><strong>[% ordernumber %]</strong></center></td></tr>
+						<tr><td>BU/CC</td><td>:</td><td></td><td>Service Level</td><td>:</td><td>[% service %]</td></tr>
+						<tr><td>Return Label</td><td>:</td><td>[% returnshipment == 1 ? 'Yes' : 'No' %]</td><td>MAC/ESN</td><td>:</td><td>Yes</td></tr>
+						<tr><td>Deliver On</td><td>:</td><td>[% datedue %]</td><td>Network</td><td>:</td><td>PJ008727B</td></tr>
 					</table>
 					</td>
 					</tr>

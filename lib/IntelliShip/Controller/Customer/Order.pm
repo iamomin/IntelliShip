@@ -3340,8 +3340,8 @@ sub set_required_fields :Private
 				push(@$requiredList, { name => 'ponumber',    details => "{ minlength: 2 }"}) if $customerRules{'reqponum'};
 				push(@$requiredList, { name => 'ordernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqordernumber'};
 				push(@$requiredList, { name => 'extid',    details => "{ minlength: 2 }"})    if $customerRules{'reqextid'};
-				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref2'};
-				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"})    if $customerRules{'reqcustref3'};
+				push(@$requiredList, { name => 'custref2', details => "{ minlength: 2 }"})    if ($customerRules{'reqcustref2'} == 2);
+				push(@$requiredList, { name => 'custref3', details => "{ minlength: 2 }"})    if ($customerRules{'reqcustref3'} == 2);
 				}
 
 			push(@$requiredList, { name => 'tocustomernumber', details => "{ minlength: 2 }"}) if $customerRules{'reqcustnum'};
@@ -3441,7 +3441,9 @@ sub generate_packing_list
 		$c->stash($Shipment->{_column_data});
 		$c->stash->{'contactname'}    = $CO->contactname;
 		$c->stash->{'ordernumber'}    = $CO->ordernumber;
+		$c->stash->{'returnshipment'} = $CO->return;
 		$c->stash->{'dateshipped'}    = IntelliShip::DateUtils->american_date($Shipment->dateshipped);
+		$c->stash->{'datedue'}        = IntelliShip::DateUtils->american_date($Shipment->datedue);
 		$c->stash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
 		$c->stash->{'totalpages'}     = 1;
 		$c->stash->{'currentpage'}    = 1;
@@ -3568,6 +3570,8 @@ sub generate_packing_list
 					{
 					last unless @$packinglist_loop;
 
+					$count -= 5 if $count == 25 && $_ == 2;
+
 					my $key = 'packinglist_'.$_.'_loop';
 					my @list = splice(@$packinglist_loop,0,$count);
 					$tableHash->{$key} = \@list;
@@ -3583,6 +3587,8 @@ sub generate_packing_list
 			{
 			$c->stash->{packinglist_loop} = $packinglist_loop;
 			}
+
+		#$c->log->debug("PACKING LIST: " . Dumper($c->stash->{packinglist_loop}));
 
 		$c->stash->{grossweight}      = $gross_weight;
 		$c->stash->{quantity}         = $quantity;

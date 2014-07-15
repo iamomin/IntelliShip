@@ -128,20 +128,32 @@ sub import
 				}
 			}
 
-		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
-		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
-
-		$ImportFailures = {} unless $ImportFailures;
-		$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
-
 		my $import_base_file = fileparse($file);
-		unless (move($file,"$imported_path/$import_base_file"))
+
+		eval
 			{
-			print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+			my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
+			my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
+
+			$ImportFailures = {} unless $ImportFailures;
+			$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
+
+			$self->log("\n--- move processed file to " . $imported_path);
+
+			unless (move($file,"$imported_path/$import_base_file"))
+				{
+				print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+				}
+
+			$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
+			$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
+			};
+
+		if ($@)
+			{
+			$self->EmailImportFailures({ ISE_Error => $@ }, $imported_path,$import_base_file,{});
 			}
 
-		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
-		$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
 		}
 	}
 
@@ -165,7 +177,7 @@ sub get_imported_directory
 	{
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->imported_directory;
-	$TARGET_dir .= '/' . 'co';
+	$TARGET_dir .= '/' . ($self->import_type eq 'product' ? 'product' : 'co');
 	$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
@@ -248,6 +260,8 @@ sub ImportOrders
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
+		## Remove all non ASCII character
+		$Line =~ s/[^[:ascii:]]//g;
 
 		## skip blank lines
 		next unless $Line;
@@ -789,7 +803,7 @@ sub ImportOrders
 				}
 			else
 				{
-				$ToAddress = $self->model("MyDBI::Address")->new($toAddressData);
+				$ToAddress = $self->model("Address")->new($toAddressData);
 				$ToAddress->addressid($self->myDBI->get_token_id);
 				$ToAddress->insert;
 				$self->log("... New Address Inserted, ID: " . $ToAddress->addressid);
@@ -827,7 +841,7 @@ sub ImportOrders
 					}
 				elsif (length $dropAddressData->{'address1'})
 					{
-					$DropAddress = $self->model("MyDBI::Address")->new($dropAddressData);
+					$DropAddress = $self->model("Address")->new($dropAddressData);
 					$DropAddress->addressid($self->myDBI->get_token_id);
 					$DropAddress->insert;
 					$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
@@ -1086,15 +1100,17 @@ sub ImportProducts
 
 	foreach my $Line (@FileLines)
 		{
-		my $CustRef = {};
-
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
+		## Remove all non ASCII character
+		$Line =~ s/[^[:ascii:]]//g;
 
 		next unless $Line;
 
 		$self->log("");
+
+		my $CustRef = {};
 
 		($CustRef->{'extloginid'},
 		$CustRef->{'ordernumber'},
@@ -1352,10 +1368,15 @@ sub ImportProducts
 				}
 
 			my $productprice = 0;
-			if (my @productpriceparts = split(/\./,$CustRef->{'productprice'}))
+			if ($CustRef->{'productprice'} =~ /\./)
 				{
+				my @productpriceparts = split(/\./,$CustRef->{'productprice'});
 				$productpriceparts[0] =~ s/\D//;
 				$productprice = $productpriceparts[0] . '.' . $productpriceparts[1];
+				}
+			else
+				{
+				$productprice = $CustRef->{'productprice'} || 0;
 				}
 
 			$productData->{'quantity'}         = $CustRef->{'productquantity'};
@@ -1462,18 +1483,28 @@ sub ImportProducts
 sub EmailImportFailures
 	{
 	my $self = shift;
+	my $ImportFailures = shift;
+	my $filepath = shift;
+	my $filename = shift || '';
+	my $OrderTypeRef = shift;
+
 	my $c = $self->context;
-	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
 
 	my $attach_file = $filepath . '/' . $filename;
 
+	my @failureKeys = keys(%$ImportFailures);
+
+	return unless @failureKeys;
+
 	$self->log("... EmailImportFailures, file: $attach_file, $OrderTypeRef");
 
-	foreach my $customerid (keys(%$ImportFailures))
+	foreach my $customerid (@failureKeys)
 		{
 		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
 		my $Customer	 = $self->model('Customer')->find({ customerid => $customerid});
-        return unless  $Customer;
+
+		return unless  $Customer;
+
 		my $CustomerName = $Customer->customername if ($Customer);
 		my $toEmail      = $Customer->email if ($Customer);
 		my $subject      = "NOTICE: " . $CustomerName . " " . $OrderTypeRef->{'ordertype'} ." Import Failures "  . "(".$Timestamp.", ".$filename.")";
@@ -1488,13 +1519,25 @@ sub EmailImportFailures
 		$Email->add_to('aloha.sourceconsulting.com');
 		$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
-		$c->stash->{failures}		= $ImportFailures->{$customerid};
-		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
-		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+		if ($c)
+			{
+			$c->stash->{failures}		= $ImportFailures->{$customerid};
+			$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+			$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
 
-		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			}
+		else
+			{
+			$Email->add_line("ORDERTYPE  : " . $OrderTypeRef->{'ordertype'});
+			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
+			my $arr = $ImportFailures->{$customerid};
+			$Email->add_line($_) foreach @$arr;
+			}
 
 		$Email->attach($attach_file);
+
+		#$Email->to_string;
 
 		if ($Email->send)
 			{
@@ -1584,7 +1627,7 @@ sub SaveAssessorial
 		assvalue    => $AssValue,
 		};
 
-	my $AssData = $self->context->model('MyDBI::ASSDATA')->new($addData);
+	my $AssData = $self->model('ASSDATA')->new($addData);
 	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
 
