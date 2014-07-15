@@ -3465,6 +3465,7 @@ sub generate_packing_list
 		$c->stash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
 		$c->stash->{'totalpages'}     = 1;
 		$c->stash->{'currentpage'}    = 1;
+		$c->stash->{'comments'}       = $CO->description;
 
 		# Origin Address
 		if (my $OAAddress = $Shipment->origin_address)

@@ -56,12 +56,13 @@
 		#packing-list table table.list {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
 		#packing-list table table.list tr:nth-child(odd) {color: #000; background: #F6F6F8 }
 		#packing-list table table.list tr:nth-child(even) {color: #000; background: #E4E5E7 }
-		#packing-list table table.list th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
+		#packing-list table table.list th {padding: 5px; color: #FFF; background-color: #000; white-space: nowrap; text-align: center;}
 		#packing-list table table.list td {padding: 3px;}
 		#packing-list table table.list td.center {text-align: center;}
 
 		#packing-list table table.summary {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
 		#packing-list table table.summary td {padding: 0 5px;}
+		#packing-list table table.summary th {padding: 5px; font: bold 22px Arial, sans-serif, Helvetica; text-align: center;}
 	</style>
 
 	<script>
@@ -195,10 +196,12 @@
 					[% END %]
 
 					<table class="summary">
-						<tr><td colspan=6><center><strong>[% ordernumber %]</strong></center></td></tr>
+						<tr><th colspan=6>[% ordernumber %]</th></tr>
+						<tr><td colspan=6><center><img id="barcode" src="[% barcode_image %]" alt="PLACE PRO LABEL HERE" width="200" height="30"/></center></td></tr>
 						<tr><td>BU/CC</td><td>:</td><td></td><td>Service Level</td><td>:</td><td>[% service %]</td></tr>
 						<tr><td>Return Label</td><td>:</td><td>[% returnshipment == 1 ? 'Yes' : 'No' %]</td><td>MAC/ESN</td><td>:</td><td>Yes</td></tr>
 						<tr><td>Deliver On</td><td>:</td><td>[% datedue %]</td><td>Network</td><td>:</td><td>PJ008727B</td></tr>
+						<tr><td>Comments</td><td>:</td><td colspan="4">[% comments %]</td></tr>
 					</table>
 					</td>
 					</tr>
