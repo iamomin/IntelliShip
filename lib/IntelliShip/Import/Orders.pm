@@ -1655,7 +1655,7 @@ sub EmailUnknownCustomer
 
 		if ($Email->send)
 			{
-			$self->log("*** import failure order for unkown user notification email successfully sent to " . join(',',@{$Email->to}));
+			$self->log("*** unkown user notification email successfully sent to " . join(',',@{$Email->to}));
 			}
 
 		unless (move($file, $new_file))
