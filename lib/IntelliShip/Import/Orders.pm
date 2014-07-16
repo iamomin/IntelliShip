@@ -1646,8 +1646,7 @@ sub EmailUnknownCustomer
 			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
 			foreach my $customerid (keys(%$ImportFailures))
 				{
-				my $arr = $ImportFailures->{$customerid};
-				$Email->add_line($_) foreach @$arr;
+				$Email->add_line($ImportFailures->{$customerid});
 				}
 			}
 
