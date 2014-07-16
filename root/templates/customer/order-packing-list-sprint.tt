@@ -12,21 +12,22 @@
 		<script type="text/javascript" src="/static/js/html2canvas/html2canvas.js"></script>
 
 		<style type="text/css">
+		* { font-family: Arial, Helvetica, sans-serif }
 		#packing-list {
-			font-family: Arial, Helvetica, sans-serif;
-			font-size: 10pt;
-
 			float: left;
+			font-size: 10pt;
+			margin-top: 10px;
 			position: absolute;
-			margin-top: 50px;
 		}
+		#packing-list img { padding: 0; margin: 0 }
 		#packing-list table {
+			padding: 0; margin: 0;
 			filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
 			-ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
 		}
 		#packing-list div{
 			position: absolute;
-			padding: 2px 0 2px 10px;
+			padding: 10px;
 		}
 		#packing-list div.addressfieldname{
 			border-top: 1px solid black;
@@ -53,16 +54,101 @@
 			border: 1px solid black;
 			text-align: center;
 		}
-		#packing-list table table.list {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
-		#packing-list table table.list tr:nth-child(odd) {color: #000; background: #F6F6F8 }
-		#packing-list table table.list tr:nth-child(even) {color: #000; background: #E4E5E7 }
-		#packing-list table table.list th {padding: 5px; color: #FFF; background-color: #9AA4AD; white-space: nowrap; text-align: center;}
-		#packing-list table table.list td {padding: 3px;}
-		#packing-list table table.list td.center {text-align: center;}
+		#packing-list table table.list { width: 390px; margin: 0; border-spacing: 0px; font-size: 11px }
+		#packing-list table table.list tr:nth-child(odd)  { color: #000; background: #DDD }
+		#packing-list table table.list tr:nth-child(even) { color: #000; background: #FFF }
+		#packing-list table table.list th { padding: 2px 5px; color: #FFF; background-color: #000; white-space: nowrap; text-align: center }
+		#packing-list table table.list td { padding: 2px 5px }
+		#packing-list table table.list td.center { text-align: center }
 
-		#packing-list table table.summary {width: 100%; margin: 20px 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
-		#packing-list table table.summary td {padding: 0 5px;}
+		#packing-list table table.summary { width: 100%; margin: 0; border-spacing: 0px; font-size: 11px; border: 1px solid #A2A1A6; border-collapse: collapse }
+		#packing-list table table.summary th { font: bold 28px Arial, sans-serif, Helvetica; text-align: center }
+		#packing-list table table.summary td { padding: 0 3px }
 	</style>
+	</head>
+
+	<body>
+		<div id="packing-list">
+			<!-- <img src="/print/label/8EY91A1WUVMEB.jpg" width="400px"/> -->
+			[% IF LABEL_IMG_LOOP %]
+				[% FOREACH item IN LABEL_IMG_LOOP %]
+				<img src="[% item.src %]" width="400px"/>
+				[% END %]
+			[% ELSE %]
+				[% FOREACH LABEL IN LABEL_LOOP %]
+					[% LABEL %]
+				[% END %]
+			[% END %]
+			<table>
+			[% FOREACH page IN packinglist_loop %]
+				<tr[% IF loop.count > 1 %] style="page-break-before: always;"[% END %]>
+				<td valign="top">
+				[% IF page.packinglist_1_loop %]
+				<table class="list">
+					<tr>
+						<th style="width: .25in;">QTY</th>
+						<th style="width: .6875in;">REFERED EQUIPMENT</th>
+						<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
+					</tr>
+					[% FOREACH item IN page.packinglist_1_loop %]
+					<tr style="height: .1875in;">
+						<td>[% item.shippedqty %]</td>
+						<td>[% item.partnumber %]</td>
+						<td>[% item.productdescription %]</td>
+					</tr>
+					[% END %]
+				</table>
+				[% END %]
+				</td>
+				<td valign="bottom">
+				[% IF page.packinglist_2_loop %]
+				<table class="list">
+					<tr>
+						<th style="width: .25in;">QTY</th>
+						<th style="width: .6875in;">REFERED EQUIPMENT</th>
+						<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
+					</tr>
+					[% FOREACH item IN page.packinglist_2_loop %]
+					<tr style="height: .1875in;">
+						<td>[% item.shippedqty %]</td>
+						<td>[% item.partnumber %]</td>
+						<td>[% item.productdescription %]</td>
+					</tr>
+					[% END %]
+				</table>
+				[% END %]
+
+				<table class="summary">
+					<tr><th colspan=6>[% ordernumber %]</th></tr>
+					<tr><td colspan=6><center><img id="barcode" src="[% barcode_image %]" width="300" height="30"/></center></td></tr>
+					<tr><td align="right">BU/CC</td><td>:</td><td></td><td align="right">Service Level</td><td>:</td><td>[% service %]</td></tr>
+					<tr><td align="right">Return Label</td><td>:</td><td>[% returnshipment == 1 ? 'Yes' : 'No' %]</td><td align="right">MAC/ESN</td><td>:</td><td>Yes</td></tr>
+					<tr><td align="right">Deliver On</td><td>:</td><td>[% datedue %]</td><td align="right">Network</td><td>:</td><td>PJ008727B</td></tr>
+					<tr><td align="right">Comments</td><td>:</td><td colspan="4">[% comments %]</td></tr>
+				</table>
+				</td>
+				</tr>
+			[% END %]
+			</table>
+		</div>
+
+		<form id="frm_next" action="/customer/order/ajax">
+			<input type="hidden" name="ajax" value="1"/>
+			<input type="hidden" name="type" value="HTML"/>
+			[% IF billoflading %]
+				<input type="hidden" name="action" value="generate_bill_of_lading"/>
+			[% ELSE %]
+				[% IF printcominv %]
+			<input type="hidden" name="action" value="generate_commercial_invoice"/>
+				[% END %]
+			[% END %]
+
+			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
+			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
+		</form>
+
+		<canvas id="hidden_screenshot" style="display:none;"></canvas>
+	</body>
 
 	<script>
 	$(document).ready(function() {
@@ -96,147 +182,4 @@
 			});
 		});
 	</script>
-	</head>
-
-	<body >
-		[% IF LABEL_IMG_LOOP %]
-			[% FOREACH item IN LABEL_IMG_LOOP %]
-			<img src="[% item.src %]"/>
-			[% END %]
-		[% ELSE %]
-			[% FOREACH LABEL IN LABEL_LOOP %]
-				[% LABEL %]
-			[% END %]
-		[% END %]
-		<div id="packing-list">
-			<p class=MsoNormal>
-			<span style='mso-ignore:vglayout;position:relative;z-index:1'>
-			<span style='position: absolute;left:11px;top:-1px;width:102px;height:54px'>
-
-			[% UNLESS SPRINT %]
-			<table cellpadding=0 cellspacing=0>
-				<tr>
-					<td width=102 height=54 bgcolor=white style='vertical-align:top;background:white'>
-						<span style='position:absolute;mso-ignore:vglayout;z-index:1'>
-							<table cellpadding=0 cellspacing=0 width="100%">
-								<tr>
-									<td>
-										<img id="logo" src="[% logo_path %]" [% IF logo_height%]height="[% logo_height %]"[%END%] valign=top style="max-height: 50px; max-width: 450px;">
-									</td>
-								</tr>
-							</table>
-						</span>
-					</td>
-				</tr>
-			</table>
-			</span>
-			</span>
-			<o:p>&nbsp;</o:p>
-			<o:p><br/><br/><br/></o:p>
-			</p>
-
-			<center>
-			<table>
-				<tr>
-					<td colspan="3">
-					<img id="barcode" src="[% barcode_image %]" alt="PLACE PRO LABEL HERE" width="200" height="30"/>
-					</br>
-					<font face="Arial, Helvetica, sans-serif" size="2">[% ordernumber %]</font>
-					</td>
-				</tr>
-				<tr>
-					<td>ORDER:</td><td>[% ordernumber %]</td><td>&nbsp;</td>
-				</tr>
-				<tr>
-					<td>WANT DATE:</td><td>[% dateshipped %]</td><td>&nbsp;</td>
-				</tr>
-			</table>
-			</center>
-			[% END %]
-
-			[% IF SPRINT %]
-				<table>
-				[% FOREACH page IN packinglist_loop %]
-					<tr[% IF loop.count > 1 %] style="page-break-before: always;"[% END %]>
-					<td valign="bottom">
-					[% IF page.packinglist_1_loop %]
-					<table class="list">
-						<tr style="height: .3125in;">
-							<th style="width: .25in;">QTY</th>
-							<th style="width: .6875in;">REFERED EQUIPMENT</th>
-							<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
-						</tr>
-						[% FOREACH item IN page.packinglist_1_loop %]
-						<tr style="height: .1875in;">
-							<td>[% item.shippedqty %]</td>
-							<td>[% item.partnumber %]</td>
-							<td>[% item.productdescription %]</td>
-						</tr>
-						[% END %]
-					</table>
-					[% END %]
-					</td>
-					<td valign="bottom">
-					[% IF page.packinglist_2_loop %]
-					<table class="list">
-						<tr style="height: .3125in;">
-							<th style="width: .25in;">QTY</th>
-							<th style="width: .6875in;">REFERED EQUIPMENT</th>
-							<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
-						</tr>
-						[% FOREACH item IN page.packinglist_2_loop %]
-						<tr style="height: .1875in;">
-							<td>[% item.shippedqty %]</td>
-							<td>[% item.partnumber %]</td>
-							<td>[% item.productdescription %]</td>
-						</tr>
-						[% END %]
-					</table>
-					[% END %]
-
-					<table class="summary">
-						<tr><td colspan=6><center><strong>[% ordernumber %]</strong></center></td></tr>
-						<tr><td>BU/CC</td><td>:</td><td></td><td>Service Level</td><td>:</td><td>[% service %]</td></tr>
-						<tr><td>Return Label</td><td>:</td><td>[% returnshipment == 1 ? 'Yes' : 'No' %]</td><td>MAC/ESN</td><td>:</td><td>Yes</td></tr>
-						<tr><td>Deliver On</td><td>:</td><td>[% datedue %]</td><td>Network</td><td>:</td><td>PJ008727B</td></tr>
-					</table>
-					</td>
-					</tr>
-				[% END %]
-				</table>
-			[% ELSE %]
-			<table>
-				<tr style="height: .3125in;">
-					<th style="width: .25in;">QTY</th>
-					<th style="width: .6875in;">REFERED EQUIPMENT</th>
-					<th style="width: .8125in;">COMFIGURATION/SOFTWARE</th>
-				</tr>
-				[% FOREACH item IN packinglist_loop %]
-				<tr style="height: .1875in;">
-					<td>[% item.shippedqty %]</td>
-					<td>[% item.partnumber %]</td>
-					<td>[% item.productdescription %]</td>
-				</tr>
-				[% END %]
-			</table>
-			[% END %]
-		</div>
-
-		<form id="frm_next" action="/customer/order/ajax">
-			<input type="hidden" name="ajax" value="1"/>
-			<input type="hidden" name="type" value="HTML"/>
-			[% IF billoflading %]
-			<input type="hidden" name="action" value="generate_bill_of_lading"/>
-			[% ELSE %]
-				[% IF printcominv %]
-			<input type="hidden" name="action" value="generate_commercial_invoice"/>
-				[% END %]
-			[% END %]
-
-			<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
-			<input type="hidden" id="shipmentid" name="shipmentid" value="[% shipmentid %]"/>
-		</form>
-
-		<canvas id="hidden_screenshot" style="display:none;"></canvas>
-	</body>
 </html>

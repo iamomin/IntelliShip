@@ -78,8 +78,8 @@
 	<div id="clear">&nbsp;</div>
 
 	<div style="border: 4px solid #9BA7AF">
-		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd">[% IF SPECIAL_SERVICE %]&#8211;[% ELSE %]+[% END %]</a></td><td><green>Add Special Services</green></td></tr></table>
-		<div id="special-services" style="display: [% SPECIAL_SERVICE ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICE %]</div>
+		<table><tr><td><a href="javascript:void(0);" class="round-green-button" id="special-services-cmd">[% IF SPECIAL_SERVICES %]&#8211;[% ELSE %]+[% END %]</a></td><td><green>Add Special Services</green></td></tr></table>
+		<div id="special-services" style="display: [% SPECIAL_SERVICES ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICES %]</div>
 	</div>
 
 	<table class="shipment-summary">
@@ -346,9 +346,7 @@
 		checkInternationalSection();
 		calculateTotalDeclaredValueInsurance();
 
-		if(requiredFieldHash) {
-			markRequiredFields(requiredFieldHash);
-			}
+		if(requiredFieldHash) markRequiredFields(requiredFieldHash);
 
 		if ($('#autoprocess').val() == 1) {
 			$("#ship_now").click();

@@ -20,6 +20,7 @@
 
 <form id="frm_shipment" name="frm_shipment" method="post" action="/customer/order/multipage">
 	<input type="hidden" id="thirdpartyacctid" name="thirdpartyacctid" value="[% thirdpartyacctid %]"/>
+	<input type="hidden" id="skipaddressvalidation" name="skipaddressvalidation" />
 	<input type="hidden" id="coid" name="coid" value="[% coid %]"/>
 	<input type="hidden" id="shipmentid" name="shipmentid"/>
 	<input type="hidden" id="do" name="do" value="ship"/>
@@ -146,9 +147,9 @@
 	<div class="float-right">
 		<table>
 			<tr>
-			<td><input type="button" class="gray" value="CANCEL" onclick="interviewCancel();"/></td>
+			<td><input type="button" class="gray" id="cancel" value="CANCEL" onclick="interviewCancel();"/></td>
 			<td>&nbsp;</td>
-			<td><div class="green-forward"><input type="button" value="SHIP NOW" onclick="interviewShip();"/></div></td>
+			<td><div class="green-forward"><input type="button" id="ship_now" value="SHIP NOW" onclick="interviewShip();"/></div></td>
 			</tr>
 		</table>
 	</div>

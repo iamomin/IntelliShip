@@ -219,7 +219,7 @@ sub setup_shipment_information :Private
 		$self->populate_order;
 		}
 
-	$c->stash->{SPECIAL_SERVICE} = $self->get_special_services if $Contact->get_contact_data_value('specialserviceexpanded') and !$c->stash->{SPECIAL_SERVICE};
+	$c->stash->{SPECIAL_SERVICES} = $self->get_special_services if $Contact->get_contact_data_value('specialserviceexpanded') and !$c->stash->{SPECIAL_SERVICES};
 
 	unless ($c->stash->{one_page})
 		{
@@ -229,12 +229,7 @@ sub setup_shipment_information :Private
 		if ($Customer->address->country ne $CO->to_address->country)
 			{
 			$c->log->debug("... customer address and drop address not same, INTERNATIONAL shipment");
-			my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
-			$CA->context($c);
-			$CA->contact($self->contact);
-			$CA->set_international_details;
-			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
-			$c->stash->{INTERNATIONAL} = 0;
+			$c->stash->{INTERNATIONAL_AND_COMMODITY} = $self->get_international_section;
 			}
 		}
 
@@ -1214,26 +1209,50 @@ sub populate_order :Private
 		$c->stash->{ROW_COUNT} = 0;
 
 		my $packages = [];
+		# Step 1: Find Packages belongs to Order
+		my @CoPackages = $CO->packages;
+
+		push @$packages, $_ foreach @CoPackages;
+
+		# Step 2: Find Packages belongs to Combined Orders
 		if ($params->{'coids'})
 			{
-			foreach my $coid (@{$params->{coids}})
-				{
-				my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
-				my @co_packages = $CoObj->packages;
-				push @$packages, $_ foreach @co_packages;
+			my $Package = $packages->[0];
 
-				$c->log->debug("Total No of Packages in COID ($coid): " . @co_packages);
+			my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
+			if ($params->{'combine'} == 1)
+				{
+				foreach my $coid (@$Coids)
+					{
+					my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+					my @arrs = $CoObj->packages;
+					foreach (@arrs)
+						{
+						foreach my $Product ($_->products)
+							{
+							$Product->ownerid($Package->packprodataid);
+							$Product->update;
+							}
+						}
+					}
+				}
+			else
+				{
+				foreach my $coid (@$Coids)
+					{
+					my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+					my @co_packages = $CoObj->packages;
+					push @$packages, $_ foreach @co_packages;
+
+					$c->log->debug("Total No of Packages in COID ($coid): " . @co_packages);
+					}
 				}
 
 			$c->log->debug("Grand Total Packages: " . @$packages);
 			}
 
-		# Step 1: Find Packages belog to Order
-		my @CoPackages = $CO->packages;
-
 		$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
 
-		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total number of packages " . @$packages);
 		$c->stash->{CONSOLIDATED_ORDER} = 1 if ($CO->consolidationtype == 2);
 
@@ -1279,7 +1298,7 @@ sub populate_order :Private
 		## SELECTED SPECIAL SERVICES
 		if ($CO->assessorials->count)
 			{
-			$c->stash->{SPECIAL_SERVICE} = $self->get_special_services;
+			$c->stash->{SPECIAL_SERVICES} = $self->get_special_services;
 			}
 		}
 
@@ -1436,7 +1455,7 @@ sub add_package_detail_row :Private
 		}
 
 	$c->stash->{ROW_COUNT}++;
-	$c->stash->{RODUCT_DETAILS} = $product_HTML;
+	$c->stash->{RODUCT_DETAILS} = $product_HTML || '<!-- No Product Information -->';
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE') unless $c->stash->{packageunittype_loop};
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
@@ -1457,7 +1476,30 @@ sub get_special_services :Private
 	$CA->contact($self->contact);
 	$CA->customer($self->customer);
 	$CA->get_special_service_list;
-	return $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+
+	$c->stash->{SPECIAL_SERVICE} = 0;
+	$c->stash->{specialservice_loop} = undef;
+
+	return $HTML;
+	}
+
+sub get_international_section :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+
+	my $CA = IntelliShip::Controller::Customer::Order::Ajax->new;
+	$CA->context($c);
+	$CA->contact($self->contact);
+	$CA->customer($self->customer);
+	$CA->set_international_details;
+
+	my $HTML = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
+	$c->stash->{INTERNATIONAL} = 0;
+
+	return $HTML;
 	}
 
 sub get_tooltips :Private
@@ -3447,6 +3489,7 @@ sub generate_packing_list
 		$c->stash->{'carrierservice'} = $Shipment->carrier . ' - ' . $Shipment->service;
 		$c->stash->{'totalpages'}     = 1;
 		$c->stash->{'currentpage'}    = 1;
+		$c->stash->{'comments'}       = $CO->description;
 
 		# Origin Address
 		if (my $OAAddress = $Shipment->origin_address)
@@ -3541,14 +3584,17 @@ sub generate_packing_list
 				}
 			}
 
-		my $items = (14 - @$packinglist_loop);
-		if ($items > 0)
-			{
-			push(@$packinglist_loop, {}) while $items--;
-			}
-
 		my $list_type = $self->contact->get_contact_data_value('packinglist');
 		$list_type = 'generic' unless $list_type =~ /sprint/i;
+
+		unless ($list_type =~ /sprint/i)
+			{
+			my $items = (14 - @$packinglist_loop);
+			if ($items > 0)
+				{
+				push(@$packinglist_loop, {}) while $items--;
+				}
+			}
 
 		if ($list_type =~ /sprint/i)
 			{
@@ -3621,8 +3667,8 @@ sub generate_packing_list
 
 		if ($list_type =~ /sprint/i)
 			{
-			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($Shipment->tracking1);
-			$c->stash->{'barcode_image'} = '/print/barcode/' . $Shipment->tracking1 . '.png' if -e $barcode_image;
+			my $barcode_image = IntelliShip::Utils->generate_UCC_128_barcode($CO->ordernumber);
+			$c->stash->{'barcode_image'} = '/print/barcode/' . $CO->ordernumber . '.png' if -e $barcode_image;
 			my $original_param_shipmentid = $params->{'shipmentid'};
 			$params->{'shipmentid'} = $shipmentid;
 			$self->setup_label_to_print;

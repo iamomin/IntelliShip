@@ -386,7 +386,7 @@
 	<div>
 	<table class="css3-checkboxes dialog-header">
 		<tr>
-			<td width="180px">Total <strong><span id="select-count">1</span></strong> orders selected</td>
+			<td width="180px">Total <strong><span id="select-count">0</span></strong> orders selected</td>
 			<td><label><input type="checkbox" name="combine" value="1"/><span><label for="combine">Combine</label></span></label></td>
 		</tr>
 	</table>
@@ -407,7 +407,7 @@
 		</tr>
 		[% FOREACH item IN consolidate_order_list %]
 		<tr>
-			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]" [% IF item.coid == coid %]CHECKED onclick="return false;"[% ELSE %]class="orders"[% END %]/><span></span></label></td>
+			<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]" class="orders"/><span></span></label></td>
 			<td>[% item.ordernumber %]</td>
 			<td>[% item.toAddress.addressname %]</td>
 			<td>[% item.toAddress.address1 _ toAddress.address2%]</td>

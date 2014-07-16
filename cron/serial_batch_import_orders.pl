@@ -10,7 +10,7 @@ if (IntelliShip::Utils->i_am_running)
 	}
 
 my @ToRun = (
-	"/opt/engage/intelliship2/IntelliShip/cron/ftp_import.pl",
+	"/opt/engage/intelliship2/IntelliShip/cron/ftp_download.pl",
 	"/opt/engage/intelliship2/IntelliShip/cron/import_order.pl --cron 1",
 	);
 

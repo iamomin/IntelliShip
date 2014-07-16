@@ -91,7 +91,7 @@ sub get_JSON_DATA
 
 	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
 	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
-	$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
 	$c->response->body($json_DATA);
 	}
 
@@ -135,6 +135,7 @@ sub load_matching_orders :Private
 	my $AddressID = $Address->addressid;
 	my $cotypeid  = $self->get_co_type;
 
+	my $CoID = $CO->coid;
 	my $SQL = "
 		SELECT
 			coid,
@@ -147,6 +148,7 @@ sub load_matching_orders :Private
 			AND (co.combine = 0 OR co.combine IS NULL)
 			AND statusid not in (5,6,7,200)
 			AND cotypeid = $cotypeid
+			AND co.coid <> '$CoID'
 		";
 
 	if ($Contact->is_restricted)
@@ -157,16 +159,16 @@ sub load_matching_orders :Private
 
 	 $SQL .= " ORDER BY ordernumber";
 
-	$c->log->debug("SQL: " . $SQL);
+	#$c->log->debug("SQL: " . $SQL);
 
 	my $sth = $c->model("MyDBI")->select($SQL);
 
-	$c->log->debug("Total Rows: " . $sth->numrows);
+	#$c->log->debug("Total Rows: " . $sth->numrows);
 
 	if ($sth->numrows)
 		{
 		my $multi_order_list = $sth->query_data ;
-		$c->log->debug("DATA: " . Dumper($multi_order_list));
+		#$c->log->debug("DATA: " . Dumper($multi_order_list));
 		my $matching_orders = [];
 		push(@$matching_orders, { coid => $_->[0], ordernumber => $_->[1] }) foreach @$multi_order_list;
 		$c->stash->{multi_order_list} = $matching_orders;
@@ -298,11 +300,11 @@ sub fetch_valid_order :Private
 		$c->stash->{CO} = $CO;
 		$c->req->params->{do} = undef;
 		$c->req->params->{coid} = $CO->coid;
-		$c->log->debug("CO found, id: " . $CO->coid);
+		#$c->log->debug("CO found, id: " . $CO->coid);
 		return 1;
 		}
 
-	$c->log->debug("ShipPackages: CO NOT FOUND");
+	#$c->log->debug("ShipPackages: CO NOT FOUND");
 
 	return undef;
 	}

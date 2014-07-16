@@ -205,7 +205,7 @@ sub get_customer_contact :Private
 	## Email based user authentication
 	if ($username =~ /@/)
 		{
-		$c->log->debug("... Email Based User Authentication");
+		#$c->log->debug("... Email Based User Authentication");
 
 		my $Customer  = $self->token->customer if $self->token;
 
@@ -1316,7 +1316,7 @@ sub set_header_section
 	$company_logo = 'engage-light-logo.png' unless -e $fullpath;
 	$c->stash->{logo} = $company_logo;
 
-	my $user_profile = $Customer->username . '-' . $Contact->username . '.png';
+	my $user_profile = $Contact->profile_image_name;
 	$fullpath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $user_profile;
 	$c->stash->{user_profile} = $user_profile if -e $fullpath;
 
