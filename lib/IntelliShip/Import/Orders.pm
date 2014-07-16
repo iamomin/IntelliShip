@@ -1644,8 +1644,11 @@ sub EmailUnknownCustomer
 			{
 			$Email->add_line("ORDERTYPE  : " . $OrderTypeRef->{'ordertype'});
 			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
-			my $arr = $ImportFailures->{$customerid};
-			$Email->add_line($_) foreach @$arr;
+			foreach my $customerid (keys(%$ImportFailures))
+				{
+				my $arr = $ImportFailures->{$customerid};
+				$Email->add_line($_) foreach @$arr;
+				}
 			}
 
 		my $new_file = "$filepath/$filename";
