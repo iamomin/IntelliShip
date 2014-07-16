@@ -216,8 +216,8 @@ $(document).ready(function(){
 			});
 
 		$("#sku_page").change(function() {
-			var query_param = "&productsku=1&page=" + $(this).val();
-			send_ajax_request('divSkuList', 'HTML', 'settings', '', query_param);
+			var query_param = "page=" + $(this).val();
+			send_ajax_request('myShipments', 'HTML', 'settings', 'display_productsku_details', query_param);
 			});
 		});
 	</script>
@@ -456,7 +456,7 @@ $(document).ready(function(){
 			</form>
 		[% END %]
 
-		[% UNLESS ajax %]<div id="divDropListData">[% END %]
+		[% UNLESS ajax %]<div id="myShipments">[% END %]
 		<h3>Total Count: [% extid_droplist_count %]</h3>
 
 		<table class="report">
@@ -521,8 +521,8 @@ $(document).ready(function(){
 					});
 
 				$("#droplist_page").change(function() {
-					var query_param = "&droplistdata=1&page=" + $(this).val();
-					send_ajax_request('divDropListData', 'HTML', 'settings', '', query_param);
+					var query_param = "page=" + $(this).val();
+					send_ajax_request('myShipments', 'HTML', 'settings', 'display_droplistdata_details', query_param);
 					});
 			});
 		</script>
