@@ -3560,14 +3560,17 @@ sub generate_packing_list
 				}
 			}
 
-		my $items = (14 - @$packinglist_loop);
-		if ($items > 0)
-			{
-			push(@$packinglist_loop, {}) while $items--;
-			}
-
 		my $list_type = $self->contact->get_contact_data_value('packinglist');
 		$list_type = 'generic' unless $list_type =~ /sprint/i;
+
+		unless ($list_type =~ /sprint/i)
+			{
+			my $items = (14 - @$packinglist_loop);
+			if ($items > 0)
+				{
+				push(@$packinglist_loop, {}) while $items--;
+				}
+			}
 
 		if ($list_type =~ /sprint/i)
 			{

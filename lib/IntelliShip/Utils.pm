@@ -613,6 +613,8 @@ sub generate_UCC_128_barcode
 	{
 	my $self = shift;
 	my $Data = shift;
+	my $width = shift || 200;
+	my $height = shift || 95;
 
 	my $BarcodeFile = IntelliShip::MyConfig->barcode_directory . '/' . $Data . '.png';
 
@@ -628,15 +630,14 @@ sub generate_UCC_128_barcode
 
 	# create a png barcode to include on the bol
 	eval {
-	use Barcode::Code128;
-	my $code = new Barcode::Code128;
-	#$code->option("border", 0, "show_text", 0, "padding", 0);
-	$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", 200, "height", 95);
+		use Barcode::Code128;
+		my $code = new Barcode::Code128;
+		$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", $width, "height", $height);
 
-	print $BARCODE $code->png($Data);
+		print $BARCODE $code->png($Data);
 
-	close $BARCODE;
-	};
+		close $BARCODE;
+		};
 
 	return $BarcodeFile;
 	}
