@@ -235,10 +235,15 @@ sub delete_profile_image :Private
 	my $self = shift;
 	my $c = $self->context;
 	my $params = $c->req->params;
+	my $Contact = $self->contact;
 
-	my $FullPath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $params->{'image'};
-	$c->log->debug("unlink profile image " . $FullPath);
-	unlink $FullPath;
+	my $FullPath;
+	if ($params->{contactid} eq $Contact->contactid)
+		{
+		$FullPath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $Contact->profile_image_name;
+		$c->log->debug("unlink profile image " . $FullPath);
+		unlink $FullPath;
+		}
 
 	return { SUCCESS => (-e $FullPath ? 0 : 1) };
 	}

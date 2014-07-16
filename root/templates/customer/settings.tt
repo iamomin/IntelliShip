@@ -728,7 +728,7 @@ $(document).ready(function(){
 			<td></td>
 			[% ELSE %]
 			<td>Profile Image</td>
-			<td><table><tr><td><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></td><td valign=middle><input id="profile-image-input" type="file"/></td><td><a class="round-black-button" href="javascript:deleteProfileImage('[% user_profile %]');" alt="Remove profile image">X</a></td></tr></table></td>
+			<td><table><tr><td><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></td><td valign=middle><input id="profile-image-input" type="file"/></td><td><a class="round-black-button" href="javascript:deleteProfileImage('[% contactInfo.contactid %]');" title="Remove profile image">X</a></td></tr></table></td>
 			[% END %]
 
 			<td><label class="float-right" for="disabledate">Disable Date:</label></td>
@@ -821,9 +821,9 @@ $(document).ready(function(){
 	</form>
 
 	<script>
-	function deleteProfileImage(image)
+	function deleteProfileImage(contactid)
 		{
-		var param = "image="+image;
+		var param = "contactid="+contactid;
 		send_ajax_request(null, 'JSON', 'settings', 'delete_profile_image', param, function() {
 			if (JSON_data.SUCCESS == 1) $(".profile-image").attr("src","/static/branding/engage/images/profile/user-default.png");
 			});

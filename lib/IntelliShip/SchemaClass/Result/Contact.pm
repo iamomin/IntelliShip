@@ -390,6 +390,13 @@ sub show_cheapest_carriers
 	return $self->get_contact_data_value('carrierrates');
 	}
 
+sub profile_image_name
+	{
+	my $self = shift;
+	my $user_profile = $self->customer->username . '-' . $self->username . '.png';
+	return $user_profile;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
