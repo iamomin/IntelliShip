@@ -205,7 +205,7 @@ sub get_customer_contact :Private
 	## Email based user authentication
 	if ($username =~ /@/)
 		{
-		$c->log->debug("... Email Based User Authentication");
+		#$c->log->debug("... Email Based User Authentication");
 
 		my $Customer  = $self->token->customer if $self->token;
 

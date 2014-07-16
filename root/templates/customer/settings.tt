@@ -372,8 +372,9 @@ $(document).ready(function(){
 	</form>
 
 	<script>
-	
-	function deleteProductSku(productskuid) {
+
+	function deleteProductSku(productskuid)
+		{
 		showConfirmBox('Are you sure you want to delete SKU?', 'Delete Product SKU', function(){
 			$("#do").val('delete');
 			$("#productskuid").val(productskuid);
@@ -382,8 +383,7 @@ $(document).ready(function(){
 			return;
 			});
 		}
-	
-	
+
 	$("#frm_setup_sku").submit(function () {
 		var requireHash = { customerskuid : { minlength: 1, description: "Please specify customer sku ID" }
 			};
@@ -728,7 +728,7 @@ $(document).ready(function(){
 			<td></td>
 			[% ELSE %]
 			<td>Profile Image</td>
-			<td><table><tr><td><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></td><td valign=middle><input id="profile-image-input" type="file"/></td></tr></table></td>
+			<td><table><tr><td><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></td><td valign=middle><input id="profile-image-input" type="file"/></td>[% IF user_profile %]<td><a class="round-black-button" href="javascript:deleteProfileImage('[% user_profile %]');">X</a></td>[% END %]</tr></table></td>
 			[% END %]
 
 			<td><label class="float-right" for="disabledate">Disable Date:</label></td>
@@ -821,30 +821,40 @@ $(document).ready(function(){
 	</form>
 
 	<script>
-	function updateStateList(type,call_back_fn){
-			$("#"+type+"city").val('');
-			$("#"+type+"state").val('');
-			$("#"+type+"zip").val('');
-			var country = $("#"+type+"country").val();
-			if (country.length == 0) return;
-			var query_param = "country=" + country + '&control=' + type + 'state';
-			send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
-	}
+	function deleteProfileImage(image)
+		{
+		var param = "image="+image;
+		send_ajax_request(null, 'JSON', 'settings', 'delete_profile_image', param, function() {
+			if (JSON_data.SUCCESS == 1) $(".profile-image").attr("src","/static/branding/engage/images/profile/user-default.png");
+			});
+		}
 
-	function validateContactUsername(){
-			if ($("#contact_username").val.length == 0) return;
-			var customerid = $("#customerid").val();
-			var contactid  = $("#contactid").val();
-			var username   = $("#contact_username").val();
+	function updateStateList(type,call_back_fn)
+		{
+		$("#"+type+"city").val('');
+		$("#"+type+"state").val('');
+		$("#"+type+"zip").val('');
+		var country = $("#"+type+"country").val();
+		if (country.length == 0) return;
+		var query_param = "country=" + country + '&control=' + type + 'state';
+		send_ajax_request(type + 'StateDiv', 'HTML', 'order', 'get_country_states', query_param, call_back_fn);
+		}
 
-			var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
+	function validateContactUsername()
+		{
+		if ($("#contact_username").val.length == 0) return;
+		var customerid = $("#customerid").val();
+		var contactid  = $("#contactid").val();
+		var username   = $("#contact_username").val();
 
-			if (username == undefined || username.length == 0) return;
-			send_ajax_request('', 'JSON', 'settings/company', 'validate_contact_username', query, function() {
+		var query  = '&contactid='+ contactid + '&customerid=' + customerid + '&username=' + username;
+
+		if (username == undefined || username.length == 0) return;
+		send_ajax_request('', 'JSON', 'settings/company', 'validate_contact_username', query, function() {
 			if (JSON_data.COUNT > 0) {
 				showError("User name exist. Please specify different user name");
 				$("#contact_username").val("");
-			}
+				}
 			else
 				return ;
 			});
@@ -899,7 +909,7 @@ $(document).ready(function(){
 				$('#profile-image').attr('src', $('#profile-image').attr('src') + '?' + Math.random());
 				[% IF contactInfo.contactid == contactObj.contactid %]
 				$('.profile-image').each(function(index){
-					$(this).css("background-image","url('/static/branding/engage/images/profile/[% contactInfo.customer.username _ '-' _ contactInfo.username %].png')");
+					$(this).attr("src","/static/branding/engage/images/profile/[% contactInfo.customer.username _ '-' _ contactInfo.username %].png");
 					});
 				[% END %]
 				},

@@ -201,9 +201,53 @@ sub ajax :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	#$c->log->debug("SETTINGS AJAX");
+	if ($params->{'type'} eq 'JSON')
+		{
+		$self->get_JSON_DATA;
+		}
+	else
+		{
+		$self->get_HTML_DATA;
+		}
+	}
 
-	$c->stash->{ajax} = 1;
+sub get_JSON_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $action = $params->{'action'} || '';
+	my $dataHash;
+	if ($action eq 'delete_profile_image')
+		{
+		$dataHash = $self->delete_profile_image;
+		}
+
+	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	return $c->response->body($json_DATA);
+	}
+
+sub delete_profile_image :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $FullPath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $params->{'image'};
+	$c->log->debug("unlink profile image " . $FullPath);
+	unlink $FullPath;
+
+	return { SUCCESS => (-e $FullPath ? 0 : 1) };
+	}
+
+sub get_HTML_DATA
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
 
 	if ($params->{'productsku'})
 		{
@@ -725,7 +769,7 @@ sub uploadprofile :Local
 		}
 
 	my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $FILE_name;
-	$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
+	#$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
 
 	if ($Upload->copy_to($FullPath))
 		{
