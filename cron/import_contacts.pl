@@ -3,6 +3,7 @@
 use strict;
 use lib '/opt/engage/intelliship2/IntelliShip/lib';
 use IO::File;
+use File::Copy;
 use Data::Dumper;
 use Getopt::Long;
 use File::Basename;
@@ -10,13 +11,11 @@ use Spreadsheet::ParseExcel;
 use IntelliShip::MyConfig;
 use IntelliShip::Model::MyDBI;
 
-use lib IntelliShip::MyConfig->application_root;
-
 #require IntelliShip::Import::Users;
 
 my $options = {
 	'username' => 'Motorola',
-	'pwd' => '8EY2KRRW87RWW',
+	'pwd' => '8EY5GWRR9M5L9',
 	};
 
 GetOptions($options, "username=s", "pwd=s", "file=s", "cron=i", "help");
@@ -62,8 +61,8 @@ my $PWD = $options->{'pwd'};
 my $file = $options->{'file'};
 my $cron = $options->{'cron'};
 
-my $import_path = IntelliShip::MyConfig->application_root . "/var/import/contact";
-my $imported_path = IntelliShip::MyConfig->application_root . "/var/imported/contact";
+my $import_path = IntelliShip::MyConfig->import_directory . '/contact';
+my $imported_path = IntelliShip::MyConfig->imported_directory . '/contact';
 
 my $Domain = $USER;
 
@@ -221,7 +220,7 @@ sub process_file
 		my $DisableDate = "$array[19]";
 		my $return = '';
 
-		my $sth = $myDBI->select("SELECT 1 FROM contact WHERE customerid = '$CustomerID' AND upper(username) = '" . uc($UserID) . "'");
+		my $sth = $myDBI->select("SELECT 1 FROM contact WHERE upper(username) = '" . uc($UserID) . "'");
 		if ($sth->numrows)
 			{
 			print "\n... matching customer user already exist, skip importing user '$UserID'";
@@ -353,6 +352,14 @@ sub process_file
 		my $SQL = $customerContactSql . join(' , ',@$customerContactValues) if $customerContactValues;
 		print "\n... Customer Settings SQL: " . $SQL;
 		$myDBI->dbh->do($SQL);
+		}
+
+	my $import_base_file = fileparse($file);
+	print "\n--- move processed file to " . $imported_path;
+
+	unless (move($file,"$imported_path/$import_base_file"))
+		{
+		print "\n... Could not move $file to $imported_path/$import_base_file: $!";
 		}
 	}
 
