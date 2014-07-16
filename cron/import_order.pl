@@ -8,6 +8,7 @@ use Getopt::Long;
 use IntelliShip::Utils;
 use IntelliShip::MyConfig;
 use IntelliShip::Model::MyDBI;
+use IntelliShip::Arrs::API;
 
 require IntelliShip::Import::Orders;
 
@@ -162,6 +163,7 @@ sub process_bulk_import
 		$ImportHandler->customer($Customer);
 		$ImportHandler->import_type('order');
 		$ImportHandler->import_file($file);
+		$ImportHandler->API(IntelliShip::Arrs::API->new);
 		$ImportHandler->import;
 
 		print "\n\n";
@@ -198,6 +200,7 @@ sub process_bulk_import
 		$ImportHandler->customer($Customer);
 		$ImportHandler->import_type('product');
 		$ImportHandler->import_file($file);
+		$ImportHandler->API(IntelliShip::Arrs::API->new);
 		$ImportHandler->import;
 
 		print "\n\n";

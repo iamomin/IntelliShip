@@ -1628,14 +1628,26 @@ sub EmailUnknownCustomer
 		$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 		$Email->subject($subject);
 		$Email->add_to('noc@engagetechnology.com');
-		foreach my $customerid (keys(%$ImportFailures))
-			{
-			$c->stash->{failures}		= $ImportFailures->{$customerid};
-			}
-		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
-		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
 
-		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+		if ($c)
+			{
+			foreach my $customerid (keys(%$ImportFailures))
+				{
+				$c->stash->{failures} = $ImportFailures->{$customerid};
+				}
+			$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+			$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+
+			$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			}
+		else
+			{
+			$Email->add_line("ORDERTYPE  : " . $OrderTypeRef->{'ordertype'});
+			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
+			my $arr = $ImportFailures->{$customerid};
+			$Email->add_line($_) foreach @$arr;
+			}
+
 		my $new_file = "$filepath/$filename";
 		$Email->attach($new_file);
 
