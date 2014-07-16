@@ -1144,6 +1144,7 @@ sub get_consolidate_orders_list
 		return $c->stash->{MESSAGE} = 'Please select destination address to consolidate matching orders';
 		}
 
+	my $CoID = $CO->coid;
 	my $OrderSQL = "SELECT
 				coid,
 				CASE
@@ -1159,6 +1160,7 @@ sub get_consolidate_orders_list
 				AND co.customerid = '$CustomerID'
 				AND (co.combine = 0 OR co.combine IS NULL)
 				AND statusid not in (5,6,7,200)
+				AND co.coid <> '$CoID'
 		";
 
 	if ($self->customer->get_contact_data_value('dateconsolidation'))
@@ -1239,11 +1241,14 @@ sub consolidate_orders
 
 	$c->stash->{ROW_COUNT} = 0;
 
-	my @arr = $CO->packages;
 	my $Package;
+	my $packages = [];
+	my @arr = $CO->packages;
+
 	if (@arr)
 		{
 		$Package = $arr[0];
+		push(@$packages, { PACKAGE => $_ }) foreach @arr;
 		}
 	else
 		{
@@ -1255,13 +1260,14 @@ sub consolidate_orders
 				}) ;
 
 		$Package->insert;
+
+		push(@$packages,{ PACKAGE => $Package });
 		}
 
 	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
 
 	$c->log->debug("...Total Coids: " . @$Coids);
 
-	my @packages;
 	if ($params->{'combine'} == 1)
 		{
 		$c->log->debug("..... COMBINE");
@@ -1280,7 +1286,7 @@ sub consolidate_orders
 				}
 			}
 
-		push(@packages, { PACKAGE => $Package });
+		push(@$packages, { PACKAGE => $Package });
 		}
 	else
 		{
@@ -1288,16 +1294,16 @@ sub consolidate_orders
 			{
 			my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
 			my @arrs = $CoObj->packages;
-			push(@packages, { CO => $CoObj, PACKAGE => $_ } ) foreach @arrs;
+			push(@$packages, { CO => $CoObj, PACKAGE => $_ } ) foreach @arrs;
 			}
 		}
 
-	$c->log->debug("Total No of Packages: " . @packages);
+	$c->log->debug("Total No of Packages: " . @$packages);
 
 	my $package_detail_section_HTML = '';
 
 	my $OriginalCO = $self->get_order;
-	foreach (@packages)
+	foreach (@$packages)
 		{
 		my ($cCO,$Package) = ($_->{CO},$_->{PACKAGE});
 

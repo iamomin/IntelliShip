@@ -1209,26 +1209,50 @@ sub populate_order :Private
 		$c->stash->{ROW_COUNT} = 0;
 
 		my $packages = [];
+		# Step 1: Find Packages belongs to Order
+		my @CoPackages = $CO->packages;
+
+		push @$packages, $_ foreach @CoPackages;
+
+		# Step 2: Find Packages belongs to Combined Orders
 		if ($params->{'coids'})
 			{
-			foreach my $coid (@{$params->{coids}})
-				{
-				my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
-				my @co_packages = $CoObj->packages;
-				push @$packages, $_ foreach @co_packages;
+			my $Package = $packages->[0];
 
-				$c->log->debug("Total No of Packages in COID ($coid): " . @co_packages);
+			my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
+			if ($params->{'combine'} == 1)
+				{
+				foreach my $coid (@$Coids)
+					{
+					my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+					my @arrs = $CoObj->packages;
+					foreach (@arrs)
+						{
+						foreach my $Product ($_->products)
+							{
+							$Product->ownerid($Package->packprodataid);
+							$Product->update;
+							}
+						}
+					}
+				}
+			else
+				{
+				foreach my $coid (@$Coids)
+					{
+					my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
+					my @co_packages = $CoObj->packages;
+					push @$packages, $_ foreach @co_packages;
+
+					$c->log->debug("Total No of Packages in COID ($coid): " . @co_packages);
+					}
 				}
 
 			$c->log->debug("Grand Total Packages: " . @$packages);
 			}
 
-		# Step 1: Find Packages belog to Order
-		my @CoPackages = $CO->packages;
-
 		$c->stash->{dryicewt} = $CoPackages[0]->dryicewt if @CoPackages;
 
-		push @$packages, $_ foreach @CoPackages;
 		$c->log->debug("Total number of packages " . @$packages);
 		$c->stash->{CONSOLIDATED_ORDER} = 1 if ($CO->consolidationtype == 2);
 
@@ -1431,7 +1455,7 @@ sub add_package_detail_row :Private
 		}
 
 	$c->stash->{ROW_COUNT}++;
-	$c->stash->{RODUCT_DETAILS} = $product_HTML;
+	$c->stash->{RODUCT_DETAILS} = $product_HTML || '<!-- No Product Information -->';
 	$c->stash->{packageunittype_loop} = $self->get_select_list('UNIT_TYPE') unless $c->stash->{packageunittype_loop};
 
 	$c->stash->{PACKAGE_DETAIL_ROW} = 1;
