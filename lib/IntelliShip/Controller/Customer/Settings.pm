@@ -266,7 +266,6 @@ sub get_HTML_DATA :Private
 
 	$c->stash($params);
 	$c->stash(template => "templates/customer/settings.tt");
-	$c->log->debug("STASH: " . Dumper($c->stash));
 	}
 
 sub display_productsku_details :Private
