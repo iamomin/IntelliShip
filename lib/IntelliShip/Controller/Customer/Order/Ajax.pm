@@ -434,9 +434,14 @@ sub get_carrier_service_list
 		my @sortByCharge = sort { $a->{shipment_charge} <=> $b->{shipment_charge} || $a->{days} <=> $b->{days} } @$CS_list_1;
 
 		$c->stash->{TAB} = 'r';
-		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
+		my $recommendedList = $self->get_recommened_carrier_service(\@sortByDays,\@sortByCharge,$CS_list_2);
+		warn "########## Recommended: " . Dumper($recommendedList);
+		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = $recommendedList;
+		$c->stash->{NO_RECOMMENDED_LIST} = 1 if ($recommendedList->[0]->{notdefined});
+		warn "########## No recommended list" if $c->stash->{NO_RECOMMENDED_LIST};
 		$c->stash->{recommendedcarrierlist} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/order-ajax.tt" ]);
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP}->[0]->{checked} = 0;
+		$c->stash->{NO_RECOMMENDED_LIST} = undef;
 
 		$c->stash->{TAB} = 't';
 		$c->stash->{CARRIER_SERVICE_LIST_LOOP} = [@sortByDays, @$CS_list_2];
@@ -473,11 +478,14 @@ sub get_recommened_carrier_service :Private
 
 	my @price_asc = sort { $a->{shipment_charge} <=> $b->{shipment_charge} } @withindays;
 
-	push(@$recommended, $price_asc[0]) if @price_asc;
-	push(@$recommended, $sortByCharge->[0]) unless (@$recommended);
+	push(@$recommended, $price_asc[0]) if @price_asc;	
+	push(@$recommended, $sortByCharge->[0]) unless (@$recommended);	
 	push(@$recommended, $otherCarriers->[0]) unless (@$recommended);
-
-	$recommended->[0]->{checked} = 1;
+	
+	$recommended->[0]->{checked} = 1 if $recommended->[0];
+	if(!$recommended->[0]){
+		$recommended->[0]->{notdefined} = 1;
+	}
 	#$c->log->debug("recommended: ". Dumper($recommended));
 	return $recommended;
 	}
@@ -1136,6 +1144,7 @@ sub get_consolidate_orders_list
 		return $c->stash->{MESSAGE} = 'Please select destination address to consolidate matching orders';
 		}
 
+	my $CoID = $CO->coid;
 	my $OrderSQL = "SELECT
 				coid,
 				CASE
@@ -1151,6 +1160,7 @@ sub get_consolidate_orders_list
 				AND co.customerid = '$CustomerID'
 				AND (co.combine = 0 OR co.combine IS NULL)
 				AND statusid not in (5,6,7,200)
+				AND co.coid <> '$CoID'
 		";
 
 	if ($self->customer->get_contact_data_value('dateconsolidation'))
@@ -1231,11 +1241,14 @@ sub consolidate_orders
 
 	$c->stash->{ROW_COUNT} = 0;
 
-	my @arr = $CO->packages;
 	my $Package;
+	my $packages = [];
+	my @arr = $CO->packages;
+
 	if (@arr)
 		{
 		$Package = $arr[0];
+		push(@$packages, { PACKAGE => $_ }) foreach @arr;
 		}
 	else
 		{
@@ -1247,13 +1260,14 @@ sub consolidate_orders
 				}) ;
 
 		$Package->insert;
+
+		push(@$packages,{ PACKAGE => $Package });
 		}
 
 	my $Coids = (ref $params->{'coids'} eq 'ARRAY' ? $params->{'coids'} : [$params->{'coids'}]);
 
 	$c->log->debug("...Total Coids: " . @$Coids);
 
-	my @packages;
 	if ($params->{'combine'} == 1)
 		{
 		$c->log->debug("..... COMBINE");
@@ -1272,7 +1286,7 @@ sub consolidate_orders
 				}
 			}
 
-		push(@packages, { PACKAGE => $Package });
+		push(@$packages, { PACKAGE => $Package });
 		}
 	else
 		{
@@ -1280,16 +1294,16 @@ sub consolidate_orders
 			{
 			my $CoObj = $c->model('MyDBI::Co')->find({ coid => $coid});
 			my @arrs = $CoObj->packages;
-			push(@packages, { CO => $CoObj, PACKAGE => $_ } ) foreach @arrs;
+			push(@$packages, { CO => $CoObj, PACKAGE => $_ } ) foreach @arrs;
 			}
 		}
 
-	$c->log->debug("Total No of Packages: " . @packages);
+	$c->log->debug("Total No of Packages: " . @$packages);
 
 	my $package_detail_section_HTML = '';
 
 	my $OriginalCO = $self->get_order;
-	foreach (@packages)
+	foreach (@$packages)
 		{
 		my ($cCO,$Package) = ($_->{CO},$_->{PACKAGE});
 

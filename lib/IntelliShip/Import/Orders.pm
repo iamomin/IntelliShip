@@ -10,6 +10,7 @@ use POSIX qw (ceil strftime);
 use Date::Calc qw(Delta_Days);
 use Scalar::Util qw(looks_like_number);
 
+use IntelliShip::Email;
 use IntelliShip::Utils;
 use IntelliShip::MyConfig;
 use IntelliShip::DateUtils;
@@ -25,6 +26,8 @@ has 'context'      => ( is => 'rw' );
 has 'API'          => ( is => 'rw' );
 has 'AuthContacts' => ( is => 'rw' );
 has 'error_files'  => ( is => 'rw' );
+has 'co_cache'     => ( is => 'rw' );
+has 'package_cache'=> ( is => 'rw' );
 
 my $config;
 $Data::Dumper::Sortkeys = 1;
@@ -34,6 +37,8 @@ sub BUILD
 	my $self = shift;
 	$self->error_files([]);
 	$self->AuthContacts({});
+	$self->co_cache({});
+	$self->package_cache({});
 	$config = IntelliShip::MyConfig->get_ARRS_configuration;
 	}
 
@@ -128,20 +133,32 @@ sub import
 				}
 			}
 
-		my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
-		my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
-
-		$ImportFailures = {} unless $ImportFailures;
-		$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
-
 		my $import_base_file = fileparse($file);
-		unless (move($file,"$imported_path/$import_base_file"))
+
+		eval
 			{
-			print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+			my ($ImportFailures,$OrderTypeRef) = $self->ImportOrders($order_file) if $order_file;
+			my ($ImportFailures1,$ProductTypeRef) = $self->ImportProducts($product_file) if $product_file;
+
+			$ImportFailures = {} unless $ImportFailures;
+			$ImportFailures = { %$ImportFailures, %$ImportFailures1 } if $ImportFailures1;
+
+			$self->log("\n--- move processed file to " . $imported_path);
+
+			unless (move($file,"$imported_path/$import_base_file"))
+				{
+				print STDERR "Could not move $file to $imported_path/$import_base_file: $!";
+				}
+
+			$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
+			$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
+			};
+
+		if ($@)
+			{
+			$self->EmailImportFailures({ ISE_Error => $@ }, $imported_path,$import_base_file,{});
 			}
 
-		$self->EmailImportFailures($ImportFailures,$imported_path,$import_base_file,$OrderTypeRef);
-		$self->EmailUnknownCustomer($ImportFailures,$OrderTypeRef);
 		}
 	}
 
@@ -149,8 +166,8 @@ sub get_import_directory
 	{
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->import_directory;
-	$TARGET_dir .= '/' . 'co';
-	$TARGET_dir .= '/' . $self->customer->username;
+	$TARGET_dir .= '/' . ($self->import_type eq 'product' ? 'product' : 'co');
+	#$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
@@ -165,8 +182,8 @@ sub get_imported_directory
 	{
 	my $self = shift;
 	my $TARGET_dir = IntelliShip::MyConfig->imported_directory;
-	$TARGET_dir .= '/' . 'co';
-	$TARGET_dir .= '/' . $self->customer->username;
+	$TARGET_dir .= '/' . ($self->import_type eq 'product' ? 'product' : 'co');
+	#$TARGET_dir .= '/' . $self->customer->username;
 
 	unless (IntelliShip::Utils->check_for_directory($TARGET_dir))
 		{
@@ -248,6 +265,8 @@ sub ImportOrders
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
+		## Remove all non ASCII character
+		$Line =~ s/[^[:ascii:]]//g;
 
 		## skip blank lines
 		next unless $Line;
@@ -789,7 +808,7 @@ sub ImportOrders
 				}
 			else
 				{
-				$ToAddress = $c->model("MyDBI::Address")->new($toAddressData);
+				$ToAddress = $self->model("Address")->new($toAddressData);
 				$ToAddress->addressid($self->myDBI->get_token_id);
 				$ToAddress->insert;
 				$self->log("... New Address Inserted, ID: " . $ToAddress->addressid);
@@ -827,7 +846,7 @@ sub ImportOrders
 					}
 				elsif (length $dropAddressData->{'address1'})
 					{
-					$DropAddress = $c->model("MyDBI::Address")->new($dropAddressData);
+					$DropAddress = $self->model("Address")->new($dropAddressData);
 					$DropAddress->addressid($self->myDBI->get_token_id);
 					$DropAddress->insert;
 					$self->log("... New Drop Address Inserted, ID: " . $DropAddress->addressid);
@@ -1086,15 +1105,17 @@ sub ImportProducts
 
 	foreach my $Line (@FileLines)
 		{
-		my $CustRef = {};
-
 		## Trim spaces from front and back
 		$Line =~ s/^\s+//;
 		$Line =~ s/\s+$//;
+		## Remove all non ASCII character
+		$Line =~ s/[^[:ascii:]]//g;
 
 		next unless $Line;
 
 		$self->log("");
+
+		my $CustRef = {};
 
 		($CustRef->{'extloginid'},
 		$CustRef->{'ordernumber'},
@@ -1194,26 +1215,11 @@ sub ImportProducts
 		if (defined($CustRef->{'ordernumber'}) && $CustRef->{'ordernumber'} ne '' && $export_flag ne '-1')
 			{
 			$self->log("... search for CO by ordernumber: " . $CustRef->{'ordernumber'});
-			 my $sth = $self->myDBI->select("
-				SELECT
-					coid
-				FROM
-					co
-				WHERE
-					customerid = '$CustomerID'
-					AND ordernumber = '$CustRef->{'ordernumber'}'
-					AND cotypeid = '$CustRef->{'cotypeid'}'
-				ORDER BY
-					datecreated DESC
-				LIMIT 1
-			 ");
+			$CO = $self->get_order($CustomerID,$CustRef->{'ordernumber'},$CustRef->{'cotypeid'});
 
-			my $coid = $sth->fetchrow(0)->{'coid'} if $sth->numrows;
-			$CustRef->{'coid'} = $coid;
+			$CustRef->{'coid'} = $CO->coid if $CO;
 
-			$self->log("... CO found, ID: " . $coid);
-
-			if (!defined($CustRef->{'coid'}) || $CustRef->{'coid'} eq '')
+			unless ($CustRef->{'coid'})
 				{
 				$export_flag = -2;
 				}
@@ -1265,7 +1271,7 @@ sub ImportProducts
 			$CustRef->{'weighttypeid'} = 1;
 			}
 
-		$self->log("... unittypeid: " . $CustRef->{'unittypeid'});
+		#$self->log("... unittypeid: " . $CustRef->{'unittypeid'});
 
 		if ( $export_flag == 0 )
 			{
@@ -1316,8 +1322,6 @@ sub ImportProducts
 			## if it's the 1st hit on a particular order then delete any existing product records
 			if ($LastCOID ne $CustRef->{'coid'})
 				{
-				$CO = $self->model('Co')->find({coid => $CustRef->{'coid'}}) if $CustRef->{'coid'};
-
 				#$self->log("... CO DATA DETAILS: " . Dumper $CO);
 				}
 
@@ -1337,25 +1341,21 @@ sub ImportProducts
 			## DataTypeId
 			## 1000 = Package
 			## 2000 = Product
-			my @packages = $CO->packages if $CO;
-			if (@packages)
+			my $Package = $self->get_package($CO);
+			$self->log("... package '" . $Package->packprodataid . "' found for order, insert product into package");
+			$productData->{'ownerid'}     = $Package->packprodataid;
+			$productData->{'ownertypeid'} = '3000';
+
+			my $productprice = 0;
+			if ($CustRef->{'productprice'} =~ /\./)
 				{
-				$self->log("... package '" . $packages[0]->packprodataid . "' found for order, insert product into package");
-				$productData->{'ownerid'}     = $packages[0]->packprodataid;
-				$productData->{'ownertypeid'} = '3000';
+				my @productpriceparts = split(/\./,$CustRef->{'productprice'});
+				$productpriceparts[0] =~ s/\D//;
+				$productprice = $productpriceparts[0] . '.' . $productpriceparts[1];
 				}
 			else
 				{
-				$self->log("... package not found");
-				$productData->{'ownerid'}     = $CustRef->{'coid'};
-				$productData->{'ownertypeid'} = '1000';
-				}
-
-			my $productprice = 0;
-			if (my @productpriceparts = split(/\./,$CustRef->{'productprice'}))
-				{
-				$productpriceparts[0] =~ s/\D//;
-				$productprice = $productpriceparts[0] . '.' . $productpriceparts[1];
+				$productprice = $CustRef->{'productprice'} || 0;
 				}
 
 			$productData->{'quantity'}         = $CustRef->{'productquantity'};
@@ -1458,22 +1458,93 @@ sub ImportProducts
 	return ($ImportFailureRef,$ordertype);
 	}
 
+sub get_order
+	{
+	my $self = shift;
+	my $CustomerID = shift;
+	my $OrderNumber = shift;
+	my $COTypeID = shift;
+
+	my $CO = $self->co_cache->{$OrderNumber};
+
+	unless ($CO)
+		{
+		my $sql = "SELECT coid FROM co WHERE customerid='$CustomerID' AND ordernumber='$OrderNumber' AND cotypeid='$COTypeID' ORDER BY datecreated DESC LIMIT 1";
+		my $sth = $self->myDBI->select($sql);
+
+		if ($sth->numrows)
+			{
+			my $coid = $sth->fetchrow(0)->{'coid'};
+			$CO = $self->model('Co')->find({coid => $coid});
+			$self->log("... CO found, ID: " . $CO->coid);
+			$CO->delete_all_package_details;
+			$self->co_cache->{$OrderNumber} = $CO;
+			}
+		}
+
+	return $CO;
+	}
+
+sub get_package
+	{
+	my $self = shift;
+	my $CO = shift;
+
+	my $Package = $self->package_cache->{$CO->coid};
+
+	unless ($Package)
+		{
+		my @packages = $CO->packages;
+		if (@packages)
+			{
+			$Package = $packages[0];
+			}
+		else
+			{
+			my $packageData = {
+				ownerid => $CO->coid,
+				ownertypeid => 1000,
+				datatypeid => 1000,
+				datecreated => IntelliShip::DateUtils->get_timestamp_with_time_zone
+				};
+			$Package = $self->model('Packprodata')->new($packageData);
+			$Package->packprodataid($self->myDBI->get_token_id);
+			$Package->insert;
+			}
+
+		$self->package_cache->{$CO->coid} = $Package;
+		}
+
+	return $Package;
+	}
+
 ## Send email with list of failed imports
 sub EmailImportFailures
 	{
 	my $self = shift;
+	my $ImportFailures = shift;
+	my $filepath = shift;
+	my $filename = shift || '';
+	my $OrderTypeRef = shift;
+
 	my $c = $self->context;
-	my ($ImportFailures,$filepath,$filename,$OrderTypeRef) = @_;
 
 	my $attach_file = $filepath . '/' . $filename;
 
-	$self->log("... EmailImportFailures, file: $attach_file, $OrderTypeRef");
+	my @failureKeys = keys(%$ImportFailures);
 
-	foreach my $customerid (keys(%$ImportFailures))
+	return unless @failureKeys;
+
+	$self->log("... EmailImportFailures, file: $attach_file");
+	$self->log("... Errors: " . Dumper($ImportFailures));
+
+	foreach my $customerid (@failureKeys)
 		{
 		my $Timestamp = IntelliShip::DateUtils->get_formatted_timestamp('-');
-		my $Customer	 = $self->model('Customer')->find({ customerid => $customerid});
-        return unless  $Customer;
+		my $Customer = $self->model('Customer')->find({ customerid => $customerid});
+
+		return unless  $Customer;
+
 		my $CustomerName = $Customer->customername if ($Customer);
 		my $toEmail      = $Customer->email if ($Customer);
 		my $subject      = "NOTICE: " . $CustomerName . " " . $OrderTypeRef->{'ordertype'} ." Import Failures "  . "(".$Timestamp.", ".$filename.")";
@@ -1488,13 +1559,25 @@ sub EmailImportFailures
 		$Email->add_to('aloha.sourceconsulting.com');
 		$Email->add_to('imranm@alohatechnology.com') if IntelliShip::MyConfig->getDomain eq 'DEVELOPMENT';
 
-		$c->stash->{failures}		= $ImportFailures->{$customerid};
-		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
-		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+		if ($c)
+			{
+			$c->stash->{failures}		= $ImportFailures->{$customerid};
+			$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+			$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
 
-		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			}
+		else
+			{
+			$Email->add_line("ORDERTYPE  : " . $OrderTypeRef->{'ordertype'});
+			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
+			my $arr = $ImportFailures->{$customerid};
+			$Email->add_line($_) foreach @$arr;
+			}
 
 		$Email->attach($attach_file);
+
+		#$Email->to_string;
 
 		if ($Email->send)
 			{
@@ -1545,20 +1628,34 @@ sub EmailUnknownCustomer
 		$Email->from_address(IntelliShip::MyConfig->no_reply_email);
 		$Email->subject($subject);
 		$Email->add_to('noc@engagetechnology.com');
-		foreach my $customerid (keys(%$ImportFailures))
-			{
-			$c->stash->{failures}		= $ImportFailures->{$customerid};
-			}
-		$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
-		$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
 
-		$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+		if ($c)
+			{
+			foreach my $customerid (keys(%$ImportFailures))
+				{
+				$c->stash->{failures} = $ImportFailures->{$customerid};
+				}
+			$c->stash->{ordertype}		= $OrderTypeRef->{'ordertype'};
+			$c->stash->{ordertype_lc}	= $OrderTypeRef->{'ordertype_lc'};
+
+			$Email->body($Email->body . $c->forward($c->view('Email'), "render", [ 'templates/email/import-failures.tt' ]));
+			}
+		else
+			{
+			$Email->add_line("ORDERTYPE  : " . $OrderTypeRef->{'ordertype'});
+			$Email->add_line("Line Count : " . $OrderTypeRef->{'ordertype_lc'});
+			foreach my $customerid (keys(%$ImportFailures))
+				{
+				$Email->add_line($ImportFailures->{$customerid});
+				}
+			}
+
 		my $new_file = "$filepath/$filename";
 		$Email->attach($new_file);
 
 		if ($Email->send)
 			{
-			$self->context->log->debug("*** import failure order for unkown user notification email successfully sent to " . join(',',@{$Email->to}));
+			$self->log("*** unkown user notification email successfully sent to " . join(',',@{$Email->to}));
 			}
 
 		unless (move($file, $new_file))
@@ -1584,7 +1681,7 @@ sub SaveAssessorial
 		assvalue    => $AssValue,
 		};
 
-	my $AssData = $self->context->model('MyDBI::ASSDATA')->new($addData);
+	my $AssData = $self->model('ASSDATA')->new($addData);
 	$AssData->assdataid($self->myDBI->get_token_id);
 	$AssData->insert;
 

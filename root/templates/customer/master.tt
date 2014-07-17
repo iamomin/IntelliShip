@@ -96,7 +96,7 @@
 				<a href="[% landing_page %]"><img src="/static/branding/engage/images/header/[% logo %]"/></a>
 				<nav>
 					<ul>
-					<li><a href="#" id="settings"><img src="/static/branding/engage/images/header/settings.png"/><span>[% contactObj.full_name %]</span><img class="profile-image" [% IF user_profile %]style="background-image: url('/static/branding/engage/images/profile/[% user_profile %]')"[% END %]/></a>
+					<li><a href="#" id="settings"><img src="/static/branding/engage/images/header/settings.png"/><span>[% contactObj.full_name %]</span><img class="profile-image" src="/static/branding/engage/images/profile/[% user_profile ? user_profile : 'user-default.png' %]"/></a>
 							<ul>
 								<li><a href="/customer/settings">ACCOUNT SETTINGS</a></li>
 								<li><hr></li>
@@ -177,7 +177,7 @@
 		<div id="footer">
 			<div class="content">
 				<ul>
-					<li><img src="/static/branding/engage/images/footer/logo.gif" class="logo"/></li>
+					<!--<li><img src="/static/branding/engage/images/footer/logo.gif" class="logo"/></li>-->
 					<li>Copyright &copy; 2000-2014 Engage Technology, LLC.</li>
 					<li>|</li>
 					<li><a href="javascript:void(0);" onclick="ShowPrivacy();">Privacy</a></li>

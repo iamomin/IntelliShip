@@ -6,6 +6,7 @@ use Switch;
 use IO::File;
 use XML::Simple;
 use Email::Valid;
+use File::Basename;
 use IntelliShip::MyConfig;
 use IntelliShip::Carrier::Constants;
 
@@ -444,8 +445,8 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Require Product Description',                   value => 'reqproddescr',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Ship Date',                             value => 'reqdatetoship',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Due Date',                              value => 'reqdateneeded',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Require Customer Ref 2',                        value => 'reqcustref2',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Require Customer Ref 3',                        value => 'reqcustref3',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
+	{ name => 'Require Customer Ref 2',                        value => 'reqcustref2',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], default => '0'},
+	{ name => 'Require Customer Ref 3',                        value => 'reqcustref3',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], default => '0'},
 	{ name => 'Require Department',                            value => 'reqdepartment',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Ext ID',                                value => 'reqextid',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Has AltSOPs',                                   value => 'hasaltsops',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
@@ -612,6 +613,8 @@ sub generate_UCC_128_barcode
 	{
 	my $self = shift;
 	my $Data = shift;
+	my $width = shift || 200;
+	my $height = shift || 95;
 
 	my $BarcodeFile = IntelliShip::MyConfig->barcode_directory . '/' . $Data . '.png';
 
@@ -627,15 +630,14 @@ sub generate_UCC_128_barcode
 
 	# create a png barcode to include on the bol
 	eval {
-	use Barcode::Code128;
-	my $code = new Barcode::Code128;
-	#$code->option("border", 0, "show_text", 0, "padding", 0);
-	$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", 200, "height", 95);
+		use Barcode::Code128;
+		my $code = new Barcode::Code128;
+		$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", $width, "height", $height);
 
-	print $BARCODE $code->png($Data);
+		print $BARCODE $code->png($Data);
 
-	close $BARCODE;
-	};
+		close $BARCODE;
+		};
 
 	return $BarcodeFile;
 	}
@@ -666,6 +668,38 @@ sub generate_barcode
 	return $BarcodeFile;
 	}
 =cut
+
+
+sub i_am_running
+	{
+	my ($filename,$filepath) = fileparse($0);
+
+	if ( !(my @pid_files = <${filepath}/run/$filename.*>) )
+		{
+		system("/bin/touch $filepath/run/$filename.$$");
+		return 0;
+		}
+	else
+		{
+		foreach my $pid_file (@pid_files)
+			{
+			my ($check_pid) = $pid_file =~ /.*\.pl\.(\d+)$/;
+			my ($trunc_filename) = $filename =~ /^(\w{1,15})/;
+
+			if ( my $found_pid = `ps -eo pid,comm | grep -s '$check_pid $trunc_filename'` )
+				{
+				return 1;
+				}
+			else
+				{
+				unlink($pid_file) || warn "Cannot unlink $pid_file: $!";
+				}
+			}
+		}
+
+	system("/bin/touch $filepath/run/$filename.$$");
+	return 0;
+	}
 
 1;
 

@@ -454,7 +454,7 @@ sub GetCarrierServices{
 
 	my $Online =
 	  new ARRS::ONLINE( $self->{'dbref'}, $self->{'contact'} );
-	return $Online->GetCarrierServices( $Ref->{'carrierid'}, $Ref->{'customerid'});
+	return $Online->GetCarrierServices( $Ref->{'customerid'});
 }
 
 sub GetServiceTariff {

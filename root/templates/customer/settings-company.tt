@@ -656,6 +656,29 @@
 						</td>
 					</tr>
 					<tr>
+						<td><label class="float-right" for="cust_reqcustref2">Require Customer Ref 2:</label></td>
+						<td>
+						<label>
+							<select name="cust_reqcustref2" id="cust_reqcustref2">
+							[% FOREACH item IN reqcustref_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_reqcustref2) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+
+						<td><label class="float-right" for="cust_reqcustref3">Require Customer Ref 3:</label></td>
+						<td>
+						<label>
+							<select name="cust_reqcustref3" id="cust_reqcustref3">
+							[% FOREACH item IN reqcustref_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_reqcustref3) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+					</tr>
+					<tr>
 						<td><label class="float-right" for="cust_jpgrotation">JPG Label Rotation:</label></td>
 						<td>
 						<label>
