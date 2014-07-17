@@ -1,7 +1,7 @@
 package IntelliShip::Carrier::Driver::UPS::AddressValidate;
 
 use Moose;
-use XML::LibXML::Simple;
+use XML::Simple;
 use HTTP::Request;
 use Data::Dumper;
 use LWP::UserAgent;
@@ -60,25 +60,26 @@ sub process_request
 </AddressValidationRequest>";
 
 	my $UA = LWP::UserAgent->new();   
-	my $req = HTTP::Request->new(POST => $URL);
+	my $request = HTTP::Request->new(POST => $URL);
 
-	$self->log("\n\nXML = $XML \n\n");
+	#$self->log("\n\nXML = $XML \n\n");
 
-	$req->content("$XML");
-	my $resp = $UA->request($req);
+	$request->content($XML);
+	my $response = $UA->request($request);
 
-	$self->log($resp->content() . "\n");
+	my $xml = new XML::Simple;
 
-	my $parser = XML::LibXML::Simple->new();
-	my $xmlResp= $parser->XMLin($resp->content());
+	my $responseDS = $xml->XMLin($response->content);
 
-	if($xmlResp->{Response}->{ResponseStatusDescription} =~ /Success/i)
+	$self->log("responseDS: " . Dumper($responseDS));
+
+	if ($responseDS->{Response}->{ResponseStatusDescription} =~ /Success/i)
 		{
-		if (exists $xmlResp->{ValidAddressIndicator})
+		if (exists $responseDS->{ValidAddressIndicator})
 			{
 			$self->destination_address->lastvalidatedon(IntelliShip::DateUtils->get_timestamp_with_time_zone);
 			$self->destination_address->update;
-			return $xmlResp;
+			return $responseDS;
 			}
 		else
 			{
@@ -87,7 +88,7 @@ sub process_request
 		}
 	else
 		{
-		$self->add_error("Invalid Destination Address - " . $xmlResp->{Response}->{Error}->{ErrorDescription});
+		$self->add_error("Invalid Destination Address - " . $responseDS->{Response}->{Error}->{ErrorDescription});
 		return undef;
 		}
 	}

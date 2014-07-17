@@ -109,14 +109,22 @@
 
 	[% UNLESS ajax %]
 	</div>
-
+	
+	<div id="colorIndicator">
 	<table>
 		<tr>
+		<td>&nbsp;&nbsp;&nbsp;</td>
+		<td><a class="green"></a></td>
+		<td>Processing</td>
+		<td style="width: 5%">&nbsp;</td>
+		<td><a class="black"></a></td>
+		<td>Void</td>
 		<td style="width: 90%">&nbsp;</td>
 		<td><input type="button" class="gray" id="new_order" value="ADD SHIPMENT"></td>
 		<td><button type="button" id="quick_ship" class="quick-ship"><label></label><span>QUICK SHIP</span></button></td>
 		</tr>
 	</table>
+	</div>
 	</form>
 
 

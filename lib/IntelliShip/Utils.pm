@@ -6,6 +6,7 @@ use Switch;
 use IO::File;
 use XML::Simple;
 use Email::Valid;
+use File::Basename;
 use IntelliShip::MyConfig;
 use IntelliShip::Carrier::Constants;
 
@@ -262,8 +263,9 @@ sub clean_json_data
 	$item =~ s/\t+//g;
 	$item =~ s/\n+//g;
 	$item =~ s/\r+//g;
-	$item =~ s/^\s+//g;
-	$item =~ s/\s+$//g;
+	$item =~ s/^\s+//;
+	$item =~ s/\s+$//;
+	$item =~ tr/\xB4\xC0\xC1\xC2\xC3\xC4\xC5\xC7\xC8\xC9\xCA\xCB\xCC\xCD\xCE\xCF\xD0\xD1\xD2\xD3\xD4\xD5\xD6\xD8\xD9\xDA\xDB\xDC\xDD\xE0\xE1\xE2\xE3\xE4\xE5\xE7\xE8\xE9\xEA\xEB\xEC\xED\xEE\xEF\xF0\xF1\xF2\xF3\xF4\xF5\xF6\xF8\xF9\xFA\xFB\xFC\xFD\xFF\x{83}\x{c4}\x{219}\x{103}/'AAAAAACEEEEIIIIDNOOOOOOUUUUYaaaaaaceeeeiiiionoooooouuuuyya/;
 
 	return $item;
 	}
@@ -443,8 +445,8 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Require Product Description',                   value => 'reqproddescr',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Ship Date',                             value => 'reqdatetoship',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Due Date',                              value => 'reqdateneeded',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Require Customer Ref 2',                        value => 'reqcustref2',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
-	{ name => 'Require Customer Ref 3',                        value => 'reqcustref3',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
+	{ name => 'Require Customer Ref 2',                        value => 'reqcustref2',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], default => '0'},
+	{ name => 'Require Customer Ref 3',                        value => 'reqcustref3',						type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER'], default => '0'},
 	{ name => 'Require Department',                            value => 'reqdepartment',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Require Ext ID',                                value => 'reqextid',							type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Has AltSOPs',                                   value => 'hasaltsops',						type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
@@ -525,6 +527,7 @@ my $CUSTOMER_CONTACT_RULES = [
 	{ name => 'Package Product Level',                         value => 'packageproductlevel',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT']},
 	{ name => 'Order Supplies',                                value => 'ordersupplies',					type => 'CHECKBOX', datatypeid => 1, ownertype => ['CUSTOMER']},
 	{ name => 'Address Validation',                            value => 'addressvalidation',				type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
+	{ name => 'Carrier Rates',                                      value => 'carrierrates',							type => 'SELECT',   datatypeid => 1, ownertype => ['CUSTOMER', 'CONTACT'], default => '0'},
 	];
 
 my $CUSTOM_CSS_STYLES = [
@@ -610,6 +613,8 @@ sub generate_UCC_128_barcode
 	{
 	my $self = shift;
 	my $Data = shift;
+	my $width = shift || 200;
+	my $height = shift || 95;
 
 	my $BarcodeFile = IntelliShip::MyConfig->barcode_directory . '/' . $Data . '.png';
 
@@ -625,15 +630,14 @@ sub generate_UCC_128_barcode
 
 	# create a png barcode to include on the bol
 	eval {
-	use Barcode::Code128;
-	my $code = new Barcode::Code128;
-	#$code->option("border", 0, "show_text", 0, "padding", 0);
-	$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", 200, "height", 95);
+		use Barcode::Code128;
+		my $code = new Barcode::Code128;
+		$code->option("border", 0, "show_text", 0, "padding", 0, "scale", 1, "width", $width, "height", $height);
 
-	print $BARCODE $code->png($Data);
+		print $BARCODE $code->png($Data);
 
-	close $BARCODE;
-	};
+		close $BARCODE;
+		};
 
 	return $BarcodeFile;
 	}
@@ -664,6 +668,38 @@ sub generate_barcode
 	return $BarcodeFile;
 	}
 =cut
+
+
+sub i_am_running
+	{
+	my ($filename,$filepath) = fileparse($0);
+
+	if ( !(my @pid_files = <${filepath}/run/$filename.*>) )
+		{
+		system("/bin/touch $filepath/run/$filename.$$");
+		return 0;
+		}
+	else
+		{
+		foreach my $pid_file (@pid_files)
+			{
+			my ($check_pid) = $pid_file =~ /.*\.pl\.(\d+)$/;
+			my ($trunc_filename) = $filename =~ /^(\w{1,15})/;
+
+			if ( my $found_pid = `ps -eo pid,comm | grep -s '$check_pid $trunc_filename'` )
+				{
+				return 1;
+				}
+			else
+				{
+				unlink($pid_file) || warn "Cannot unlink $pid_file: $!";
+				}
+			}
+		}
+
+	system("/bin/touch $filepath/run/$filename.$$");
+	return 0;
+	}
 
 1;
 

@@ -104,8 +104,8 @@
 	[% END %]
 
 	<div style="border: 4px solid #9BA7AF; padding: 5px 0;">
-		<table><tr><td><a href="javascript:void(0);" id="special-services-cmd" class="round-green-button" style="text-decoration:none" onclick="SpecialServices();">[% IF SPECIAL_SERVICE %]&#8211[% ELSE %]+[% END %]</a></td><td><green>Add Special Services</green></td></tr></table>
-		<div id="special-services" style="display: [% SPECIAL_SERVICE ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICE %]</div>
+		<table><tr><td><a href="javascript:void(0);" id="special-services-cmd" class="round-green-button" style="text-decoration:none" onclick="SpecialServices();">[% IF SPECIAL_SERVICES %]&#8211[% ELSE %]+[% END %]</a></td><td><green>Add Special Services</green></td></tr></table>
+		<div id="special-services" style="display: [% SPECIAL_SERVICES ? 'block' : 'none' %];" class="css3-checkboxes">[% SPECIAL_SERVICES %]</div>
 	</div>
 
 	<div class="float-right">
@@ -119,6 +119,8 @@
 
 <script>
 
+	[% UNLESS one_page %]requiredFieldHash = {};[% END %]
+	requiredFieldHash = {};
 	[% FOREACH item IN requiredfield_list %]requiredFieldHash['[% item.name %]']=[% item.details %];
 	[% END %]
 
@@ -176,6 +178,8 @@
 		[% FOREACH item IN tooltips %]$("input[name^='[% item.id %]']").attr('title','[% item.value %]');[% END %]
 		setToolTip();
 		[% END %]
+
+		if (requiredFieldHash) markRequiredFields(requiredFieldHash);
 
 		setCustomsCommodityValue();
 		});

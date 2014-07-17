@@ -85,7 +85,7 @@ sub setup :Local
 		$c->stash->{customerAuxFormAddress} = $Customer->auxilary_address;
 		$c->stash->{cust_defaulttoquickship} = 1 if ($Customer->quickship eq '2');
 		$c->stash->{SSO_CUSTOMER}            = 1 if $Customer->is_single_sign_on_customer;
-
+		$c->stash->{webaddress} = $Customer->webaddress;
 		$self->get_branding_settings;
 		$c->stash->{COMPANY_BRANDING_HTML} = $c->forward($c->view('Ajax'), "render", [ "templates/customer/settings-company-branding.tt" ]);
 
@@ -182,6 +182,8 @@ sub setup :Local
 	$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 	$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 	$c->stash->{addressvalidation_loop}  = $self->get_select_list('ADDRESS_VALIDATION_LIST');
+	$c->stash->{carrierrates_loop}       = $self->get_select_list('CARRIERRATES_LIST');
+	$c->stash->{reqcustref_loop}         = $self->get_select_list('CUST_REF_VALIDATION_LIST');
 
 	$c->stash->{CURRENT_COMPANY} = ($params->{'customerid'} eq $self->customer->customerid);
 
@@ -661,8 +663,18 @@ sub update_branding_settings :Private
 	my $params = $c->req->params;
 	my $Customer = $self->get_customer;
 
+	IntelliShip::Utils->hash_decode($params);
+	#$c->log->debug("PARAMS: " . Dumper($params));
+
 	my $CSS_CONTENT = $params->{'custom-style-sheet'};
 	my $CustomerCss  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/css/' . $params->{'customerid'} . '.css';
+
+	if ($params->{'webaddress'})
+		{
+		$Customer->webaddress($params->{'webaddress'});
+		$Customer->update;
+		$c->log->debug("Customer UPDATED, ID: ".$Customer->customerid);
+		}
 
 	my $FILE = new IO::File;
 	unless (open ($FILE,">$CustomerCss"))
@@ -680,13 +692,16 @@ sub update_branding_settings :Private
 		{
 		foreach my $style (@{ $style_list->{section }})
 			{
+			$params->{$style_list->{'bgcolor'}} =~ s/^#$//;
+			$params->{$style_list->{'font'}} =~ s/^#$//;
+
 			$css_contents = $style . "{";
-			$css_contents .= "$_\n" . "\tbackground: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
-			$css_contents .= "$_\n" . "\tcolor: " . $params->{"$style_list->{font}"} . ";" if $params->{"$style_list->{font}"};
-			$css_contents .= "$_\n" . "\tfont-size: " . $params->{"$style_list->{size}"} . "px;" if $params->{"$style_list->{size}"};
+			$css_contents .= "$_\n" . "\tbackground: " . $params->{$style_list->{bgcolor}} . ";" if $params->{$style_list->{bgcolor}};
+			$css_contents .= "$_\n" . "\tcolor: " . $params->{$style_list->{font}} . ";" if $params->{$style_list->{font}};
+			$css_contents .= "$_\n" . "\tfont-size: " . $params->{$style_list->{size}} . "px;" if $params->{$style_list->{size}};
 			if($style eq 'input[type=button].active')
 				{
-				$css_contents .= "$_\n" . "\tborder-color: " . $params->{"$style_list->{bgcolor}"} . ";" if $params->{"$style_list->{bgcolor}"};
+				$css_contents .= "$_\n" . "\tborder-color: " . $params->{$style_list->{bgcolor}} . ";" if $params->{$style_list->{bgcolor}};
 				}
 
 			unless ($css_contents eq $style . "{")
@@ -724,7 +739,7 @@ sub check_customer_contacts
 		return { CONTACTS => 0};
 		}
 	}
-	
+
 sub brandingdemo :Local
 	{
 	my $self = shift;

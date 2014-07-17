@@ -105,6 +105,10 @@ sub get_JSON_DATA :Private
 		{
 		$dataHash = $self->validate_department;
 		}
+	elsif ($params->{'action'} eq 'delete_profile_image')
+		{
+		$dataHash = $self->delete_profile_image;
+		}
 	else
 		{
 		$dataHash = { error => '[Unknown request] Something went wrong, please contact support.' };
@@ -116,6 +120,21 @@ sub get_JSON_DATA :Private
 	$c->response->body($json_DATA);
 	}
 
+sub delete_profile_image :Local
+	{		
+		my $self = shift;
+		my $c = $self->context;
+		my $params = $c->req->params;
+		
+		warn "########## delete_profile_image: " . $params->{'image'};
+		my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $params->{'image'};
+		unlink $FullPath if -e $FullPath ;
+		return {status => "FAILED"} if -e $FullPath;
+		
+		return {status => "SUCCESS"};		
+	}
+	
+	
 sub get_city_state :Private
 	{
 	my $self = shift;

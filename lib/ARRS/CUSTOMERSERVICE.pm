@@ -362,6 +362,7 @@ sub GetCost
 			SELECT
 				arcost,
 				arcostmin,
+				arcostmax,
 				arcostperwt,
 				arcostpermile,
 				arcostperunit,
@@ -461,7 +462,7 @@ sub GetCost
 				stopdate DESC
 			LIMIT 1
 		";
-	warn "########## $SQLString";
+	#warn "########## $SQLString";
 	#warn $SQLString if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 		my $sth = $self->{'object_dbref'}->prepare($SQLString)
 			or die "Could not prepare SQL statement";
@@ -566,6 +567,12 @@ sub GetCost
 				$Cost = $CostRef->{'arcostmin'};
 			}
 
+		# Use max cost if less than cost
+		if ( defined($CostRef->{'arcostmax'}) && $CostRef->{'arcostmax'} > 0 && $CostRef->{'arcostmax'} < $Cost )
+			{
+				$Cost = $CostRef->{'arcostmax'};
+			}
+
 			$Cost = sprintf("%02.2f", $Cost);
 	#warn "\nADDED MIN $Cost"
 		}
@@ -581,9 +588,9 @@ sub GetCost
 			$Cost = $Cost * $TruckCount;
 		}
 
-	#warn "\nGetCost returning: $Cost";
+	warn "\n***___GetCost returning: $Cost";
 
-		return ($Cost, $ZoneNumber);
+	return ($Cost, $ZoneNumber);
 	}
 
 sub GetShipmentCosts
@@ -614,6 +621,7 @@ sub GetShipmentCosts
 		my @Quantities = $self->BuildArrayFromJSString($ShipmentRef->{'quantitylist'});
 		my @UnitTypes = $self->BuildArrayFromJSString($ShipmentRef->{'unittypelist'});
 		my @DataTypes = $self->BuildArrayFromJSString($ShipmentRef->{'datatypeidlist'});
+		my @QuantityxWeight = $self->BuildArrayFromJSString($ShipmentRef->{'quantityxweight'});
 
 		my @DimWeights = ();
 		#warn $ShipmentRef->{'useaggweight'} if exists($ShipmentRef->{'useaggweight'});
@@ -672,7 +680,7 @@ sub GetShipmentCosts
 					$DimWeights[$i] = $self->GetDimWeight($DimLengths[$i],$DimWidths[$i],$DimHeights[$i]);
 				}
 
-				$AggregateWeight = $self->GetAggregateWeight(\@Weights,\@DimWeights,\@Quantities,\@DataTypes,$ShipmentRef->{'productcount'},$ShipmentRef->{'quantityxweight'});
+				$AggregateWeight = $self->GetAggregateWeight(\@Weights,\@DimWeights,\@Quantities,\@DataTypes,$ShipmentRef->{'productcount'},\@QuantityxWeight);
 			}
 
 			# If any single package is > max package weight or < min package weight, return undef
@@ -721,7 +729,7 @@ sub GetShipmentCosts
 			{
 			#warn "\nCS useaggregate=$UseAggregateWeight" if $self->GetValueHashRef()->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
-				($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays) = $self->GetPackageCosts(\@Weights,\@Quantities,\@DimLengths,\@DimWidths,\@DimHeights,\@DataTypes,$ShipmentRef);
+				($Cost,$Zone,$PackageCosts,$CostWeight,$TransitDays) = $self->GetPackageCosts(\@Weights,\@Quantities,\@DimLengths,\@DimWidths,\@DimHeights,\@DataTypes,$ShipmentRef,\@QuantityxWeight);
 
 			#warn "\nCS GetPackageCosts returned cost=$Cost";
 
@@ -765,7 +773,7 @@ sub GetShipmentCosts
 						$Weight = $DimWeights[$i];
 					}
 
-					if ( $ShipmentRef->{'quantityxweight'} || ( $UseAggregateWeight == 2 && scalar(@Quantities) > 1 ) )
+					if ( $QuantityxWeight[$i] || ( $UseAggregateWeight == 2 && scalar(@Quantities) > 1 ) )
 					{
 						for ( my $j = 1; $j <= $Quantities[$i]; $j ++ )
 						{
@@ -1148,6 +1156,7 @@ sub GetAggregateWeight
 		my @DimWeights = @$DimWeights;
 		my @Quantities = @$Quantities;
 		my @DataTypes = @$DataTypes;
+		my @QuantityXWeight = @$QuantityXWeight;
 
 		my $AggregateWeight = 0;
 
@@ -1161,7 +1170,7 @@ sub GetAggregateWeight
 			if ( !defined($Weight) || $Weight eq '' ) { return undef }
 
 			local $^W=0;
-			if ( $QuantityXWeight )
+			if ( $QuantityXWeight[$i] )
 			{
 				$Weight = $Weight * $Quantities[$i];
 			}
@@ -1188,13 +1197,14 @@ sub GetPackageCosts
 		warn "######### GetPackageCosts";
 		my $self = shift;
 
-		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$RateHandlerName) = @_;
+		my ($Weights,$Quantities,$DimLengths,$DimWidths,$DimHeights,$DataTypes,$ShipmentRef,$QuantityxWeight) = @_;
 		my @Weights = @$Weights;
 		my @Quantities = @$Quantities;
 		my @DimLengths = @$DimLengths;
 		my @DimWidths = @$DimWidths;
 		my @DimHeights = @$DimHeights;
 		my @DataTypes = @$DataTypes;
+		my @QuantityxWeight = @$QuantityxWeight;
 
 		my $Cost;
 		my $Zone = 0;
@@ -1223,11 +1233,7 @@ sub GetPackageCosts
 			my $PackageCostWeight = 0;
 			#warn "\nGetPackageCosts() each weight: $Weights[$i]" if $self->GetValueHashRef->{'customerserviceid'} eq 'TOTALTRANSPO1';
 
-			if ( $ShipmentRef->{'quantityxweight'} )
-			{
-				$PackageWeight = $Weights[$i];
-			}
-			else
+			if ( $QuantityxWeight[$i] )
 			{
 				if ( defined($Quantities[$i]) && $Quantities[$i] > 0 )
 				{
@@ -1237,6 +1243,10 @@ sub GetPackageCosts
 				{
 					$PackageWeight = ceil($Weights[$i]);
 				}
+			}
+			else
+			{
+				$PackageWeight = $Weights[$i];
 			}
 
 			($PackageCost,$Zone,$PackageCostWeight,$TransitDays) = $self->GetSuperCost($PackageWeight,$DimLengths[$i],$DimWidths[$i],$DimHeights[$i],$ShipmentRef);
@@ -1613,7 +1623,7 @@ sub GetSuperCost
 
 			$Cost = sprintf("%02.2f",$Cost);
 		}
-		#warn "\nGetSuperCost: |$Cost|$Zone|$CostWeight|$TransitDays|";
+		warn "\n..... GetSuperCost: |$Cost|$Zone|$CostWeight|$TransitDays|";
 
 		return ($Cost,$Zone,$CostWeight,$TransitDays);
 	}
@@ -2423,6 +2433,8 @@ sub GetAssValue
 	{
 		my $self = shift;
 		my ($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid) = @_;
+		#warn "########## GetAssValue($type,$ass_name,$weight,$quantity,$freight_cost,$date_shipped,$ownertypeid,$customerid)";
+						 
 	#warn "\nGetAssValue name=$ass_name freight=$freight_cost";
 	#warn "\nGetAssValue name=$ass_name freight=$freight_cost customerid=$customerid" if $self->GetValueHashRef->{'customerserviceid'} eq 'EFREIGHTDYLT0';
 
@@ -2431,6 +2443,8 @@ sub GetAssValue
 		my ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent) =
 			$self->GetAssData($type,$ass_name,$date_shipped,$ownertypeid,$markupamt,$markuppercent);
 
+		#warn "########## ($cost,$costmin,$costperwt,$costperunit,$costmax,$costpercent)";
+			
 		# override "cost" with csoveride value if one exists
 	my $CSOverride = new ARRS::CSOVERRIDE($self->{'object_dbref'}, $self->{'object_contact'});
 	if
@@ -2455,7 +2469,7 @@ sub GetAssValue
 
 	#warn "\nGetAssValue name=$ass_name cost=$cost costpercent=$costpercent";
 
-		my $ass_cost = $cost if $cost;
+		my $ass_cost = $cost ? $cost : 0;
 		$ass_cost += $costperwt * $weight if $costperwt;
 		$ass_cost += $costperunit * $quantity if $costperunit;
 
@@ -2468,9 +2482,9 @@ sub GetAssValue
 		# flat markup and markup percent set in custcondata
 		else
 		{
-			if ( defined($ass_cost) && $ass_cost ne '0' && $ass_cost ne '' && defined($markupamt) && $markupamt > 0 )
+			if ( defined($ass_cost) && $ass_cost ne '' && defined($markupamt) && $markupamt > 0 )
 			{
-				#warn "\nAdd flat markup";
+				warn "\n########## Add flat markup \$ass_cost=$ass_cost, \$markupamt=$markupamt";
 				$ass_cost += $markupamt;
 			}
 

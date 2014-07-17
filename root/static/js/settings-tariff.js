@@ -1,6 +1,21 @@
 var GRID, CSGRID, TREE, COLWIDTH;
 var ISGRIDLOADED = false, ISTREELOADED = false, ISADDMODE = false;
 
+/*
+	ENTRY POINT ! KEEP THIS FUNCTION AT THE TOP
+*/
+function entryPoint(event){
+	console.log("entryPoint");
+	if($("#tbl_tariff").is(":visible")){
+		return;
+	}
+	if (!$('#services_tree').html()) {
+		console.log("Loading....");
+		initToolbar();
+		getAllServices();
+	}
+}
+
 function loadServicesTree() {
 	//alert("loadServicesTree");
 	TREE = $('#services_tree').on("changed.jstree", function (e, data) {
@@ -97,21 +112,6 @@ function toggleToolbarButtons() {
 	} else {
 		$("#btn_update_tariff").prop("disabled", true);
 		$("#btn_delete_all_rows").prop("disabled", true);
-	}
-}
-
-/*
-	ENTRY POINT !
-*/
-function entryPoint(event){
-	console.log("entryPoint");
-	if($("#tbl_tariff").is(":visible")){
-		return;
-	}
-	if (!$('#services_tree').html()) {
-		console.log("Loading....");
-		initToolbar();
-		getAllServices();
 	}
 }
 
@@ -429,19 +429,13 @@ function deleteAllTariffRows() {
 function addCustomerService() {
 	TREE = $('#services_tree').jstree(true);
 	var carrierNode = TREE.get_node(TREE.get_selected());
-	if (carrierNode) {
-		if (carrierNode.original.hasOwnProperty('sid')) {
-			carrierNode = TREE.get_node(carrierNode.parent);
-		}
-		
-		var params = "carrierid=" + carrierNode.original.id + "&customerid="+ $("#customerid").val();
-		my_ajax_request('settings/tariff/get_carrier_services', params, function () {
-			loadCSGrid();
-			$("#div_add_service").slideDown("slow");
-		});
-	}else{
-		showMessage("Please select a carrier");
-	}
+	
+	var params = "customerid="+ $("#customerid").val();
+	my_ajax_request('settings/tariff/get_carrier_services', params, function () {
+		loadCSGrid();
+		$("#div_add_service").slideDown("slow");
+	});
+	
 }
 
 function deleteCustomerService() {
@@ -484,13 +478,21 @@ function loadCSGrid(){
     });
 	
 	columns.push(checkboxSelector.getColumnDefinition());
-
+	
+	columns.push({
+		id : "header_carriername",
+		name : "Carrier Name" ,
+		field : "carriername",
+		width : 200,
+		cssClass : "cell-title",
+		sortable : true
+	});
 	
 	columns.push({
 		id : "header_servicename",
 		name : "Service Name" ,
 		field : "servicename",
-		width : 500,
+		width : 300,
 		cssClass : "cell-title",
 		sortable : true
 	});

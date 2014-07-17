@@ -102,9 +102,13 @@ sub GetCost
 
 	my $AcctNum = $CS->GetCSValue('webaccount',undef,$CustomerID);
 	my $MeterNum = $CS->GetCSValue('meternumber',undef,$CustomerID);
+	my $webusername = $CS->GetCSValue('upswsid',undef,$CustomerID);
+	my $webpassword = $CS->GetCSValue('upswbpw',undef,$CustomerID);
 
+	warn "######### \$webusername = $webusername, \$webpassword = $webpassword";
+	
 	eval {
-	($days,$Cost,$errorcode) = $self->GetTransit($SCAC,$OriginZip,$DestZip,$Weight,$Class,$DateShipped,$Required_Asses,$FileID,$ClientID,$CSID,$ServiceID,$ToCountry,$AcctNum,$MeterNum,$DimHeight,$DimWidth,$DimLength,$FromCountry,$FromCity,$FromState,$ToCity,$ToState);
+	($days,$Cost,$errorcode) = $self->GetTransit($SCAC,$OriginZip,$DestZip,$Weight,$Class,$DateShipped,$Required_Asses,$FileID,$ClientID,$CSID,$ServiceID,$ToCountry,$AcctNum,$MeterNum,$DimHeight,$DimWidth,$DimLength,$FromCountry,$FromCity,$FromState,$ToCity,$ToState, $webusername, $webpassword);
 	};
 	warn "Error: " . $@ if $@;
 	if ( $days )
@@ -134,11 +138,11 @@ sub GetTransit
 {
 	my $self = shift;
 
-	my ($scac,$oazip,$dazip,$weight,$class,$dateshipped,$required_asses,$fileid,$clientid,$csid,$serviceid,$tocountry,$acctnum,$meternum,$height,$width,$length,$fromcountry,$fromcity,$fromstate,$tocity,$tostate) = @_;
+	my ($scac,$oazip,$dazip,$weight,$class,$dateshipped,$required_asses,$fileid,$clientid,$csid,$serviceid,$tocountry,$acctnum,$meternum,$height,$width,$length,$fromcountry,$fromcity,$fromstate,$tocity,$tostate, $webusername, $webpassword) = @_;
 
 	if ( !$fileid ) { $fileid = 'test' }
 
-	#warn "UPS2: GetTrasit($scac,$oazip,$dazip,$weight,$class,$dateshipped,$required_asses,$fileid,$clientid,$csid,$serviceid,$tocountry,$acctnum,$meternum)";
+	warn "########## UPS2: GetTrasit($scac,$oazip,$dazip,$weight,$class,$dateshipped,$required_asses,$fileid,$clientid,$csid,$serviceid,$tocountry,$acctnum,$meternum, $webusername, $webpassword)";
 
 	my $STH = $self->{'dbref'}->prepare("SELECT servicename, servicecode FROM service WHERE serviceid = ?") or die "Could not prepare asscode select sql statement";
 	$STH->execute($serviceid) or die "Could not execute asscode select sql statement";
@@ -172,14 +176,14 @@ sub GetTransit
 	$length = ceil($length);
 	$weight = ceil($weight);
 
-	my $UserId = $UPS_ACCT_DETAILS->{$acctnum}->{USERNAME};
-	my $Password = $UPS_ACCT_DETAILS->{$acctnum}->{PASSWORD};
+	#my $UserId = $UPS_ACCT_DETAILS->{$acctnum}->{USERNAME};
+	#my $Password = $UPS_ACCT_DETAILS->{$acctnum}->{PASSWORD};
 
 	my $XML = "<?xml version=\"1.0\"?>
 <AccessRequest xml:lang=\"en-US\">
 	<AccessLicenseNumber>7CD03B13C7D39706</AccessLicenseNumber>
-	<UserId>$UserId</UserId>
-	<Password>$Password</Password>
+	<UserId>$webusername</UserId>
+	<Password>$webpassword</Password>
 </AccessRequest>
 <?xml version=\"1.0\"?>
 <RatingServiceSelectionRequest xml:lang=\"en-US\">
@@ -285,8 +289,8 @@ sub GetTransit
 			my $TransitXml = "<?xml version=\"1.0\" ?>
 					<AccessRequest xml:lang='en-US'>
 						<AccessLicenseNumber>7CD03B13C7D39706</AccessLicenseNumber>
-						<UserId>$UserId</UserId>
-						<Password>$Password</Password>
+						<UserId>$webusername</UserId>
+						<Password>$webpassword</Password>
 					</AccessRequest>
 					<?xml version=\"1.0\" ?>
 					<TimeInTransitRequest xml:lang='en-US'>

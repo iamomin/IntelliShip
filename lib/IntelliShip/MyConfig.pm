@@ -292,43 +292,43 @@ sub no_reply_email
 sub base_path
 	{
 	my $self = shift;
-	return '/opt/engage/intelliship';
+	return $self->application_root . '/var';
 	}
 
 sub import_directory
 	{
 	my $self = shift;
-	return $self->base_path . '/var/import';
+	return $self->base_path . '/import';
 	}
 
 sub imported_directory
 	{
 	my $self = shift;
-	return $self->base_path . '/var/imported';
+	return $self->base_path . '/imported';
 	}
 
 sub process_directory
 	{
 	my $self = shift;
-	return $self->base_path . '/var/processing';
+	return $self->base_path . '/processing';
 	}
 
 sub export_directory
 	{
 	my $self = shift;
-	return $self->base_path . '/var/export';
+	return $self->base_path . '/export';
 	}
 
 sub file_directory
 	{
 	my $self = shift;
-	return $self->base_path . '/var/log/intelliship/files';
+	return $self->base_path . '/log/files';
 	}
 
 sub report_file_directory
 	{
 	my $self = shift;
-	return $self->base_path . '/var/log/intelliship/reports';
+	return $self->base_path . '/log/reports';
 	}
 
 sub branding_file_directory

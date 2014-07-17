@@ -656,6 +656,29 @@
 						</td>
 					</tr>
 					<tr>
+						<td><label class="float-right" for="cust_reqcustref2">Require Customer Ref 2:</label></td>
+						<td>
+						<label>
+							<select name="cust_reqcustref2" id="cust_reqcustref2">
+							[% FOREACH item IN reqcustref_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_reqcustref2) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+
+						<td><label class="float-right" for="cust_reqcustref3">Require Customer Ref 3:</label></td>
+						<td>
+						<label>
+							<select name="cust_reqcustref3" id="cust_reqcustref3">
+							[% FOREACH item IN reqcustref_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_reqcustref3) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+					</tr>
+					<tr>
 						<td><label class="float-right" for="cust_jpgrotation">JPG Label Rotation:</label></td>
 						<td>
 						<label>
@@ -706,17 +729,26 @@
 						<td></td>
 						[% END %]
 					</tr>
-					
-					[% IF SSO_CUSTOMER %]
 					<tr>
+						<td><label class="float-right" for="cust_carrierrates">Carrier Rates:</label></td>
+						<td>
+						<label>
+							<select name="cust_carrierrates" id="cust_carrierrates">
+							[% FOREACH item IN carrierrates_loop %]
+								<option value="[% item.value %]" [% (item.value == cust_carrierrates) ? 'SELECTED' : '' %]>[% item.name %]</option>
+							[% END %]
+							</select>
+						</label>
+						</td>
+						[% IF SSO_CUSTOMER %]
 						<td><label class="float-right" for="cust_routebuttonname">Route Button Name:</label></td>
 						<td><input type="text" class="broad-text" name="cust_routebuttonname" id="cust_routebuttonname" value="[% cust_routebuttonname %]">
 						</td>
-
-						<td><label class="float-right" for=""></label></td>
-						<td class="css3-radios"></td>
+						[% ELSE %]
+						<td></td>
+						<td></td>
+						[% END %]
 					</tr>
-					[% END %]
 				</table>
 
 				<center>
@@ -808,8 +840,15 @@
 			send_ajax_request('company-branding', 'HTML', 'settings/company', 'get_branding_settings', params);
 			}
 
-		function updateCompanyBranding(){
-			var params = 'customerid='+$("#customerid").val() + '&' + $("#custom-style-sheet").serialize() + '&' + $("#color-picker :input").serialize();
+		function updateCompanyBranding(skip_color_tab_update)
+			{
+			var params = 'customerid='+$("#customerid").val() + '&webaddress=' + $("#webaddress").val() + '&' + $("#custom-style-sheet").serialize();
+
+			if(!skip_color_tab_update)
+				{
+				params += '&' + $("#color-picker :input").serialize();
+				}
+
 			send_ajax_request('company-branding', 'JSON', 'settings/company', 'update_branding_settings', params, function() {
 			$('#branding-demo-iframe').attr('src','[% BASE_URL %]customer/settings/company/brandingdemo?id=[% customerid %]');
 			[% IF CURRENT_COMPANY %]

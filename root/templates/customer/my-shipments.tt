@@ -130,6 +130,19 @@
 
 	[% UNLESS ajax %]
 	</div>
+	
+	<div id="colorIndicator">
+	<table>
+		<tr>
+		<td>&nbsp;&nbsp;&nbsp;</td>
+		<td><a class="green"></a></td>
+		<td>Processing</td>
+		<td style="width: 5%">&nbsp;</td>
+		<td><a class="black"></a></td>
+		<td>Void</td>
+		</tr>
+	</table>
+	</div>
 
 	<script>
 

@@ -40,6 +40,16 @@
 		if (validateForm(requiredFieldHash) == false) return;
 		send_ajax_request('', 'JSON', 'order', 'ship', $("#frm_shipment").serialize(), function() {
 
+			if (JSON_data.CONFIRM_ADDRESS)
+				{
+				showConfirmBox(JSON_data.message, 'Address Validate Confirmation', function(){
+					$('#dialog-message').dialog( "close" );
+					$("#skipaddressvalidation").val(1);
+					$("#ship_now").click();
+					return;
+					});
+				}
+
 			if ( JSON_data.SUCCESS == 0 ) return;
 
 			$("#cancel").attr("disabled", true);

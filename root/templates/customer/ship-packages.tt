@@ -1,5 +1,13 @@
 [% IF MULTIORDER_DISPLAY%]
 
+	<div>
+	<table class="css3-checkboxes dialog-header">
+		<tr>
+			<td width="180px">Total <strong><span id="select-count">0</span></strong> orders selected</td>
+			<td><label><input type="checkbox" name="combine" value="1"/><span><label for="combine">Combine</label></span></label></td>
+		</tr>
+	</table>
+	</div>
 	<table class="css3-checkboxes" style="text-align: center;">
 		<tr>
 			<th><label><input type="checkbox" id="all"/><span></span></label></th>
@@ -14,7 +22,7 @@
 		[% IF multi_order_list %]
 			[% FOREACH item IN multi_order_list %]
 			<tr>
-				<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]"/><span></span></label></td>
+				<td><label><input type="checkbox" id="[% item.coid %]" name="coids" value="[% item.coid %]" class="orders"/><span></span></label></td>
 				<td><a class="green" href="javascript:void(0);"></a></td>
 				<td>[% item.ordernumber %]</td>
 				<td>[% address_info.addressname %]</td>
@@ -31,6 +39,12 @@
 		[% END %]
 	</table>
 
+	<script>
+		$('.orders').change(function(){
+			$("#select-count").html($("input:checkbox[name=coids]:checked").length);
+			if ($("#all").is(':checked')) $("#all").prop( "checked", false );
+			});
+	</script>
 [% ELSE %]
 
 <h2>Ship Packages</h2>
@@ -85,8 +99,9 @@
 			if ($(this).val().length == 0) return;
 
 			var query_param = 'ordernumber='+$(this).val();
-			$(".validateTips").fadeOut( "slow", function() {
+			$(".validateTips").fadeOut( "fast", function() {
 				$('#multiordershipment').attr('checked', false);
+
 				$("#myShipments").slideUp(1000);
 
 				send_ajax_request('', 'JSON', 'shippackages', 'check_order_number', query_param, function() {
@@ -98,9 +113,11 @@
 		$("#multiordershipment").change(function() {
 			if ($(this).is(":checked") && $("#ordernumber").val().length > 0)
 				{
-				var query_param = "&ordernumber=" + $("#ordernumber").val() + "&multiordershipment=" + $("#multiordershipment").val();
-				send_ajax_request('myShipments', 'HTML', 'shippackages', 'load_matching_orders', query_param, function() {
-					$("#myShipments").slideDown(1000);
+				$("#myShipments").slideUp(1000,function(){
+					var query_param = "&ordernumber=" + $("#ordernumber").val() + "&multiordershipment=" + $("#multiordershipment").val();
+					send_ajax_request('myShipments', 'HTML', 'shippackages', 'load_matching_orders', query_param, function() {
+						$("#myShipments").slideDown(1000);
+						});
 					});
 				}
 			else

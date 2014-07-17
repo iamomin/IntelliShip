@@ -201,43 +201,111 @@ sub ajax :Local
 	my $c = $self->context;
 	my $params = $c->req->params;
 
-	#$c->log->debug("SETTINGS AJAX");
-
-	$c->stash->{ajax} = 1;
-
-	if ($params->{'productsku'})
+	if ($params->{'type'} eq 'JSON')
 		{
-		my $WHERE = { customerid => $self->customer->customerid };
-		my $ORDER_BY = { order_by => 'description' };
-
-		$WHERE->{productskuid} = [split(',', $params->{'page'})];
-		#$c->log->debug("WHERE: " . Dumper $WHERE);
-		my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
-
-		#$c->log->debug("TOTAL SKUS: " . @productskus);
-		$c->stash->{productskulist} = \@productskus;
-		$c->stash->{productsku_count} = scalar @productskus;
-
-		$c->stash->{PRODUCT_SKU_LIST} = 1;
-		$c->stash->{SKU_MANAGEMENT} = 1;
+		$self->get_JSON_DATA;
 		}
-	elsif ($params->{'droplistdata'})
+	else
 		{
-		my $WHERE = { customerid => $self->customer->customerid };
-		my $ORDER_BY = { order_by => 'fieldorder desc,fieldtext' };
+		$self->get_HTML_DATA;
+		}
+	}
 
-		$WHERE->{droplistdataid} = [split(',', $params->{'page'})];
-		my @droplistdata = $c->model('MyDBI::Droplistdata')->search($WHERE, $ORDER_BY);
+sub get_JSON_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
 
-		$c->stash->{extiddroplist} = \@droplistdata;
-		$c->stash->{extid_droplist_count} = scalar @droplistdata;
+	my $action = $params->{'action'} || '';
+	my $dataHash;
+	if ($action eq 'delete_profile_image')
+		{
+		$dataHash = $self->delete_profile_image;
+		}
 
-		$c->stash->{EXTID_DROP_LIST} = 1;
-		$c->stash->{EXTID_MANAGEMENT} = 1;
+	#$c->log->debug("\n TO dataHash:  " . Dumper ($dataHash));
+	my $json_DATA = IntelliShip::Utils->jsonify($dataHash);
+	#$c->log->debug("\n TO json_DATA:  " . Dumper ($json_DATA));
+	return $c->response->body($json_DATA);
+	}
+
+sub delete_profile_image :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+	my $Contact = $self->contact;
+
+	my $FullPath;
+	if ($params->{contactid} eq $Contact->contactid)
+		{
+		$FullPath = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $Contact->profile_image_name;
+		$c->log->debug("unlink profile image " . $FullPath);
+		unlink $FullPath;
+		}
+
+	return { SUCCESS => (-e $FullPath ? 0 : 1) };
+	}
+
+sub get_HTML_DATA :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $action = $params->{'action'} || '';
+	if ($action eq 'display_productsku_details')
+		{
+		$self->display_productsku_details;
+		}
+	elsif ($action eq 'display_droplistdata_details')
+		{
+		$self->display_droplistdata_details;
 		}
 
 	$c->stash($params);
 	$c->stash(template => "templates/customer/settings.tt");
+	}
+
+sub display_productsku_details :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = { customerid => $self->customer->customerid };
+	my $ORDER_BY = { order_by => 'description' };
+
+	$WHERE->{productskuid} = [split(',', $params->{'page'})];
+	$c->log->debug("WHERE: " . Dumper $WHERE);
+	my @productskus = $c->model('MyDBI::Productsku')->search($WHERE, $ORDER_BY);
+
+	$c->log->debug("TOTAL SKUS: " . @productskus);
+	$c->stash->{productskulist} = \@productskus;
+	$c->stash->{productsku_count} = scalar @productskus;
+
+	$c->stash->{PRODUCT_SKU_LIST} = 1;
+	$c->stash->{SKU_MANAGEMENT} = 1;
+	}
+
+sub display_droplistdata_details :Private
+	{
+	my $self = shift;
+	my $c = $self->context;
+	my $params = $c->req->params;
+
+	my $WHERE = { customerid => $self->customer->customerid };
+	my $ORDER_BY = { order_by => 'fieldorder desc,fieldtext' };
+
+	$WHERE->{droplistdataid} = [split(',', $params->{'page'})];
+	my @droplistdata = $c->model('MyDBI::Droplistdata')->search($WHERE, $ORDER_BY);
+
+	$c->stash->{extiddroplist} = \@droplistdata;
+	$c->stash->{extid_droplist_count} = scalar @droplistdata;
+
+	$c->stash->{EXTID_DROP_LIST} = 1;
+	$c->stash->{EXTID_MANAGEMENT} = 1;
 	}
 
 sub findsku :Local
@@ -689,6 +757,7 @@ sub contactinformation :Local
 		$c->stash->{jpgrotation_loop}        = $self->get_select_list('JPG_LABEL_ROTATION');
 		$c->stash->{packageproductlevel_loop}= $self->get_select_list('PACKAGE_PRODUCT_LEVEL');
 		$c->stash->{addressvalidation_loop}  = $self->get_select_list('ADDRESS_VALIDATION_LIST');
+		$c->stash->{carrierrates_loop}       = $self->get_select_list('CARRIERRATES_LIST');
 		$c->stash->{contactsetting_loop}     = $self->get_contact_setting_list($Contact);
 
 		$c->stash->{SUPER_USER} = $self->contact->is_superuser;
@@ -724,7 +793,7 @@ sub uploadprofile :Local
 		}
 
 	my $FullPath  = IntelliShip::MyConfig->branding_file_directory . '/' . $self->get_branding_id . '/images/profile/' . $FILE_name;
-	$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
+	#$c->log->debug("FILE_name: " . $FILE_name . ", Full Path: " . $FullPath);
 
 	if ($Upload->copy_to($FullPath))
 		{

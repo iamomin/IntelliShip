@@ -166,8 +166,7 @@ sub get_carrier_services
 	my ($carrierid, $customerid) = @_;
 
 	my $http_request = {
-		action => 'GetCarrierServices',
-		carrierid => $carrierid,
+		action => 'GetCarrierServices',		
 		customerid => $customerid
 	};
 
@@ -319,8 +318,6 @@ sub get_carrier_service_rate_list
 	##########
 
 	$self->populate_package_detail_section($CO,$request);
-
-	$request->{'quantityxweight'} = $CO->quantityxweight ? 1 : 0;
 
 	# Inbound and dropship flags
 	$request->{'isinbound'} = (defined($CO->isinbound) and $CO->isinbound == 1) ? 1 : 0;

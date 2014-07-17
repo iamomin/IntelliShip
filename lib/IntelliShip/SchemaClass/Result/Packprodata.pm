@@ -433,6 +433,15 @@ sub products
 	return $self->packprochilds($WHERE, { order_by => 'datecreated' });
 	}
 
+sub total_weight
+	{
+	my $self = shift;
+	my $weight = $self->weight || 0;
+	my $dimweight = $self->dimweight || 0;
+	my $ttl_weight = ( $weight > $dimweight ? $weight : $dimweight );
+	return $ttl_weight;
+	}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

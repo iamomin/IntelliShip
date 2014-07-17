@@ -165,8 +165,10 @@
 				next;
 			}
 
-			warn "-" x 50;
+			print STDERR "#" x 100;
 			warn "\nONLINE, CSID: $CSID, CustomerService Name: $CSName ";
+			print STDERR "=" x 100;
+			warn "\n";
 			#warn "ONLINE: $CSName " if $CSID eq 'TOTALTRANSPO1';
 
 			my $CS = new ARRS::CUSTOMERSERVICE($self->{'dbref'}, $self->{'contact'});
@@ -244,7 +246,12 @@
 			)
 			{
 				my $S3 = &Benchmark() if $Benchmark;
+				eval {
 				($Cost,$ZoneNumber,$PackageCosts,$CostWeight,$TransitDays) = $CS->GetShipmentCosts($CgiRef);
+				};
+
+				warn "\nISE Error: " . $@ . "\n" if $@;
+
 				warn "Got Costs $Cost - $TransitDays - $PackageCosts" if $Debug;
 
 				$CostTotal += &Benchmark($S3,"Calculate Cost - $CSID, $CSName") if $Benchmark;
@@ -827,20 +834,23 @@ warn "undef etadate";
 	sub GetCarrierServices
 	{
 		my $self = shift;
-		my ($carrierid, $customerid) = @_;
-		warn "########## GetCarrierServices " . $carrierid;
+		my ($customerid) = @_;
+		warn "########## GetCarrierServices \$customerid:" . $customerid;
 		
 		my $SQLString = "select 
-								serviceid, 
-								carrierid, 
-								servicename, 
-								international, 
-								heavy, 
-								servicecode
+								s.serviceid, 
+								s.carrierid, 
+								s.servicename, 
+								s.international, 
+								s.heavy, 
+								s.servicecode,
+								c.carriername
 							from 
-								service 
-							where carrierid = '$carrierid'
-							and serviceid not in 
+								service s
+							inner join 
+								carrier c
+							on s.carrierid = c.carrierid
+							where serviceid not in 
 								(
 									select 
 										serviceid 
@@ -849,7 +859,7 @@ warn "undef etadate";
 									where
 										customerid = '$customerid'
 								)
-							order by servicename, international, heavy";
+							order by carrierid, servicename, international, heavy";
 
 
         warn "######### \$SQLString $SQLString";
@@ -863,16 +873,17 @@ warn "undef etadate";
                 
 		my $ReturnRef = {};
 		my @arr = ();
-		while ( my ($serviceid, $carrierid, $servicename, $international, $heavy, $servicecode) = $sth->fetchrow_array() )
+		while ( my ($serviceid, $carrierid, $servicename, $international, $heavy, $servicecode, $carriername) = $sth->fetchrow_array() )
 		{
 			my $csrecord = {};
 
 			$csrecord->{'serviceid'} = $serviceid;
 			$csrecord->{'carrierid'} = $carrierid;
 			$csrecord->{'servicename'} = $servicename;
-			$csrecord->{'international'} = $international == 0 ? "no": "yes" ;
-			$csrecord->{'heavy'} = $heavy == 0 ? "no": "yes";
+			$csrecord->{'international'} = ($international || $international == 0 ? "no": "yes") ;
+			$csrecord->{'heavy'} = ($heavy || $heavy == 0 ? "no": "yes");
 			$csrecord->{'servicecode'} = $servicecode;
+			$csrecord->{'carriername'} = $carriername;
 			push(@arr, $csrecord);                        
 		}
 		$ReturnRef->{'services'} = \@arr;
